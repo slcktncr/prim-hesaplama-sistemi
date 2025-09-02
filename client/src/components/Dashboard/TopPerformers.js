@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, ListGroup, Badge } from 'react-bootstrap';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
-import { FiTrophy, FiUser } from 'react-icons/fi';
+import { FiAward, FiUser } from 'react-icons/fi';
 
 const TopPerformers = ({ performers }) => {
   if (!performers || performers.length === 0) {
@@ -9,7 +9,7 @@ const TopPerformers = ({ performers }) => {
       <Card>
         <Card.Header>
           <div className="d-flex align-items-center">
-            <FiTrophy className="me-2" />
+            <FiAward className="me-2" />
             <h5 className="mb-0">En İyi Performans</h5>
           </div>
         </Card.Header>
@@ -24,7 +24,7 @@ const TopPerformers = ({ performers }) => {
     <Card>
       <Card.Header>
         <div className="d-flex align-items-center">
-          <FiTrophy className="me-2" />
+          <FiAward className="me-2" />
           <h5 className="mb-0">En İyi Performans</h5>
         </div>
       </Card.Header>

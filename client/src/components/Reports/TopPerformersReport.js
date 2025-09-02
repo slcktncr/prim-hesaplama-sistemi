@@ -10,7 +10,7 @@ import {
   ListGroup
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { FiRefreshCw, FiFilter, FiTarget, FiTrophy, FiUser } from 'react-icons/fi';
+import { FiRefreshCw, FiFilter, FiTarget, FiAward, FiUser } from 'react-icons/fi';
 
 import { reportsAPI, primsAPI } from '../../utils/api';
 import { formatCurrency, formatNumber, debounce } from '../../utils/helpers';
@@ -162,7 +162,7 @@ const TopPerformersReport = () => {
 
       {topPerformers.length === 0 ? (
         <Alert variant="info">
-          <FiTrophy className="me-2" />
+          <FiAward className="me-2" />
           Seçilen kriterlerde performans verisi bulunamadı.
         </Alert>
       ) : (
@@ -269,7 +269,7 @@ const TopPerformersReport = () => {
             <Card className="mb-4">
               <Card.Header>
                 <h6 className="mb-0">
-                  <FiTrophy className="me-2" />
+                  <FiAward className="me-2" />
                   Performans İstatistikleri
                 </h6>
               </Card.Header>
