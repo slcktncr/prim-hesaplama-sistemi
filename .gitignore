@@ -88,7 +88,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public (React public klasörü için yorum yapıldı)
 
 # Storybook build outputs
 .out
