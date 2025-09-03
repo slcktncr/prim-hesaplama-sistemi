@@ -45,8 +45,13 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+console.log('Starting server...');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
+
 app.listen(PORT, () => {
   console.log(`Server ${PORT} portunda çalışıyor`);
+  console.log('Server successfully started!');
 });
 
 module.exports = app;
