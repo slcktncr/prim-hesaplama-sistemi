@@ -94,6 +94,14 @@ const SaleForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Sözleşme no için karakter sınırı kontrolü
+    if (name === 'contractNo') {
+      if (value.length > 6) {
+        return; // 6 karakterden fazla girişi engelle
+      }
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear field error when user starts typing
@@ -338,10 +346,16 @@ const SaleForm = () => {
                     onChange={handleChange}
                     isInvalid={!!errors.contractNo}
                     placeholder=""
+                    maxLength={6}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.contractNo}
-                  </Form.Control.Feedback>
+                  <div className="d-flex justify-content-between">
+                    <Form.Control.Feedback type="invalid">
+                      {errors.contractNo}
+                    </Form.Control.Feedback>
+                    <Form.Text className="text-muted">
+                      {formData.contractNo.length}/6 karakter
+                    </Form.Text>
+                  </div>
                 </Form.Group>
 
                 <Row>

@@ -1,16 +1,18 @@
 /* Modern Sidebar Tasarımı */
 
 .sidebar {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
   min-height: 100vh;
+  height: 100vh;
   width: 280px;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 1000;
   padding: 0;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 4px 0 24px rgba(14, 165, 233, 0.15);
   transition: all 0.3s ease;
+  overflow-y: auto;
 }
 
 .sidebar .nav {
@@ -39,9 +41,9 @@
 }
 
 .sidebar .nav-link.active {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  color: #0369a1 !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
 .sidebar .nav-link.active::before {
@@ -52,7 +54,7 @@
   transform: translateY(-50%);
   width: 4px;
   height: 24px;
-  background: #3b82f6;
+  background: #ffffff;
   border-radius: 0 2px 2px 0;
 }
 
@@ -64,9 +66,13 @@
   transition: opacity 0.2s ease;
 }
 
-.sidebar .nav-link:hover svg,
+.sidebar .nav-link:hover svg {
+  opacity: 1;
+}
+
 .sidebar .nav-link.active svg {
   opacity: 1;
+  color: #0369a1;
 }
 
 /* Sidebar Section Headers */
@@ -88,7 +94,7 @@
   left: 0;
   width: 2rem;
   height: 2px;
-  background: linear-gradient(90deg, #3b82f6, transparent);
+  background: linear-gradient(90deg, #ffffff, transparent);
   border-radius: 1px;
 }
 
