@@ -36,4 +36,18 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { auth, adminAuth };
+// Eski isimlerle de export et (backward compatibility)
+const protect = auth;
+const authorize = (roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ message: 'Bu işlem için yetkiniz bulunmamaktadır' });
+  }
+  next();
+};
+
+module.exports = { 
+  auth, 
+  adminAuth, 
+  protect, 
+  authorize 
+};
