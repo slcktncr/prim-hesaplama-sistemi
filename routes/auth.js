@@ -136,4 +136,53 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/fix-admin
+// @desc    Fix existing admin account (temporary endpoint)
+// @access  Public (one-time use)
+router.post('/fix-admin', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (email !== 'selcuktuncer@gmail.com') {
+      return res.status(403).json({ message: 'Bu endpoint sadece belirli hesap için' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Admin hesabını düzelt
+    user.isActive = true;
+    user.isApproved = true;
+    user.role = 'admin';
+    
+    // firstName/lastName eksikse düzelt
+    if (!user.firstName || !user.lastName) {
+      const nameParts = user.name ? user.name.split(' ') : ['Admin', 'User'];
+      user.firstName = nameParts[0] || 'Admin';
+      user.lastName = nameParts.slice(1).join(' ') || 'User';
+    }
+
+    await user.save();
+
+    console.log('✅ Admin hesabı düzeltildi:', email);
+
+    res.json({
+      message: 'Admin hesabı başarıyla düzeltildi',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        isApproved: user.isApproved
+      }
+    });
+  } catch (error) {
+    console.error('Fix admin error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;
