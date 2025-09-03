@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import { 
   FiSettings, 
   FiSave,
-  FiHistory,
+  FiClock,
   FiPercent,
   FiUser,
   FiCalendar
@@ -258,14 +258,14 @@ const PrimSettings = () => {
           <Card>
             <Card.Header>
               <div className="d-flex align-items-center">
-                <FiHistory className="me-2" />
+                <FiClock className="me-2" />
                 <h5 className="mb-0">Prim Oranı Geçmişi</h5>
               </div>
             </Card.Header>
             <Card.Body>
               {rateHistory.length === 0 ? (
                 <div className="text-center py-4">
-                  <FiHistory size={48} className="text-muted mb-3" />
+                  <FiClock size={48} className="text-muted mb-3" />
                   <p className="text-muted">Henüz prim oranı geçmişi bulunmuyor.</p>
                   <p className="text-muted small">
                     İlk prim oranı güncellemesinden sonra geçmiş burada görünecektir.
