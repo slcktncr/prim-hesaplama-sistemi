@@ -127,6 +127,8 @@ const SaleForm = () => {
 
     if (!validateRequired(formData.contractNo)) {
       newErrors.contractNo = 'Sözleşme no gereklidir';
+    } else if (formData.contractNo.length < 6 || formData.contractNo.length > 6) {
+      newErrors.contractNo = 'Sözleşme no tam olarak 6 hane olmalıdır';
     }
 
     if (!validatePositiveNumber(formData.listPrice)) {
@@ -284,7 +286,7 @@ const SaleForm = () => {
                         value={formData.periodNo}
                         onChange={handleChange}
                         isInvalid={!!errors.periodNo}
-                        placeholder="2024-1"
+                        placeholder=""
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.periodNo}
@@ -335,7 +337,7 @@ const SaleForm = () => {
                     value={formData.contractNo}
                     onChange={handleChange}
                     isInvalid={!!errors.contractNo}
-                    placeholder="SZL-2024-001"
+                    placeholder=""
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.contractNo}

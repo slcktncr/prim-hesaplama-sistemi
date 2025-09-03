@@ -12,7 +12,9 @@ import {
   FiList,
   FiTrendingUp,
   FiSettings,
-  FiBarChart2
+  FiBarChart2,
+  FiClock,
+  FiUsers
 } from 'react-icons/fi';
 
 const Sidebar = () => {
@@ -81,6 +83,22 @@ const Sidebar = () => {
               <Nav.Link>
                 <FiSettings className="me-2" />
                 Prim Ayarları
+              </Nav.Link>
+            </LinkContainer>
+
+            <div className="px-3 py-2 text-muted small mt-3">YÖNETİM</div>
+            
+            <LinkContainer to="/admin/pending-users">
+              <Nav.Link>
+                <FiClock className="me-2" />
+                Onay Bekleyenler
+              </Nav.Link>
+            </LinkContainer>
+
+            <LinkContainer to="/admin/active-users">
+              <Nav.Link>
+                <FiUsers className="me-2" />
+                Aktif Kullanıcılar
               </Nav.Link>
             </LinkContainer>
           </>

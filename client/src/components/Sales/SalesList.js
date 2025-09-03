@@ -23,7 +23,8 @@ import {
   FiRefreshCw, 
   FiMoreVertical,
   FiUser,
-  FiDollarSign
+  FiDollarSign,
+  FiTrash2
 } from 'react-icons/fi';
 
 import { salesAPI, primsAPI } from '../../utils/api';
@@ -151,6 +152,23 @@ const SalesList = () => {
   const openTransferModal = (sale) => {
     setSelectedSale(sale);
     setShowTransferModal(true);
+  };
+
+  const handleDeleteSale = async (sale) => {
+    const confirmMessage = `Bu satışı kalıcı olarak silmek istediğinizden emin misiniz?\n\nSilinecek Satış:\n• Müşteri: ${sale.customerName}\n• Sözleşme No: ${sale.contractNo}\n• Prim Tutarı: ${formatCurrency(sale.primAmount)}\n\nBu işlem GERİ ALINAMAZ!`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      await salesAPI.deleteSale(sale._id);
+      toast.success('Satış başarıyla silindi');
+      fetchSales();
+    } catch (error) {
+      console.error('Delete sale error:', error);
+      toast.error(error.response?.data?.message || 'Satış silinirken hata oluştu');
+    }
   };
 
   if (loading && sales.length === 0) {
@@ -312,7 +330,7 @@ const SalesList = () => {
                         </div>
                       </td>
                       <td>
-                        <Dropdown>
+                        <Dropdown align="end">
                           <Dropdown.Toggle 
                             variant="outline-secondary" 
                             size="sm"
@@ -321,7 +339,12 @@ const SalesList = () => {
                             <FiMoreVertical />
                           </Dropdown.Toggle>
 
-                          <Dropdown.Menu>
+                          <Dropdown.Menu className="shadow-lg"
+                            style={{ 
+                              minWidth: '200px',
+                              zIndex: 1050
+                            }}
+                          >
                             {/* Düzenle - Sadece kendi satışı veya admin */}
                             {(isAdmin || sale.salesperson?._id === user?._id) && (
                               <Dropdown.Item as={Link} to={`/sales/edit/${sale._id}`}>
@@ -367,6 +390,20 @@ const SalesList = () => {
                                 >
                                   <FiDollarSign className="me-2" />
                                   Prim Ödenmedi
+                                </Dropdown.Item>
+                              </>
+                            )}
+
+                            {/* Sil - Sadece admin için */}
+                            {isAdmin && (
+                              <>
+                                <Dropdown.Divider />
+                                <Dropdown.Item 
+                                  onClick={() => handleDeleteSale(sale)}
+                                  className="text-danger"
+                                >
+                                  <FiTrash2 className="me-2" />
+                                  Kalıcı Olarak Sil
                                 </Dropdown.Item>
                               </>
                             )}

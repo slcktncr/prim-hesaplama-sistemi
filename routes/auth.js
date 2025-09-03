@@ -28,7 +28,7 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // Kullanıcı var mı kontrol et
     const existingUser = await User.findOne({ email });
@@ -36,16 +36,20 @@ router.post('/register', [
       return res.status(400).json({ message: 'Bu email ile kayıtlı kullanıcı bulunmaktadır' });
     }
 
-    // İlk kullanıcı admin olacak
+    // İlk kullanıcı admin olacak ve otomatik onaylanacak
     const userCount = await User.countDocuments();
-    const userRole = userCount === 0 ? 'admin' : (role || 'temsilci');
+    const isFirstUser = userCount === 0;
 
     // Yeni kullanıcı oluştur
     const user = new User({
+      firstName: name.split(' ')[0] || name,
+      lastName: name.split(' ').slice(1).join(' ') || '',
       name,
       email,
       password,
-      role: userRole
+      role: isFirstUser ? 'admin' : 'salesperson',
+      isActive: isFirstUser, // İlk kullanıcı aktif
+      isApproved: isFirstUser // İlk kullanıcı onaylı
     });
 
     await user.save();
@@ -54,13 +58,17 @@ router.post('/register', [
     const token = generateToken(user._id);
 
     res.status(201).json({
-      message: 'Kullanıcı başarıyla oluşturuldu',
-      token,
+      message: isFirstUser 
+        ? 'İlk admin kullanıcı başarıyla oluşturuldu' 
+        : 'Kayıt başarılı! Hesabınız admin onayı bekliyor.',
+      token: isFirstUser ? token : null, // Sadece admin için token ver
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isApproved: user.isApproved,
+        requiresApproval: !isFirstUser
       }
     });
   } catch (error) {

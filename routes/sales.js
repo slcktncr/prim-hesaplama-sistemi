@@ -44,7 +44,7 @@ router.post('/', auth, [
   body('apartmentNo').trim().notEmpty().withMessage('Daire no gereklidir'),
   body('periodNo').trim().notEmpty().withMessage('Dönem no gereklidir'),
   body('saleDate').isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
-  body('contractNo').trim().notEmpty().withMessage('Sözleşme no gereklidir'),
+  body('contractNo').trim().isLength({ min: 6, max: 6 }).withMessage('Sözleşme no tam olarak 6 hane olmalıdır'),
   body('listPrice').isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
   body('activitySalePrice').isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
   body('paymentType').isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
@@ -478,6 +478,40 @@ router.put('/:id/prim-status', [auth, adminAuth], [
     });
   } catch (error) {
     console.error('Update prim status error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   DELETE /api/sales/:id
+// @desc    Satışı tamamen sil (sadece admin)
+// @access  Private (Admin only)
+router.delete('/:id', [auth, adminAuth], async (req, res) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    console.log('🗑️ Admin satış siliyor:', req.user.email, 'Sale ID:', req.params.id);
+
+    // İlişkili prim transaction'larını sil
+    await PrimTransaction.deleteMany({ sale: sale._id });
+    console.log('✅ İlişkili prim transaction\'ları silindi');
+
+    // Satışı sil
+    await Sale.findByIdAndDelete(req.params.id);
+    console.log('✅ Satış veritabanından silindi');
+
+    res.json({ 
+      message: 'Satış ve ilişkili tüm veriler başarıyla silindi',
+      deletedSale: {
+        contractNo: sale.contractNo,
+        customerName: sale.customerName,
+        primAmount: sale.primAmount
+      }
+    });
+  } catch (error) {
+    console.error('❌ Delete sale error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

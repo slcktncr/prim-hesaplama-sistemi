@@ -2,9 +2,18 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, 'Ad gereklidir'],
+    trim: true
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Soyad gereklidir'],
+    trim: true
+  },
   name: {
     type: String,
-    required: [true, 'İsim gereklidir'],
     trim: true
   },
   email: {
@@ -20,17 +29,36 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'temsilci'],
-    default: 'temsilci'
+    enum: ['admin', 'salesperson'],
+    default: 'salesperson'
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: false // Varsayılan olarak pasif, admin onayı bekler
+  },
+  isApproved: {
+    type: Boolean,
+    default: false // Admin onayı
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: {
+    type: Date
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
+});
+
+// Name field'ini otomatik oluştur
+userSchema.pre('save', function(next) {
+  if (this.firstName && this.lastName) {
+    this.name = `${this.firstName} ${this.lastName}`;
+  }
+  next();
 });
 
 // Şifre hashleme

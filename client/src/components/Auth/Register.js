@@ -10,8 +10,7 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'temsilci'
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,7 @@ const Register = () => {
     clearErrors();
   }, [clearErrors]);
 
-  const { name, email, password, confirmPassword, role } = formData;
+  const { name, email, password, confirmPassword } = formData;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -71,7 +70,7 @@ const Register = () => {
     }
 
     setLoading(true);
-    const result = await register({ name, email, password, role });
+    const result = await register({ name, email, password });
     setLoading(false);
 
     if (result.success) {
@@ -159,20 +158,10 @@ const Register = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Rol</Form.Label>
-                  <Form.Select
-                    name="role"
-                    value={role}
-                    onChange={handleChange}
-                  >
-                    <option value="temsilci">Satış Temsilcisi</option>
-                    <option value="admin">Admin</option>
-                  </Form.Select>
-                  <Form.Text className="text-muted">
-                    İlk kayıt olan kullanıcı otomatik admin olur
-                  </Form.Text>
-                </Form.Group>
+                <Alert variant="info" className="mb-4">
+                  <strong>Not:</strong> Kayıt olduktan sonra hesabınız admin onayı bekleyecektir. 
+                  Onaylandıktan sonra sisteme giriş yapabileceksiniz.
+                </Alert>
 
                 <Button
                   variant="primary"

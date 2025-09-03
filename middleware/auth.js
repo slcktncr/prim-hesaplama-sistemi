@@ -13,8 +13,8 @@ const auth = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'prim_hesaplama_jwt_secret_key_2024');
     const user = await User.findById(decoded.id);
 
-    if (!user || !user.isActive) {
-      return res.status(401).json({ message: 'Geçersiz token' });
+    if (!user || !user.isActive || !user.isApproved) {
+      return res.status(401).json({ message: 'Hesabınız henüz onaylanmamış veya aktif değil' });
     }
 
     req.user = user;

@@ -48,6 +48,7 @@ export const salesAPI = {
   restoreSale: (id) => API.put(`/sales/${id}/restore`),
   transferSale: (id, newSalesperson) => API.put(`/sales/${id}/transfer`, { newSalesperson }),
   updatePrimStatus: (id, primStatus) => API.put(`/sales/${id}/prim-status`, { primStatus }),
+  deleteSale: (id) => API.delete(`/sales/${id}`),
 };
 
 // Prims API calls
@@ -69,6 +70,15 @@ export const reportsAPI = {
   getPeriodComparison: () => API.get('/reports/period-comparison'),
   getTopPerformers: (params) => API.get('/reports/top-performers', { params }),
   getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
+};
+
+// Users API calls
+export const usersAPI = {
+  getPendingUsers: () => API.get('/users/pending'),
+  approveUser: (id) => API.put(`/users/${id}/approve`),
+  rejectUser: (id) => API.delete(`/users/${id}/reject`),
+  getSalespeople: () => API.get('/users/salespeople'),
+  changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
 };
 
 export default API;

@@ -15,6 +15,8 @@ import PrimPeriods from './components/Prims/PrimPeriods';
 import PrimTransactions from './components/Prims/PrimTransactions';
 import PrimEarnings from './components/Prims/PrimEarnings';
 import Reports from './components/Reports/Reports';
+import PendingUsers from './components/Admin/PendingUsers';
+import ActiveUsers from './components/Admin/ActiveUsers';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -120,6 +122,18 @@ function AppContent() {
                     
                     {/* Reports */}
                     <Route path="/reports" element={<Reports />} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin/pending-users" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <PendingUsers />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/active-users" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <ActiveUsers />
+                      </ProtectedRoute>
+                    } />
                     
                     {/* 404 */}
                     <Route path="*" element={<Navigate to="/dashboard" />} />
