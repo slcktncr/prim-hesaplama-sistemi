@@ -56,7 +56,7 @@ const Dashboard = () => {
     thisMonthSales,
     paidPrims,
     unpaidPrims,
-    topSalespeople
+    topPerformers
   } = dashboardData || {};
 
   return (
@@ -144,9 +144,9 @@ const Dashboard = () => {
 
       <Row>
         {/* En İyi Performans (Sadece Admin için) */}
-        {user?.role === 'admin' && topSalespeople && topSalespeople.length > 0 && (
+        {user?.role === 'admin' && topPerformers && (
           <Col lg={6} className="mb-4">
-            <TopPerformers performers={topSalespeople} />
+            <TopPerformers performers={topPerformers} />
           </Col>
         )}
 

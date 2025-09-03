@@ -48,18 +48,90 @@ router.get('/dashboard', auth, async (req, res) => {
     const paidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödendi' });
     const unpaidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödenmedi' });
 
-    // En çok satan temsilciler (sadece admin için)
-    let topSalespeople = [];
+    // En başarılı temsilciler (sadece admin için) - Farklı kategorilerde
+    let topPerformers = {
+      salesCount: [], // Satış adeti liderleri
+      salesAmount: [], // Satış tutarı liderleri
+      primAmount: [] // Prim tutarı liderleri
+    };
+
     if (req.user.role === 'admin') {
-      topSalespeople = await Sale.aggregate([
-        { $match: { status: 'aktif' } },
-        { $group: { _id: '$salesperson', count: { $sum: 1 }, totalAmount: { $sum: '$primAmount' } } },
+      const baseQuery = { status: 'aktif', saleType: 'satis' }; // Sadece normal satışlar
+      
+      // Satış adeti liderleri
+      const salesCountLeaders = await Sale.aggregate([
+        { $match: baseQuery },
+        { $group: { 
+          _id: '$salesperson', 
+          count: { $sum: 1 }, 
+          totalAmount: { $sum: '$basePrimPrice' },
+          totalPrim: { $sum: '$primAmount' }
+        } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
-        { $project: { name: '$user.name', count: 1, totalAmount: 1 } },
+        { $project: { 
+          name: '$user.name', 
+          email: '$user.email',
+          count: 1, 
+          totalAmount: 1, 
+          totalPrim: 1,
+          avgAmount: { $divide: ['$totalAmount', '$count'] }
+        } },
         { $sort: { count: -1 } },
         { $limit: 5 }
       ]);
+
+      // Satış tutarı liderleri
+      const salesAmountLeaders = await Sale.aggregate([
+        { $match: baseQuery },
+        { $group: { 
+          _id: '$salesperson', 
+          count: { $sum: 1 }, 
+          totalAmount: { $sum: '$basePrimPrice' },
+          totalPrim: { $sum: '$primAmount' }
+        } },
+        { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        { $project: { 
+          name: '$user.name', 
+          email: '$user.email',
+          count: 1, 
+          totalAmount: 1, 
+          totalPrim: 1,
+          avgAmount: { $divide: ['$totalAmount', '$count'] }
+        } },
+        { $sort: { totalAmount: -1 } },
+        { $limit: 5 }
+      ]);
+
+      // Prim tutarı liderleri
+      const primAmountLeaders = await Sale.aggregate([
+        { $match: baseQuery },
+        { $group: { 
+          _id: '$salesperson', 
+          count: { $sum: 1 }, 
+          totalAmount: { $sum: '$basePrimPrice' },
+          totalPrim: { $sum: '$primAmount' }
+        } },
+        { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        { $project: { 
+          name: '$user.name', 
+          email: '$user.email',
+          count: 1, 
+          totalAmount: 1, 
+          totalPrim: 1,
+          avgAmount: { $divide: ['$totalAmount', '$count'] }
+        } },
+        { $sort: { totalPrim: -1 } },
+        { $limit: 5 }
+      ]);
+
+      topPerformers = {
+        salesCount: salesCountLeaders,
+        salesAmount: salesAmountLeaders,
+        primAmount: primAmountLeaders
+      };
     }
 
     res.json({
@@ -70,7 +142,7 @@ router.get('/dashboard', auth, async (req, res) => {
       thisMonthSales,
       paidPrims,
       unpaidPrims,
-      topSalespeople
+      topPerformers
     });
   } catch (error) {
     console.error('Dashboard error:', error);
