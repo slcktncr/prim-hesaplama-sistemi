@@ -26,8 +26,12 @@ const Sidebar = () => {
       {/* Logo Area */}
       <div className="sidebar-logo">
         <div className="logo-container">
-          <div className="logo-placeholder">
-            <div className="logo-text">MOLA</div>
+          <div className="logo-image">
+            <img 
+              src="/mola-logo.png" 
+              alt="MOLA Logo" 
+              className="logo-img"
+            />
           </div>
           <div className="logo-info">
             <h4>Prim Sistemi</h4>

@@ -1,9 +1,9 @@
 /* Modern Sidebar Tasarımı */
 
 .sidebar {
-  background: linear-gradient(135deg, #0891b2 0%, #0e7490 25%, #155e75 50%, #164e63 75%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 25%, #06b6d4 50%, #0891b2 75%, #0e7490 100%);
   background-size: 400% 400%;
-  animation: gradientShift 10s ease infinite;
+  animation: gradientShift 15s ease infinite;
   min-height: 100vh;
   height: 100vh;
   width: 280px;
@@ -12,10 +12,10 @@
   top: 0;
   z-index: 1000;
   padding: 0;
-  box-shadow: 4px 0 24px rgba(14, 165, 233, 0.25), inset 0 0 100px rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 24px rgba(34, 211, 238, 0.3), inset 0 0 100px rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
   overflow-y: auto;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 @keyframes gradientShift {
@@ -30,29 +30,33 @@
 }
 
 .sidebar .nav-link {
-  color: #cbd5e1 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
   padding: 0.75rem 1.5rem;
   margin: 0 1rem;
   border-radius: 0.75rem;
   font-weight: 500;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   border: none;
   display: flex;
   align-items: center;
   position: relative;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
   color: #ffffff !important;
   transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 .sidebar .nav-link.active {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-  color: #0369a1 !important;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar .nav-link.active::before {
@@ -120,23 +124,24 @@
   gap: 1rem;
 }
 
-.logo-placeholder {
+.logo-image {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  padding: 8px;
 }
 
-.logo-text {
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: #0369a1;
-  letter-spacing: -1px;
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .logo-info h4 {
@@ -212,6 +217,35 @@
   .mobile-menu-btn {
     display: block;
   }
+}
+
+/* Section Headers */
+.sidebar .nav .px-3.py-2.text-muted.small {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid rgba(255, 255, 255, 0.6);
+}
+
+.sidebar .nav .px-3.py-2.text-muted.small::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 /* Scrollbar Styling */
