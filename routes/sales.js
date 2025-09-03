@@ -273,8 +273,18 @@ router.put('/:id/cancel', auth, async (req, res) => {
     sale.cancelledBy = req.user._id;
     await sale.save();
 
-    // Eğer prim ödenmişse kesinti işlemi oluştur
-    if (sale.primStatus === 'ödendi') {
+    // Prim durumuna göre işlem yap
+    if (sale.primStatus === 'ödenmedi') {
+      // Prim ödenmemişse, mevcut kazanç transaction'ını sil
+      console.log('❌ Prim ödenmedi - Kazanç transaction siliniyor');
+      await PrimTransaction.deleteOne({
+        sale: sale._id,
+        transactionType: 'kazanç',
+        salesperson: sale.salesperson
+      });
+    } else if (sale.primStatus === 'ödendi') {
+      // Prim ödenmişse kesinti işlemi oluştur
+      console.log('💸 Prim ödendi - Kesinti transaction ekleniyor');
       const primTransaction = new PrimTransaction({
         salesperson: sale.salesperson,
         sale: sale._id,
@@ -327,17 +337,28 @@ router.put('/:id/restore', auth, async (req, res) => {
     sale.cancelledBy = null;
     await sale.save();
 
-    // Yeni prim işlemi oluştur
-    const primTransaction = new PrimTransaction({
-      salesperson: sale.salesperson,
+    // Prim işlemini geri ekle (sadece bir kez)
+    const existingTransaction = await PrimTransaction.findOne({
       sale: sale._id,
-      primPeriod: sale.primPeriod,
       transactionType: 'kazanç',
-      amount: sale.primAmount,
-      description: `${sale.contractNo} sözleşme geri alma primi`,
-      createdBy: req.user._id
+      salesperson: sale.salesperson
     });
-    await primTransaction.save();
+
+    if (!existingTransaction) {
+      console.log('🔄 Satış geri alındı - Prim kazancı ekleniyor');
+      const primTransaction = new PrimTransaction({
+        salesperson: sale.salesperson,
+        sale: sale._id,
+        primPeriod: sale.primPeriod,
+        transactionType: 'kazanç',
+        amount: sale.primAmount,
+        description: `${sale.contractNo} sözleşme geri alma primi`,
+        createdBy: req.user._id
+      });
+      await primTransaction.save();
+    } else {
+      console.log('⚠️ Prim transaction zaten mevcut, tekrar eklenmedi');
+    }
 
     const updatedSale = await Sale.findById(sale._id)
       .populate('salesperson', 'name email')
