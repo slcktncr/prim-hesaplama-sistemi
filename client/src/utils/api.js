@@ -51,6 +51,7 @@ export const salesAPI = {
   deleteSale: (id) => API.delete(`/sales/${id}`),
   updateNotes: (id, notes) => API.put(`/sales/${id}/notes`, { notes }),
   deleteNotes: (id) => API.delete(`/sales/${id}/notes`),
+  convertToSale: (id, saleData) => API.put(`/sales/${id}/convert-to-sale`, saleData),
 };
 
 // Prims API calls

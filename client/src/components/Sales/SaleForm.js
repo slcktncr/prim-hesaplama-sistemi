@@ -21,7 +21,9 @@ const SaleForm = () => {
     blockNo: '',
     apartmentNo: '',
     periodNo: '',
+    saleType: 'satis', // 'kapora' veya 'satis'
     saleDate: '',
+    kaporaDate: '',
     contractNo: '',
     listPrice: '',
     activitySalePrice: '',
@@ -77,7 +79,9 @@ const SaleForm = () => {
           blockNo: sale.blockNo || '',
           apartmentNo: sale.apartmentNo || '',
           periodNo: sale.periodNo || '',
+          saleType: sale.saleType || 'satis',
           saleDate: sale.saleDate ? new Date(sale.saleDate).toISOString().split('T')[0] : '',
+          kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toISOString().split('T')[0] : '',
           contractNo: sale.contractNo || '',
           listPrice: sale.listPrice?.toString() || '',
           activitySalePrice: sale.activitySalePrice?.toString() || '',
@@ -183,8 +187,15 @@ const SaleForm = () => {
       newErrors.periodNo = 'Dönem no gereklidir';
     }
 
-    if (!validateRequired(formData.saleDate)) {
-      newErrors.saleDate = 'Satış tarihi gereklidir';
+    // Satış tipine göre tarih validasyonu
+    if (formData.saleType === 'satis') {
+      if (!validateRequired(formData.saleDate)) {
+        newErrors.saleDate = 'Satış tarihi gereklidir';
+      }
+    } else {
+      if (!validateRequired(formData.kaporaDate)) {
+        newErrors.kaporaDate = 'Kapora tarihi gereklidir';
+      }
     }
 
     if (!validateRequired(formData.contractNo)) {
@@ -193,16 +204,19 @@ const SaleForm = () => {
       newErrors.contractNo = 'Sözleşme no tam olarak 6 hane olmalıdır';
     }
 
-    if (!validatePositiveNumber(formData.listPrice)) {
-      newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
-    }
+    // Fiyat validasyonu sadece normal satış için
+    if (formData.saleType === 'satis') {
+      if (!validatePositiveNumber(formData.listPrice)) {
+        newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
+      }
 
-    if (!validatePositiveNumber(formData.activitySalePrice)) {
-      newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
-    }
+      if (!validatePositiveNumber(formData.activitySalePrice)) {
+        newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
+      }
 
-    if (!validateRequired(formData.paymentType)) {
-      newErrors.paymentType = 'Ödeme tipi seçiniz';
+      if (!validateRequired(formData.paymentType)) {
+        newErrors.paymentType = 'Ödeme tipi seçiniz';
+      }
     }
 
     // Giriş tarihi validasyonu (opsiyonel ama format kontrolü)
@@ -298,7 +312,7 @@ const SaleForm = () => {
             <Card.Body>
               <Form onSubmit={handleSubmit}>
                 <Row>
-                  <Col md={6}>
+                  <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>Müşteri Ad Soyad *</Form.Label>
                       <Form.Control
@@ -312,6 +326,30 @@ const SaleForm = () => {
                       <Form.Control.Feedback type="invalid">
                         {errors.customerName}
                       </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Satış Türü *</Form.Label>
+                      <Form.Select
+                        name="saleType"
+                        value={formData.saleType}
+                        onChange={handleChange}
+                        isInvalid={!!errors.saleType}
+                        disabled={isEdit} // Edit modunda değiştirilemez
+                      >
+                        <option value="satis">Normal Satış</option>
+                        <option value="kapora">Kapora Durumu</option>
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.saleType}
+                      </Form.Control.Feedback>
+                      <Form.Text className="text-muted">
+                        {formData.saleType === 'kapora' 
+                          ? 'Kapora durumunda prim hesaplanmaz' 
+                          : 'Normal satışta prim hesaplanır'
+                        }
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={3}>
@@ -367,16 +405,18 @@ const SaleForm = () => {
                   </Col>
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Satış Tarihi *</Form.Label>
+                      <Form.Label>
+                        {formData.saleType === 'kapora' ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
+                      </Form.Label>
                       <Form.Control
                         type="date"
-                        name="saleDate"
-                        value={formData.saleDate}
+                        name={formData.saleType === 'kapora' ? 'kaporaDate' : 'saleDate'}
+                        value={formData.saleType === 'kapora' ? formData.kaporaDate : formData.saleDate}
                         onChange={handleChange}
-                        isInvalid={!!errors.saleDate}
+                        isInvalid={!!(errors.saleDate || errors.kaporaDate)}
                       />
                       <Form.Control.Feedback type="invalid">
-                        {errors.saleDate}
+                        {errors.saleDate || errors.kaporaDate}
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
@@ -526,44 +566,60 @@ const SaleForm = () => {
                   </Col>
                 </Row>
 
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Liste Fiyatı (₺) *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        name="listPrice"
-                        value={formData.listPrice}
-                        onChange={handleChange}
-                        isInvalid={!!errors.listPrice}
-                        placeholder="0.00"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.listPrice}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        name="activitySalePrice"
-                        value={formData.activitySalePrice}
-                        onChange={handleChange}
-                        isInvalid={!!errors.activitySalePrice}
-                        placeholder="0.00"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.activitySalePrice}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
+                {/* Fiyat Alanları - Sadece Normal Satış İçin */}
+                {formData.saleType === 'satis' && (
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Liste Fiyatı (₺) *</Form.Label>
+                        <Form.Control
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          name="listPrice"
+                          value={formData.listPrice}
+                          onChange={handleChange}
+                          isInvalid={!!errors.listPrice}
+                          placeholder="0.00"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.listPrice}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
+                        <Form.Control
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          name="activitySalePrice"
+                          value={formData.activitySalePrice}
+                          onChange={handleChange}
+                          isInvalid={!!errors.activitySalePrice}
+                          placeholder="0.00"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.activitySalePrice}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Kapora Durumu Bilgilendirmesi */}
+                {formData.saleType === 'kapora' && (
+                  <Row>
+                    <Col md={12}>
+                      <Alert variant="info" className="mb-3">
+                        <strong>Kapora Durumu:</strong> Bu kayıt kapora olarak işaretlenmiştir. 
+                        Fiyat bilgileri ve prim hesaplama yapılmayacaktır. 
+                        Daha sonra "Satışa Dönüştür" seçeneği ile normal satışa çevirebilirsiniz.
+                      </Alert>
+                    </Col>
+                  </Row>
+                )}
 
                 {/* Notlar Alanı */}
                 <Row>

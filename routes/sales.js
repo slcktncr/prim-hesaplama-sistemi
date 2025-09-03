@@ -43,11 +43,14 @@ router.post('/', auth, [
   body('blockNo').trim().notEmpty().withMessage('Blok no gereklidir'),
   body('apartmentNo').trim().notEmpty().withMessage('Daire no gereklidir'),
   body('periodNo').trim().notEmpty().withMessage('Dönem no gereklidir'),
-  body('saleDate').isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
   body('contractNo').trim().isLength({ min: 6, max: 6 }).withMessage('Sözleşme no tam olarak 6 hane olmalıdır'),
-  body('listPrice').isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
-  body('activitySalePrice').isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
-  body('paymentType').isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
+  body('saleType').isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
+  // Koşullu validasyonlar
+  body('saleDate').if(body('saleType').equals('satis')).isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
+  body('kaporaDate').if(body('saleType').equals('kapora')).isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
+  body('listPrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
+  body('activitySalePrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
+  body('paymentType').if(body('saleType').equals('satis')).isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
 ], async (req, res) => {
   try {
     console.log('🔍 Sale POST request received');
@@ -61,8 +64,9 @@ router.post('/', auth, [
     }
 
     const {
-      customerName, blockNo, apartmentNo, periodNo, saleDate,
-      contractNo, listPrice, activitySalePrice, paymentType
+      customerName, blockNo, apartmentNo, periodNo, saleDate, kaporaDate,
+      contractNo, listPrice, activitySalePrice, paymentType, saleType,
+      entryDate, exitDate, notes
     } = req.body;
 
     // Sözleşme no kontrolü
@@ -71,68 +75,94 @@ router.post('/', auth, [
       return res.status(400).json({ message: 'Bu sözleşme numarası ile kayıtlı satış bulunmaktadır' });
     }
 
-    // Aktif prim oranını al
-    const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!currentPrimRate) {
-      return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+    let currentPrimRate, primPeriodId, listPriceNum, activitySalePriceNum, basePrimPrice, primAmount;
+
+    // Kapora değilse prim hesapla
+    if (saleType === 'satis') {
+      // Aktif prim oranını al
+      currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+      if (!currentPrimRate) {
+        return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+      }
+
+      // Prim dönemini belirle
+      primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
+
+      // Prim hesaplama
+      listPriceNum = parseFloat(listPrice);
+      activitySalePriceNum = parseFloat(activitySalePrice);
+      basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
+      primAmount = (basePrimPrice * currentPrimRate.rate) / 100;
+
+      console.log('💰 Prim hesaplama:');
+      console.log('Liste fiyatı:', listPriceNum);
+      console.log('Aktivite fiyatı:', activitySalePriceNum);
+      console.log('Base prim fiyatı:', basePrimPrice);
+      console.log('Prim oranı:', currentPrimRate.rate);
+      console.log('Hesaplanan prim:', primAmount);
+    } else {
+      // Kapora için prim dönemi belirle (kapora tarihine göre)
+      primPeriodId = await getOrCreatePrimPeriod(kaporaDate, req.user._id);
+      primAmount = 0; // Kapora için prim yok
+      console.log('🏷️ Kapora kaydı - Prim hesaplanmadı');
     }
 
-    // Prim dönemini belirle
-    const primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
-
-    // Prim hesaplama
-    const listPriceNum = parseFloat(listPrice);
-    const activitySalePriceNum = parseFloat(activitySalePrice);
-    const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
-    const primAmount = (basePrimPrice * currentPrimRate.rate) / 100;
-
-    console.log('💰 Prim hesaplama:');
-    console.log('Liste fiyatı:', listPriceNum);
-    console.log('Aktivite fiyatı:', activitySalePriceNum);
-    console.log('Base prim fiyatı:', basePrimPrice);
-    console.log('Prim oranı:', currentPrimRate.rate);
-    console.log('Hesaplanan prim:', primAmount);
-
     // Yeni satış oluştur
-    const sale = new Sale({
+    const saleData = {
       customerName,
       blockNo,
       apartmentNo,
       periodNo,
-      saleDate,
       contractNo,
-      listPrice: listPriceNum,
-      activitySalePrice: activitySalePriceNum,
-      paymentType,
+      saleType: saleType || 'satis',
       salesperson: req.user._id,
-      primRate: currentPrimRate.rate,
-      basePrimPrice,
+      primPeriod: primPeriodId,
       primAmount,
-      primPeriod: primPeriodId
-    });
+      entryDate,
+      exitDate,
+      notes
+    };
+
+    // Satış tipine göre farklı alanlar ekle
+    if (saleType === 'satis') {
+      saleData.saleDate = saleDate;
+      saleData.listPrice = listPriceNum;
+      saleData.activitySalePrice = activitySalePriceNum;
+      saleData.paymentType = paymentType;
+      saleData.primRate = currentPrimRate.rate;
+      saleData.basePrimPrice = basePrimPrice;
+    } else {
+      saleData.kaporaDate = kaporaDate;
+    }
+
+    const sale = new Sale(saleData);
 
     await sale.save();
 
-    // Prim işlemi kaydet
-    const primTransaction = new PrimTransaction({
-      salesperson: req.user._id,
-      sale: sale._id,
-      primPeriod: primPeriodId,
-      transactionType: 'kazanç',
-      amount: sale.primAmount,
-      description: `${contractNo} sözleşme numaralı satış primi`,
-      createdBy: req.user._id
-    });
+    // Sadece normal satış için prim işlemi kaydet
+    if (saleType === 'satis') {
+      const primTransaction = new PrimTransaction({
+        salesperson: req.user._id,
+        sale: sale._id,
+        primPeriod: primPeriodId,
+        transactionType: 'kazanç',
+        amount: sale.primAmount,
+        description: `${contractNo} sözleşme numaralı satış primi`,
+        createdBy: req.user._id
+      });
 
-    await primTransaction.save();
+      await primTransaction.save();
+    }
 
     // Populate ile döndür
     const populatedSale = await Sale.findById(sale._id)
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
+    console.log(`✅ Yeni ${saleType === 'kapora' ? 'kapora' : 'satış'} oluşturuldu:`, sale._id);
+
     res.status(201).json({
-      message: 'Satış başarıyla eklendi',
+      message: `${saleType === 'kapora' ? 'Kapora' : 'Satış'} başarıyla oluşturuldu`,
       sale: populatedSale
     });
   } catch (error) {
@@ -603,6 +633,91 @@ router.delete('/:id/notes', auth, async (req, res) => {
     res.json({ message: 'Not başarıyla silindi' });
   } catch (error) {
     console.error('❌ Delete notes error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/sales/:id/convert-to-sale
+// @desc    Kaporayı satışa dönüştür
+// @access  Private (sadece admin veya satışı yapan temsilci)
+router.put('/:id/convert-to-sale', auth, async (req, res) => {
+  try {
+    const { saleDate, listPrice, activitySalePrice, paymentType } = req.body;
+    
+    // Validasyonlar
+    if (!saleDate || !listPrice || !activitySalePrice || !paymentType) {
+      return res.status(400).json({ message: 'Tüm satış bilgileri gereklidir' });
+    }
+
+    if (parseFloat(listPrice) <= 0 || parseFloat(activitySalePrice) <= 0) {
+      return res.status(400).json({ message: 'Fiyatlar sıfırdan büyük olmalıdır' });
+    }
+
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    if (sale.saleType !== 'kapora') {
+      return res.status(400).json({ message: 'Bu satış zaten normal satış durumunda' });
+    }
+
+    // Sadece admin veya satışı yapan temsilci dönüştürebilir
+    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Bu kaporayı dönüştürme yetkiniz yok' });
+    }
+
+    // Mevcut prim oranını al
+    const currentPrimRate = await PrimRate.findOne().sort({ createdAt: -1 });
+    if (!currentPrimRate) {
+      return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+    }
+
+    // Prim hesaplama
+    const listPriceNum = parseFloat(listPrice);
+    const activitySalePriceNum = parseFloat(activitySalePrice);
+    const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
+    const primAmount = (basePrimPrice * currentPrimRate.rate) / 100;
+
+    // Satışı güncelle
+    sale.saleType = 'satis';
+    sale.saleDate = new Date(saleDate);
+    sale.listPrice = listPriceNum;
+    sale.activitySalePrice = activitySalePriceNum;
+    sale.paymentType = paymentType;
+    sale.primRate = currentPrimRate.rate;
+    sale.basePrimPrice = basePrimPrice;
+    sale.primAmount = primAmount;
+
+    await sale.save();
+
+    // Prim transaction oluştur
+    const PrimTransaction = require('../models/PrimTransaction');
+    const primTransaction = new PrimTransaction({
+      sale: sale._id,
+      salesperson: sale.salesperson,
+      primPeriod: sale.primPeriod,
+      transactionType: 'kazanç',
+      amount: primAmount,
+      description: `Kapora satışa dönüştürüldü - ${sale.contractNo}`,
+      createdBy: req.user._id
+    });
+    await primTransaction.save();
+
+    console.log(`🔄 Kapora satışa dönüştürüldü - Sözleşme: ${sale.contractNo}, Prim: ${primAmount} TL`);
+
+    res.json({
+      message: 'Kapora başarıyla satışa dönüştürüldü',
+      sale: {
+        _id: sale._id,
+        contractNo: sale.contractNo,
+        customerName: sale.customerName,
+        saleType: sale.saleType,
+        primAmount: sale.primAmount
+      }
+    });
+  } catch (error) {
+    console.error('❌ Convert to sale error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

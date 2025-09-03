@@ -40,9 +40,11 @@ import {
   getPaymentTypeClass,
   debounce 
 } from '../../utils/helpers';
-import Loading from '../Common/Loading';
+
 import TransferModal from './TransferModal';
 import NotesModal from './NotesModal';
+import ConvertToSaleModal from './ConvertToSaleModal';
+import Loading from '../Common/Loading';
 
 const SalesList = () => {
   const [sales, setSales] = useState([]);
@@ -69,6 +71,7 @@ const SalesList = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
 
   const { user } = useAuth();
@@ -166,6 +169,11 @@ const SalesList = () => {
   const openNotesModal = (sale) => {
     setSelectedSale(sale);
     setShowNotesModal(true);
+  };
+
+  const openConvertModal = (sale) => {
+    setSelectedSale(sale);
+    setShowConvertModal(true);
   };
 
   const handleDeleteSale = async (sale) => {
@@ -351,7 +359,8 @@ const SalesList = () => {
                     <th>Müşteri</th>
                     <th>Konum</th>
                     <th>Sözleşme No</th>
-                    <th>Satış Tarihi</th>
+                    <th>Tür</th>
+                    <th>Tarih</th>
                     <th>Fiyatlar</th>
                     <th>Prim</th>
                     <th>Durum</th>
@@ -383,16 +392,37 @@ const SalesList = () => {
                         <code>{sale.contractNo}</code>
                       </td>
                       <td>
-                        {formatDate(sale.saleDate)}
+                        <Badge 
+                          bg={sale.saleType === 'kapora' ? 'warning' : 'success'} 
+                          className="mb-1"
+                        >
+                          {sale.saleType === 'kapora' ? 'Kapora' : 'Satış'}
+                        </Badge>
                       </td>
                       <td>
-                        <div>
-                          <div>Liste: {formatCurrency(sale.listPrice)}</div>
-                          <div>Aktivite: {formatCurrency(sale.activitySalePrice)}</div>
-                          <Badge bg={getPaymentTypeClass(sale.paymentType)} className="mt-1">
-                            {sale.paymentType}
-                          </Badge>
-                        </div>
+                        {sale.saleType === 'kapora' 
+                          ? formatDate(sale.kaporaDate)
+                          : formatDate(sale.saleDate)
+                        }
+                        <br />
+                        <small className="text-muted">
+                          {sale.saleType === 'kapora' ? 'Kapora' : 'Satış'} Tarihi
+                        </small>
+                      </td>
+                      <td>
+                        {sale.saleType === 'kapora' ? (
+                          <div className="text-muted">
+                            <small>Kapora - Fiyat Bilgisi Yok</small>
+                          </div>
+                        ) : (
+                          <div>
+                            <div>Liste: {formatCurrency(sale.listPrice)}</div>
+                            <div>Aktivite: {formatCurrency(sale.activitySalePrice)}</div>
+                            <Badge bg={getPaymentTypeClass(sale.paymentType)} className="mt-1">
+                              {sale.paymentType}
+                            </Badge>
+                          </div>
+                        )}
                       </td>
                       <td>
                         <div>
@@ -477,6 +507,17 @@ const SalesList = () => {
                               <Dropdown.Item onClick={() => openTransferModal(sale)}>
                                 <FiUser className="me-2" />
                                 Transfer Et
+                              </Dropdown.Item>
+                            )}
+
+                            {/* Satışa Dönüştür - Sadece kapora için */}
+                            {sale.saleType === 'kapora' && sale.status === 'aktif' && (isAdmin || sale.salesperson?._id === user?._id) && (
+                              <Dropdown.Item 
+                                onClick={() => openConvertModal(sale)}
+                                className="text-primary"
+                              >
+                                <FiRefreshCw className="me-2" />
+                                Satışa Dönüştür
                               </Dropdown.Item>
                             )}
 
@@ -627,6 +668,20 @@ const SalesList = () => {
           onSuccess={() => {
             fetchSales();
             setShowNotesModal(false);
+            setSelectedSale(null);
+          }}
+        />
+      )}
+
+      {/* Convert to Sale Modal */}
+      {showConvertModal && (
+        <ConvertToSaleModal
+          show={showConvertModal}
+          onHide={() => setShowConvertModal(false)}
+          sale={selectedSale}
+          onSuccess={() => {
+            fetchSales();
+            setShowConvertModal(false);
             setSelectedSale(null);
           }}
         />
