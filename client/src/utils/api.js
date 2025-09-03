@@ -82,6 +82,7 @@ export const usersAPI = {
   approveUser: (id) => API.put(`/users/${id}/approve`),
   rejectUser: (id) => API.delete(`/users/${id}/reject`),
   getSalespeople: () => API.get('/users/salespeople'),
+  getAllUsers: () => API.get('/users/all-users'),
   changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
 };
 

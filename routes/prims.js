@@ -140,6 +140,7 @@ router.get('/transactions', auth, async (req, res) => {
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
     } else if (salesperson) {
+      // Temsilci ID'si direkt olarak gönderilir
       query.salesperson = salesperson;
     }
     
@@ -184,12 +185,19 @@ router.get('/earnings', auth, async (req, res) => {
     const { period, salesperson } = req.query;
     console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
     
+    // Temsilci arama debug
+    if (salesperson && req.user.role === 'admin') {
+      const selectedUser = await User.findById(salesperson).select('name _id role');
+      console.log('👤 Selected user for filter:', selectedUser);
+    }
+    
     let query = {};
     
     // Admin değilse sadece kendi hakedişini görsün
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
     } else if (salesperson) {
+      // Temsilci ID'si direkt olarak gönderilir
       query.salesperson = salesperson;
     }
     

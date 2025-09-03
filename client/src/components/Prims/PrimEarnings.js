@@ -21,7 +21,7 @@ import {
   FiDollarSign
 } from 'react-icons/fi';
 
-import { primsAPI } from '../../utils/api';
+import { primsAPI, usersAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
   formatCurrency, 
@@ -33,6 +33,7 @@ import Loading from '../Common/Loading';
 const PrimEarnings = () => {
   const [earnings, setEarnings] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -45,7 +46,10 @@ const PrimEarnings = () => {
 
   useEffect(() => {
     fetchPeriods();
-  }, []);
+    if (isAdmin) {
+      fetchUsers();
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     const debouncedFetch = debounce(fetchEarnings, 300);
@@ -73,6 +77,15 @@ const PrimEarnings = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getAllUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
     }
   };
 
@@ -145,12 +158,17 @@ const PrimEarnings = () => {
               <Col md={4}>
                 <Form.Group>
                   <Form.Label>Temsilci</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Temsilci adı..."
+                  <Form.Select
                     value={filters.salesperson}
                     onChange={(e) => handleFilterChange('salesperson', e.target.value)}
-                  />
+                  >
+                    <option value="">Tüm Temsilciler</option>
+                    {users.map(user => (
+                      <option key={user._id} value={user._id}>
+                        {user.name} {user.role === 'admin' && '(Admin)'}
+                      </option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
             )}

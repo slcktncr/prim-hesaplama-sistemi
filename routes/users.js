@@ -40,6 +40,25 @@ router.get('/salespeople', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/users/all-users
+// @desc    Get all active users (for filtering)
+// @access  Private (Admin only)
+router.get('/all-users', [auth, adminAuth], async (req, res) => {
+  try {
+    const users = await User.find({ 
+      isActive: true,
+      isApproved: true
+    })
+      .select('name email role')
+      .sort({ name: 1 });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // @route   GET /api/users/pending
 // @desc    Get pending approval users
 // @access  Private (Admin only)
