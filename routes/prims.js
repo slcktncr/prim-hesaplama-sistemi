@@ -182,6 +182,7 @@ router.get('/transactions', auth, async (req, res) => {
 router.get('/earnings', auth, async (req, res) => {
   try {
     const { period, salesperson } = req.query;
+    console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
     
     let query = {};
     
@@ -195,6 +196,24 @@ router.get('/earnings', auth, async (req, res) => {
     // Dönem filtresi
     if (period) {
       query.primPeriod = period;
+    }
+    
+    console.log('📊 Final query:', query);
+
+    // Önce toplam PrimTransaction sayısını kontrol et
+    const totalTransactions = await PrimTransaction.countDocuments({});
+    const filteredTransactions = await PrimTransaction.countDocuments(query);
+    console.log('💾 Total PrimTransactions in DB:', totalTransactions);
+    console.log('🔍 Filtered PrimTransactions:', filteredTransactions);
+
+    // Dönem bilgisi debug
+    if (period) {
+      const periodDoc = await PrimPeriod.findById(period);
+      console.log('📅 Selected period doc:', periodDoc);
+      
+      // Bu döneme ait transaction'ları kontrol et
+      const periodTransactions = await PrimTransaction.find({ primPeriod: period }).limit(3);
+      console.log('🔗 Sample transactions for this period:', periodTransactions);
     }
 
     // Aggregate pipeline ile hakedişleri hesapla
@@ -254,6 +273,9 @@ router.get('/earnings', auth, async (req, res) => {
         $sort: { 'primPeriod.year': -1, 'primPeriod.month': -1, 'salesperson.name': 1 }
       }
     ]);
+
+    console.log('✅ Earnings result count:', earnings.length);
+    console.log('📋 First earning sample:', earnings[0]);
 
     res.json(earnings);
   } catch (error) {
