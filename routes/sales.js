@@ -80,6 +80,19 @@ router.post('/', auth, [
     // Prim dönemini belirle
     const primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
 
+    // Prim hesaplama
+    const listPriceNum = parseFloat(listPrice);
+    const activitySalePriceNum = parseFloat(activitySalePrice);
+    const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
+    const primAmount = (basePrimPrice * currentPrimRate.rate) / 100;
+
+    console.log('💰 Prim hesaplama:');
+    console.log('Liste fiyatı:', listPriceNum);
+    console.log('Aktivite fiyatı:', activitySalePriceNum);
+    console.log('Base prim fiyatı:', basePrimPrice);
+    console.log('Prim oranı:', currentPrimRate.rate);
+    console.log('Hesaplanan prim:', primAmount);
+
     // Yeni satış oluştur
     const sale = new Sale({
       customerName,
@@ -88,11 +101,13 @@ router.post('/', auth, [
       periodNo,
       saleDate,
       contractNo,
-      listPrice: parseFloat(listPrice),
-      activitySalePrice: parseFloat(activitySalePrice),
+      listPrice: listPriceNum,
+      activitySalePrice: activitySalePriceNum,
       paymentType,
       salesperson: req.user._id,
       primRate: currentPrimRate.rate,
+      basePrimPrice,
+      primAmount,
       primPeriod: primPeriodId
     });
 
