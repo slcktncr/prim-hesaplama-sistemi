@@ -429,7 +429,6 @@ const SaleForm = () => {
                         value={formData.blockNo}
                         onChange={handleChange}
                         isInvalid={!!errors.blockNo}
-                        placeholder="A1"
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.blockNo}
@@ -445,7 +444,6 @@ const SaleForm = () => {
                         value={formData.apartmentNo}
                         onChange={handleChange}
                         isInvalid={!!errors.apartmentNo}
-                        placeholder="12"
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.apartmentNo}
