@@ -27,10 +27,18 @@ const Sidebar = () => {
       <div className="sidebar-logo">
         <div className="logo-container">
           <div className="logo-image">
-            <div className="logo-mola">
-              <span className="logo-m">M</span>
-              <span className="logo-circle">O</span>
-              <span className="logo-la">LA</span>
+            <img 
+              src="/mola-logo.png" 
+              alt="MOLA Logo" 
+              className="logo-img"
+              onError={(e) => {
+                // Eğer logo yüklenemezse fallback göster
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div className="logo-placeholder-modern" style={{ display: 'none' }}>
+              <div className="mola-text">MOLA</div>
             </div>
           </div>
           <div className="logo-info">

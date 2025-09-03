@@ -137,15 +137,29 @@
   padding: 8px;
 }
 
-.logo-mola {
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.logo-placeholder-modern {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -1px;
+  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+  border-radius: 6px;
+}
+
+.mola-text {
+  color: white;
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .logo-m {
