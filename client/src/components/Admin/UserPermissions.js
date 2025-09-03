@@ -126,3 +126,148 @@ const UserPermissions = () => {
           <div className="d-flex align-items-center">
             <FiUser className="me-2" />
             <span>Satış Temsilcileri ({users.length})</span>
+          </div>
+        </Card.Header>
+        <Card.Body>
+          {users.length === 0 ? (
+            <Alert variant="info" className="mb-0">
+              Henüz aktif satış temsilcisi bulunmamaktadır.
+            </Alert>
+          ) : (
+            <Table responsive striped hover>
+              <thead>
+                <tr>
+                  <th>Kullanıcı</th>
+                  <th>E-posta</th>
+                  <th>Tüm Satışlar</th>
+                  <th>Tüm Raporlar</th>
+                  <th>Tüm Primler</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user._id}>
+                    <td>
+                      <div>
+                        <strong>{user.name}</strong>
+                        <br />
+                        <small className="text-muted">Satış Temsilcisi</small>
+                      </div>
+                    </td>
+                    <td>{user.email}</td>
+                    <td>{getPermissionBadge(user.permissions?.canViewAllSales)}</td>
+                    <td>{getPermissionBadge(user.permissions?.canViewAllReports)}</td>
+                    <td>{getPermissionBadge(user.permissions?.canViewAllPrims)}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => handleEditPermissions(user)}
+                      >
+                        <FiSettings className="me-1" />
+                        Yetkileri Düzenle
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Edit Permissions Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FiSettings className="me-2" />
+            Kullanıcı Yetkileri - {selectedUser?.name}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            <Col md={6}>
+              <h6 className="mb-3">Genel Yetkiler</h6>
+              <Form.Check
+                type="switch"
+                id="canViewAllSales"
+                label="Tüm Satışları Görüntüleme"
+                checked={permissions.canViewAllSales || false}
+                onChange={(e) => handlePermissionChange('canViewAllSales', e.target.checked)}
+                className="mb-2"
+              />
+              <Form.Check
+                type="switch"
+                id="canViewAllReports"
+                label="Tüm Raporları Görüntüleme"
+                checked={permissions.canViewAllReports || false}
+                onChange={(e) => handlePermissionChange('canViewAllReports', e.target.checked)}
+                className="mb-2"
+              />
+              <Form.Check
+                type="switch"
+                id="canViewAllPrims"
+                label="Tüm Primleri Görüntüleme"
+                checked={permissions.canViewAllPrims || false}
+                onChange={(e) => handlePermissionChange('canViewAllPrims', e.target.checked)}
+                className="mb-2"
+              />
+            </Col>
+            <Col md={6}>
+              <h6 className="mb-3">Kişisel Yetkiler</h6>
+              <Form.Check
+                type="switch"
+                id="canViewDashboard"
+                label="Dashboard Erişimi"
+                checked={permissions.canViewDashboard !== false}
+                onChange={(e) => handlePermissionChange('canViewDashboard', e.target.checked)}
+                className="mb-2"
+              />
+              <Form.Check
+                type="switch"
+                id="canManageOwnSales"
+                label="Kendi Satışlarını Yönetme"
+                checked={permissions.canManageOwnSales !== false}
+                onChange={(e) => handlePermissionChange('canManageOwnSales', e.target.checked)}
+                className="mb-2"
+              />
+              <Form.Check
+                type="switch"
+                id="canViewOwnReports"
+                label="Kendi Raporlarını Görüntüleme"
+                checked={permissions.canViewOwnReports !== false}
+                onChange={(e) => handlePermissionChange('canViewOwnReports', e.target.checked)}
+                className="mb-2"
+              />
+              <Form.Check
+                type="switch"
+                id="canViewOwnPrims"
+                label="Kendi Primlerini Görüntüleme"
+                checked={permissions.canViewOwnPrims !== false}
+                onChange={(e) => handlePermissionChange('canViewOwnPrims', e.target.checked)}
+                className="mb-2"
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            <FiX className="me-1" />
+            İptal
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleSavePermissions}
+            disabled={saving}
+          >
+            <FiSave className="me-1" />
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default UserPermissions;
