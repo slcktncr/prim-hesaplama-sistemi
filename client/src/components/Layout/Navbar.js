@@ -1,13 +1,23 @@
 import React from 'react';
 import { Navbar as BSNavbar, Nav, Dropdown, Container } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiUser, FiLogOut, FiSettings, FiShield } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/profile');
   };
 
   const getUserInitials = (name) => {
@@ -67,12 +77,12 @@ const Navbar = () => {
                 </div>
               </div>
               
-              <Dropdown.Item href="#profile">
+              <Dropdown.Item onClick={handleProfileClick}>
                 <FiUser className="me-2" />
                 Profil Ayarları
               </Dropdown.Item>
               
-              <Dropdown.Item href="#settings">
+              <Dropdown.Item onClick={handleSettingsClick}>
                 <FiSettings className="me-2" />
                 Hesap Ayarları
               </Dropdown.Item>

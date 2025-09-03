@@ -18,6 +18,8 @@ import Reports from './components/Reports/Reports';
 import PendingUsers from './components/Admin/PendingUsers';
 import ActiveUsers from './components/Admin/ActiveUsers';
 import PaymentMethods from './components/Admin/PaymentMethods';
+import UserPermissions from './components/Admin/UserPermissions';
+import Profile from './components/Profile/Profile';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -140,6 +142,14 @@ function AppContent() {
                         <PaymentMethods />
                       </ProtectedRoute>
                     } />
+                    <Route path="/admin/user-permissions" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <UserPermissions />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Profile Route */}
+                    <Route path="/profile" element={<Profile />} />
                     
                     {/* 404 */}
                     <Route path="*" element={<Navigate to="/dashboard" />} />

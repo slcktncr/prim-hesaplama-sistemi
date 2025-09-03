@@ -136,6 +136,73 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   PUT /api/auth/profile
+// @desc    Kullanıcı profil bilgilerini güncelle
+// @access  Private
+router.put('/profile', auth, [
+  body('firstName').trim().notEmpty().withMessage('Ad gereklidir'),
+  body('lastName').trim().notEmpty().withMessage('Soyad gereklidir'),
+  body('email').isEmail().withMessage('Geçerli bir email giriniz'),
+  body('newPassword').optional().isLength({ min: 6 }).withMessage('Yeni şifre en az 6 karakter olmalıdır')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { firstName, lastName, email, currentPassword, newPassword } = req.body;
+
+    // Kullanıcıyı bul
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Email değişikliği varsa, başka kullanıcı tarafından kullanılıp kullanılmadığını kontrol et
+    if (email !== user.email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: user._id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Bu email başka bir kullanıcı tarafından kullanılıyor' });
+      }
+    }
+
+    // Şifre değişikliği varsa
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: 'Şifre değiştirmek için mevcut şifrenizi girmelisiniz' });
+      }
+
+      // Mevcut şifre kontrolü
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Mevcut şifre yanlış' });
+      }
+
+      user.password = newPassword; // Pre-save hook otomatik hash'leyecek
+    }
+
+    // Profil bilgilerini güncelle
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.name = `${firstName} ${lastName}`;
+    user.email = email;
+
+    await user.save();
+
+    // Güncellenmiş kullanıcı bilgilerini döndür (şifre hariç)
+    const updatedUser = await User.findById(user._id).select('-password');
+
+    res.json({
+      message: 'Profil başarıyla güncellendi',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // @route   POST /api/auth/fix-admin
 // @desc    Fix existing admin account (temporary endpoint)
 // @access  Public (one-time use)
