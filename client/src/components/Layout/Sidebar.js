@@ -18,9 +18,16 @@ import {
   FiCreditCard
 } from 'react-icons/fi';
 
-const Sidebar = () => {
+const Sidebar = ({ onLinkClick }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+
+  // Link tıklanınca mobilde sidebar'ı kapat
+  const handleLinkClick = () => {
+    if (onLinkClick && window.innerWidth < 992) {
+      onLinkClick();
+    }
+  };
 
   return (
     <div className="sidebar">
@@ -50,7 +57,7 @@ const Sidebar = () => {
       </div>
 
       <Nav className="flex-column">
-        <LinkContainer to="/dashboard">
+        <LinkContainer to="/dashboard" onClick={handleLinkClick}>
           <Nav.Link>
             <FiHome className="me-2" />
             Dashboard
@@ -59,21 +66,21 @@ const Sidebar = () => {
 
         <div className="px-3 py-2 text-muted small">SATIŞLAR</div>
         
-        <LinkContainer to="/sales">
+        <LinkContainer to="/sales" onClick={handleLinkClick}>
           <Nav.Link>
             <FiShoppingBag className="me-2" />
             Satışlar
           </Nav.Link>
         </LinkContainer>
 
-        <LinkContainer to="/sales/new">
+        <LinkContainer to="/sales/new" onClick={handleLinkClick}>
           <Nav.Link>
             <FiPlus className="me-2" />
             Yeni Satış
           </Nav.Link>
         </LinkContainer>
 
-        <LinkContainer to="/sales/cancelled">
+        <LinkContainer to="/sales/cancelled" onClick={handleLinkClick}>
           <Nav.Link>
             <FiX className="me-2" />
             İptal Edilenler
@@ -82,14 +89,14 @@ const Sidebar = () => {
 
         <div className="px-3 py-2 text-muted small">PRİMLER</div>
 
-        <LinkContainer to="/prims/transactions">
+        <LinkContainer to="/prims/transactions" onClick={handleLinkClick}>
           <Nav.Link>
             <FiList className="me-2" />
             Prim İşlemleri
           </Nav.Link>
         </LinkContainer>
 
-        <LinkContainer to="/prims/earnings">
+        <LinkContainer to="/prims/earnings" onClick={handleLinkClick}>
           <Nav.Link>
             <FiDollarSign className="me-2" />
             Prim Hakedişleri
@@ -98,14 +105,14 @@ const Sidebar = () => {
 
         {isAdmin && (
           <>
-            <LinkContainer to="/prims/periods">
+            <LinkContainer to="/prims/periods" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiCalendar className="me-2" />
                 Prim Dönemleri
               </Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/prims/settings">
+            <LinkContainer to="/prims/settings" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiSettings className="me-2" />
                 Prim Ayarları
@@ -114,21 +121,21 @@ const Sidebar = () => {
 
             <div className="px-3 py-2 text-muted small mt-3">YÖNETİM</div>
             
-            <LinkContainer to="/admin/pending-users">
+            <LinkContainer to="/admin/pending-users" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiClock className="me-2" />
                 Onay Bekleyenler
               </Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/admin/active-users">
+            <LinkContainer to="/admin/active-users" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiUsers className="me-2" />
                 Aktif Kullanıcılar
               </Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/admin/payment-methods">
+            <LinkContainer to="/admin/payment-methods" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiCreditCard className="me-2" />
                 Ödeme Yöntemleri
@@ -139,7 +146,7 @@ const Sidebar = () => {
 
         <div className="px-3 py-2 text-muted small">RAPORLAR</div>
 
-        <LinkContainer to="/reports">
+        <LinkContainer to="/reports" onClick={handleLinkClick}>
           <Nav.Link>
             <FiBarChart2 className="me-2" />
             Raporlar
