@@ -24,7 +24,9 @@ import {
   FiMoreVertical,
   FiUser,
   FiDollarSign,
-  FiTrash2
+  FiTrash2,
+  FiFilter,
+  FiCalendar
 } from 'react-icons/fi';
 
 import { salesAPI, primsAPI } from '../../utils/api';
@@ -49,8 +51,12 @@ const SalesList = () => {
     search: '',
     period: '',
     page: 1,
-    limit: 10
+    limit: 10,
+    primStatus: '', // 'ödendi', 'ödenmedi', ''
+    startDate: '',
+    endDate: ''
   });
+  const [showFilters, setShowFilters] = useState(false);
   const [pagination, setPagination] = useState({
     totalPages: 1,
     currentPage: 1,
@@ -230,7 +236,14 @@ const SalesList = () => {
             <Col md={2}>
               <Form.Group>
                 <Form.Label>&nbsp;</Form.Label>
-                <div>
+                <div className="d-flex gap-2">
+                  <Button 
+                    variant="outline-primary" 
+                    onClick={() => setShowFilters(!showFilters)}
+                    size="sm"
+                  >
+                    <FiFilter />
+                  </Button>
                   <Button variant="outline-secondary" onClick={fetchSales} disabled={loading}>
                     <FiRefreshCw className={loading ? 'spin' : ''} />
                   </Button>
@@ -238,6 +251,70 @@ const SalesList = () => {
               </Form.Group>
             </Col>
           </Row>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <>
+              <hr />
+              <Row>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label>Prim Durumu</Form.Label>
+                    <Form.Select
+                      value={filters.primStatus}
+                      onChange={(e) => handleFilterChange('primStatus', e.target.value)}
+                    >
+                      <option value="">Tüm Durumlar</option>
+                      <option value="ödendi">Prim Ödendi</option>
+                      <option value="ödenmedi">Prim Ödenmedi</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label>Başlangıç Tarihi</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={filters.startDate}
+                      onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label>Bitiş Tarihi</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={filters.endDate}
+                      onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label>&nbsp;</Form.Label>
+                    <div>
+                      <Button 
+                        variant="outline-warning" 
+                        size="sm"
+                        onClick={() => setFilters({
+                          search: '',
+                          period: '',
+                          page: 1,
+                          limit: 10,
+                          primStatus: '',
+                          startDate: '',
+                          endDate: ''
+                        })}
+                      >
+                        Filtreleri Temizle
+                      </Button>
+                    </div>
+                  </Form.Group>
+                </Col>
+              </Row>
+            </>
+          )}
         </Card.Body>
       </Card>
 

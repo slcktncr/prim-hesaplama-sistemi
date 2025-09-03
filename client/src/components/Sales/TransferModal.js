@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Alert } from 'react-bootstrap';
+import { Modal, Button, Form, Alert, Row, Col, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { salesAPI } from '../../utils/api';
+import { salesAPI, primsAPI } from '../../utils/api';
 import API from '../../utils/api';
 
 const TransferModal = ({ show, onHide, sale, onSuccess }) => {
   const [users, setUsers] = useState([]);
+  const [periods, setPeriods] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [changePeriod, setChangePeriod] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (show) {
       fetchUsers();
+      fetchPeriods();
+      setSelectedUser('');
+      setSelectedPeriod('');
+      setChangePeriod(false);
+      setError(null);
     }
   }, [show]);
 
@@ -23,6 +31,16 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
     } catch (error) {
       console.error('Users fetch error:', error);
       setError('Kullanıcılar yüklenirken hata oluştu');
+    }
+  };
+
+  const fetchPeriods = async () => {
+    try {
+      const response = await primsAPI.getPeriods();
+      setPeriods(response.data || []);
+    } catch (error) {
+      console.error('Periods fetch error:', error);
+      // Dönem yükleme hatası kritik değil, sessiz geç
     }
   };
 
@@ -37,10 +55,34 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
       return;
     }
 
+    if (changePeriod && !selectedPeriod) {
+      toast.error('Dönem değişikliği için lütfen bir dönem seçiniz');
+      return;
+    }
+
+    // Prim ödendi durumunda dönem değişikliğine izin verme
+    if (changePeriod && sale?.primStatus === 'ödendi') {
+      toast.error('Prim ödendi durumundaki satışların dönemi değiştirilemez');
+      return;
+    }
+
     setLoading(true);
     try {
-      await salesAPI.transferSale(sale._id, selectedUser);
-      toast.success('Satış başarıyla transfer edildi');
+      const transferData = {
+        newSalesperson: selectedUser
+      };
+
+      if (changePeriod && selectedPeriod) {
+        transferData.newPeriod = selectedPeriod;
+      }
+
+      await salesAPI.transferSale(sale._id, transferData);
+      
+      const message = changePeriod 
+        ? 'Satış başarıyla transfer edildi ve dönem değiştirildi'
+        : 'Satış başarıyla transfer edildi';
+      
+      toast.success(message);
       onSuccess();
     } catch (error) {
       console.error('Transfer error:', error);
@@ -83,26 +125,81 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
           </Alert>
         </div>
 
-        <Form.Group>
-          <Form.Label>Yeni Temsilci *</Form.Label>
-          <Form.Select
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-          >
-            <option value="">Temsilci seçiniz...</option>
-            {users.map(user => (
-              <option key={user._id} value={user._id}>
-                {user.name} ({user.email})
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
+        <Row>
+          <Col md={12}>
+            <Form.Group className="mb-3">
+              <Form.Label>Yeni Temsilci *</Form.Label>
+              <Form.Select
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+              >
+                <option value="">Temsilci seçiniz...</option>
+                {users.map(user => (
+                  <option key={user._id} value={user._id}>
+                    {user.name} ({user.email})
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <div className="mt-3">
-          <small className="text-muted">
-            <strong>Mevcut Temsilci:</strong> {sale?.salesperson?.name}
-          </small>
-        </div>
+        {/* Dönem Değiştirme Seçeneği - Sadece prim ödenmedi durumunda */}
+        {sale?.primStatus === 'ödenmedi' && (
+          <Row>
+            <Col md={12}>
+              <Form.Check
+                type="checkbox"
+                id="changePeriod"
+                label="Prim dönemini de değiştir"
+                checked={changePeriod}
+                onChange={(e) => setChangePeriod(e.target.checked)}
+                className="mb-3"
+              />
+            </Col>
+          </Row>
+        )}
+
+        {changePeriod && (
+          <Row>
+            <Col md={12}>
+              <Form.Group className="mb-3">
+                <Form.Label>Yeni Prim Dönemi *</Form.Label>
+                <Form.Select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  <option value="">Dönem seçiniz...</option>
+                  {periods.map(period => (
+                    <option key={period._id} value={period._id}>
+                      {period.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  Mevcut dönem: <strong>{sale?.primPeriod?.name}</strong>
+                </Form.Text>
+              </Form.Group>
+            </Col>
+          </Row>
+        )}
+
+        <Row>
+          <Col md={6}>
+            <small className="text-muted">
+              <strong>Mevcut Temsilci:</strong><br />
+              {sale?.salesperson?.name}
+            </small>
+          </Col>
+          <Col md={6}>
+            <small className="text-muted">
+              <strong>Prim Durumu:</strong><br />
+              <Badge bg={sale?.primStatus === 'ödendi' ? 'success' : 'warning'}>
+                {sale?.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi'}
+              </Badge>
+            </small>
+          </Col>
+        </Row>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

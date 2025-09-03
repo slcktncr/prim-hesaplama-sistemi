@@ -76,6 +76,15 @@ const Reports = () => {
             {!isAdmin && ` (${user?.name})`}
           </p>
         </div>
+        <div className="d-flex gap-2">
+          <Button 
+            variant="success" 
+            onClick={() => setShowExportModal(true)}
+          >
+            <FiDownload className="me-2" />
+            Rapor İndir
+          </Button>
+        </div>
       </div>
 
       {/* Info Alert for Non-Admin Users */}
@@ -180,7 +189,11 @@ const Reports = () => {
         
         {isAdmin && (
           <Col md={3}>
-            <Card className="text-center">
+            <Card 
+              className="text-center report-card" 
+              style={{ cursor: 'pointer' }}
+              onClick={() => setActiveTab('performance')}
+            >
               <Card.Body>
                 <FiTrendingUp size={32} className="text-success mb-2" />
                 <div className="h6">Performans</div>
@@ -193,7 +206,11 @@ const Reports = () => {
         )}
         
         <Col md={3}>
-          <Card className="text-center">
+          <Card 
+            className="text-center report-card" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setActiveTab('period-comparison')}
+          >
             <Card.Body>
               <FiCalendar size={32} className="text-info mb-2" />
               <div className="h6">Dönem Analizi</div>
@@ -205,7 +222,11 @@ const Reports = () => {
         </Col>
         
         <Col md={3}>
-          <Card className="text-center">
+          <Card 
+            className="text-center report-card" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setActiveTab('top-performers')}
+          >
             <Card.Body>
               <FiTarget size={32} className="text-warning mb-2" />
               <div className="h6">Liderlik</div>
@@ -216,6 +237,97 @@ const Reports = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Export Modal */}
+      <Modal show={showExportModal} onHide={() => setShowExportModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FiDownload className="me-2" />
+            Rapor İndir
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Dosya Formatı</Form.Label>
+                  <Form.Select 
+                    value={exportType} 
+                    onChange={(e) => setExportType(e.target.value)}
+                  >
+                    <option value="excel">Excel (.xlsx)</option>
+                    <option value="pdf">PDF (.pdf)</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Rapor Kapsamı</Form.Label>
+                  <Form.Select 
+                    value={exportScope} 
+                    onChange={(e) => setExportScope(e.target.value)}
+                  >
+                    <option value="all">Tüm Veriler</option>
+                    <option value="salesperson">Temsilci Bazında</option>
+                    <option value="period">Dönem Bazında</option>
+                    <option value="earnings">Hakediş Raporları</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {exportScope === 'salesperson' && (
+              <Form.Group className="mb-3">
+                <Form.Label>Temsilci Seçin</Form.Label>
+                <Form.Select 
+                  value={selectedSalesperson} 
+                  onChange={(e) => setSelectedSalesperson(e.target.value)}
+                >
+                  <option value="">Temsilci seçin...</option>
+                  <option value="all">Tüm Temsilciler</option>
+                  {/* Burada API'den temsilciler gelecek */}
+                </Form.Select>
+              </Form.Group>
+            )}
+
+            {exportScope === 'period' && (
+              <Form.Group className="mb-3">
+                <Form.Label>Dönem Seçin</Form.Label>
+                <Form.Select 
+                  value={selectedPeriod} 
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  <option value="">Dönem seçin...</option>
+                  <option value="current">Mevcut Dönem</option>
+                  <option value="all">Tüm Dönemler</option>
+                  {/* Burada API'den dönemler gelecek */}
+                </Form.Select>
+              </Form.Group>
+            )}
+
+            <Alert variant="info" className="mb-0">
+              <FiFileText className="me-2" />
+              <strong>Rapor İçeriği:</strong>
+              <ul className="mb-0 mt-2">
+                <li>Satış detayları ve prim hesaplamaları</li>
+                <li>Performans analizi ve karşılaştırmalar</li>
+                <li>İptal edilen satışlar ve kesintiler</li>
+                <li>Dönemsel hakediş özetleri</li>
+              </ul>
+            </Alert>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowExportModal(false)}>
+            İptal
+          </Button>
+          <Button variant="success" onClick={handleExport}>
+            <FiDownload className="me-2" />
+            {exportType === 'excel' ? 'Excel' : 'PDF'} İndir
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
