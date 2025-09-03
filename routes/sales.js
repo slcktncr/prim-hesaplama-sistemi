@@ -416,63 +416,83 @@ router.put('/:id/transfer', [auth, adminAuth], [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { newSalesperson } = req.body;
+    const { newSalesperson, newPeriod } = req.body;
 
     const sale = await Sale.findById(req.params.id);
     if (!sale) {
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
 
-    if (sale.salesperson.toString() === newSalesperson) {
+    if (sale.salesperson.toString() === newSalesperson && !newPeriod) {
       return res.status(400).json({ message: 'Satış zaten bu temsilciye ait' });
     }
 
     const oldSalesperson = sale.salesperson;
+    const oldPeriod = sale.primPeriod;
 
     // Transfer işlemi
     sale.transferredFrom = oldSalesperson;
     sale.salesperson = newSalesperson;
     sale.transferredAt = new Date();
     sale.transferredBy = req.user._id;
+
+    // Eğer yeni dönem seçildiyse ve prim ödenmemişse değiştir
+    if (newPeriod && sale.primStatus === 'ödenmedi') {
+      sale.primPeriod = newPeriod;
+    }
+
     await sale.save();
 
-    // Eski temsilciden kesinti
-    const deductionTransaction = new PrimTransaction({
-      salesperson: oldSalesperson,
-      sale: sale._id,
-      primPeriod: sale.primPeriod,
-      transactionType: 'transfer_giden',
-      amount: -sale.primAmount,
-      description: `${sale.contractNo} sözleşme transfer kesintisi`,
-      createdBy: req.user._id
-    });
-    await deductionTransaction.save();
+    // Sadece normal satışlar için prim transaction'ı oluştur
+    if (sale.saleType === 'satis') {
+      // Eski temsilciden kesinti
+      const deductionTransaction = new PrimTransaction({
+        salesperson: oldSalesperson,
+        sale: sale._id,
+        primPeriod: oldPeriod,
+        transactionType: 'transfer_giden',
+        amount: -sale.primAmount,
+        description: `${sale.contractNo} sözleşme transfer kesintisi`,
+        createdBy: req.user._id
+      });
+      await deductionTransaction.save();
 
-    // Yeni temsilciye ekleme
-    const additionTransaction = new PrimTransaction({
-      salesperson: newSalesperson,
-      sale: sale._id,
-      primPeriod: sale.primPeriod,
-      transactionType: 'transfer_gelen',
-      amount: sale.primAmount,
-      description: `${sale.contractNo} sözleşme transfer kazancı`,
-      createdBy: req.user._id,
-      relatedTransaction: deductionTransaction._id
-    });
-    await additionTransaction.save();
+      // Yeni temsilciye ekleme (yeni dönem varsa onu kullan)
+      const additionTransaction = new PrimTransaction({
+        salesperson: newSalesperson,
+        sale: sale._id,
+        primPeriod: newPeriod || sale.primPeriod,
+        transactionType: 'transfer_gelen',
+        amount: sale.primAmount,
+        description: `${sale.contractNo} sözleşme transfer kazancı`,
+        createdBy: req.user._id,
+        relatedTransaction: deductionTransaction._id
+      });
+      await additionTransaction.save();
+    }
 
     const updatedSale = await Sale.findById(sale._id)
       .populate('salesperson', 'name email')
       .populate('transferredFrom', 'name email')
       .populate('primPeriod', 'name');
 
+    const transferMessage = newPeriod && sale.primStatus === 'ödenmedi' 
+      ? 'Satış başarıyla transfer edildi ve prim dönemi değiştirildi'
+      : 'Satış başarıyla transfer edildi';
+
+    console.log(`🔄 Transfer tamamlandı - Sözleşme: ${sale.contractNo}, Eski: ${oldSalesperson}, Yeni: ${newSalesperson}${newPeriod ? ', Yeni dönem: ' + newPeriod : ''}`);
+
     res.json({
-      message: 'Satış başarıyla transfer edildi',
+      message: transferMessage,
       sale: updatedSale
     });
   } catch (error) {
-    console.error('Transfer sale error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Transfer sale error:', error);
+    console.error('Error details:', error.message);
+    res.status(500).json({ 
+      message: 'Transfer işlemi sırasında sunucu hatası oluştu',
+      error: error.message 
+    });
   }
 });
 
