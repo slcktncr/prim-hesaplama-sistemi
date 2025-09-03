@@ -18,7 +18,7 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await API.get('/api/users/salespeople');
+      const response = await API.get('/users/salespeople');
       setUsers(response.data || []);
     } catch (error) {
       console.error('Users fetch error:', error);

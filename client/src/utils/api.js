@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API base configuration
 const API = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000',
+  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api',
   timeout: 10000,
 });
 
@@ -34,41 +34,41 @@ API.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  login: (credentials) => API.post('/api/auth/login', credentials),
-  register: (userData) => API.post('/api/auth/register', userData),
-  getProfile: () => API.get('/api/auth/me'),
+  login: (credentials) => API.post('/auth/login', credentials),
+  register: (userData) => API.post('/auth/register', userData),
+  getProfile: () => API.get('/auth/me'),
 };
 
 // Sales API calls
 export const salesAPI = {
-  getSales: (params) => API.get('/api/sales', { params }),
-  createSale: (saleData) => API.post('/api/sales', saleData),
-  updateSale: (id, saleData) => API.put(`/api/sales/${id}`, saleData),
-  cancelSale: (id) => API.put(`/api/sales/${id}/cancel`),
-  restoreSale: (id) => API.put(`/api/sales/${id}/restore`),
-  transferSale: (id, newSalesperson) => API.put(`/api/sales/${id}/transfer`, { newSalesperson }),
-  updatePrimStatus: (id, primStatus) => API.put(`/api/sales/${id}/prim-status`, { primStatus }),
+  getSales: (params) => API.get('/sales', { params }),
+  createSale: (saleData) => API.post('/sales', saleData),
+  updateSale: (id, saleData) => API.put(`/sales/${id}`, saleData),
+  cancelSale: (id) => API.put(`/sales/${id}/cancel`),
+  restoreSale: (id) => API.put(`/sales/${id}/restore`),
+  transferSale: (id, newSalesperson) => API.put(`/sales/${id}/transfer`, { newSalesperson }),
+  updatePrimStatus: (id, primStatus) => API.put(`/sales/${id}/prim-status`, { primStatus }),
 };
 
 // Prims API calls
 export const primsAPI = {
-  getRate: () => API.get('/api/prims/rate'),
-  updateRate: (rate) => API.post('/api/prims/rate', { rate }),
-  getPeriods: () => API.get('/api/prims/periods'),
-  createPeriod: (periodData) => API.post('/api/prims/periods', periodData),
-  getTransactions: (params) => API.get('/api/prims/transactions', { params }),
-  getEarnings: (params) => API.get('/api/prims/earnings', { params }),
-  updateSalePeriod: (id, primPeriod) => API.put(`/api/prims/sales/${id}/period`, { primPeriod }),
+  getRate: () => API.get('/prims/rate'),
+  updateRate: (rate) => API.post('/prims/rate', { rate }),
+  getPeriods: () => API.get('/prims/periods'),
+  createPeriod: (periodData) => API.post('/prims/periods', periodData),
+  getTransactions: (params) => API.get('/prims/transactions', { params }),
+  getEarnings: (params) => API.get('/prims/earnings', { params }),
+  updateSalePeriod: (id, primPeriod) => API.put(`/prims/sales/${id}/period`, { primPeriod }),
 };
 
 // Reports API calls
 export const reportsAPI = {
-  getDashboard: () => API.get('/api/reports/dashboard'),
-  getSalesSummary: (params) => API.get('/api/reports/sales-summary', { params }),
-  getSalespersonPerformance: (params) => API.get('/api/reports/salesperson-performance', { params }),
-  getPeriodComparison: () => API.get('/api/reports/period-comparison'),
-  getTopPerformers: (params) => API.get('/api/reports/top-performers', { params }),
-  getDetailedReport: (params) => API.get('/api/reports/detailed-report', { params }),
+  getDashboard: () => API.get('/reports/dashboard'),
+  getSalesSummary: (params) => API.get('/reports/sales-summary', { params }),
+  getSalespersonPerformance: (params) => API.get('/reports/salesperson-performance', { params }),
+  getPeriodComparison: () => API.get('/reports/period-comparison'),
+  getTopPerformers: (params) => API.get('/reports/top-performers', { params }),
+  getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
 };
 
 export default API;
