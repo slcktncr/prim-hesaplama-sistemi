@@ -49,6 +49,8 @@ export const salesAPI = {
   transferSale: (id, newSalesperson) => API.put(`/sales/${id}/transfer`, { newSalesperson }),
   updatePrimStatus: (id, primStatus) => API.put(`/sales/${id}/prim-status`, { primStatus }),
   deleteSale: (id) => API.delete(`/sales/${id}`),
+  updateNotes: (id, notes) => API.put(`/sales/${id}/notes`, { notes }),
+  deleteNotes: (id) => API.delete(`/sales/${id}/notes`),
 };
 
 // Prims API calls

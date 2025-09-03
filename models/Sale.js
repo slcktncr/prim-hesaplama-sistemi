@@ -74,6 +74,27 @@ const saleSchema = new mongoose.Schema({
     }
   },
   
+  // Notlar sistemi
+  notes: {
+    type: String,
+    trim: true,
+    maxlength: 1000
+  },
+  notesAddedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  notesAddedAt: {
+    type: Date
+  },
+  notesUpdatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  notesUpdatedAt: {
+    type: Date
+  },
+  
   // Prim hesaplama bilgileri
   primAmount: {
     type: Number,

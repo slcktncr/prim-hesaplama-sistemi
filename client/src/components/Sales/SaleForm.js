@@ -9,6 +9,7 @@ import {
   formatCurrency 
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
+import { FiFileText, FiInfo } from 'react-icons/fi';
 
 const SaleForm = () => {
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ const SaleForm = () => {
     activitySalePrice: '',
     paymentType: 'Nakit',
     entryDate: '', // Giriş tarihi (gün/ay)
-    exitDate: ''   // Çıkış tarihi (gün/ay)
+    exitDate: '',  // Çıkış tarihi (gün/ay)
+    notes: ''      // Notlar
   });
 
   const [periods, setPeriods] = useState([]);
@@ -81,7 +83,8 @@ const SaleForm = () => {
           activitySalePrice: sale.activitySalePrice?.toString() || '',
           paymentType: sale.paymentType || 'Nakit',
           entryDate: sale.entryDate || '',
-          exitDate: sale.exitDate || ''
+          exitDate: sale.exitDate || '',
+          notes: sale.notes || ''
         });
       } else {
         toast.error('Satış bulunamadı');
@@ -106,23 +109,49 @@ const SaleForm = () => {
       }
     }
     
-    // Giriş-çıkış tarihi formatlaması
-    if (name === 'entryDate' || name === 'exitDate') {
-      let formattedValue = value.replace(/\D/g, ''); // Sadece rakamlar
-      if (formattedValue.length >= 2) {
-        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2, 4);
-      }
-      if (formattedValue.length > 5) {
-        formattedValue = formattedValue.slice(0, 5);
-      }
-      setFormData(prev => ({ ...prev, [name]: formattedValue }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear field error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Giriş tarihi için
+    if (name === 'entryDay' || name === 'entryMonth') {
+      const currentEntry = formData.entryDate || '/';
+      const [currentDay, currentMonth] = currentEntry.split('/');
+      
+      let newDay = name === 'entryDay' ? value : currentDay;
+      let newMonth = name === 'entryMonth' ? value : currentMonth;
+      
+      const newEntryDate = (newDay && newMonth) ? `${newDay}/${newMonth}` : '';
+      setFormData(prev => ({ ...prev, entryDate: newEntryDate }));
+      
+      // Clear error
+      if (errors.entryDate) {
+        setErrors(prev => ({ ...prev, entryDate: null }));
+      }
+    }
+    
+    // Çıkış tarihi için
+    if (name === 'exitDay' || name === 'exitMonth') {
+      const currentExit = formData.exitDate || '/';
+      const [currentDay, currentMonth] = currentExit.split('/');
+      
+      let newDay = name === 'exitDay' ? value : currentDay;
+      let newMonth = name === 'exitMonth' ? value : currentMonth;
+      
+      const newExitDate = (newDay && newMonth) ? `${newDay}/${newMonth}` : '';
+      setFormData(prev => ({ ...prev, exitDate: newExitDate }));
+      
+      // Clear error
+      if (errors.exitDate) {
+        setErrors(prev => ({ ...prev, exitDate: null }));
+      }
     }
   };
 
@@ -398,42 +427,100 @@ const SaleForm = () => {
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>Giriş Tarihi</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="entryDate"
-                        value={formData.entryDate}
-                        onChange={handleChange}
-                        placeholder="GG/AA (örn: 15/03)"
-                        pattern="[0-9]{2}/[0-9]{2}"
-                        maxLength={5}
-                        isInvalid={!!errors.entryDate}
-                      />
+                      <Row>
+                        <Col xs={6}>
+                          <Form.Select
+                            name="entryDay"
+                            value={formData.entryDate ? formData.entryDate.split('/')[0] || '' : ''}
+                            onChange={handleDateChange}
+                            isInvalid={!!errors.entryDate}
+                          >
+                            <option value="">Gün</option>
+                            {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                              <option key={day} value={day.toString().padStart(2, '0')}>
+                                {day}
+                              </option>
+                            ))}
+                          </Form.Select>
+                        </Col>
+                        <Col xs={6}>
+                          <Form.Select
+                            name="entryMonth"
+                            value={formData.entryDate ? formData.entryDate.split('/')[1] || '' : ''}
+                            onChange={handleDateChange}
+                            isInvalid={!!errors.entryDate}
+                          >
+                            <option value="">Ay</option>
+                            <option value="01">Ocak</option>
+                            <option value="02">Şubat</option>
+                            <option value="03">Mart</option>
+                            <option value="04">Nisan</option>
+                            <option value="05">Mayıs</option>
+                            <option value="06">Haziran</option>
+                            <option value="07">Temmuz</option>
+                            <option value="08">Ağustos</option>
+                            <option value="09">Eylül</option>
+                            <option value="10">Ekim</option>
+                            <option value="11">Kasım</option>
+                            <option value="12">Aralık</option>
+                          </Form.Select>
+                        </Col>
+                      </Row>
                       <Form.Control.Feedback type="invalid">
                         {errors.entryDate}
                       </Form.Control.Feedback>
                       <Form.Text className="text-muted">
-                        Gün/Ay formatında (GG/AA)
+                        Örn: 5 Eylül
                       </Form.Text>
                     </Form.Group>
                   </Col>
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>Çıkış Tarihi</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="exitDate"
-                        value={formData.exitDate}
-                        onChange={handleChange}
-                        placeholder="GG/AA (örn: 20/03)"
-                        pattern="[0-9]{2}/[0-9]{2}"
-                        maxLength={5}
-                        isInvalid={!!errors.exitDate}
-                      />
+                      <Row>
+                        <Col xs={6}>
+                          <Form.Select
+                            name="exitDay"
+                            value={formData.exitDate ? formData.exitDate.split('/')[0] || '' : ''}
+                            onChange={handleDateChange}
+                            isInvalid={!!errors.exitDate}
+                          >
+                            <option value="">Gün</option>
+                            {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                              <option key={day} value={day.toString().padStart(2, '0')}>
+                                {day}
+                              </option>
+                            ))}
+                          </Form.Select>
+                        </Col>
+                        <Col xs={6}>
+                          <Form.Select
+                            name="exitMonth"
+                            value={formData.exitDate ? formData.exitDate.split('/')[1] || '' : ''}
+                            onChange={handleDateChange}
+                            isInvalid={!!errors.exitDate}
+                          >
+                            <option value="">Ay</option>
+                            <option value="01">Ocak</option>
+                            <option value="02">Şubat</option>
+                            <option value="03">Mart</option>
+                            <option value="04">Nisan</option>
+                            <option value="05">Mayıs</option>
+                            <option value="06">Haziran</option>
+                            <option value="07">Temmuz</option>
+                            <option value="08">Ağustos</option>
+                            <option value="09">Eylül</option>
+                            <option value="10">Ekim</option>
+                            <option value="11">Kasım</option>
+                            <option value="12">Aralık</option>
+                          </Form.Select>
+                        </Col>
+                      </Row>
                       <Form.Control.Feedback type="invalid">
                         {errors.exitDate}
                       </Form.Control.Feedback>
                       <Form.Text className="text-muted">
-                        Gün/Ay formatında (GG/AA)
+                        Örn: 20 Mart
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -474,6 +561,40 @@ const SaleForm = () => {
                       <Form.Control.Feedback type="invalid">
                         {errors.activitySalePrice}
                       </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                {/* Notlar Alanı */}
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-4">
+                      <Form.Label>
+                        <FiFileText className="me-2" />
+                        Notlar
+                      </Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={4}
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="Bu satışla ilgili notlarınızı buraya yazabilirsiniz..."
+                        maxLength={1000}
+                        isInvalid={!!errors.notes}
+                      />
+                      <div className="d-flex justify-content-between">
+                        <Form.Control.Feedback type="invalid">
+                          {errors.notes}
+                        </Form.Control.Feedback>
+                        <Form.Text className="text-muted">
+                          {formData.notes.length}/1000 karakter
+                        </Form.Text>
+                      </div>
+                      <Form.Text className="text-muted">
+                        <FiInfo className="me-1" />
+                        Sadece siz ve adminler bu notu görebilir ve düzenleyebilir.
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>

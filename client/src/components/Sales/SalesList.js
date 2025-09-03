@@ -26,7 +26,8 @@ import {
   FiDollarSign,
   FiTrash2,
   FiFilter,
-  FiCalendar
+  FiCalendar,
+  FiFileText
 } from 'react-icons/fi';
 
 import { salesAPI, primsAPI } from '../../utils/api';
@@ -41,6 +42,7 @@ import {
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import TransferModal from './TransferModal';
+import NotesModal from './NotesModal';
 
 const SalesList = () => {
   const [sales, setSales] = useState([]);
@@ -66,6 +68,7 @@ const SalesList = () => {
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
 
   const { user } = useAuth();
@@ -158,6 +161,11 @@ const SalesList = () => {
   const openTransferModal = (sale) => {
     setSelectedSale(sale);
     setShowTransferModal(true);
+  };
+
+  const openNotesModal = (sale) => {
+    setSelectedSale(sale);
+    setShowNotesModal(true);
   };
 
   const handleDeleteSale = async (sale) => {
@@ -348,6 +356,7 @@ const SalesList = () => {
                     <th>Prim</th>
                     <th>Durum</th>
                     <th>Temsilci</th>
+                    <th>Notlar</th>
                     <th>İşlemler</th>
                   </tr>
                 </thead>
@@ -405,6 +414,28 @@ const SalesList = () => {
                           <FiUser className="me-2 text-muted" size={16} />
                           <small>{sale.salesperson?.name}</small>
                         </div>
+                      </td>
+                      <td className="text-center">
+                        {sale.notes ? (
+                          <Button
+                            variant="outline-info"
+                            size="sm"
+                            onClick={() => openNotesModal(sale)}
+                            title="Notu görüntüle"
+                          >
+                            <FiFileText />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => openNotesModal(sale)}
+                            title="Not ekle"
+                            style={{ opacity: 0.5 }}
+                          >
+                            <FiFileText />
+                          </Button>
+                        )}
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -582,6 +613,20 @@ const SalesList = () => {
           onSuccess={() => {
             fetchSales();
             setShowTransferModal(false);
+            setSelectedSale(null);
+          }}
+        />
+      )}
+
+      {/* Notes Modal */}
+      {showNotesModal && (
+        <NotesModal
+          show={showNotesModal}
+          onHide={() => setShowNotesModal(false)}
+          sale={selectedSale}
+          onSuccess={() => {
+            fetchSales();
+            setShowNotesModal(false);
             setSelectedSale(null);
           }}
         />

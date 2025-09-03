@@ -516,4 +516,95 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   PUT /api/sales/:id/notes
+// @desc    Satışa not ekle/güncelle
+// @access  Private (sadece admin veya satışı yapan temsilci)
+router.put('/:id/notes', auth, async (req, res) => {
+  try {
+    const { notes } = req.body;
+    
+    if (!notes || notes.trim() === '') {
+      return res.status(400).json({ message: 'Not içeriği gereklidir' });
+    }
+
+    if (notes.length > 1000) {
+      return res.status(400).json({ message: 'Not 1000 karakterden uzun olamaz' });
+    }
+
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    // Sadece admin veya satışı yapan temsilci not ekleyebilir/güncelleyebilir
+    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Bu satışa not ekleme yetkiniz yok' });
+    }
+
+    const isNewNote = !sale.notes;
+    
+    sale.notes = notes.trim();
+    
+    if (isNewNote) {
+      sale.notesAddedBy = req.user._id;
+      sale.notesAddedAt = new Date();
+    } else {
+      sale.notesUpdatedBy = req.user._id;
+      sale.notesUpdatedAt = new Date();
+    }
+
+    await sale.save();
+
+    console.log(`📝 Not ${isNewNote ? 'eklendi' : 'güncellendi'} - Satış: ${sale.contractNo}, Kullanıcı: ${req.user.name}`);
+
+    res.json({
+      message: `Not başarıyla ${isNewNote ? 'eklendi' : 'güncellendi'}`,
+      notes: sale.notes,
+      notesAddedBy: sale.notesAddedBy,
+      notesAddedAt: sale.notesAddedAt,
+      notesUpdatedBy: sale.notesUpdatedBy,
+      notesUpdatedAt: sale.notesUpdatedAt
+    });
+  } catch (error) {
+    console.error('❌ Update notes error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   DELETE /api/sales/:id/notes
+// @desc    Satıştaki notu sil
+// @access  Private (sadece admin veya satışı yapan temsilci)
+router.delete('/:id/notes', auth, async (req, res) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    // Sadece admin veya satışı yapan temsilci not silebilir
+    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Bu satışın notunu silme yetkiniz yok' });
+    }
+
+    if (!sale.notes) {
+      return res.status(400).json({ message: 'Silinecek not bulunamadı' });
+    }
+
+    sale.notes = undefined;
+    sale.notesAddedBy = undefined;
+    sale.notesAddedAt = undefined;
+    sale.notesUpdatedBy = undefined;
+    sale.notesUpdatedAt = undefined;
+
+    await sale.save();
+
+    console.log(`🗑️ Not silindi - Satış: ${sale.contractNo}, Kullanıcı: ${req.user.name}`);
+
+    res.json({ message: 'Not başarıyla silindi' });
+  } catch (error) {
+    console.error('❌ Delete notes error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;
