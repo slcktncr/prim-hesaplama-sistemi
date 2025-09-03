@@ -51,19 +51,54 @@ const Reports = () => {
         salesperson: selectedSalesperson
       };
       
-      const response = await reportsAPI.exportReport(exportData);
-      
-      if (exportType === 'excel' && response.data.data) {
-        // Excel export - JSON'u CSV formatında indir
-        const csvContent = convertToCSV(response.data.data);
-        downloadFile(csvContent, response.data.filename.replace('.xlsx', '.csv'), 'text/csv');
+      if (exportType === 'excel') {
+        // Excel export - gerçek Excel dosyası indir
+        const response = await reportsAPI.exportExcel(exportData);
+        
+        // Blob'dan dosya oluştur
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        
+        // Dosya adı oluştur
+        const fileName = `prim_raporu_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        // Dosyayı indir
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('Excel raporu başarıyla indirildi!');
       } else {
-        // PDF export simülasyonu
-        const pdfContent = generatePDFContent(response.data);
-        downloadFile(pdfContent, response.data.filename, 'application/pdf');
+        // PDF export - gerçek PDF dosyası indir
+        const response = await reportsAPI.exportPDF(exportData);
+        
+        // Blob'dan dosya oluştur
+        const blob = new Blob([response.data], {
+          type: 'application/pdf'
+        });
+        
+        // Dosya adı oluştur
+        const fileName = `prim_raporu_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        // Dosyayı indir
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('PDF raporu başarıyla indirildi!');
       }
       
-      toast.success(`${response.data.message} (${response.data.recordCount} kayıt)`);
       setShowExportModal(false);
       
     } catch (error) {

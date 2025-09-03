@@ -96,9 +96,42 @@ const SalesSummaryReport = () => {
     });
   };
 
-  const downloadReport = () => {
-    // Bu fonksiyon backend'de implement edilebilir
-    toast.info('Rapor indirme özelliği yakında eklenecek');
+  const downloadReport = async () => {
+    try {
+      toast.info('Excel raporu hazırlanıyor...');
+      
+      const exportData = {
+        type: 'excel',
+        scope: 'all',
+        ...filters
+      };
+      
+      const response = await reportsAPI.exportExcel(exportData);
+      
+      // Blob'dan dosya oluştur
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      
+      // Dosya adı oluştur
+      const fileName = `satis_ozet_raporu_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Dosyayı indir
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Excel raporu başarıyla indirildi!');
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Excel raporu indirme sırasında hata oluştu');
+    }
   };
 
   if (loading) {
