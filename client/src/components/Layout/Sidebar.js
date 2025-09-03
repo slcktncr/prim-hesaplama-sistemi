@@ -23,6 +23,12 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar">
+      {/* Logo Area */}
+      <div className="sidebar-logo">
+        <h4>Prim Sistemi</h4>
+        <p>Satış ve Komisyon Yönetimi</p>
+      </div>
+
       <Nav className="flex-column">
         <LinkContainer to="/dashboard">
           <Nav.Link>

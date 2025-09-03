@@ -1,7 +1,7 @@
 import React from 'react';
-import { Navbar as BSNavbar, Nav, NavDropdown, Container } from 'react-bootstrap';
+import { Navbar as BSNavbar, Nav, Dropdown, Container } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
-import { FiUser, FiLogOut } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiSettings, FiShield } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -10,43 +10,84 @@ const Navbar = () => {
     logout();
   };
 
+  const getUserInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
   return (
-    <BSNavbar bg="dark" variant="dark" expand="lg" className="mb-0">
-      <Container fluid>
-        <BSNavbar.Brand href="/dashboard">
-          Prim Hesaplama Sistemi
-        </BSNavbar.Brand>
-        
-        <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
-        <BSNavbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <NavDropdown
-              title={
-                <span>
-                  <FiUser className="me-2" />
-                  {user?.name}
-                  {user?.role === 'admin' && (
-                    <span className="badge bg-warning ms-2">Admin</span>
-                  )}
-                </span>
-              }
-              id="user-nav-dropdown"
-              align="end"
+    <div className="top-navbar">
+      <Container fluid className="d-flex align-items-center justify-content-between">
+        {/* Page Title */}
+        <div className="d-flex align-items-center">
+          <h5 className="mb-0 text-gray-800 font-weight-bold">
+            Hoş geldiniz, {user?.name}
+          </h5>
+        </div>
+
+        {/* User Menu */}
+        <div className="d-flex align-items-center gap-3">
+          <Dropdown align="end">
+            <Dropdown.Toggle 
+              variant="link" 
+              className="d-flex align-items-center text-decoration-none border-0 bg-transparent p-0"
+              id="user-dropdown"
             >
-              <NavDropdown.Item>
+              <div className="user-avatar">
+                {getUserInitials(user?.name)}
+              </div>
+              <div className="d-none d-md-block text-start ms-2">
+                <div className="fw-semibold text-gray-800 small">
+                  {user?.name}
+                </div>
+                <div className="text-muted small">
+                  {user?.role === 'admin' ? 'Yönetici' : 'Satış Temsilcisi'}
+                </div>
+              </div>
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu className="user-dropdown">
+              <div className="user-info">
+                <h6>{user?.name}</h6>
+                <small className="text-muted">{user?.email}</small>
+                <div className="mt-1">
+                  <span className={`badge ${user?.role === 'admin' ? 'bg-danger' : 'bg-primary'} small`}>
+                    {user?.role === 'admin' ? (
+                      <>
+                        <FiShield className="me-1" size={10} />
+                        Yönetici
+                      </>
+                    ) : (
+                      <>
+                        <FiUser className="me-1" size={10} />
+                        Satış Temsilcisi
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+              
+              <Dropdown.Item href="#profile">
                 <FiUser className="me-2" />
-                Profil
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={handleLogout}>
+                Profil Ayarları
+              </Dropdown.Item>
+              
+              <Dropdown.Item href="#settings">
+                <FiSettings className="me-2" />
+                Hesap Ayarları
+              </Dropdown.Item>
+              
+              <Dropdown.Divider />
+              
+              <Dropdown.Item onClick={handleLogout} className="text-danger">
                 <FiLogOut className="me-2" />
                 Çıkış Yap
-              </NavDropdown.Item>
-            </NavDropdown>
-          </Nav>
-        </BSNavbar.Collapse>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
       </Container>
-    </BSNavbar>
+    </div>
   );
 };
 

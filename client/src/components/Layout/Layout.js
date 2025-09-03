@@ -1,22 +1,47 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Button } from 'react-bootstrap';
+import { FiMenu } from 'react-icons/fi';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <div>
-      <Navbar />
-      <Container fluid>
-        <Row>
-          <Col md={2} className="p-0">
-            <Sidebar />
-          </Col>
-          <Col md={10} className="content-wrapper">
+    <div className="layout-container">
+      {/* Mobile Menu Button */}
+      <Button 
+        className="mobile-menu-btn d-lg-none" 
+        onClick={toggleSidebar}
+        variant="dark"
+      >
+        <FiMenu />
+      </Button>
+
+      {/* Sidebar Overlay for Mobile */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      {/* Sidebar */}
+      <div className={`sidebar ${sidebarOpen ? 'show' : ''}`}>
+        <Sidebar />
+      </div>
+
+      {/* Main Content */}
+      <div className="main-content">
+        <Navbar />
+        <div className="content-wrapper p-4">
+          <div className="fade-in">
             {children}
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
