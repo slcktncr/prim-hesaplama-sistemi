@@ -411,8 +411,15 @@ router.put('/:id/transfer', [auth, adminAuth], [
   body('newSalesperson').notEmpty().withMessage('Yeni temsilci seçilmelidir')
 ], async (req, res) => {
   try {
+    console.log('🔄 Transfer request received:', {
+      saleId: req.params.id,
+      user: req.user?.email,
+      body: req.body
+    });
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
