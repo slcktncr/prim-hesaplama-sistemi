@@ -31,8 +31,15 @@ const Sidebar = () => {
               src="/mola-logo.png" 
               alt="MOLA Logo" 
               className="logo-img"
-              style={{ display: 'block' }}
+              onError={(e) => {
+                // Logo bulunamazsa placeholder göster
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
             />
+            <div className="logo-placeholder-modern" style={{ display: 'none' }}>
+              <div className="mola-text">MOLA</div>
+            </div>
           </div>
           <div className="logo-info">
             <h4>Prim Sistemi</h4>
