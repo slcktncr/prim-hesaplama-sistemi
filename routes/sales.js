@@ -50,8 +50,13 @@ router.post('/', auth, [
   body('paymentType').isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
 ], async (req, res) => {
   try {
+    console.log('🔍 Sale POST request received');
+    console.log('User:', req.user?.email);
+    console.log('Body:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -116,8 +121,14 @@ router.post('/', auth, [
       sale: populatedSale
     });
   } catch (error) {
-    console.error('Create sale error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Create sale error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: error.message,
+      details: error.stack
+    });
   }
 });
 
