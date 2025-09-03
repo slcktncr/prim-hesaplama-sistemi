@@ -27,11 +27,11 @@ const Sidebar = () => {
       <div className="sidebar-logo">
         <div className="logo-container">
           <div className="logo-image">
-            <img 
-              src="/mola-logo.png" 
-              alt="MOLA Logo" 
-              className="logo-img"
-            />
+            <div className="logo-mola">
+              <span className="logo-m">M</span>
+              <span className="logo-circle">O</span>
+              <span className="logo-la">LA</span>
+            </div>
           </div>
           <div className="logo-info">
             <h4>Prim Sistemi</h4>
