@@ -85,4 +85,14 @@ export const usersAPI = {
   changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
 };
 
+// Payment Methods API calls
+export const paymentMethodsAPI = {
+  getAll: (includeInactive) => API.get('/payment-methods', { params: { includeInactive } }),
+  getActive: () => API.get('/payment-methods/active'),
+  create: (data) => API.post('/payment-methods', data),
+  update: (id, data) => API.put(`/payment-methods/${id}`, data),
+  delete: (id) => API.delete(`/payment-methods/${id}`),
+  toggleStatus: (id) => API.put(`/payment-methods/${id}/toggle-status`)
+};
+
 export default API;

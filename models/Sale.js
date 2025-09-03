@@ -55,6 +55,24 @@ const saleSchema = new mongoose.Schema({
     },
     min: 0
   },
+  discountRate: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100,
+    validate: {
+      validator: function(v) {
+        return v >= 0 && v <= 100;
+      },
+      message: 'İndirim oranı 0-100 arasında olmalıdır'
+    }
+  },
+  originalListPrice: {
+    type: Number, // İndirim öncesi orijinal liste fiyatı
+    required: function() {
+      return this.saleType === 'satis' && this.discountRate > 0;
+    }
+  },
   activitySalePrice: {
     type: Number,
     required: function() {

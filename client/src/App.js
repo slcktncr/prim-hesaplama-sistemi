@@ -17,6 +17,7 @@ import PrimEarnings from './components/Prims/PrimEarnings';
 import Reports from './components/Reports/Reports';
 import PendingUsers from './components/Admin/PendingUsers';
 import ActiveUsers from './components/Admin/ActiveUsers';
+import PaymentMethods from './components/Admin/PaymentMethods';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -132,6 +133,11 @@ function AppContent() {
                     <Route path="/admin/active-users" element={
                       <ProtectedRoute adminOnly={true}>
                         <ActiveUsers />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/payment-methods" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <PaymentMethods />
                       </ProtectedRoute>
                     } />
                     

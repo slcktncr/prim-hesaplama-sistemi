@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Row, Col, Card, Form, Button, Alert, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { salesAPI, primsAPI } from '../../utils/api';
+import { salesAPI, primsAPI, paymentMethodsAPI } from '../../utils/api';
 import { 
   validateRequired, 
   validatePositiveNumber, 
@@ -26,6 +26,8 @@ const SaleForm = () => {
     kaporaDate: '',
     contractNo: '',
     listPrice: '',
+    originalListPrice: '', // İndirim öncesi orijinal fiyat
+    discountRate: '',      // İndirim oranı (%)
     activitySalePrice: '',
     paymentType: 'Nakit',
     entryDate: '', // Giriş tarihi (gün/ay)
@@ -34,6 +36,7 @@ const SaleForm = () => {
   });
 
   const [periods, setPeriods] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [currentRate, setCurrentRate] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -42,6 +45,7 @@ const SaleForm = () => {
   useEffect(() => {
     fetchPeriods();
     fetchCurrentRate();
+    fetchPaymentMethods();
     if (isEdit) {
       fetchSale();
     }
@@ -66,6 +70,32 @@ const SaleForm = () => {
     }
   };
 
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await paymentMethodsAPI.getActive();
+      const methods = response.data.data || [];
+      setPaymentMethods(methods);
+      
+      // Varsayılan ödeme yöntemini seç
+      const defaultMethod = methods.find(m => m.isDefault);
+      if (defaultMethod && !isEdit) {
+        setFormData(prev => ({
+          ...prev,
+          paymentType: defaultMethod.name
+        }));
+      }
+    } catch (error) {
+      console.error('Payment methods fetch error:', error);
+      // Hata durumunda eski sabit değerleri kullan
+      setPaymentMethods([
+        { _id: '1', name: 'Nakit' },
+        { _id: '2', name: 'Kredi' },
+        { _id: '3', name: 'Taksit' },
+        { _id: '4', name: 'Diğer' }
+      ]);
+    }
+  };
+
   const fetchSale = async () => {
     try {
       setInitialLoading(true);
@@ -84,6 +114,8 @@ const SaleForm = () => {
           kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toISOString().split('T')[0] : '',
           contractNo: sale.contractNo || '',
           listPrice: sale.listPrice?.toString() || '',
+          originalListPrice: sale.originalListPrice?.toString() || '',
+          discountRate: sale.discountRate?.toString() || '',
           activitySalePrice: sale.activitySalePrice?.toString() || '',
           paymentType: sale.paymentType || 'Nakit',
           entryDate: sale.entryDate || '',
@@ -103,6 +135,15 @@ const SaleForm = () => {
     }
   };
 
+  // İndirim hesaplama fonksiyonu
+  const calculateDiscountedPrice = (originalPrice, discountRate) => {
+    if (!originalPrice || !discountRate) return originalPrice;
+    const original = parseFloat(originalPrice);
+    const discount = parseFloat(discountRate);
+    if (isNaN(original) || isNaN(discount) || discount < 0 || discount > 100) return originalPrice;
+    return (original * (1 - discount / 100)).toFixed(2);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     
@@ -113,7 +154,26 @@ const SaleForm = () => {
       }
     }
     
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      // İndirim hesaplama logic'i
+      if (name === 'discountRate') {
+        // İndirim oranı değiştiğinde
+        const basePrice = prev.originalListPrice || prev.listPrice;
+        if (value && basePrice) {
+          newData.listPrice = calculateDiscountedPrice(basePrice, value);
+          if (!prev.originalListPrice) {
+            newData.originalListPrice = prev.listPrice; // Orijinal fiyatı sakla
+          }
+        } else if (!value) {
+          // İndirim temizlendiğinde orijinal fiyata dön
+          newData.listPrice = prev.originalListPrice || prev.listPrice;
+        }
+      }
+
+      return newData;
+    });
     
     // Clear field error when user starts typing
     if (errors[name]) {
@@ -216,6 +276,14 @@ const SaleForm = () => {
 
       if (!validateRequired(formData.paymentType)) {
         newErrors.paymentType = 'Ödeme tipi seçiniz';
+      }
+
+      // İndirim oranı validasyonu
+      if (formData.discountRate) {
+        const discountRate = parseFloat(formData.discountRate);
+        if (isNaN(discountRate) || discountRate < 0 || discountRate > 100) {
+          newErrors.discountRate = 'İndirim oranı 0-100 arasında olmalıdır';
+        }
       }
     }
 
@@ -431,10 +499,13 @@ const SaleForm = () => {
                           onChange={handleChange}
                           isInvalid={!!errors.paymentType}
                         >
-                          <option value="Nakit">Nakit</option>
-                          <option value="Kredi">Kredi</option>
-                          <option value="Taksit">Taksit</option>
-                          <option value="Diğer">Diğer</option>
+                          <option value="">Ödeme tipi seçiniz</option>
+                          {paymentMethods.map((method) => (
+                            <option key={method._id} value={method.name}>
+                              {method.name}
+                              {method.isDefault && ' (Varsayılan)'}
+                            </option>
+                          ))}
                         </Form.Select>
                         <Form.Control.Feedback type="invalid">
                           {errors.paymentType}
@@ -572,44 +643,106 @@ const SaleForm = () => {
 
                 {/* Fiyat Alanları - Sadece Normal Satış İçin */}
                 {formData.saleType === 'satis' && (
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Liste Fiyatı (₺) *</Form.Label>
-                        <Form.Control
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          name="listPrice"
-                          value={formData.listPrice}
-                          onChange={handleChange}
-                          isInvalid={!!errors.listPrice}
-                          placeholder="0.00"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.listPrice}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
-                        <Form.Control
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          name="activitySalePrice"
-                          value={formData.activitySalePrice}
-                          onChange={handleChange}
-                          isInvalid={!!errors.activitySalePrice}
-                          placeholder="0.00"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.activitySalePrice}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                  <>
+                    {/* İndirim Oranı */}
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Yapılan İndirim Oranı (%)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="100"
+                            name="discountRate"
+                            value={formData.discountRate}
+                            onChange={handleChange}
+                            isInvalid={!!errors.discountRate}
+                            placeholder="0.00"
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.discountRate}
+                          </Form.Control.Feedback>
+                          <Form.Text className="text-muted">
+                            İndirim oranı girilirse liste fiyatına otomatik uygulanır
+                          </Form.Text>
+                        </Form.Group>
+                      </Col>
+                      {formData.discountRate && (
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>Orijinal Liste Fiyatı (₺)</Form.Label>
+                            <Form.Control
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              name="originalListPrice"
+                              value={formData.originalListPrice}
+                              readOnly
+                              className="bg-light"
+                            />
+                            <Form.Text className="text-muted">
+                              İndirim öncesi orijinal fiyat
+                            </Form.Text>
+                          </Form.Group>
+                        </Col>
+                      )}
+                    </Row>
+
+                    {/* Liste ve Aktivite Fiyatları */}
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Liste Fiyatı (₺) *
+                            {formData.discountRate && (
+                              <Badge bg="success" className="ms-2">
+                                %{formData.discountRate} İndirimli
+                              </Badge>
+                            )}
+                          </Form.Label>
+                          <Form.Control
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            name="listPrice"
+                            value={formData.listPrice}
+                            onChange={handleChange}
+                            isInvalid={!!errors.listPrice}
+                            placeholder="0.00"
+                            readOnly={!!formData.discountRate}
+                            className={formData.discountRate ? 'bg-light' : ''}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.listPrice}
+                          </Form.Control.Feedback>
+                          {formData.discountRate && (
+                            <Form.Text className="text-success">
+                              İndirim uygulandı: {formData.originalListPrice} TL → {formData.listPrice} TL
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
+                          <Form.Control
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            name="activitySalePrice"
+                            value={formData.activitySalePrice}
+                            onChange={handleChange}
+                            isInvalid={!!errors.activitySalePrice}
+                            placeholder="0.00"
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.activitySalePrice}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </>
                 )}
 
                 {/* Kapora Durumu Bilgilendirmesi */}

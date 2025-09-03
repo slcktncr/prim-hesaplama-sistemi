@@ -416,7 +416,21 @@ const SalesList = () => {
                           </div>
                         ) : (
                           <div>
-                            <div>Liste: {formatCurrency(sale.listPrice)}</div>
+                            <div>
+                              Liste: {formatCurrency(sale.listPrice)}
+                              {sale.discountRate > 0 && (
+                                <Badge bg="success" className="ms-1" style={{ fontSize: '0.7rem' }}>
+                                  %{sale.discountRate} İndirim
+                                </Badge>
+                              )}
+                            </div>
+                            {sale.originalListPrice && sale.discountRate > 0 && (
+                              <div>
+                                <small className="text-muted text-decoration-line-through">
+                                  Orijinal: {formatCurrency(sale.originalListPrice)}
+                                </small>
+                              </div>
+                            )}
                             <div>Aktivite: {formatCurrency(sale.activitySalePrice)}</div>
                             <Badge bg={getPaymentTypeClass(sale.paymentType)} className="mt-1">
                               {sale.paymentType}

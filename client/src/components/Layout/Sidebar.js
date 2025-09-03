@@ -14,7 +14,8 @@ import {
   FiSettings,
   FiBarChart2,
   FiClock,
-  FiUsers
+  FiUsers,
+  FiCreditCard
 } from 'react-icons/fi';
 
 const Sidebar = () => {
@@ -124,6 +125,13 @@ const Sidebar = () => {
               <Nav.Link>
                 <FiUsers className="me-2" />
                 Aktif Kullanıcılar
+              </Nav.Link>
+            </LinkContainer>
+
+            <LinkContainer to="/admin/payment-methods">
+              <Nav.Link>
+                <FiCreditCard className="me-2" />
+                Ödeme Yöntemleri
               </Nav.Link>
             </LinkContainer>
           </>
