@@ -1,7 +1,9 @@
 /* Modern Sidebar Tasarımı */
 
 .sidebar {
-  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 25%, #155e75 50%, #164e63 75%, #1e3a8a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
   min-height: 100vh;
   height: 100vh;
   width: 280px;
@@ -10,9 +12,16 @@
   top: 0;
   z-index: 1000;
   padding: 0;
-  box-shadow: 4px 0 24px rgba(14, 165, 233, 0.15);
+  box-shadow: 4px 0 24px rgba(14, 165, 233, 0.25), inset 0 0 100px rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
   overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .sidebar .nav {
@@ -105,19 +114,41 @@
   margin-bottom: 0.5rem;
 }
 
-.sidebar-logo h4 {
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-placeholder {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #0369a1;
+  letter-spacing: -1px;
+}
+
+.logo-info h4 {
   color: #ffffff;
   font-weight: 700;
   font-size: 1.25rem;
   margin: 0;
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-logo p {
-  color: #64748b;
+.logo-info p {
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.75rem;
   margin: 0.25rem 0 0;
   font-weight: 500;

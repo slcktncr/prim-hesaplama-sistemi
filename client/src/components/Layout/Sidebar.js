@@ -25,8 +25,15 @@ const Sidebar = () => {
     <div className="sidebar">
       {/* Logo Area */}
       <div className="sidebar-logo">
-        <h4>Prim Sistemi</h4>
-        <p>Satış ve Komisyon Yönetimi</p>
+        <div className="logo-container">
+          <div className="logo-placeholder">
+            <div className="logo-text">MOLA</div>
+          </div>
+          <div className="logo-info">
+            <h4>Prim Sistemi</h4>
+            <p>Satış ve Komisyon Yönetimi</p>
+          </div>
+        </div>
       </div>
 
       <Nav className="flex-column">

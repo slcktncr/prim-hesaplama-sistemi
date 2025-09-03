@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { FiMenu } from 'react-icons/fi';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import DeveloperSignature from '../Common/DeveloperSignature';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +43,9 @@ const Layout = ({ children }) => {
           </div>
         </div>
       </div>
+
+      {/* Developer Signature */}
+      <DeveloperSignature />
     </div>
   );
 };

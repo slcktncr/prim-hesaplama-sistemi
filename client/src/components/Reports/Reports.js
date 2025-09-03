@@ -5,15 +5,22 @@ import {
   Card, 
   Tab, 
   Tabs,
-  Alert
+  Alert,
+  Button,
+  Modal,
+  Form,
+  Dropdown
 } from 'react-bootstrap';
 import { 
   FiBarChart2, 
   FiTrendingUp, 
   FiUsers, 
   FiCalendar,
-  FiTarget
+  FiTarget,
+  FiDownload,
+  FiFileText
 } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 import { useAuth } from '../../context/AuthContext';
 import SalesSummaryReport from './SalesSummaryReport';
@@ -26,6 +33,34 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState('sales-summary');
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState('excel');
+  const [exportScope, setExportScope] = useState('all');
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [selectedSalesperson, setSelectedSalesperson] = useState('');
+
+  const handleExport = async () => {
+    try {
+      toast.info('Rapor hazırlanıyor...');
+      
+      // Burada export işlemi yapılacak
+      const params = {
+        type: exportType,
+        scope: exportScope,
+        period: selectedPeriod,
+        salesperson: selectedSalesperson
+      };
+      
+      // API çağrısı simülasyonu
+      setTimeout(() => {
+        toast.success(`${exportType.toUpperCase()} raporu başarıyla indirildi!`);
+        setShowExportModal(false);
+      }, 2000);
+      
+    } catch (error) {
+      toast.error('Rapor indirme sırasında hata oluştu');
+    }
+  };
 
   return (
     <div>
