@@ -12,7 +12,7 @@ import {
   FiList,
   FiTrendingUp,
   FiSettings,
-  FiBarChart3
+  FiBarChart2
 } from 'react-icons/fi';
 
 const Sidebar = () => {
@@ -90,7 +90,7 @@ const Sidebar = () => {
 
         <LinkContainer to="/reports">
           <Nav.Link>
-            <FiBarChart3 className="me-2" />
+            <FiBarChart2 className="me-2" />
             Raporlar
           </Nav.Link>
         </LinkContainer>

@@ -8,7 +8,7 @@ import {
   Alert
 } from 'react-bootstrap';
 import { 
-  FiBarChart3, 
+  FiBarChart2, 
   FiTrendingUp, 
   FiUsers, 
   FiCalendar,
@@ -33,7 +33,7 @@ const Reports = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1>
-            <FiBarChart3 className="me-2" />
+            <FiBarChart2 className="me-2" />
             Raporlar
           </h1>
           <p className="text-muted mb-0">
@@ -64,7 +64,7 @@ const Reports = () => {
               eventKey="sales-summary" 
               title={
                 <span>
-                  <FiBarChart3 className="me-2" />
+                  <FiBarChart2 className="me-2" />
                   Satış Özeti
                 </span>
               }
@@ -131,17 +131,17 @@ const Reports = () => {
 
       {/* Quick Stats Cards */}
       <Row className="mt-4">
-        <Col md={3}>
-          <Card className="text-center">
-            <Card.Body>
-              <FiBarChart3 size={32} className="text-primary mb-2" />
-              <div className="h6">Satış Özeti</div>
-              <div className="small text-muted">
-                Toplam satış ve ciro analizi
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
+                  <Col md={3}>
+            <Card className="text-center">
+              <Card.Body>
+                <FiBarChart2 size={32} className="text-primary mb-2" />
+                <div className="h6">Satış Özeti</div>
+                <div className="small text-muted">
+                  Toplam satış ve ciro analizi
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
         
         {isAdmin && (
           <Col md={3}>
