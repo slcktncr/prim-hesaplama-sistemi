@@ -445,4 +445,69 @@ router.get('/detailed-report', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/reports/export
+// @desc    Rapor export et
+// @access  Private
+router.post('/export', auth, async (req, res) => {
+  try {
+    const { type, scope, period, salesperson } = req.body;
+    
+    let query = {};
+    
+    // Admin değilse sadece kendi verilerini export edebilir
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user._id;
+    } else if (scope === 'salesperson' && salesperson && salesperson !== 'all') {
+      query.salesperson = salesperson;
+    }
+    
+    // Dönem filtresi
+    if (scope === 'period' && period && period !== 'all') {
+      if (period === 'current') {
+        const currentPeriod = await PrimPeriod.findOne({ isActive: true });
+        if (currentPeriod) {
+          query.primPeriod = currentPeriod._id;
+        }
+      } else {
+        query.primPeriod = period;
+      }
+    }
+    
+    // Satışları getir
+    const sales = await Sale.find(query)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name')
+      .sort({ saleDate: -1 });
+    
+    // Export formatına göre data hazırla
+    const exportData = sales.map(sale => ({
+      'Müşteri Adı': sale.customerName,
+      'Blok/Daire': `${sale.blockNo}/${sale.apartmentNo}`,
+      'Dönem No': sale.periodNo,
+      'Satış Tarihi': new Date(sale.saleDate).toLocaleDateString('tr-TR'),
+      'Sözleşme No': sale.contractNo,
+      'Liste Fiyatı': sale.listPrice.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }),
+      'Aktivite Satış Fiyatı': sale.activitySalePrice.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }),
+      'Ödeme Tipi': sale.paymentType,
+      'Prim Tutarı': sale.primAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }),
+      'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
+      'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
+      'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
+      'Durum': sale.status === 'active' ? 'Aktif' : 'İptal'
+    }));
+    
+    // Simülasyon - gerçek export için xlsx kütüphanesi gerekir
+    res.json({
+      message: `${type.toUpperCase()} raporu başarıyla hazırlandı`,
+      filename: `prim_raporu_${Date.now()}.${type === 'excel' ? 'xlsx' : 'pdf'}`,
+      recordCount: exportData.length,
+      data: type === 'excel' ? exportData : null // PDF için data gönderilmez
+    });
+    
+  } catch (error) {
+    console.error('Export report error:', error);
+    res.status(500).json({ message: 'Rapor export edilirken hata oluştu' });
+  }
+});
+
 module.exports = router;

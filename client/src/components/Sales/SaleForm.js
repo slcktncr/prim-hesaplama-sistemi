@@ -24,7 +24,9 @@ const SaleForm = () => {
     contractNo: '',
     listPrice: '',
     activitySalePrice: '',
-    paymentType: 'Nakit'
+    paymentType: 'Nakit',
+    entryDate: '', // Giriş tarihi (gün/ay)
+    exitDate: ''   // Çıkış tarihi (gün/ay)
   });
 
   const [periods, setPeriods] = useState([]);
@@ -77,7 +79,9 @@ const SaleForm = () => {
           contractNo: sale.contractNo || '',
           listPrice: sale.listPrice?.toString() || '',
           activitySalePrice: sale.activitySalePrice?.toString() || '',
-          paymentType: sale.paymentType || 'Nakit'
+          paymentType: sale.paymentType || 'Nakit',
+          entryDate: sale.entryDate || '',
+          exitDate: sale.exitDate || ''
         });
       } else {
         toast.error('Satış bulunamadı');
@@ -102,12 +106,33 @@ const SaleForm = () => {
       }
     }
     
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // Giriş-çıkış tarihi formatlaması
+    if (name === 'entryDate' || name === 'exitDate') {
+      let formattedValue = value.replace(/\D/g, ''); // Sadece rakamlar
+      if (formattedValue.length >= 2) {
+        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2, 4);
+      }
+      if (formattedValue.length > 5) {
+        formattedValue = formattedValue.slice(0, 5);
+      }
+      setFormData(prev => ({ ...prev, [name]: formattedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     
     // Clear field error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
+  };
+
+  const validateDateFormat = (dateStr) => {
+    if (!dateStr) return true; // Opsiyonel alan
+    const regex = /^([0-2][0-9]|3[01])\/([0][1-9]|1[0-2])$/;
+    if (!regex.test(dateStr)) return false;
+    
+    const [day, month] = dateStr.split('/').map(Number);
+    return day >= 1 && day <= 31 && month >= 1 && month <= 12;
   };
 
   const validateForm = () => {
@@ -149,6 +174,16 @@ const SaleForm = () => {
 
     if (!validateRequired(formData.paymentType)) {
       newErrors.paymentType = 'Ödeme tipi seçiniz';
+    }
+
+    // Giriş tarihi validasyonu (opsiyonel ama format kontrolü)
+    if (formData.entryDate && !validateDateFormat(formData.entryDate)) {
+      newErrors.entryDate = 'Geçersiz tarih formatı (GG/AA)';
+    }
+
+    // Çıkış tarihi validasyonu (opsiyonel ama format kontrolü)
+    if (formData.exitDate && !validateDateFormat(formData.exitDate)) {
+      newErrors.exitDate = 'Geçersiz tarih formatı (GG/AA)';
     }
 
     setErrors(newErrors);
@@ -337,26 +372,72 @@ const SaleForm = () => {
                   </Col>
                 </Row>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Sözleşme No *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="contractNo"
-                    value={formData.contractNo}
-                    onChange={handleChange}
-                    isInvalid={!!errors.contractNo}
-                    placeholder=""
-                    maxLength={6}
-                  />
-                  <div className="d-flex justify-content-between">
-                    <Form.Control.Feedback type="invalid">
-                      {errors.contractNo}
-                    </Form.Control.Feedback>
-                    <Form.Text className="text-muted">
-                      {formData.contractNo.length}/6 karakter
-                    </Form.Text>
-                  </div>
-                </Form.Group>
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Sözleşme No *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="contractNo"
+                        value={formData.contractNo}
+                        onChange={handleChange}
+                        isInvalid={!!errors.contractNo}
+                        placeholder=""
+                        maxLength={6}
+                      />
+                      <div className="d-flex justify-content-between">
+                        <Form.Control.Feedback type="invalid">
+                          {errors.contractNo}
+                        </Form.Control.Feedback>
+                        <Form.Text className="text-muted">
+                          {formData.contractNo.length}/6 karakter
+                        </Form.Text>
+                      </div>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Giriş Tarihi</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="entryDate"
+                        value={formData.entryDate}
+                        onChange={handleChange}
+                        placeholder="GG/AA (örn: 15/03)"
+                        pattern="[0-9]{2}/[0-9]{2}"
+                        maxLength={5}
+                        isInvalid={!!errors.entryDate}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.entryDate}
+                      </Form.Control.Feedback>
+                      <Form.Text className="text-muted">
+                        Gün/Ay formatında (GG/AA)
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Çıkış Tarihi</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="exitDate"
+                        value={formData.exitDate}
+                        onChange={handleChange}
+                        placeholder="GG/AA (örn: 20/03)"
+                        pattern="[0-9]{2}/[0-9]{2}"
+                        maxLength={5}
+                        isInvalid={!!errors.exitDate}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.exitDate}
+                      </Form.Control.Feedback>
+                      <Form.Text className="text-muted">
+                        Gün/Ay formatında (GG/AA)
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
                 <Row>
                   <Col md={6}>

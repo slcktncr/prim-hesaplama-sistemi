@@ -50,6 +50,30 @@ const saleSchema = new mongoose.Schema({
     enum: ['Nakit', 'Kredi', 'Taksit', 'Diğer']
   },
   
+  // Giriş-çıkış tarihleri (gün/ay formatında)
+  entryDate: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Opsiyonel alan
+        return /^([0-2][0-9]|3[01])\/([0][1-9]|1[0-2])$/.test(v);
+      },
+      message: 'Giriş tarihi GG/AA formatında olmalıdır'
+    }
+  },
+  exitDate: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Opsiyonel alan
+        return /^([0-2][0-9]|3[01])\/([0][1-9]|1[0-2])$/.test(v);
+      },
+      message: 'Çıkış tarihi GG/AA formatında olmalıdır'
+    }
+  },
+  
   // Prim hesaplama bilgileri
   primAmount: {
     type: Number,

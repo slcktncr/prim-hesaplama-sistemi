@@ -23,6 +23,7 @@ import {
 import { toast } from 'react-toastify';
 
 import { useAuth } from '../../context/AuthContext';
+import { reportsAPI } from '../../utils/api';
 import SalesSummaryReport from './SalesSummaryReport';
 import PerformanceReport from './PerformanceReport';
 import PeriodComparisonReport from './PeriodComparisonReport';
@@ -43,23 +44,76 @@ const Reports = () => {
     try {
       toast.info('Rapor hazırlanıyor...');
       
-      // Burada export işlemi yapılacak
-      const params = {
+      const exportData = {
         type: exportType,
         scope: exportScope,
         period: selectedPeriod,
         salesperson: selectedSalesperson
       };
       
-      // API çağrısı simülasyonu
-      setTimeout(() => {
-        toast.success(`${exportType.toUpperCase()} raporu başarıyla indirildi!`);
-        setShowExportModal(false);
-      }, 2000);
+      const response = await reportsAPI.exportReport(exportData);
+      
+      if (exportType === 'excel' && response.data.data) {
+        // Excel export - JSON'u CSV formatında indir
+        const csvContent = convertToCSV(response.data.data);
+        downloadFile(csvContent, response.data.filename.replace('.xlsx', '.csv'), 'text/csv');
+      } else {
+        // PDF export simülasyonu
+        const pdfContent = generatePDFContent(response.data);
+        downloadFile(pdfContent, response.data.filename, 'application/pdf');
+      }
+      
+      toast.success(`${response.data.message} (${response.data.recordCount} kayıt)`);
+      setShowExportModal(false);
       
     } catch (error) {
-      toast.error('Rapor indirme sırasında hata oluştu');
+      console.error('Export error:', error);
+      toast.error(error.response?.data?.message || 'Rapor indirme sırasında hata oluştu');
     }
+  };
+
+  const convertToCSV = (data) => {
+    if (!data || data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvRows = [];
+    
+    // Header satırı
+    csvRows.push(headers.join(','));
+    
+    // Data satırları
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        return `"${value}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+    
+    return csvRows.join('\n');
+  };
+
+  const generatePDFContent = (data) => {
+    // PDF için basit metin içeriği
+    return `Prim Sistemi Raporu
+Dosya: ${data.filename}
+Kayıt Sayısı: ${data.recordCount}
+Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}
+
+Bu bir simülasyon PDF dosyasıdır.
+Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
+  };
+
+  const downloadFile = (content, filename, mimeType) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   return (

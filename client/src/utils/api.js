@@ -70,6 +70,7 @@ export const reportsAPI = {
   getPeriodComparison: () => API.get('/reports/period-comparison'),
   getTopPerformers: (params) => API.get('/reports/top-performers', { params }),
   getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
+  exportReport: (data) => API.post('/reports/export', data)
 };
 
 // Users API calls
