@@ -84,6 +84,7 @@ export const usersAPI = {
   getSalespeople: () => API.get('/users/salespeople'),
   getAllUsers: () => API.get('/users/all-users'),
   changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
+  updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
 };
 
 // Payment Methods API calls

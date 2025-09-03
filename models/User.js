@@ -32,6 +32,16 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'salesperson'],
     default: 'salesperson'
   },
+  // Yetkilendirme sistemi
+  permissions: {
+    canViewAllSales: { type: Boolean, default: false },
+    canViewAllReports: { type: Boolean, default: false },
+    canViewAllPrims: { type: Boolean, default: false },
+    canViewDashboard: { type: Boolean, default: true },
+    canManageOwnSales: { type: Boolean, default: true },
+    canViewOwnReports: { type: Boolean, default: true },
+    canViewOwnPrims: { type: Boolean, default: true }
+  },
   isActive: {
     type: Boolean,
     default: false // Varsayılan olarak pasif, admin onayı bekler

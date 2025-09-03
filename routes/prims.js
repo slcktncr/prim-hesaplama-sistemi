@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const PrimRate = require('../models/PrimRate');
 const PrimPeriod = require('../models/PrimPeriod');
 const PrimTransaction = require('../models/PrimTransaction');
@@ -139,14 +140,13 @@ router.get('/transactions', auth, async (req, res) => {
     // Admin değilse sadece kendi işlemlerini görsün
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
-    } else if (salesperson) {
-      // Temsilci ID'si direkt olarak gönderilir
-      query.salesperson = salesperson;
+    } else if (salesperson && salesperson !== '') {
+      query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
     // Dönem filtresi
-    if (period) {
-      query.primPeriod = period;
+    if (period && period !== '') {
+      query.primPeriod = new mongoose.Types.ObjectId(period);
     }
     
     // İşlem tipi filtresi
@@ -185,44 +185,21 @@ router.get('/earnings', auth, async (req, res) => {
     const { period, salesperson } = req.query;
     console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
     
-    // Temsilci arama debug
-    if (salesperson && req.user.role === 'admin') {
-      const selectedUser = await User.findById(salesperson).select('name _id role');
-      console.log('👤 Selected user for filter:', selectedUser);
-    }
-    
     let query = {};
     
     // Admin değilse sadece kendi hakedişini görsün
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
-    } else if (salesperson) {
-      // Temsilci ID'si direkt olarak gönderilir
-      query.salesperson = salesperson;
+    } else if (salesperson && salesperson !== '') {
+      query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
     // Dönem filtresi
-    if (period) {
-      query.primPeriod = period;
+    if (period && period !== '') {
+      query.primPeriod = new mongoose.Types.ObjectId(period);
     }
     
     console.log('📊 Final query:', query);
-
-    // Önce toplam PrimTransaction sayısını kontrol et
-    const totalTransactions = await PrimTransaction.countDocuments({});
-    const filteredTransactions = await PrimTransaction.countDocuments(query);
-    console.log('💾 Total PrimTransactions in DB:', totalTransactions);
-    console.log('🔍 Filtered PrimTransactions:', filteredTransactions);
-
-    // Dönem bilgisi debug
-    if (period) {
-      const periodDoc = await PrimPeriod.findById(period);
-      console.log('📅 Selected period doc:', periodDoc);
-      
-      // Bu döneme ait transaction'ları kontrol et
-      const periodTransactions = await PrimTransaction.find({ primPeriod: period }).limit(3);
-      console.log('🔗 Sample transactions for this period:', periodTransactions);
-    }
 
     // Aggregate pipeline ile hakedişleri hesapla
     const earnings = await PrimTransaction.aggregate([
@@ -283,7 +260,6 @@ router.get('/earnings', auth, async (req, res) => {
     ]);
 
     console.log('✅ Earnings result count:', earnings.length);
-    console.log('📋 First earning sample:', earnings[0]);
 
     res.json(earnings);
   } catch (error) {

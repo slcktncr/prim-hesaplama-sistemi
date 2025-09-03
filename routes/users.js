@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('name email role createdAt')
+      .select('name email role createdAt permissions')
       .sort({ name: 1 });
 
     res.json(users);
@@ -49,7 +49,7 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isActive: true,
       isApproved: true
     })
-      .select('name email role')
+      .select('name email role permissions')
       .sort({ name: 1 });
 
     res.json(users);
@@ -168,6 +168,39 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
     });
   } catch (error) {
     console.error('Update user role error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/users/:id/permissions
+// @desc    Update user permissions (admin only)
+// @access  Private (Admin only)
+router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
+  try {
+    const { permissions } = req.body;
+    
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Admin rolündeki kullanıcıların izinleri değiştirilemez
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Admin kullanıcıların izinleri değiştirilemez' });
+    }
+
+    user.permissions = { ...user.permissions, ...permissions };
+    await user.save();
+
+    const updatedUser = await User.findById(user._id)
+      .select('firstName lastName name email role permissions');
+
+    res.json({
+      message: 'Kullanıcı yetkileri başarıyla güncellendi',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update user permissions error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

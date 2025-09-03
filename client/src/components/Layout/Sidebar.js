@@ -15,7 +15,8 @@ import {
   FiBarChart2,
   FiClock,
   FiUsers,
-  FiCreditCard
+  FiCreditCard,
+  FiShield
 } from 'react-icons/fi';
 
 const Sidebar = ({ onLinkClick }) => {
@@ -132,6 +133,13 @@ const Sidebar = ({ onLinkClick }) => {
               <Nav.Link>
                 <FiUsers className="me-2" />
                 Aktif Kullanıcılar
+              </Nav.Link>
+            </LinkContainer>
+
+            <LinkContainer to="/admin/user-permissions" onClick={handleLinkClick}>
+              <Nav.Link>
+                <FiShield className="me-2" />
+                Kullanıcı Yetkileri
               </Nav.Link>
             </LinkContainer>
 
