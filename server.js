@@ -1,9 +1,19 @@
+console.log('=== SERVER STARTING ===');
 const express = require('express');
+console.log('Express loaded');
 const cors = require('cors');
+console.log('CORS loaded');
 const path = require('path');
-require('dotenv').config();
+console.log('Path loaded');
+
+// Environment variables kontrol
+console.log('Environment variables:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
 
 const connectDB = require('./config/db');
+console.log('DB config loaded');
 
 const app = express();
 
