@@ -93,6 +93,7 @@ export const usersAPI = {
   getAllUsers: () => API.get('/users/all-users'),
   changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
+  updateUser: (id, userData) => API.put(`/users/${id}`, userData),
 };
 
 // Payment Methods API calls

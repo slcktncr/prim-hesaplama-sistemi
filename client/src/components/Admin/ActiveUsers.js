@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Dropdown, Modal, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { FiUsers, FiUser, FiShield, FiMoreVertical } from 'react-icons/fi';
-import API from '../../utils/api';
+import { FiUsers, FiUser, FiShield, FiMoreVertical, FiEdit, FiCheck, FiX } from 'react-icons/fi';
+import { usersAPI } from '../../utils/api';
 
 const ActiveUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'salesperson',
+    isActive: true
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -15,7 +24,7 @@ const ActiveUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await API.get('/users');
+      const response = await usersAPI.getAllUsers();
       setUsers(response.data);
     } catch (error) {
       console.error('Users fetch error:', error);
@@ -35,7 +44,7 @@ const ActiveUsers = () => {
 
     setActionLoading(prev => ({ ...prev, [userId]: 'role' }));
     try {
-      await API.put(`/users/${userId}/role`, { role: newRole });
+      await usersAPI.changeRole(userId, newRole);
       toast.success(`Kullanıcı rolü ${roleText} olarak güncellendi`);
       fetchUsers();
     } catch (error) {
@@ -44,6 +53,48 @@ const ActiveUsers = () => {
     } finally {
       setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setFormData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      role: user.role || 'salesperson',
+      isActive: user.isActive !== false
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setActionLoading(prev => ({ ...prev, [editingUser._id]: 'update' }));
+      await usersAPI.updateUser(editingUser._id, formData);
+      toast.success('Kullanıcı bilgileri başarıyla güncellendi');
+      fetchUsers();
+      setShowEditModal(false);
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Update user error:', error);
+      toast.error(error.response?.data?.message || 'Kullanıcı güncellenirken hata oluştu');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [editingUser._id]: null }));
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+    setEditingUser(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      role: 'salesperson',
+      isActive: true
+    });
   };
 
   const formatDate = (dateString) => {
@@ -123,6 +174,14 @@ const ActiveUsers = () => {
                               </Dropdown.Toggle>
 
                               <Dropdown.Menu>
+                                <Dropdown.Item 
+                                  onClick={() => handleEditUser(user)}
+                                >
+                                  <FiEdit className="me-2" />
+                                  Düzenle
+                                </Dropdown.Item>
+                                
+                                <Dropdown.Divider />
                                 <Dropdown.Header>Rol Değiştir</Dropdown.Header>
                                 
                                 {user.role !== 'admin' && (
@@ -155,6 +214,107 @@ const ActiveUsers = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Edit User Modal */}
+      <Modal show={showEditModal} onHide={handleCloseModal} size="lg">
+        <Form onSubmit={handleUpdateUser}>
+          <Modal.Header closeButton>
+            <Modal.Title>Kullanıcı Bilgilerini Düzenle</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Ad *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Soyad *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email *</Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Rol *</Form.Label>
+                  <Form.Select
+                    value={formData.role}
+                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                    required
+                  >
+                    <option value="salesperson">Satış Temsilcisi</option>
+                    <option value="admin">Admin</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    label="Aktif kullanıcı"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                  />
+                  <Form.Text className="text-muted">
+                    Pasif kullanıcılar sisteme giriş yapamaz
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              <FiX className="me-2" />
+              İptal
+            </Button>
+            <Button 
+              variant="primary" 
+              type="submit"
+              disabled={actionLoading[editingUser?._id] === 'update'}
+            >
+              {actionLoading[editingUser?._id] === 'update' ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Güncelleniyor...
+                </>
+              ) : (
+                <>
+                  <FiCheck className="me-2" />
+                  Güncelle
+                </>
+              )}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </Container>
   );
 };

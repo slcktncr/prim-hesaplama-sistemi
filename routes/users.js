@@ -1,4 +1,5 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth, adminAuth } = require('../middleware/auth');
 
@@ -201,6 +202,72 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
     });
   } catch (error) {
     console.error('Update user permissions error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/users/:id
+// @desc    Update user information (admin only)
+// @access  Private (Admin only)
+router.put('/:id', [
+  auth, 
+  adminAuth,
+  body('firstName').notEmpty().withMessage('Ad gereklidir'),
+  body('lastName').notEmpty().withMessage('Soyad gereklidir'),
+  body('email').isEmail().withMessage('Geçerli bir email adresi gereklidir'),
+  body('role').isIn(['admin', 'salesperson']).withMessage('Geçerli bir rol seçilmelidir')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veriler', 
+        errors: errors.array() 
+      });
+    }
+
+    const { firstName, lastName, email, role, isActive } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Kendi kendini admin'den çıkaramaz
+    if (req.user._id.toString() === req.params.id && req.user.role === 'admin' && role !== 'admin') {
+      return res.status(400).json({ message: 'Kendi admin rolünüzü değiştiremezsiniz' });
+    }
+
+    // Email benzersizlik kontrolü
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(),
+      _id: { $ne: req.params.id }
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
+    }
+
+    // Kullanıcı bilgilerini güncelle
+    user.firstName = firstName.trim();
+    user.lastName = lastName.trim();
+    user.name = `${firstName.trim()} ${lastName.trim()}`;
+    user.email = email.toLowerCase();
+    user.role = role;
+    user.isActive = isActive !== undefined ? isActive : user.isActive;
+    user.updatedAt = new Date();
+
+    await user.save();
+
+    const updatedUser = await User.findById(user._id)
+      .select('firstName lastName name email role isActive isApproved createdAt updatedAt permissions')
+      .populate('approvedBy', 'name email');
+
+    res.json({
+      message: 'Kullanıcı bilgileri başarıyla güncellendi',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
