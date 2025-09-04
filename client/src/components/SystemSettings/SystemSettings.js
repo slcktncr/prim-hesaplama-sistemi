@@ -15,9 +15,9 @@ import {
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
-import PaymentTypesManagement from './PaymentTypesManagement';
-import PrimRatesManagement from './PrimRatesManagement';
-import UsersManagement from './UsersManagement';
+import PaymentMethods from '../Admin/PaymentMethods';
+import PrimSettings from '../Prims/PrimSettings';
+import ActiveUsers from '../Admin/ActiveUsers';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -74,13 +74,13 @@ const SystemSettings = () => {
                   <SaleTypesManagement />
                 </Tab.Pane>
                 <Tab.Pane eventKey="payment-types">
-                  <PaymentTypesManagement />
+                  <PaymentMethods />
                 </Tab.Pane>
                 <Tab.Pane eventKey="prim-rates">
-                  <PrimRatesManagement />
+                  <PrimSettings />
                 </Tab.Pane>
                 <Tab.Pane eventKey="users">
-                  <UsersManagement />
+                  <ActiveUsers />
                 </Tab.Pane>
               </Tab.Content>
             </div>

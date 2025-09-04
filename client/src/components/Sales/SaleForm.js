@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Row, Col, Card, Form, Button, Alert, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { salesAPI, primsAPI, paymentMethodsAPI } from '../../utils/api';
+import { salesAPI, primsAPI, paymentMethodsAPI, systemSettingsAPI } from '../../utils/api';
 import { 
   validateRequired, 
   validatePositiveNumber, 
@@ -38,6 +38,7 @@ const SaleForm = () => {
 
   const [periods, setPeriods] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [saleTypes, setSaleTypes] = useState([]);
   const [currentRate, setCurrentRate] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ const SaleForm = () => {
     fetchPeriods();
     fetchCurrentRate();
     fetchPaymentMethods();
+    fetchSaleTypes();
     if (isEdit) {
       fetchSale();
     }
@@ -93,6 +95,30 @@ const SaleForm = () => {
         { _id: '2', name: 'Kredi' },
         { _id: '3', name: 'Taksit' },
         { _id: '4', name: 'Diğer' }
+      ]);
+    }
+  };
+
+  const fetchSaleTypes = async () => {
+    try {
+      const response = await systemSettingsAPI.getSaleTypes();
+      const types = response.data || [];
+      setSaleTypes(types);
+      
+      // Varsayılan satış türünü seç
+      const defaultType = types.find(t => t.isDefault);
+      if (defaultType && !isEdit) {
+        setFormData(prev => ({
+          ...prev,
+          saleType: defaultType.name.toLowerCase().replace(' ', '')
+        }));
+      }
+    } catch (error) {
+      console.error('Sale types fetch error:', error);
+      // Hata durumunda eski sabit değerleri kullan
+      setSaleTypes([
+        { _id: '1', name: 'Normal Satış', isDefault: true },
+        { _id: '2', name: 'Kapora Durumu', isDefault: false }
       ]);
     }
   };
@@ -299,7 +325,7 @@ const SaleForm = () => {
     }
 
     // Satış tipine göre tarih validasyonu
-    if (formData.saleType === 'satis') {
+    if (!formData.saleType.includes('kapora')) {
       if (!validateRequired(formData.saleDate)) {
         newErrors.saleDate = 'Satış tarihi gereklidir';
       }
@@ -316,7 +342,7 @@ const SaleForm = () => {
     }
 
     // Fiyat validasyonu sadece normal satış için
-    if (formData.saleType === 'satis') {
+    if (!formData.saleType.includes('kapora')) {
       if (!validatePositiveNumber(formData.listPrice)) {
         newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
       }
@@ -380,7 +406,7 @@ const SaleForm = () => {
       console.log('📤 Gönderilecek saleData (base):', saleData);
 
       // Satış tipine göre farklı alanlar ekle
-      if (formData.saleType === 'satis') {
+      if (!formData.saleType.includes('kapora')) {
         saleData.saleDate = formData.saleDate;
         saleData.listPrice = parseFloat(formData.listPrice) || 0;
         saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
@@ -396,7 +422,7 @@ const SaleForm = () => {
             saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
           }
         }
-      } else if (formData.saleType === 'kapora') {
+      } else {
         saleData.kaporaDate = formData.kaporaDate;
       }
 
@@ -508,14 +534,17 @@ const SaleForm = () => {
                         isInvalid={!!errors.saleType}
                         disabled={isEdit} // Edit modunda değiştirilemez
                       >
-                        <option value="satis">Normal Satış</option>
-                        <option value="kapora">Kapora Durumu</option>
+                        {saleTypes.map(type => (
+                          <option key={type._id} value={type.name.toLowerCase().replace(' ', '')}>
+                            {type.name}
+                          </option>
+                        ))}
                       </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {errors.saleType}
                       </Form.Control.Feedback>
                       <Form.Text className="text-muted">
-                        {formData.saleType === 'kapora' 
+                        {formData.saleType.includes('kapora') 
                           ? 'Kapora durumunda prim hesaplanmaz' 
                           : 'Normal satışta prim hesaplanır'
                         }
@@ -574,12 +603,12 @@ const SaleForm = () => {
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>
-                        {formData.saleType === 'kapora' ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
+                        {formData.saleType.includes('kapora') ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
                       </Form.Label>
                       <Form.Control
                         type="date"
-                        name={formData.saleType === 'kapora' ? 'kaporaDate' : 'saleDate'}
-                        value={formData.saleType === 'kapora' ? formData.kaporaDate : formData.saleDate}
+                        name={formData.saleType.includes('kapora') ? 'kaporaDate' : 'saleDate'}
+                        value={formData.saleType.includes('kapora') ? formData.kaporaDate : formData.saleDate}
                         onChange={handleChange}
                         isInvalid={!!(errors.saleDate || errors.kaporaDate)}
                       />
@@ -589,7 +618,7 @@ const SaleForm = () => {
                     </Form.Group>
                   </Col>
                   {/* Ödeme Tipi - Sadece Normal Satış İçin */}
-                  {formData.saleType === 'satis' && (
+                  {!formData.saleType.includes('kapora') && (
                     <Col md={4}>
                       <Form.Group className="mb-3">
                         <Form.Label>Ödeme Tipi *</Form.Label>
@@ -748,7 +777,7 @@ const SaleForm = () => {
                 </Row>
 
                 {/* Fiyat Alanları - Sadece Normal Satış İçin */}
-                {formData.saleType === 'satis' && (
+                {!formData.saleType.includes('kapora') && (
                   <>
                     {/* Ana Liste Fiyatı */}
                     <Row>
@@ -850,7 +879,7 @@ const SaleForm = () => {
                 )}
 
                 {/* Kapora Durumu Bilgilendirmesi */}
-                {formData.saleType === 'kapora' && (
+                {formData.saleType.includes('kapora') && (
                   <Row>
                     <Col md={12}>
                       <Alert variant="info" className="mb-3">

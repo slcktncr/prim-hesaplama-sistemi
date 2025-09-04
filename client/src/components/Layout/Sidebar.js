@@ -113,13 +113,6 @@ const Sidebar = ({ onLinkClick }) => {
               </Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/prims/settings" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiSettings className="me-2" />
-                Prim Ayarları
-              </Nav.Link>
-            </LinkContainer>
-
             <div className="px-3 py-2 text-muted small mt-3">YÖNETİM</div>
             
             <LinkContainer to="/admin/pending-users" onClick={handleLinkClick}>
@@ -129,24 +122,10 @@ const Sidebar = ({ onLinkClick }) => {
               </Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/admin/active-users" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiUsers className="me-2" />
-                Aktif Kullanıcılar
-              </Nav.Link>
-            </LinkContainer>
-
             <LinkContainer to="/admin/user-permissions" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiShield className="me-2" />
                 Kullanıcı Yetkileri
-              </Nav.Link>
-            </LinkContainer>
-
-            <LinkContainer to="/admin/payment-methods" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiCreditCard className="me-2" />
-                Ödeme Yöntemleri
               </Nav.Link>
             </LinkContainer>
 

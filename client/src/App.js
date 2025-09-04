@@ -16,8 +16,6 @@ import PrimTransactions from './components/Prims/PrimTransactions';
 import PrimEarnings from './components/Prims/PrimEarnings';
 import Reports from './components/Reports/Reports';
 import PendingUsers from './components/Admin/PendingUsers';
-import ActiveUsers from './components/Admin/ActiveUsers';
-import PaymentMethods from './components/Admin/PaymentMethods';
 import UserPermissions from './components/Admin/UserPermissions';
 import SystemSettings from './components/SystemSettings/SystemSettings';
 import Profile from './components/Profile/Profile';
@@ -108,14 +106,6 @@ function AppContent() {
                     
                     {/* Admin Routes */}
                     <Route
-                      path="/prims/settings"
-                      element={
-                        <ProtectedRoute adminOnly={true}>
-                          <PrimSettings />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
                       path="/prims/periods"
                       element={
                         <ProtectedRoute adminOnly={true}>
@@ -131,16 +121,6 @@ function AppContent() {
                     <Route path="/admin/pending-users" element={
                       <ProtectedRoute adminOnly={true}>
                         <PendingUsers />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin/active-users" element={
-                      <ProtectedRoute adminOnly={true}>
-                        <ActiveUsers />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin/payment-methods" element={
-                      <ProtectedRoute adminOnly={true}>
-                        <PaymentMethods />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/user-permissions" element={
