@@ -87,6 +87,45 @@ const Register = () => {
           <Card>
             <Card.Body className="p-4">
               <div className="text-center mb-4">
+                {/* MOLA Logo */}
+                <div className="logo-container mb-3">
+                  <div className="logo-image mx-auto">
+                    <img 
+                      src="/mola-logo.png" 
+                      alt="MOLA Logo" 
+                      className="logo-img"
+                      style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                      onError={(e) => {
+                        // Logo bulunamazsa placeholder göster
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div 
+                      className="logo-placeholder-modern" 
+                      style={{ 
+                        display: 'none',
+                        width: '80px', 
+                        height: '80px',
+                        background: 'linear-gradient(135deg, #22d3ee 0%, #0891b2 100%)',
+                        borderRadius: '16px',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto'
+                      }}
+                    >
+                      <span style={{ 
+                        color: 'white', 
+                        fontWeight: '900', 
+                        fontSize: '1.5rem', 
+                        letterSpacing: '2px',
+                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)' 
+                      }}>
+                        MOLA
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 <h2>Kayıt Ol</h2>
                 <p className="text-muted">Prim Hesaplama Sistemi</p>
               </div>
