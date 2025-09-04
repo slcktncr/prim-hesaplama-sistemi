@@ -103,23 +103,43 @@ const SaleForm = () => {
     try {
       const response = await systemSettingsAPI.getSaleTypes();
       const types = response.data || [];
-      setSaleTypes(types);
+      
+      // Eski sistemle uyumlu value mapping ekle
+      const mappedTypes = types.map(type => ({
+        ...type,
+        value: getSaleTypeValue(type.name)
+      }));
+      
+      setSaleTypes(mappedTypes);
       
       // Varsayılan satış türünü seç
-      const defaultType = types.find(t => t.isDefault);
+      const defaultType = mappedTypes.find(t => t.isDefault);
       if (defaultType && !isEdit) {
         setFormData(prev => ({
           ...prev,
-          saleType: defaultType.name.toLowerCase().replace(' ', '')
+          saleType: defaultType.value
         }));
       }
     } catch (error) {
       console.error('Sale types fetch error:', error);
       // Hata durumunda eski sabit değerleri kullan
       setSaleTypes([
-        { _id: '1', name: 'Normal Satış', isDefault: true },
-        { _id: '2', name: 'Kapora Durumu', isDefault: false }
+        { _id: '1', name: 'Normal Satış', value: 'satis', isDefault: true },
+        { _id: '2', name: 'Kapora Durumu', value: 'kapora', isDefault: false }
       ]);
+    }
+  };
+
+  // Satış türü ismine göre eski sistem value'sunu döndür
+  const getSaleTypeValue = (name) => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('kapora')) {
+      return 'kapora';
+    } else if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
+      return 'satis';
+    } else {
+      // Yeni türler için unique value oluştur
+      return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
     }
   };
 
@@ -325,13 +345,18 @@ const SaleForm = () => {
     }
 
     // Satış tipine göre tarih validasyonu
-    if (!formData.saleType.includes('kapora')) {
+    if (formData.saleType === 'satis') {
       if (!validateRequired(formData.saleDate)) {
         newErrors.saleDate = 'Satış tarihi gereklidir';
       }
-    } else {
+    } else if (formData.saleType === 'kapora') {
       if (!validateRequired(formData.kaporaDate)) {
         newErrors.kaporaDate = 'Kapora tarihi gereklidir';
+      }
+    } else {
+      // Yeni satış türleri için varsayılan olarak satış tarihi gerekli
+      if (!validateRequired(formData.saleDate)) {
+        newErrors.saleDate = 'Satış tarihi gereklidir';
       }
     }
 
@@ -342,7 +367,16 @@ const SaleForm = () => {
     }
 
     // Fiyat validasyonu sadece normal satış için
-    if (!formData.saleType.includes('kapora')) {
+    if (formData.saleType === 'satis') {
+      if (!validatePositiveNumber(formData.listPrice)) {
+        newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
+      }
+
+      if (!validatePositiveNumber(formData.activitySalePrice)) {
+        newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
+      }
+    } else if (formData.saleType !== 'kapora') {
+      // Yeni satış türleri için de fiyat gerekli (kapora hariç)
       if (!validatePositiveNumber(formData.listPrice)) {
         newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
       }
@@ -406,7 +440,7 @@ const SaleForm = () => {
       console.log('📤 Gönderilecek saleData (base):', saleData);
 
       // Satış tipine göre farklı alanlar ekle
-      if (!formData.saleType.includes('kapora')) {
+      if (formData.saleType === 'satis') {
         saleData.saleDate = formData.saleDate;
         saleData.listPrice = parseFloat(formData.listPrice) || 0;
         saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
@@ -422,8 +456,22 @@ const SaleForm = () => {
             saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
           }
         }
-      } else {
+      } else if (formData.saleType === 'kapora') {
         saleData.kaporaDate = formData.kaporaDate;
+      } else {
+        // Yeni satış türleri için normal satış gibi davran
+        saleData.saleDate = formData.saleDate;
+        saleData.listPrice = parseFloat(formData.listPrice) || 0;
+        saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
+        saleData.paymentType = formData.paymentType;
+        saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
+        
+        if (formData.discountRate && parseFloat(formData.discountRate) > 0) {
+          saleData.discountRate = parseFloat(formData.discountRate);
+          if (formData.discountedListPrice) {
+            saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
+          }
+        }
       }
 
       console.log('📤 Sending sale data:', saleData);
@@ -535,7 +583,7 @@ const SaleForm = () => {
                         disabled={isEdit} // Edit modunda değiştirilemez
                       >
                         {saleTypes.map(type => (
-                          <option key={type._id} value={type.name.toLowerCase().replace(' ', '')}>
+                          <option key={type._id} value={type.value}>
                             {type.name}
                           </option>
                         ))}
@@ -544,7 +592,7 @@ const SaleForm = () => {
                         {errors.saleType}
                       </Form.Control.Feedback>
                       <Form.Text className="text-muted">
-                        {formData.saleType.includes('kapora') 
+                        {formData.saleType === 'kapora' 
                           ? 'Kapora durumunda prim hesaplanmaz' 
                           : 'Normal satışta prim hesaplanır'
                         }
@@ -603,12 +651,12 @@ const SaleForm = () => {
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>
-                        {formData.saleType.includes('kapora') ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
+                        {formData.saleType === 'kapora' ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
                       </Form.Label>
                       <Form.Control
                         type="date"
-                        name={formData.saleType.includes('kapora') ? 'kaporaDate' : 'saleDate'}
-                        value={formData.saleType.includes('kapora') ? formData.kaporaDate : formData.saleDate}
+                        name={formData.saleType === 'kapora' ? 'kaporaDate' : 'saleDate'}
+                        value={formData.saleType === 'kapora' ? formData.kaporaDate : formData.saleDate}
                         onChange={handleChange}
                         isInvalid={!!(errors.saleDate || errors.kaporaDate)}
                       />
@@ -617,8 +665,8 @@ const SaleForm = () => {
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
-                  {/* Ödeme Tipi - Sadece Normal Satış İçin */}
-                  {!formData.saleType.includes('kapora') && (
+                  {/* Ödeme Tipi - Kapora Hariç Tüm Satış Türleri İçin */}
+                  {formData.saleType !== 'kapora' && (
                     <Col md={4}>
                       <Form.Group className="mb-3">
                         <Form.Label>Ödeme Tipi *</Form.Label>
@@ -776,8 +824,8 @@ const SaleForm = () => {
                   </Col>
                 </Row>
 
-                {/* Fiyat Alanları - Sadece Normal Satış İçin */}
-                {!formData.saleType.includes('kapora') && (
+                {/* Fiyat Alanları - Kapora Hariç Tüm Satış Türleri İçin */}
+                {formData.saleType !== 'kapora' && (
                   <>
                     {/* Ana Liste Fiyatı */}
                     <Row>
@@ -879,7 +927,7 @@ const SaleForm = () => {
                 )}
 
                 {/* Kapora Durumu Bilgilendirmesi */}
-                {formData.saleType.includes('kapora') && (
+                {formData.saleType === 'kapora' && (
                   <Row>
                     <Col md={12}>
                       <Alert variant="info" className="mb-3">
