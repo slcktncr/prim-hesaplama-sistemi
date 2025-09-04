@@ -114,14 +114,19 @@ router.post('/', auth, [
 
     // Kapora değilse prim hesapla
     if (saleType === 'satis') {
-      console.log('💰 Normal satış - Prim hesaplanıyor');
-      console.log('📊 Fiyat bilgileri:', { 
-        listPrice, 
-        originalListPrice, 
-        discountRate, 
-        discountedListPrice, 
-        activitySalePrice 
-      });
+          console.log('💰 Normal satış - Prim hesaplanıyor');
+    console.log('📊 Fiyat bilgileri:', { 
+      listPrice, 
+      originalListPrice, 
+      discountRate, 
+      discountedListPrice, 
+      activitySalePrice 
+    });
+    
+    // originalListPrice eksikse listPrice'dan al
+    if (!originalListPrice && listPrice) {
+      console.log('⚠️ originalListPrice eksik, listPrice kullanılıyor:', listPrice);
+    }
       
       // Aktif prim oranını al
       currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });

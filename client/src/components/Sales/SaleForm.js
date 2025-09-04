@@ -386,10 +386,12 @@ const SaleForm = () => {
         saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
         saleData.paymentType = formData.paymentType;
         
+        // Orijinal liste fiyatını her zaman gönder
+        saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
+        
         // İndirim bilgileri
         if (formData.discountRate) {
           saleData.discountRate = parseFloat(formData.discountRate) || 0;
-          saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
         }
         if (formData.discountedListPrice) {
           saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
