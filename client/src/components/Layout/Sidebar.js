@@ -52,7 +52,7 @@ const Sidebar = ({ onLinkClick }) => {
           </div>
           <div className="logo-info">
             <h4>Prim Sistemi</h4>
-            <p>Satış ve Komisyon Yönetimi</p>
+            <p>Satış Kayıt ve Raporlama</p>
           </div>
         </div>
       </div>
