@@ -19,6 +19,7 @@ import PendingUsers from './components/Admin/PendingUsers';
 import ActiveUsers from './components/Admin/ActiveUsers';
 import PaymentMethods from './components/Admin/PaymentMethods';
 import UserPermissions from './components/Admin/UserPermissions';
+import SystemSettings from './components/SystemSettings/SystemSettings';
 import Profile from './components/Profile/Profile';
 import Loading from './components/Common/Loading';
 
@@ -145,6 +146,11 @@ function AppContent() {
                     <Route path="/admin/user-permissions" element={
                       <ProtectedRoute adminOnly={true}>
                         <UserPermissions />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/system-settings" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <SystemSettings />
                       </ProtectedRoute>
                     } />
                     

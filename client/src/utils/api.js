@@ -105,4 +105,19 @@ export const paymentMethodsAPI = {
   toggleStatus: (id) => API.put(`/payment-methods/${id}/toggle-status`)
 };
 
+// System Settings API calls
+export const systemSettingsAPI = {
+  // Sale Types
+  getSaleTypes: () => API.get('/system-settings/sale-types'),
+  createSaleType: (data) => API.post('/system-settings/sale-types', data),
+  updateSaleType: (id, data) => API.put(`/system-settings/sale-types/${id}`, data),
+  deleteSaleType: (id) => API.delete(`/system-settings/sale-types/${id}`),
+  
+  // Payment Types
+  getPaymentTypes: () => API.get('/system-settings/payment-types'),
+  createPaymentType: (data) => API.post('/system-settings/payment-types', data),
+  updatePaymentType: (id, data) => API.put(`/system-settings/payment-types/${id}`, data),
+  deletePaymentType: (id) => API.delete(`/system-settings/payment-types/${id}`)
+};
+
 export default API;

@@ -149,6 +149,13 @@ const Sidebar = ({ onLinkClick }) => {
                 Ödeme Yöntemleri
               </Nav.Link>
             </LinkContainer>
+
+            <LinkContainer to="/admin/system-settings" onClick={handleLinkClick}>
+              <Nav.Link>
+                <FiSettings className="me-2" />
+                Sistem Ayarları
+              </Nav.Link>
+            </LinkContainer>
           </>
         )}
 
