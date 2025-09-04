@@ -79,6 +79,8 @@ router.post('/', auth, [
     console.log('🔍 Sale POST request received');
     console.log('User:', req.user?.email);
     console.log('Body:', req.body);
+    console.log('SaleType:', req.body.saleType);
+    console.log('PaymentType:', req.body.paymentType);
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -112,11 +114,22 @@ router.post('/', auth, [
 
     // Kapora değilse prim hesapla
     if (saleType === 'satis') {
+      console.log('💰 Normal satış - Prim hesaplanıyor');
+      console.log('📊 Fiyat bilgileri:', { 
+        listPrice, 
+        originalListPrice, 
+        discountRate, 
+        discountedListPrice, 
+        activitySalePrice 
+      });
+      
       // Aktif prim oranını al
       currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
       if (!currentPrimRate) {
+        console.log('❌ Aktif prim oranı bulunamadı');
         return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
       }
+      console.log('✅ Prim oranı bulundu:', currentPrimRate.rate);
 
       // Prim dönemini belirle
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
@@ -202,9 +215,12 @@ router.post('/', auth, [
       saleData.kaporaDate = kaporaDate;
     }
 
+    console.log('💾 Sale oluşturuluyor, saleData:', saleData);
     const sale = new Sale(saleData);
+    console.log('💾 Sale modeli oluşturuldu, kaydediliyor...');
 
     await sale.save();
+    console.log('✅ Sale başarıyla kaydedildi, ID:', sale._id);
 
     // Sadece normal satış için prim işlemi kaydet
     if (saleType === 'satis') {

@@ -363,6 +363,8 @@ const SaleForm = () => {
     setLoading(true);
 
     try {
+      console.log('📝 Form data:', formData);
+      
       const saleData = {
         customerName: formData.customerName,
         blockNo: formData.blockNo,
@@ -374,6 +376,8 @@ const SaleForm = () => {
         exitDate: formData.exitDate,
         notes: formData.notes
       };
+      
+      console.log('📤 Gönderilecek saleData (base):', saleData);
 
       // Satış tipine göre farklı alanlar ekle
       if (formData.saleType === 'satis') {
