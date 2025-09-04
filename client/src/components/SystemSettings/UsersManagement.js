@@ -1,5 +1,5 @@
 import React from 'react';
-import Users from '../Users/Users';
+import ActiveUsers from '../Admin/ActiveUsers';
 
 const UsersManagement = () => {
   return (
@@ -8,7 +8,7 @@ const UsersManagement = () => {
         <h4 className="mb-1">Kullanıcı Yönetimi</h4>
         <p className="text-muted mb-0">Sistem kullanıcılarını yönetin</p>
       </div>
-      <Users />
+      <ActiveUsers />
     </div>
   );
 };

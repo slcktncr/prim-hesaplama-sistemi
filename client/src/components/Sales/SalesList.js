@@ -122,7 +122,7 @@ const SalesList = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getUsers();
+      const response = await usersAPI.getAllUsers();
       setUsers(response.data || []);
     } catch (error) {
       console.error('Users fetch error:', error);
