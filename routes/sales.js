@@ -12,16 +12,29 @@ const router = express.Router();
 
 // Ödeme tipi validasyonu için custom validator
 const validatePaymentType = async (value) => {
-  if (!value) return true; // Optional field
+  if (!value || value === '') return true; // Optional field
   
-  const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
-  const validPaymentTypes = activePaymentMethods.map(method => method.name);
-  
-  if (!validPaymentTypes.includes(value)) {
-    throw new Error(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
+  try {
+    const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
+    const validPaymentTypes = activePaymentMethods.map(method => method.name);
+    
+    // Eğer PaymentMethod tablosu boşsa, varsayılan değerleri kabul et
+    if (validPaymentTypes.length === 0) {
+      const defaultTypes = ['Nakit', 'Kredi', 'Taksit', 'Diğer'];
+      return defaultTypes.includes(value);
+    }
+    
+    if (!validPaymentTypes.includes(value)) {
+      throw new Error(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Payment type validation error:', error);
+    // Hata durumunda varsayılan değerleri kabul et
+    const defaultTypes = ['Nakit', 'Kredi', 'Taksit', 'Diğer'];
+    return defaultTypes.includes(value);
   }
-  
-  return true;
 };
 
 // Satış dönemini otomatik belirle
@@ -75,7 +88,12 @@ router.post('/', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('❌ Validation errors:', errors.array());
-      return res.status(400).json({ errors: errors.array() });
+      const errorMessages = errors.array().map(err => `${err.param}: ${err.msg}`).join(', ');
+      return res.status(400).json({ 
+        message: `Validasyon hatası: ${errorMessages}`,
+        errors: errors.array(),
+        details: errorMessages
+      });
     }
 
     const {
@@ -265,16 +283,16 @@ router.get('/', auth, async (req, res) => {
 // @desc    Satış güncelle
 // @access  Private
 router.put('/:id', auth, [
-  body('customerName').optional().trim().notEmpty().withMessage('Müşteri adı soyadı gereklidir'),
-  body('blockNo').optional().trim().notEmpty().withMessage('Blok no gereklidir'),
-  body('apartmentNo').optional().trim().notEmpty().withMessage('Daire no gereklidir'),
-  body('periodNo').optional().trim().notEmpty().withMessage('Dönem no gereklidir'),
-  body('contractNo').optional().trim().isLength({ min: 6, max: 6 }).withMessage('Sözleşme no tam olarak 6 hane olmalıdır'),
+  body('customerName').optional().trim().isLength({ min: 1 }).withMessage('Müşteri adı soyadı gereklidir'),
+  body('blockNo').optional().trim().isLength({ min: 1 }).withMessage('Blok no gereklidir'),
+  body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
+  body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
+  body('contractNo').optional().trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
   body('saleType').optional().isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
   body('saleDate').optional().isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
   body('kaporaDate').optional().isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
-  body('listPrice').optional().isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
-  body('activitySalePrice').optional().isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
+  body('listPrice').optional().isNumeric().withMessage('Liste fiyatı sayısal olmalıdır'),
+  body('activitySalePrice').optional().isNumeric().withMessage('Aktivite satış fiyatı sayısal olmalıdır'),
   body('paymentType').optional().custom(validatePaymentType)
 ], async (req, res) => {
   try {
@@ -286,9 +304,11 @@ router.put('/:id', auth, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('❌ Validation errors:', errors.array());
+      const errorMessages = errors.array().map(err => `${err.param}: ${err.msg}`).join(', ');
       return res.status(400).json({ 
-        message: 'Validasyon hatası',
-        errors: errors.array() 
+        message: `Validasyon hatası: ${errorMessages}`,
+        errors: errors.array(),
+        details: errorMessages
       });
     }
 
