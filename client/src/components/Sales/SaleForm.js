@@ -186,13 +186,23 @@ const SaleForm = () => {
     
     // Giriş tarihi için
     if (name === 'entryDay' || name === 'entryMonth') {
-      const currentEntry = formData.entryDate || '/';
-      const [currentDay, currentMonth] = currentEntry.split('/');
+      const currentEntry = formData.entryDate || '';
+      const parts = currentEntry.split('/');
+      const currentDay = parts[0] || '';
+      const currentMonth = parts[1] || '';
       
       let newDay = name === 'entryDay' ? value : currentDay;
       let newMonth = name === 'entryMonth' ? value : currentMonth;
       
-      const newEntryDate = (newDay && newMonth) ? `${newDay}/${newMonth}` : '';
+      // Sadece her ikisi de seçiliyse birleştir, aksi halde kısmi seçimi koru
+      let newEntryDate = '';
+      if (newDay && newMonth) {
+        newEntryDate = `${newDay}/${newMonth}`;
+      } else if (newDay || newMonth) {
+        // Kısmi seçim durumunda da değeri sakla
+        newEntryDate = `${newDay || ''}/${newMonth || ''}`;
+      }
+      
       setFormData(prev => ({ ...prev, entryDate: newEntryDate }));
       
       // Clear error
@@ -203,13 +213,23 @@ const SaleForm = () => {
     
     // Çıkış tarihi için
     if (name === 'exitDay' || name === 'exitMonth') {
-      const currentExit = formData.exitDate || '/';
-      const [currentDay, currentMonth] = currentExit.split('/');
+      const currentExit = formData.exitDate || '';
+      const parts = currentExit.split('/');
+      const currentDay = parts[0] || '';
+      const currentMonth = parts[1] || '';
       
       let newDay = name === 'exitDay' ? value : currentDay;
       let newMonth = name === 'exitMonth' ? value : currentMonth;
       
-      const newExitDate = (newDay && newMonth) ? `${newDay}/${newMonth}` : '';
+      // Sadece her ikisi de seçiliyse birleştir, aksi halde kısmi seçimi koru
+      let newExitDate = '';
+      if (newDay && newMonth) {
+        newExitDate = `${newDay}/${newMonth}`;
+      } else if (newDay || newMonth) {
+        // Kısmi seçim durumunda da değeri sakla
+        newExitDate = `${newDay || ''}/${newMonth || ''}`;
+      }
+      
       setFormData(prev => ({ ...prev, exitDate: newExitDate }));
       
       // Clear error
@@ -221,6 +241,12 @@ const SaleForm = () => {
 
   const validateDateFormat = (dateStr) => {
     if (!dateStr) return true; // Opsiyonel alan
+    
+    // Kısmi seçimleri de destekle (örn: "05/" veya "/03")
+    if (dateStr === '/' || dateStr.endsWith('/') || dateStr.startsWith('/')) {
+      return true; // Kısmi seçim geçerli kabul edilir
+    }
+    
     const regex = /^([0-2][0-9]|3[01])\/([0][1-9]|1[0-2])$/;
     if (!regex.test(dateStr)) return false;
     
@@ -544,22 +570,25 @@ const SaleForm = () => {
                         <Col xs={6}>
                           <Form.Select
                             name="entryDay"
-                            value={formData.entryDate ? formData.entryDate.split('/')[0] || '' : ''}
+                            value={formData.entryDate ? (formData.entryDate.split('/')[0] || '') : ''}
                             onChange={handleDateChange}
                             isInvalid={!!errors.entryDate}
                           >
                             <option value="">Gün</option>
-                            {Array.from({length: 31}, (_, i) => i + 1).map(day => (
-                              <option key={day} value={day.toString().padStart(2, '0')}>
-                                {day}
-                              </option>
-                            ))}
+                            {Array.from({length: 31}, (_, i) => i + 1).map(day => {
+                              const dayStr = day.toString().padStart(2, '0');
+                              return (
+                                <option key={day} value={dayStr}>
+                                  {day}
+                                </option>
+                              );
+                            })}
                           </Form.Select>
                         </Col>
                         <Col xs={6}>
                           <Form.Select
                             name="entryMonth"
-                            value={formData.entryDate ? formData.entryDate.split('/')[1] || '' : ''}
+                            value={formData.entryDate ? (formData.entryDate.split('/')[1] || '') : ''}
                             onChange={handleDateChange}
                             isInvalid={!!errors.entryDate}
                           >
@@ -594,22 +623,25 @@ const SaleForm = () => {
                         <Col xs={6}>
                           <Form.Select
                             name="exitDay"
-                            value={formData.exitDate ? formData.exitDate.split('/')[0] || '' : ''}
+                            value={formData.exitDate ? (formData.exitDate.split('/')[0] || '') : ''}
                             onChange={handleDateChange}
                             isInvalid={!!errors.exitDate}
                           >
                             <option value="">Gün</option>
-                            {Array.from({length: 31}, (_, i) => i + 1).map(day => (
-                              <option key={day} value={day.toString().padStart(2, '0')}>
-                                {day}
-                              </option>
-                            ))}
+                            {Array.from({length: 31}, (_, i) => i + 1).map(day => {
+                              const dayStr = day.toString().padStart(2, '0');
+                              return (
+                                <option key={day} value={dayStr}>
+                                  {day}
+                                </option>
+                              );
+                            })}
                           </Form.Select>
                         </Col>
                         <Col xs={6}>
                           <Form.Select
                             name="exitMonth"
-                            value={formData.exitDate ? formData.exitDate.split('/')[1] || '' : ''}
+                            value={formData.exitDate ? (formData.exitDate.split('/')[1] || '') : ''}
                             onChange={handleDateChange}
                             isInvalid={!!errors.exitDate}
                           >
