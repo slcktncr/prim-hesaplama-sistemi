@@ -271,9 +271,10 @@ const PrimEarnings = () => {
                 <tr>
                   <th>Temsilci</th>
                   <th>Dönem</th>
+                  <th>Satış Bilgileri</th>
+                  <th>Ödeme Durumu</th>
                   <th>Toplam Hakediş</th>
                   <th>İşlem Detayları</th>
-                  <th>Performans</th>
                 </tr>
               </thead>
               <tbody>
@@ -304,6 +305,34 @@ const PrimEarnings = () => {
                         <div>
                           <div className="fw-bold">{earning.primPeriod?.name || 'Bilinmeyen'}</div>
                           <div className="small text-muted">Dönem</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="text-center">
+                        <div className="h5 mb-1 text-info">
+                          {earning.salesCount || 0}
+                        </div>
+                        <div className="small text-muted">Satış Adedi</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="small">
+                        <div className="d-flex justify-content-between mb-1">
+                          <span className="text-success">
+                            Ödenen:
+                          </span>
+                          <span className="fw-bold text-success">
+                            {formatCurrency(earning.paidAmount || 0)}
+                          </span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span className="text-warning">
+                            Ödenmemiş:
+                          </span>
+                          <span className="fw-bold text-warning">
+                            {formatCurrency(earning.unpaidAmount || 0)}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -339,22 +368,6 @@ const PrimEarnings = () => {
                         <div className="d-flex justify-content-between">
                           <strong>Toplam: {earning.transactionCount}</strong>
                         </div>
-                      </div>
-                    </td>
-                    <td style={{ width: '200px' }}>
-                      <div className="mb-2">
-                        <div className="d-flex justify-content-between small mb-1">
-                          <span>Performans</span>
-                          <span>{getProgressPercentage(earning.totalEarnings, maxEarning).toFixed(0)}%</span>
-                        </div>
-                        <ProgressBar 
-                          variant={earning.totalEarnings >= 0 ? 'success' : 'danger'}
-                          now={getProgressPercentage(earning.totalEarnings, maxEarning)}
-                          style={{ height: '8px' }}
-                        />
-                      </div>
-                      <div className="small text-muted">
-                        Sıralama: #{index + 1}
                       </div>
                     </td>
                   </tr>

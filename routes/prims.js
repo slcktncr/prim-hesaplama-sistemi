@@ -226,6 +226,12 @@ router.get('/earnings', auth, async (req, res) => {
           }
         }
       },
+      // Sadece gerçek prim hakedişi olanları göster (0 TL olanları filtrele)
+      {
+        $match: {
+          transactionCount: { $gt: 0 }
+        }
+      },
       {
         $lookup: {
           from: 'users',
@@ -242,6 +248,53 @@ router.get('/earnings', auth, async (req, res) => {
           as: 'primPeriod'
         }
       },
+      // Satış bilgilerini de ekle
+      {
+        $lookup: {
+          from: 'sales',
+          let: { 
+            salespersonId: '$_id.salesperson', 
+            periodId: '$_id.primPeriod' 
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$salesperson', '$$salespersonId'] },
+                    { $eq: ['$primPeriod', '$$periodId'] },
+                    { $eq: ['$saleType', 'satis'] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'sales'
+        }
+      },
+      {
+        $addFields: {
+          salesCount: { $size: '$sales' },
+          paidAmount: {
+            $sum: {
+              $map: {
+                input: '$sales',
+                as: 'sale',
+                in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödendi'] }, '$$sale.primAmount', 0] }
+              }
+            }
+          },
+          unpaidAmount: {
+            $sum: {
+              $map: {
+                input: '$sales',
+                as: 'sale',
+                in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödenmedi'] }, '$$sale.primAmount', 0] }
+              }
+            }
+          }
+        }
+      },
       {
         $project: {
           salesperson: { $arrayElemAt: ['$salesperson', 0] },
@@ -251,7 +304,10 @@ router.get('/earnings', auth, async (req, res) => {
           kazancCount: 1,
           kesintiCount: 1,
           transferGelenCount: 1,
-          transferGidenCount: 1
+          transferGidenCount: 1,
+          salesCount: 1,
+          paidAmount: 1,
+          unpaidAmount: 1
         }
       },
       {
