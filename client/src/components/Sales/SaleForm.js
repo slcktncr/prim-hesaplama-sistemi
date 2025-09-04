@@ -25,10 +25,11 @@ const SaleForm = () => {
     saleDate: '',
     kaporaDate: '',
     contractNo: '',
-    listPrice: '',
-    originalListPrice: '', // İndirim öncesi orijinal fiyat
-    discountRate: '',      // İndirim oranı (%)
-    activitySalePrice: '',
+    listPrice: '',           // Ana liste fiyatı (girilen)
+    originalListPrice: '',   // İndirim öncesi orijinal liste fiyatı (aynı listPrice ile)
+    discountRate: '',        // İndirim oranı (%)
+    discountedListPrice: '', // İndirim sonrası liste fiyatı
+    activitySalePrice: '',   // Aktivite satış fiyatı
     paymentType: 'Nakit',
     entryDate: '', // Giriş tarihi (gün/ay)
     exitDate: '',  // Çıkış tarihi (gün/ay)
@@ -157,18 +158,29 @@ const SaleForm = () => {
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
 
-      // İndirim hesaplama logic'i
-      if (name === 'discountRate') {
+      // Yeni fiyat hesaplama mantığı
+      if (name === 'listPrice') {
+        // Liste fiyatı değiştiğinde, orijinal liste fiyatını sakla
+        if (value && !prev.originalListPrice) {
+          newData.originalListPrice = value;
+        }
+        // Eğer indirim varsa, indirimsiz liste fiyatını güncelle
+        if (prev.discountRate && value) {
+          newData.originalListPrice = value;
+          newData.discountedListPrice = calculateDiscountedPrice(value, prev.discountRate);
+        }
+      } else if (name === 'discountRate') {
         // İndirim oranı değiştiğinde
-        const basePrice = prev.originalListPrice || prev.listPrice;
-        if (value && basePrice) {
-          newData.listPrice = calculateDiscountedPrice(basePrice, value);
+        const originalPrice = prev.originalListPrice || prev.listPrice;
+        if (value && originalPrice) {
+          newData.discountedListPrice = calculateDiscountedPrice(originalPrice, value);
+          // Orijinal fiyat henüz saklanmamışsa sakla
           if (!prev.originalListPrice) {
-            newData.originalListPrice = prev.listPrice; // Orijinal fiyatı sakla
+            newData.originalListPrice = prev.listPrice;
           }
         } else if (!value) {
-          // İndirim temizlendiğinde orijinal fiyata dön
-          newData.listPrice = prev.originalListPrice || prev.listPrice;
+          // İndirim temizlendiğinde indirimsiz fiyatı temizle
+          newData.discountedListPrice = '';
         }
       }
 
@@ -360,9 +372,10 @@ const SaleForm = () => {
         // İndirim bilgileri
         if (formData.discountRate) {
           saleData.discountRate = parseFloat(formData.discountRate) || 0;
+          saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
         }
-        if (formData.originalListPrice) {
-          saleData.originalListPrice = parseFloat(formData.originalListPrice) || 0;
+        if (formData.discountedListPrice) {
+          saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
         }
       } else if (formData.saleType === 'kapora') {
         saleData.kaporaDate = formData.kaporaDate;
@@ -389,16 +402,34 @@ const SaleForm = () => {
     }
   };
 
-  // Prim hesaplama
+  // Prim hesaplama - 3 fiyat arasından en düşüğü
   const calculatePrim = () => {
-    const listPrice = parseFloat(formData.listPrice) || 0;
+    const originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
+    const discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
     const activityPrice = parseFloat(formData.activitySalePrice) || 0;
     const rate = currentRate?.rate || 0;
     
-    if (listPrice > 0 && activityPrice > 0) {
-      const basePrice = Math.min(listPrice, activityPrice);
+    // 3 fiyat arasından geçerli olanları topla
+    const validPrices = [];
+    
+    if (originalListPrice > 0) {
+      validPrices.push(originalListPrice);
+    }
+    
+    if (discountedListPrice > 0) {
+      validPrices.push(discountedListPrice);
+    }
+    
+    if (activityPrice > 0) {
+      validPrices.push(activityPrice);
+    }
+    
+    // En az bir geçerli fiyat varsa, en düşüğü üzerinden hesapla
+    if (validPrices.length > 0) {
+      const basePrice = Math.min(...validPrices);
       return basePrice * rate;
     }
+    
     return 0;
   };
 
@@ -700,11 +731,32 @@ const SaleForm = () => {
                 {/* Fiyat Alanları - Sadece Normal Satış İçin */}
                 {formData.saleType === 'satis' && (
                   <>
-                    {/* İndirim Oranı */}
+                    {/* Ana Liste Fiyatı */}
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Yapılan İndirim Oranı (%)</Form.Label>
+                          <Form.Label>Liste Fiyatı (₺) *</Form.Label>
+                          <Form.Control
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            name="listPrice"
+                            value={formData.listPrice}
+                            onChange={handleChange}
+                            isInvalid={!!errors.listPrice}
+                            placeholder="0.00"
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.listPrice}
+                          </Form.Control.Feedback>
+                          <Form.Text className="text-muted">
+                            Ana liste fiyatını giriniz
+                          </Form.Text>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>İndirim Oranı (%)</Form.Label>
                           <Form.Control
                             type="number"
                             step="0.01"
@@ -720,65 +772,39 @@ const SaleForm = () => {
                             {errors.discountRate}
                           </Form.Control.Feedback>
                           <Form.Text className="text-muted">
-                            İndirim oranı girilirse liste fiyatına otomatik uygulanır
+                            İsteğe bağlı - Liste fiyatına uygulanacak indirim
                           </Form.Text>
                         </Form.Group>
                       </Col>
-                      {formData.discountRate && (
-                        <Col md={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label>Orijinal Liste Fiyatı (₺)</Form.Label>
-                            <Form.Control
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              name="originalListPrice"
-                              value={formData.originalListPrice}
-                              readOnly
-                              className="bg-light"
-                            />
-                            <Form.Text className="text-muted">
-                              İndirim öncesi orijinal fiyat
-                            </Form.Text>
-                          </Form.Group>
-                        </Col>
-                      )}
                     </Row>
 
-                    {/* Liste ve Aktivite Fiyatları */}
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Liste Fiyatı (₺) *
-                            {formData.discountRate && (
+                    {/* İndirim Sonrası Liste Fiyatı - Sadece indirim varsa göster */}
+                    {formData.discountRate && formData.discountedListPrice && (
+                      <Row>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>
+                              İndirim Sonrası Liste Fiyatı (₺)
                               <Badge bg="success" className="ms-2">
                                 %{formData.discountRate} İndirimli
                               </Badge>
-                            )}
-                          </Form.Label>
-                          <Form.Control
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            name="listPrice"
-                            value={formData.listPrice}
-                            onChange={handleChange}
-                            isInvalid={!!errors.listPrice}
-                            placeholder="0.00"
-                            readOnly={!!formData.discountRate}
-                            className={formData.discountRate ? 'bg-light' : ''}
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.listPrice}
-                          </Form.Control.Feedback>
-                          {formData.discountRate && (
+                            </Form.Label>
+                            <Form.Control
+                              type="number"
+                              value={formData.discountedListPrice}
+                              readOnly
+                              className="bg-light"
+                            />
                             <Form.Text className="text-success">
-                              İndirim uygulandı: {formData.originalListPrice} TL → {formData.listPrice} TL
+                              İndirim uygulandı: {formData.listPrice} TL → {formData.discountedListPrice} TL
                             </Form.Text>
-                          )}
-                        </Form.Group>
-                      </Col>
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                    )}
+
+                    {/* Aktivite Satış Fiyatı */}
+                    <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3">
                           <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
@@ -795,6 +821,9 @@ const SaleForm = () => {
                           <Form.Control.Feedback type="invalid">
                             {errors.activitySalePrice}
                           </Form.Control.Feedback>
+                          <Form.Text className="text-muted">
+                            İndirimden etkilenmez
+                          </Form.Text>
                         </Form.Group>
                       </Col>
                     </Row>
@@ -886,11 +915,20 @@ const SaleForm = () => {
                   </div>
                   
                   <div className="mb-3">
-                    <small className="text-muted">Liste Fiyatı</small>
+                    <small className="text-muted">Liste Fiyatı (Ana)</small>
                     <div>
                       {formatCurrency(parseFloat(formData.listPrice) || 0)}
                     </div>
                   </div>
+                  
+                  {formData.discountedListPrice && (
+                    <div className="mb-3">
+                      <small className="text-muted">İndirim Sonrası Liste Fiyatı</small>
+                      <div className="text-success">
+                        {formatCurrency(parseFloat(formData.discountedListPrice) || 0)}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="mb-3">
                     <small className="text-muted">Aktivite Fiyatı</small>
@@ -902,11 +940,23 @@ const SaleForm = () => {
                   <div className="mb-3">
                     <small className="text-muted">Prim Hesaplama Tabanı</small>
                     <div className="text-info">
-                      {formatCurrency(Math.min(
-                        parseFloat(formData.listPrice) || 0,
-                        parseFloat(formData.activitySalePrice) || 0
-                      ))}
+                      {(() => {
+                        const originalListPrice = parseFloat(formData.listPrice) || 0;
+                        const discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
+                        const activityPrice = parseFloat(formData.activitySalePrice) || 0;
+                        
+                        const validPrices = [];
+                        if (originalListPrice > 0) validPrices.push(originalListPrice);
+                        if (discountedListPrice > 0) validPrices.push(discountedListPrice);
+                        if (activityPrice > 0) validPrices.push(activityPrice);
+                        
+                        const basePrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+                        return formatCurrency(basePrice);
+                      })()}
                     </div>
+                    <small className="text-muted">
+                      (3 fiyat arasından en düşüğü)
+                    </small>
                   </div>
                   
                   <hr />

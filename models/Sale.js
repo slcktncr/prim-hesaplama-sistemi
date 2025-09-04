@@ -67,6 +67,13 @@ const saleSchema = new mongoose.Schema({
       message: 'İndirim oranı 0-100 arasında olmalıdır'
     }
   },
+  discountedListPrice: {
+    type: Number,
+    min: 0,
+    default: function() {
+      return this.discountRate > 0 ? this.listPrice * (1 - this.discountRate / 100) : null;
+    }
+  },
   originalListPrice: {
     type: Number, // İndirim öncesi orijinal liste fiyatı
     required: function() {

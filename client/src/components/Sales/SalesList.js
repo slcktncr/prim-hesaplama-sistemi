@@ -416,22 +416,47 @@ const SalesList = () => {
                           </div>
                         ) : (
                           <div>
+                            {/* Ana Liste Fiyatı */}
                             <div>
-                              Liste: {formatCurrency(sale.listPrice)}
-                              {sale.discountRate > 0 && (
-                                <Badge bg="success" className="ms-1" style={{ fontSize: '0.7rem' }}>
+                              <strong>Liste: {formatCurrency(sale.listPrice)}</strong>
+                            </div>
+                            
+                            {/* İndirim Varsa Göster */}
+                            {sale.discountRate > 0 && (
+                              <div>
+                                <small className="text-success">
+                                  İndirimli: {formatCurrency(sale.discountedListPrice || (sale.listPrice * (1 - sale.discountRate / 100)))}
+                                </small>
+                                <Badge bg="success" className="ms-1" style={{ fontSize: '0.6rem' }}>
                                   %{sale.discountRate} İndirim
                                 </Badge>
-                              )}
-                            </div>
-                            {sale.originalListPrice && sale.discountRate > 0 && (
-                              <div>
-                                <small className="text-muted text-decoration-line-through">
-                                  Orijinal: {formatCurrency(sale.originalListPrice)}
-                                </small>
                               </div>
                             )}
-                            <div>Aktivite: {formatCurrency(sale.activitySalePrice)}</div>
+                            
+                            {/* Aktivite Fiyatı */}
+                            <div>
+                              <small>Aktivite: {formatCurrency(sale.activitySalePrice)}</small>
+                            </div>
+                            
+                            {/* Prim Hesaplama Tabanı */}
+                            <div>
+                              <small className="text-info">
+                                Prim Tabanı: {(() => {
+                                  const listPrice = sale.listPrice || 0;
+                                  const discountedPrice = sale.discountedListPrice || (sale.discountRate > 0 ? listPrice * (1 - sale.discountRate / 100) : 0);
+                                  const activityPrice = sale.activitySalePrice || 0;
+                                  
+                                  const validPrices = [];
+                                  if (listPrice > 0) validPrices.push(listPrice);
+                                  if (discountedPrice > 0) validPrices.push(discountedPrice);
+                                  if (activityPrice > 0) validPrices.push(activityPrice);
+                                  
+                                  const basePrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+                                  return formatCurrency(basePrice);
+                                })()}
+                              </small>
+                            </div>
+                            
                             <Badge bg={getPaymentTypeClass(sale.paymentType)} className="mt-1">
                               {sale.paymentType}
                             </Badge>
