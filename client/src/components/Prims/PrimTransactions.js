@@ -38,6 +38,8 @@ const PrimTransactions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalDeductions, setTotalDeductions] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [netTotal, setNetTotal] = useState(0);
   const [filters, setFilters] = useState({
     page: 1,
     limit: 15,
@@ -66,7 +68,7 @@ const PrimTransactions = () => {
   useEffect(() => {
     const debouncedFetch = debounce(() => {
       fetchTransactions();
-      fetchTotalDeductions();
+      fetchTotals();
     }, 300);
     debouncedFetch();
   }, [filters]);
@@ -100,24 +102,39 @@ const PrimTransactions = () => {
     }
   };
 
-  const fetchTotalDeductions = async () => {
+  const fetchTotals = async () => {
     try {
-      // Kesinti toplamı için ayrı API çağrısı - sadece kesinti tipindeki işlemleri al
-      const deductionFilters = {
-        ...filters,
-        type: 'kesinti',
-        limit: 1000 // Tüm kesintileri al
+      // Tüm işlemler için ayrı API çağrısı - sayfalama olmadan
+      const totalFilters = {
+        period: filters.period, // Sadece dönem filtresini koru
+        limit: 10000 // Çok yüksek limit ile tüm kayıtları al
       };
-      const response = await primsAPI.getTransactions(deductionFilters);
-      const deductionTotal = Math.abs(
-        (response.data.transactions || [])
+      const response = await primsAPI.getTransactions(totalFilters);
+      const allTransactions = response.data.transactions || [];
+      
+      // Toplam kazanç (pozitif tutarlar)
+      const earnings = allTransactions
+        .filter(t => t.amount > 0)
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      // Toplam kesinti (sadece kesinti tipindeki işlemler)
+      const deductions = Math.abs(
+        allTransactions
           .filter(t => t.transactionType === 'kesinti')
           .reduce((sum, t) => sum + t.amount, 0)
       );
-      setTotalDeductions(deductionTotal);
+      
+      // Net tutar (tüm işlemlerin toplamı)
+      const net = allTransactions.reduce((sum, t) => sum + t.amount, 0);
+      
+      setTotalEarnings(earnings);
+      setTotalDeductions(deductions);
+      setNetTotal(net);
     } catch (error) {
-      console.error('Total deductions fetch error:', error);
+      console.error('Total calculations fetch error:', error);
+      setTotalEarnings(0);
       setTotalDeductions(0);
+      setNetTotal(0);
     }
   };
 
@@ -278,11 +295,7 @@ const PrimTransactions = () => {
           <Card className="text-center">
             <Card.Body>
               <div className="h4 text-success mb-1">
-                {formatCurrency(
-                  transactions
-                    .filter(t => t.amount > 0)
-                    .reduce((sum, t) => sum + t.amount, 0)
-                )}
+                {formatCurrency(totalEarnings)}
               </div>
               <div className="text-muted small">Toplam Kazanç</div>
             </Card.Body>
@@ -302,9 +315,7 @@ const PrimTransactions = () => {
           <Card className="text-center">
             <Card.Body>
               <div className="h4 text-primary mb-1">
-                {formatCurrency(
-                  transactions.reduce((sum, t) => sum + t.amount, 0)
-                )}
+                {formatCurrency(netTotal)}
               </div>
               <div className="text-muted small">Net Tutar</div>
             </Card.Body>
