@@ -5,12 +5,67 @@ const PrimRate = require('../models/PrimRate');
 const PrimPeriod = require('../models/PrimPeriod');
 const PrimTransaction = require('../models/PrimTransaction');
 const PaymentMethod = require('../models/PaymentMethod');
+const SaleType = require('../models/SaleType');
 const { auth, adminAuth } = require('../middleware/auth');
 const moment = require('moment');
 
 const router = express.Router();
 
 // Ödeme tipi validasyonu - PaymentMethods tablosundan dinamik kontrol
+// Satış tipi validasyonu - SaleTypes tablosundan dinamik kontrol
+const validateSaleType = async (value) => {
+  console.log('🔍 SaleType validation - Value:', value, 'Type:', typeof value);
+  
+  if (!value || value === '') {
+    return Promise.reject('Satış tipi gereklidir');
+  }
+  
+  // String kontrolü
+  if (typeof value !== 'string') {
+    return Promise.reject('Satış tipi string olmalıdır');
+  }
+  
+  try {
+    // SaleTypes tablosundan aktif satış türlerini al
+    const activeSaleTypes = await SaleType.find({ isActive: true }).select('name');
+    const validSaleTypeValues = activeSaleTypes.map(type => {
+      const lowerName = type.name.toLowerCase();
+      if (lowerName.includes('kapora')) return 'kapora';
+      if (lowerName.includes('normal') || lowerName.includes('satış')) return 'satis';
+      return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
+    });
+    
+    // Eski sistem değerleri de ekle
+    validSaleTypeValues.push('satis', 'kapora');
+    
+    console.log('📋 Geçerli satış türleri:', validSaleTypeValues);
+    
+    // Eğer SaleType tablosu boşsa, varsayılan değerleri kabul et
+    if (validSaleTypeValues.length === 0) {
+      console.log('⚠️ SaleType tablosu boş, varsayılan değerler kullanılıyor');
+      const defaultTypes = ['satis', 'kapora'];
+      if (!defaultTypes.includes(value)) {
+        return Promise.reject(`Geçersiz satış tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
+      }
+    } else {
+      // Aktif satış türleri arasında kontrol et
+      if (!validSaleTypeValues.includes(value)) {
+        return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${validSaleTypeValues.join(', ')}`);
+      }
+    }
+    
+    console.log('✅ Sale type validation passed:', value);
+    return Promise.resolve(true);
+  } catch (error) {
+    console.error('❌ Sale type validation error:', error);
+    // Hata durumunda eski sistem değerlerini kabul et
+    if (['satis', 'kapora'].includes(value)) {
+      return Promise.resolve(true);
+    }
+    return Promise.reject('Satış tipi doğrulanamadı');
+  }
+};
+
 const validatePaymentType = async (value) => {
   console.log('🔍 PaymentType validation - Value:', value, 'Type:', typeof value);
   
@@ -87,13 +142,29 @@ router.post('/', auth, [
   body('apartmentNo').trim().notEmpty().withMessage('Daire no gereklidir'),
   body('periodNo').trim().notEmpty().withMessage('Dönem no gereklidir'),
   body('contractNo').trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
-  body('saleType').isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
+  body('saleType').custom(validateSaleType),
   // Koşullu validasyonlar
-  body('saleDate').if(body('saleType').equals('satis')).isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
+  body('saleDate').custom((value, { req }) => {
+    if (req.body.saleType === 'kapora') return true; // Kapora için tarih gerekli değil
+    if (!value) throw new Error('Satış tarihi gereklidir');
+    if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) throw new Error('Geçerli bir satış tarihi giriniz (YYYY-MM-DD)');
+    return true;
+  }),
   body('kaporaDate').if(body('saleType').equals('kapora')).isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
-  body('listPrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
-  body('activitySalePrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
-  body('paymentType').if(body('saleType').equals('satis')).custom(validatePaymentType)
+  body('listPrice').custom((value, { req }) => {
+    if (req.body.saleType === 'kapora') return true; // Kapora için fiyat gerekli değil
+    if (!value || parseFloat(value) <= 0) throw new Error('Liste fiyatı 0\'dan büyük olmalıdır');
+    return true;
+  }),
+  body('activitySalePrice').custom((value, { req }) => {
+    if (req.body.saleType === 'kapora') return true; // Kapora için fiyat gerekli değil
+    if (!value || parseFloat(value) <= 0) throw new Error('Aktivite satış fiyatı 0\'dan büyük olmalıdır');
+    return true;
+  }),
+  body('paymentType').custom((value, { req }) => {
+    if (req.body.saleType === 'kapora') return true; // Kapora için ödeme tipi gerekli değil
+    return validatePaymentType(value);
+  })
 ], async (req, res) => {
   try {
     console.log('🔍 Sale POST request received');
@@ -133,7 +204,7 @@ router.post('/', auth, [
     let discountedListPriceNum = 0;
 
     // Kapora değilse prim hesapla
-    if (saleType === 'satis') {
+    if (saleType !== 'kapora') {
           console.log('💰 Normal satış - Prim hesaplanıyor');
     console.log('📊 Fiyat bilgileri:', { 
       listPrice, 
@@ -427,7 +498,7 @@ router.put('/:id', auth, [
   body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').optional().trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
-  body('saleType').optional().isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
+  body('saleType').optional().custom(validateSaleType),
   body('saleDate').optional().custom((value, { req }) => {
     if (!value) return true; // Optional field
     if (req.body.saleType === 'satis' && !value) {
