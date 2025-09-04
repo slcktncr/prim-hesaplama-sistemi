@@ -289,8 +289,26 @@ router.put('/:id', auth, [
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').optional().trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
   body('saleType').optional().isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
-  body('saleDate').optional().isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
-  body('kaporaDate').optional().isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
+  body('saleDate').optional().custom((value, { req }) => {
+    if (!value) return true; // Optional field
+    if (req.body.saleType === 'satis' && !value) {
+      throw new Error('Normal satış için satış tarihi gereklidir');
+    }
+    if (value && !value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      throw new Error('Geçerli bir satış tarihi giriniz (YYYY-MM-DD)');
+    }
+    return true;
+  }),
+  body('kaporaDate').optional().custom((value, { req }) => {
+    if (!value) return true; // Optional field
+    if (req.body.saleType === 'kapora' && !value) {
+      throw new Error('Kapora için kapora tarihi gereklidir');
+    }
+    if (value && !value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      throw new Error('Geçerli bir kapora tarihi giriniz (YYYY-MM-DD)');
+    }
+    return true;
+  }),
   body('listPrice').optional().isNumeric().withMessage('Liste fiyatı sayısal olmalıdır'),
   body('activitySalePrice').optional().isNumeric().withMessage('Aktivite satış fiyatı sayısal olmalıdır'),
   body('paymentType').optional().custom(validatePaymentType)

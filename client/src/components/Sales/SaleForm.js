@@ -339,13 +339,23 @@ const SaleForm = () => {
 
     try {
       const saleData = {
-        ...formData
+        customerName: formData.customerName,
+        blockNo: formData.blockNo,
+        apartmentNo: formData.apartmentNo,
+        periodNo: formData.periodNo,
+        contractNo: formData.contractNo,
+        saleType: formData.saleType,
+        entryDate: formData.entryDate,
+        exitDate: formData.exitDate,
+        notes: formData.notes
       };
 
-      // Sadece normal satış için fiyat alanlarını parse et
+      // Satış tipine göre farklı alanlar ekle
       if (formData.saleType === 'satis') {
+        saleData.saleDate = formData.saleDate;
         saleData.listPrice = parseFloat(formData.listPrice) || 0;
         saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
+        saleData.paymentType = formData.paymentType;
         
         // İndirim bilgileri
         if (formData.discountRate) {
@@ -354,6 +364,8 @@ const SaleForm = () => {
         if (formData.originalListPrice) {
           saleData.originalListPrice = parseFloat(formData.originalListPrice) || 0;
         }
+      } else if (formData.saleType === 'kapora') {
+        saleData.kaporaDate = formData.kaporaDate;
       }
 
       console.log('📤 Sending sale data:', saleData);
