@@ -99,9 +99,9 @@ const SaleForm = () => {
   const fetchSale = async () => {
     try {
       setInitialLoading(true);
-      // Bu endpoint'i backend'de oluşturmadık, getSales ile tek satış getirelim
-      const response = await salesAPI.getSales({ contractNo: id });
-      const sale = response.data.sales?.[0];
+      // Satış ID'si ile doğrudan satışı getir
+      const response = await salesAPI.getSaleById(id);
+      const sale = response.data;
       
       if (sale) {
         setFormData({

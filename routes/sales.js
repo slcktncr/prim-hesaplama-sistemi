@@ -279,6 +279,37 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/sales/:id
+// @desc    Tek satış getir
+// @access  Private
+router.get('/:id', auth, async (req, res) => {
+  try {
+    console.log('🔍 Sale GET by ID request received');
+    console.log('User:', req.user?.email);
+    console.log('Sale ID:', req.params.id);
+    
+    const sale = await Sale.findById(req.params.id)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name');
+      
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    // Yetki kontrolü - sadece kendi satışını veya admin görebilir
+    if (req.user.role !== 'admin' && sale.salesperson._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Bu satışı görüntüleme yetkiniz bulunmamaktadır' });
+    }
+
+    console.log(`✅ Satış bulundu: ${sale.contractNo}`);
+    
+    res.json(sale);
+  } catch (error) {
+    console.error('❌ Get sale by ID error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // @route   PUT /api/sales/:id
 // @desc    Satış güncelle
 // @access  Private

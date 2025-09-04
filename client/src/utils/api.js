@@ -43,6 +43,7 @@ export const authAPI = {
 // Sales API calls
 export const salesAPI = {
   getSales: (params) => API.get('/sales', { params }),
+  getSaleById: (id) => API.get(`/sales/${id}`),
   createSale: (saleData) => API.post('/sales', saleData),
   updateSale: (id, saleData) => API.put(`/sales/${id}`, saleData),
   cancelSale: (id) => API.put(`/sales/${id}/cancel`),
