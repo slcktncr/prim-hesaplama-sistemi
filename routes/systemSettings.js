@@ -2,8 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const SaleType = require('../models/SaleType');
 const PaymentType = require('../models/PaymentType');
-const auth = require('../middleware/auth');
-const adminAuth = require('../middleware/adminAuth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
