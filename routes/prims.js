@@ -289,10 +289,13 @@ router.get('/earnings', auth, async (req, res) => {
           }
         }
       },
-      // Satış bilgilerini kontrol et - satış yoksa gösterme
+      // Satış veya transaction varsa göster
       {
         $match: {
-          salesCount: { $gt: 0 }  // En az 1 satış olmalı
+          $or: [
+            { salesCount: { $gt: 0 } },  // En az 1 satış varsa
+            { transactionCount: { $gt: 0 } }  // Veya en az 1 transaction varsa
+          ]
         }
       },
       {
