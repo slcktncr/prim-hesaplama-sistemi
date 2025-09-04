@@ -566,18 +566,25 @@ router.put('/:id/cancel', auth, async (req, res) => {
         salesperson: sale.salesperson
       });
     } else if (sale.primStatus === 'ödendi') {
-      // Prim ödenmişse kesinti işlemi oluştur
-      console.log('💸 Prim ödendi - Kesinti transaction ekleniyor');
+      // Prim ödenmişse kesinti işlemi oluştur - İPTAL TARİHİNE GÖRE DÖNEM BELİRLE
+      console.log('💸 Prim ödendi - Kesinti transaction ekleniyor (iptal tarihine göre dönem)');
+      
+      // İptal işlemi yapılan tarihe göre dönem oluştur/bul
+      const cancelDate = new Date(); // Şu anki tarih (iptal tarihi)
+      const cancelPeriodId = await getOrCreatePrimPeriod(cancelDate.toISOString().split('T')[0], req.user._id);
+      
       const primTransaction = new PrimTransaction({
         salesperson: sale.salesperson,
         sale: sale._id,
-        primPeriod: sale.primPeriod,
+        primPeriod: cancelPeriodId, // İptal tarihinin dönemi
         transactionType: 'kesinti',
         amount: -sale.primAmount,
-        description: `${sale.contractNo} sözleşme iptal kesintisi`,
+        description: `${sale.contractNo} sözleşme iptal kesintisi (${sale.cancelledAt ? sale.cancelledAt.toLocaleDateString('tr-TR') : 'bugün'})`,
         createdBy: req.user._id
       });
       await primTransaction.save();
+      
+      console.log(`✅ Kesinti eklendi: ${sale.primAmount} TL - Dönem: ${cancelPeriodId}`);
     }
 
     const updatedSale = await Sale.findById(sale._id)
@@ -619,6 +626,20 @@ router.put('/:id/restore', auth, async (req, res) => {
     sale.cancelledAt = null;
     sale.cancelledBy = null;
     await sale.save();
+
+    // İptal kesinti transaction'ını kaldır (varsa)
+    const cancelTransaction = await PrimTransaction.findOne({
+      sale: sale._id,
+      transactionType: 'kesinti',
+      salesperson: sale.salesperson
+    });
+
+    if (cancelTransaction) {
+      console.log('🗑️ İptal kesinti transaction kaldırılıyor');
+      await PrimTransaction.deleteOne({
+        _id: cancelTransaction._id
+      });
+    }
 
     // Prim işlemini geri ekle (sadece bir kez)
     const existingTransaction = await PrimTransaction.findOne({
