@@ -312,13 +312,26 @@ router.post('/', auth, [
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const { page = 1, limit = 10, status = 'aktif', search, period } = req.query;
+    const { 
+      page = 1, 
+      limit = 10, 
+      status = 'aktif', 
+      search, 
+      period, 
+      primStatus, 
+      startDate, 
+      endDate,
+      salesperson 
+    } = req.query;
     
     let query = { status };
     
     // Admin değilse sadece kendi satışlarını görsün
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
+    } else if (salesperson && salesperson !== '') {
+      // Admin ise ve temsilci seçilmişse o temsilciyi filtrele
+      query.salesperson = salesperson;
     }
     
     // Arama filtresi
@@ -334,6 +347,23 @@ router.get('/', auth, async (req, res) => {
     // Dönem filtresi
     if (period) {
       query.primPeriod = period;
+    }
+    
+    // Prim durumu filtresi
+    if (primStatus && primStatus !== '') {
+      query.primStatus = primStatus;
+    }
+    
+    // Tarih aralığı filtresi
+    if (startDate && endDate) {
+      query.saleDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    } else if (startDate) {
+      query.saleDate = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      query.saleDate = { $lte: new Date(endDate) };
     }
 
     const sales = await Sale.find(query)

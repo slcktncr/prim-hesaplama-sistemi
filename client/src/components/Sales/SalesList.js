@@ -30,7 +30,7 @@ import {
   FiFileText
 } from 'react-icons/fi';
 
-import { salesAPI, primsAPI } from '../../utils/api';
+import { salesAPI, primsAPI, usersAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
   formatCurrency, 
@@ -49,6 +49,7 @@ import Loading from '../Common/Loading';
 const SalesList = () => {
   const [sales, setSales] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -58,7 +59,8 @@ const SalesList = () => {
     limit: 10,
     primStatus: '', // 'ödendi', 'ödenmedi', ''
     startDate: '',
-    endDate: ''
+    endDate: '',
+    salesperson: '' // temsilci filtresi
   });
   const [showFilters, setShowFilters] = useState(false);
   const [pagination, setPagination] = useState({
@@ -79,7 +81,10 @@ const SalesList = () => {
 
   useEffect(() => {
     fetchPeriods();
-  }, []);
+    if (isAdmin) {
+      fetchUsers();
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     const debouncedFetch = debounce(fetchSales, 500);
@@ -112,6 +117,15 @@ const SalesList = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
     }
   };
 
@@ -273,6 +287,24 @@ const SalesList = () => {
             <>
               <hr />
               <Row>
+                {isAdmin && (
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Temsilci</Form.Label>
+                      <Form.Select
+                        value={filters.salesperson}
+                        onChange={(e) => handleFilterChange('salesperson', e.target.value)}
+                      >
+                        <option value="">Tüm Temsilciler</option>
+                        {users.map(user => (
+                          <option key={user._id} value={user._id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                )}
                 <Col md={3}>
                   <Form.Group>
                     <Form.Label>Prim Durumu</Form.Label>
@@ -310,17 +342,18 @@ const SalesList = () => {
                   <Form.Group>
                     <Form.Label>&nbsp;</Form.Label>
                     <div>
-                      <Button 
+                                          <Button 
                         variant="outline-warning" 
                         size="sm"
-                        onClick={() => setFilters({
-                          search: '',
-                          period: '',
-                          page: 1,
+                        onClick={() => setFilters({ 
+                          search: '', 
+                          period: '', 
+                          page: 1, 
                           limit: 10,
                           primStatus: '',
                           startDate: '',
-                          endDate: ''
+                          endDate: '',
+                          salesperson: ''
                         })}
                       >
                         Filtreleri Temizle
