@@ -22,7 +22,8 @@
     "express-validator": "^7.0.1",
     "moment": "^2.29.4",
     "xlsx": "^0.18.5",
-    "pdfkit": "^0.13.0"
+    "pdfkit": "^0.13.0",
+    "pdfkit-table": "^0.1.99"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

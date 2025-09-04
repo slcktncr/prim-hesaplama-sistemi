@@ -554,78 +554,194 @@ router.post('/export', auth, async (req, res) => {
       .sort({ saleDate: -1 });
     
     if (type === 'excel') {
-      // Excel export için data hazırla
-      const exportData = sales.map(sale => ({
-        'Müşteri Adı': sale.customerName,
-        'Blok/Daire': `${sale.blockNo}/${sale.apartmentNo}`,
-        'Dönem No': sale.periodNo,
-        'Satış Tarihi': new Date(sale.saleDate).toLocaleDateString('tr-TR'),
-        'Sözleşme No': sale.contractNo,
-        'Liste Fiyatı': sale.listPrice,
-        'Aktivite Satış Fiyatı': sale.activitySalePrice,
-        'Ödeme Tipi': sale.paymentType,
-        'Prim Tutarı': sale.primAmount,
-        'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
-        'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
-        'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
-        'Durum': sale.status === 'aktif' ? 'Aktif' : 'İptal'
-      }));
-
       // Excel workbook oluştur
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
 
-      // Sütun genişliklerini ayarla
-      const colWidths = [
-        { wch: 25 }, // Müşteri Adı
-        { wch: 12 }, // Blok/Daire
-        { wch: 10 }, // Dönem No
-        { wch: 12 }, // Satış Tarihi
-        { wch: 15 }, // Sözleşme No
-        { wch: 15 }, // Liste Fiyatı
-        { wch: 18 }, // Aktivite Satış Fiyatı
-        { wch: 12 }, // Ödeme Tipi
-        { wch: 12 }, // Prim Tutarı
-        { wch: 12 }, // Prim Durumu
-        { wch: 20 }, // Temsilci
-        { wch: 15 }, // Prim Dönemi
-        { wch: 10 }  // Durum
+      // 1. ÖZET SAYFA - Dashboard benzeri
+      const summaryData = [
+        ['MOLA PRİM SİSTEMİ - ÖZET RAPORU'],
+        [''],
+        ['Rapor Tarihi:', new Date().toLocaleDateString('tr-TR')],
+        ['Rapor Saati:', new Date().toLocaleTimeString('tr-TR')],
+        [''],
+        ['GENEL İSTATİSTİKLER'],
+        ['Toplam Satış Sayısı:', sales.length],
+        ['Aktif Satışlar:', sales.filter(s => s.status === 'aktif').length],
+        ['İptal Edilenler:', sales.filter(s => s.status === 'iptal').length],
+        [''],
+        ['PRİM İSTATİSTİKLERİ'],
+        ['Ödenen Primler:', sales.filter(s => s.primStatus === 'ödendi').length],
+        ['Bekleyen Primler:', sales.filter(s => s.primStatus === 'ödenmedi').length],
+        ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + s.primAmount, 0)],
+        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + s.listPrice, 0)],
+        [''],
+        ['TEMSİLCİ PERFORMANSI']
       ];
-      ws['!cols'] = colWidths;
 
-      // Para formatı için range belirle
-      const range = XLSX.utils.decode_range(ws['!ref']);
+      // Temsilci performans verilerini ekle
+      const salesByUser = {};
+      sales.forEach(sale => {
+        const userName = sale.salesperson?.name || 'Bilinmiyor';
+        if (!salesByUser[userName]) {
+          salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
+        }
+        salesByUser[userName].count++;
+        salesByUser[userName].amount += sale.listPrice;
+        salesByUser[userName].primAmount += sale.primAmount;
+      });
+
+      Object.entries(salesByUser)
+        .sort((a, b) => b[1].count - a[1].count)
+        .forEach(([name, data]) => {
+          summaryData.push([name, `${data.count} satış`, `${data.amount.toLocaleString('tr-TR')} ₺`, `${data.primAmount.toLocaleString('tr-TR')} ₺ prim`]);
+        });
+
+      const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+      summaryWs['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Özet');
+
+      // 2. DETAYLI SATIŞ LİSTESİ
+      const detailedData = sales.map(sale => ({
+      'Müşteri Adı': sale.customerName,
+      'Blok/Daire': `${sale.blockNo}/${sale.apartmentNo}`,
+      'Dönem No': sale.periodNo,
+      'Satış Tarihi': new Date(sale.saleDate).toLocaleDateString('tr-TR'),
+      'Sözleşme No': sale.contractNo,
+        'Liste Fiyatı': sale.listPrice,
+        'Aktivite Satış Fiyatı': sale.activitySalePrice,
+      'Ödeme Tipi': sale.paymentType,
+        'Prim Tutarı': sale.primAmount,
+      'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
+      'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
+      'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
+        'Durum': sale.status === 'aktif' ? 'Aktif' : 'İptal',
+        'Oluşturma Tarihi': new Date(sale.createdAt).toLocaleDateString('tr-TR')
+      }));
+
+      const detailedWs = XLSX.utils.json_to_sheet(detailedData);
+      detailedWs['!cols'] = [
+        { wch: 25 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, 
+        { wch: 15 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, 
+        { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 12 }
+      ];
+
+      // Para formatı uygula
+      const range = XLSX.utils.decode_range(detailedWs['!ref']);
       for (let row = 1; row <= range.e.r; row++) {
-        // Liste Fiyatı (F sütunu)
-        const listPriceCell = XLSX.utils.encode_cell({ r: row, c: 5 });
-        if (ws[listPriceCell]) {
-          ws[listPriceCell].t = 'n';
-          ws[listPriceCell].z = '#,##0.00"₺"';
-        }
-        
-        // Aktivite Satış Fiyatı (G sütunu)
-        const activityPriceCell = XLSX.utils.encode_cell({ r: row, c: 6 });
-        if (ws[activityPriceCell]) {
-          ws[activityPriceCell].t = 'n';
-          ws[activityPriceCell].z = '#,##0.00"₺"';
-        }
-        
-        // Prim Tutarı (I sütunu)
-        const primAmountCell = XLSX.utils.encode_cell({ r: row, c: 8 });
-        if (ws[primAmountCell]) {
-          ws[primAmountCell].t = 'n';
-          ws[primAmountCell].z = '#,##0.00"₺"';
-        }
+        [5, 6, 8].forEach(col => { // Liste Fiyatı, Aktivite Fiyatı, Prim Tutarı
+          const cell = XLSX.utils.encode_cell({ r: row, c: col });
+          if (detailedWs[cell]) {
+            detailedWs[cell].t = 'n';
+            detailedWs[cell].z = '#,##0"₺"';
+          }
+        });
       }
 
-      // Worksheet'i workbook'a ekle
-      XLSX.utils.book_append_sheet(wb, ws, 'Prim Raporu');
+      XLSX.utils.book_append_sheet(wb, detailedWs, 'Detaylı Satışlar');
+
+      // 3. TEMSİLCİ BAZLI ÖZET
+      const salesmanData = Object.entries(salesByUser).map(([name, data]) => ({
+        'Temsilci Adı': name,
+        'Toplam Satış': data.count,
+        'Toplam Ciro': data.amount,
+        'Toplam Prim': data.primAmount,
+        'Ortalama Satış': Math.round(data.amount / data.count),
+        'Ortalama Prim': Math.round(data.primAmount / data.count),
+        'Prim Oranı': `%${((data.primAmount / data.amount) * 100).toFixed(2)}`
+      }));
+
+      const salesmanWs = XLSX.utils.json_to_sheet(salesmanData);
+      salesmanWs['!cols'] = [
+        { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, 
+        { wch: 15 }, { wch: 15 }, { wch: 12 }
+      ];
+
+      // Para formatı
+      const salesmanRange = XLSX.utils.decode_range(salesmanWs['!ref']);
+      for (let row = 1; row <= salesmanRange.e.r; row++) {
+        [2, 3, 4, 5].forEach(col => { // Ciro ve prim sütunları
+          const cell = XLSX.utils.encode_cell({ r: row, c: col });
+          if (salesmanWs[cell]) {
+            salesmanWs[cell].t = 'n';
+            if (col === 2 || col === 3 || col === 4 || col === 5) {
+              salesmanWs[cell].z = '#,##0"₺"';
+            }
+          }
+        });
+      }
+
+      XLSX.utils.book_append_sheet(wb, salesmanWs, 'Temsilci Analizi');
+
+      // 4. DÖNEMSEL ANALİZ
+      const periodData = {};
+      sales.forEach(sale => {
+        const periodName = sale.primPeriod?.name || 'Belirsiz';
+        if (!periodData[periodName]) {
+          periodData[periodName] = { count: 0, amount: 0, primAmount: 0 };
+        }
+        periodData[periodName].count++;
+        periodData[periodName].amount += sale.listPrice;
+        periodData[periodName].primAmount += sale.primAmount;
+      });
+
+      const periodAnalysis = Object.entries(periodData).map(([period, data]) => ({
+        'Dönem': period,
+        'Satış Sayısı': data.count,
+        'Toplam Ciro': data.amount,
+        'Toplam Prim': data.primAmount,
+        'Ortalama Satış': Math.round(data.amount / data.count),
+        'Prim Oranı': `%${((data.primAmount / data.amount) * 100).toFixed(2)}`
+      }));
+
+      const periodWs = XLSX.utils.json_to_sheet(periodAnalysis);
+      periodWs['!cols'] = [
+        { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }
+      ];
+
+      // Para formatı
+      const periodRange = XLSX.utils.decode_range(periodWs['!ref']);
+      for (let row = 1; row <= periodRange.e.r; row++) {
+        [2, 3, 4].forEach(col => {
+          const cell = XLSX.utils.encode_cell({ r: row, c: col });
+          if (periodWs[cell]) {
+            periodWs[cell].t = 'n';
+            periodWs[cell].z = '#,##0"₺"';
+          }
+        });
+      }
+
+      XLSX.utils.book_append_sheet(wb, periodWs, 'Dönemsel Analiz');
+
+      // 5. ÖDEME TİPİ ANALİZİ
+      const paymentData = {};
+      sales.forEach(sale => {
+        const paymentType = sale.paymentType || 'Belirsiz';
+        if (!paymentData[paymentType]) {
+          paymentData[paymentType] = { count: 0, amount: 0, primAmount: 0 };
+        }
+        paymentData[paymentType].count++;
+        paymentData[paymentType].amount += sale.listPrice;
+        paymentData[paymentType].primAmount += sale.primAmount;
+      });
+
+      const paymentAnalysis = Object.entries(paymentData).map(([type, data]) => ({
+        'Ödeme Tipi': type,
+        'Satış Sayısı': data.count,
+        'Toplam Tutar': data.amount,
+        'Toplam Prim': data.primAmount,
+        'Oran': `%${((data.count / sales.length) * 100).toFixed(1)}`
+      }));
+
+      const paymentWs = XLSX.utils.json_to_sheet(paymentAnalysis);
+      paymentWs['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
+
+      XLSX.utils.book_append_sheet(wb, paymentWs, 'Ödeme Analizi');
 
       // Excel buffer oluştur
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
       
       // Dosya adı oluştur
-      const fileName = `prim_raporu_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const fileName = `prim_raporu_detayli_${new Date().toISOString().split('T')[0]}.xlsx`;
       
       // Response headers ayarla
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -636,8 +752,12 @@ router.post('/export', auth, async (req, res) => {
       res.send(excelBuffer);
       
     } else {
-      // PDF export - gerçek PDF oluştur
-      const doc = new PDFDocument({ margin: 50 });
+      // PDF export - yatay format ile gelişmiş PDF oluştur
+      const doc = new PDFDocument({ 
+        layout: 'landscape', // Yatay format
+        margin: 30,
+        size: 'A4'
+      });
       
       // PDF'yi buffer olarak topla
       const buffers = [];
@@ -657,86 +777,167 @@ router.post('/export', auth, async (req, res) => {
         res.send(pdfBuffer);
       });
 
+      // Sayfa boyutları (landscape A4)
+      const pageWidth = 842;
+      const pageHeight = 595;
+      const margin = 30;
+      const contentWidth = pageWidth - (margin * 2);
+
       // PDF içeriği oluştur
-      // Başlık
-      doc.fontSize(20).text('Prim Sistemi Raporu', 50, 50, { align: 'center' });
-      doc.fontSize(12).text(`Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 50, 80, { align: 'center' });
-      doc.fontSize(12).text(`Toplam Kayıt: ${sales.length}`, 50, 100, { align: 'center' });
-      
+      let yPos = margin;
+
+      // Başlık bölümü
+      doc.fontSize(18)
+         .text('MOLA PRİM SİSTEMİ RAPORU', margin, yPos, { 
+           align: 'center', 
+           width: contentWidth 
+         });
+      yPos += 30;
+
+      doc.fontSize(10)
+         .text(`Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, margin, yPos, { align: 'left' })
+         .text(`Toplam Kayıt: ${sales.length}`, margin + 200, yPos)
+         .text(`Toplam Tutar: ${sales.reduce((sum, s) => sum + s.listPrice, 0).toLocaleString('tr-TR')} ₺`, margin + 400, yPos);
+      yPos += 20;
+
       // Çizgi
-      doc.moveTo(50, 130).lineTo(550, 130).stroke();
-      
-      // Tablo başlıkları
-      let yPosition = 150;
-      const columnWidths = [80, 60, 60, 80, 70, 70, 80, 60, 80];
-      const headers = ['Müşteri', 'Blok/Daire', 'Dönem', 'Tarih', 'Sözleşme', 'Liste Fiyatı', 'Prim Tutarı', 'Durum', 'Temsilci'];
-      
-      doc.fontSize(10);
-      let xPosition = 50;
-      headers.forEach((header, index) => {
-        doc.text(header, xPosition, yPosition, { width: columnWidths[index], align: 'left' });
-        xPosition += columnWidths[index];
+      doc.moveTo(margin, yPos).lineTo(pageWidth - margin, yPos).stroke();
+      yPos += 15;
+
+      // Özet istatistikler kutusu
+      const statsHeight = 60;
+      doc.rect(margin, yPos, contentWidth, statsHeight)
+         .stroke();
+
+      // İstatistikler
+      const totalSales = sales.length;
+      const activeSales = sales.filter(s => s.status === 'aktif').length;
+      const paidPrims = sales.filter(s => s.primStatus === 'ödendi').length;
+      const totalPrimAmount = sales.reduce((sum, s) => sum + s.primAmount, 0);
+
+      doc.fontSize(9);
+      doc.text('ÖZET İSTATİSTİKLER', margin + 10, yPos + 10, { width: 150 });
+      doc.text(`Toplam Satış: ${totalSales}`, margin + 10, yPos + 25);
+      doc.text(`Aktif Satış: ${activeSales}`, margin + 10, yPos + 40);
+
+      doc.text(`Ödenen Primler: ${paidPrims}`, margin + 200, yPos + 25);
+      doc.text(`Toplam Prim: ${totalPrimAmount.toLocaleString('tr-TR')} ₺`, margin + 200, yPos + 40);
+
+      // Temsilci performans özeti
+      const salesByUser = {};
+      sales.forEach(sale => {
+        const userName = sale.salesperson?.name || 'Bilinmiyor';
+        if (!salesByUser[userName]) {
+          salesByUser[userName] = { count: 0, amount: 0 };
+        }
+        salesByUser[userName].count++;
+        salesByUser[userName].amount += sale.primAmount;
       });
-      
-      // Başlık altı çizgi
-      yPosition += 20;
-      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-      yPosition += 10;
-      
+
+      const topPerformers = Object.entries(salesByUser)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 3);
+
+      doc.text('EN İYİ PERFORMANS', margin + 400, yPos + 10, { width: 150 });
+      topPerformers.forEach((performer, index) => {
+        doc.text(`${index + 1}. ${performer[0]}: ${performer[1].count} satış`, margin + 400, yPos + 25 + (index * 12));
+      });
+
+      yPos += statsHeight + 20;
+
+      // Tablo başlıkları - yatay formata uygun
+      const columnWidths = [90, 60, 40, 70, 80, 80, 80, 70, 60, 90, 80];
+      const headers = [
+        'Müşteri Adı', 'Blok/Daire', 'Dönem', 'Satış Tarihi', 'Sözleşme No',
+        'Liste Fiyatı', 'Satış Fiyatı', 'Prim Tutarı', 'Durum', 'Temsilci', 'Prim Dönemi'
+      ];
+
+      // Tablo başlık arka planı
+      doc.rect(margin, yPos, contentWidth, 20)
+         .fillAndStroke('#f0f0f0', '#000000');
+
+      doc.fillColor('#000000')
+         .fontSize(8);
+
+      let xPos = margin + 5;
+      headers.forEach((header, index) => {
+        doc.text(header, xPos, yPos + 6, { 
+          width: columnWidths[index] - 10, 
+          align: 'center' 
+        });
+        xPos += columnWidths[index];
+      });
+
+      yPos += 25;
+
       // Veri satırları
       sales.forEach((sale, index) => {
-        if (yPosition > 750) { // Sayfa sonu kontrolü
+        // Sayfa sonu kontrolü
+        if (yPos > pageHeight - 100) {
           doc.addPage();
-          yPosition = 50;
+          yPos = margin;
         }
-        
-        xPosition = 50;
+
+        // Alternatif satır rengi
+        if (index % 2 === 1) {
+          doc.rect(margin, yPos, contentWidth, 18)
+             .fill('#f9f9f9');
+        }
+
+        doc.fillColor('#000000')
+           .fontSize(7);
+
         const rowData = [
-          sale.customerName.substring(0, 12),
+          sale.customerName.substring(0, 15),
           `${sale.blockNo}/${sale.apartmentNo}`,
           sale.periodNo.toString(),
           new Date(sale.saleDate).toLocaleDateString('tr-TR'),
-          sale.contractNo.substring(0, 10),
-          `${(sale.listPrice / 1000).toFixed(0)}K₺`,
-          `${(sale.primAmount / 1000).toFixed(0)}K₺`,
-          sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
-          sale.salesperson?.name?.substring(0, 12) || 'Bilinmiyor'
+          sale.contractNo.substring(0, 12),
+          `${(sale.listPrice / 1000).toFixed(0)}K`,
+          `${(sale.activitySalePrice / 1000).toFixed(0)}K`,
+          `${(sale.primAmount / 1000).toFixed(0)}K`,
+          sale.primStatus === 'ödendi' ? 'Ödendi' : 'Bekliyor',
+          sale.salesperson?.name?.substring(0, 15) || 'Bilinmiyor',
+          sale.primPeriod?.name?.substring(0, 12) || 'Belirsiz'
         ];
-        
+
+        xPos = margin + 5;
         rowData.forEach((data, colIndex) => {
-          doc.text(data, xPosition, yPosition, { width: columnWidths[colIndex], align: 'left' });
-          xPosition += columnWidths[colIndex];
+          doc.text(data, xPos, yPos + 4, { 
+            width: columnWidths[colIndex] - 10, 
+            align: colIndex >= 5 && colIndex <= 7 ? 'right' : 'left'
+          });
+          xPos += columnWidths[colIndex];
         });
-        
-        yPosition += 15;
-        
-        // Her 5 satırda bir çizgi
-        if ((index + 1) % 5 === 0) {
-          doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-          yPosition += 5;
-        }
+
+        yPos += 18;
       });
-      
-      // Özet bilgiler
-      yPosition += 20;
-      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-      yPosition += 15;
-      
+
+      // Alt özet
+      yPos += 20;
+      doc.moveTo(margin, yPos).lineTo(pageWidth - margin, yPos).stroke();
+      yPos += 15;
+
       const totalAmount = sales.reduce((sum, sale) => sum + (sale.listPrice || 0), 0);
       const totalPrim = sales.reduce((sum, sale) => sum + (sale.primAmount || 0), 0);
-      
-      doc.fontSize(12);
-      doc.text(`Toplam Satış Tutarı: ${totalAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`, 50, yPosition);
-      yPosition += 20;
-      doc.text(`Toplam Prim Tutarı: ${totalPrim.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`, 50, yPosition);
-      yPosition += 20;
-      doc.text(`Aktif Satış Sayısı: ${sales.filter(s => s.status === 'aktif').length}`, 50, yPosition);
-      
-      // Alt bilgi
-      yPosition += 40;
+
       doc.fontSize(10);
-      doc.text('MOLA Prim Sistemi - Otomatik Rapor', 50, yPosition, { align: 'center' });
-      
+      doc.text(`Toplam Satış Tutarı: ${totalAmount.toLocaleString('tr-TR')} ₺`, margin, yPos);
+      doc.text(`Toplam Prim Tutarı: ${totalPrim.toLocaleString('tr-TR')} ₺`, margin + 250, yPos);
+      doc.text(`Aktif Satış Oranı: %${((activeSales / totalSales) * 100).toFixed(1)}`, margin + 500, yPos);
+
+      // Alt bilgi
+      yPos += 30;
+      doc.fontSize(8)
+         .text('MOLA Prim Sistemi - Otomatik Rapor', margin, yPos, { 
+           align: 'center', 
+           width: contentWidth 
+         })
+         .text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, margin, yPos + 15, { 
+           align: 'center', 
+           width: contentWidth 
+         });
+
       // PDF'yi sonlandır
       doc.end();
     }
