@@ -365,7 +365,7 @@ router.get('/earnings', auth, async (req, res) => {
 });
 
 // @route   GET /api/prims/deductions
-// @desc    Kesinti transaction'larını getir (satış olmayan dönemler için)
+// @desc    Prim kesintilerini getir (prim ödenmiş ama iptal edilmiş satışlar)
 // @access  Private
 router.get('/deductions', auth, async (req, res) => {
   try {
@@ -390,9 +390,24 @@ router.get('/deductions', auth, async (req, res) => {
     
     console.log('📊 Deductions query:', query);
 
-    // Kesinti transaction'larını getir
+    // Kesinti transaction'larını getir ve ilgili satışları kontrol et
     const deductions = await PrimTransaction.aggregate([
       { $match: query },
+      // İlgili satışı getir
+      {
+        $lookup: {
+          from: 'sales',
+          localField: 'sale',
+          foreignField: '_id',
+          as: 'saleInfo'
+        }
+      },
+      // Sadece iptal edilmiş satışlardan gelen kesintileri al
+      {
+        $match: {
+          'saleInfo.status': 'iptal'
+        }
+      },
       {
         $group: {
           _id: {
@@ -420,49 +435,12 @@ router.get('/deductions', auth, async (req, res) => {
           as: 'primPeriod'
         }
       },
-      // Bu dönemde satış var mı kontrol et
-      {
-        $lookup: {
-          from: 'sales',
-          let: { 
-            salespersonId: '$_id.salesperson', 
-            periodId: '$_id.primPeriod' 
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$salesperson', '$$salespersonId'] },
-                    { $eq: ['$primPeriod', '$$periodId'] },
-                    { $eq: ['$saleType', 'satis'] }
-                  ]
-                }
-              }
-            }
-          ],
-          as: 'sales'
-        }
-      },
-      {
-        $addFields: {
-          salesCount: { $size: '$sales' },
-          hasNoSales: { $eq: [{ $size: '$sales' }, 0] } // Satış yoksa true
-        }
-      },
-      // Sadece satışı olmayan dönemlerdeki kesintileri göster
-      {
-        $match: {
-          hasNoSales: true
-        }
-      },
       {
         $project: {
           salesperson: { $arrayElemAt: ['$salesperson', 0] },
           primPeriod: { $arrayElemAt: ['$primPeriod', 0] },
           totalDeductions: 1,
           transactionCount: 1,
-          salesCount: 1,
           transactions: 1
         }
       },
