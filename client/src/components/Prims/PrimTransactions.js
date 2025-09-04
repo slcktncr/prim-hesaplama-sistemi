@@ -269,7 +269,7 @@ const PrimTransactions = () => {
               <div className="h4 text-danger mb-1">
                 {formatCurrency(
                   Math.abs(transactions
-                    .filter(t => t.amount < 0)
+                    .filter(t => t.transactionType === 'kesinti')
                     .reduce((sum, t) => sum + t.amount, 0))
                 )}
               </div>
