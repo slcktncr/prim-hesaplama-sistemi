@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { validateEmail, validateRequired } from '../../utils/helpers';
+import DeveloperSignature from '../Common/DeveloperSignature';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -173,6 +174,9 @@ const Login = () => {
           </Card>
         </Col>
       </Row>
+      
+      {/* Developer Signature */}
+      <DeveloperSignature />
     </Container>
   );
 };
