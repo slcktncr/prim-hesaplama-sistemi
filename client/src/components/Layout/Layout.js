@@ -62,7 +62,7 @@ const Layout = ({ children }) => {
       />
 
       {/* Sidebar */}
-      <div className={`sidebar ${sidebarOpen ? 'show' : ''}`}>
+      <div className={`sidebar-container ${sidebarOpen ? 'show' : ''}`}>
         <Sidebar onLinkClick={closeSidebar} />
       </div>
 

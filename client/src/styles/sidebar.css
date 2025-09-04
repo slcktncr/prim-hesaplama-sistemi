@@ -5,12 +5,8 @@
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   min-height: 100vh;
-  height: 100vh;
-  width: 280px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
+  height: 100%;
+  width: 100%;
   padding: 0;
   box-shadow: 4px 0 24px rgba(34, 211, 238, 0.3), inset 0 0 100px rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
@@ -179,65 +175,11 @@
   font-weight: 500;
 }
 
-/* Main Content Area */
-.main-content {
-  margin-left: 280px;
-  min-height: 100vh;
-  background-color: #f8fafc;
-  transition: margin-left 0.3s ease;
-}
+/* Main Content Area - Bu kısım layout.css'de tanımlı, burada gereksiz */
 
-/* Responsive Sidebar */
-@media (max-width: 992px) {
-  .sidebar {
-    transform: translateX(-100%);
-    width: 280px;
-  }
-  
-  .sidebar.show {
-    transform: translateX(0);
-  }
-  
-  .main-content {
-    margin-left: 0;
-  }
-  
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    display: none;
-  }
-  
-  .sidebar-overlay.show {
-    display: block;
-  }
-}
+/* Responsive Sidebar - Bu kısım artık layout.css'de yönetiliyor */
 
-/* Mobile Menu Button */
-.mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1001;
-  background: #1e293b;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-@media (max-width: 992px) {
-  .mobile-menu-btn {
-    display: block;
-  }
-}
+/* Mobile Menu Button - Bu kısım layout.css'de tanımlı */
 
 /* Section Headers */
 .sidebar .nav .px-3.py-2.text-muted.small {
@@ -298,18 +240,6 @@
 
 /* Mobile Responsive Styles */
 @media (max-width: 991.98px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1050;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 280px;
-    max-width: 80vw;
-    box-shadow: 2px 0 30px rgba(0, 0, 0, 0.3);
-  }
-  
   /* Mobilde scrollbar biraz daha küçük */
   .sidebar::-webkit-scrollbar {
     width: 6px;
@@ -317,11 +247,6 @@
   
   .sidebar::-webkit-scrollbar-track {
     margin: 4px 0;
-  }
-  
-  .sidebar.show {
-    transform: translateX(0);
-    box-shadow: 2px 0 40px rgba(0, 0, 0, 0.4);
   }
   
   /* Mobilde logo alanını biraz küçült */
@@ -343,40 +268,31 @@
   }
   
   /* Nav linkleri için mobil optimizasyonu */
-  .nav-link {
+  .sidebar .nav-link {
     padding: 0.75rem 1.25rem !important;
-    font-size: 0.9rem;
+    font-size: 0.9rem !important;
   }
   
-  .nav-link svg {
-    width: 18px;
-    height: 18px;
+  .sidebar .nav-link svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 0.75rem !important;
   }
   
   /* Kategori başlıkları */
-  .px-3.py-2.text-muted.small {
+  .sidebar .px-3.py-2.text-muted.small {
     padding: 0.5rem 1.25rem !important;
     font-size: 0.75rem !important;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    margin: 1rem 0 0.5rem !important;
   }
 }
 
-/* Small screens (tablets) */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 260px;
-    max-width: 85vw;
-  }
-}
+/* Small screens (tablets) - Bu kısım artık layout.css'de yönetiliyor */
 
 /* Extra small screens (mobile phones) */
 @media (max-width: 575.98px) {
-  .sidebar {
-    width: 240px;
-    max-width: 90vw;
-  }
-  
   /* Çok küçük ekranlarda scrollbar daha ince */
   .sidebar::-webkit-scrollbar {
     width: 4px;
@@ -398,17 +314,18 @@
     font-size: 0.75rem;
   }
   
-  .nav-link {
+  .sidebar .nav-link {
     padding: 0.6rem 1rem !important;
-    font-size: 0.85rem;
+    font-size: 0.85rem !important;
   }
   
-  .nav-link svg {
-    width: 16px;
-    height: 16px;
+  .sidebar .nav-link svg {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 0.6rem !important;
   }
   
-  .px-3.py-2.text-muted.small {
+  .sidebar .px-3.py-2.text-muted.small {
     padding: 0.4rem 1rem !important;
     font-size: 0.7rem !important;
   }
@@ -416,11 +333,6 @@
 
 /* Very small screens */
 @media (max-width: 375px) {
-  .sidebar {
-    width: 220px;
-    max-width: 92vw;
-  }
-  
   .sidebar-logo {
     padding: 1rem 0.5rem;
   }
@@ -433,25 +345,26 @@
     font-size: 0.7rem;
   }
   
-  .nav-link {
+  .sidebar .nav-link {
     padding: 0.5rem 0.75rem !important;
-    font-size: 0.8rem;
+    font-size: 0.8rem !important;
   }
   
-  .nav-link svg {
-    width: 14px;
-    height: 14px;
+  .sidebar .nav-link svg {
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 0.5rem !important;
   }
 }
 
 /* Touch improvements for mobile */
 @media (hover: none) and (pointer: coarse) {
-  .nav-link {
+  .sidebar .nav-link {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     touch-action: manipulation;
   }
   
-  .nav-link:active {
+  .sidebar .nav-link:active {
     background-color: rgba(255, 255, 255, 0.15) !important;
     transform: scale(0.98);
     transition: all 0.1s ease;
