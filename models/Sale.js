@@ -26,14 +26,15 @@ const saleSchema = new mongoose.Schema({
   // Satış bilgileri
   saleType: {
     type: String,
-    enum: ['kapora', 'satis'],
+    required: true,
     default: 'satis',
-    required: true
+    trim: true,
+    maxlength: [50, 'Satış türü 50 karakterden uzun olamaz']
   },
   saleDate: {
     type: Date,
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     }
   },
   kaporaDate: {
@@ -51,7 +52,7 @@ const saleSchema = new mongoose.Schema({
   listPrice: {
     type: Number,
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     },
     min: 0
   },
@@ -74,20 +75,20 @@ const saleSchema = new mongoose.Schema({
   originalListPrice: {
     type: Number, // İndirim öncesi orijinal liste fiyatı
     required: function() {
-      return this.saleType === 'satis' && this.discountRate > 0;
+      return this.saleType !== 'kapora' && this.discountRate > 0;
     }
   },
   activitySalePrice: {
     type: Number,
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     },
     min: 0
   },
   paymentType: {
     type: String,
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     },
     trim: true,
     maxlength: [50, 'Ödeme tipi 50 karakterden uzun olamaz']
@@ -146,13 +147,13 @@ const saleSchema = new mongoose.Schema({
   primRate: {
     type: Number,
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     }
   },
   basePrimPrice: {
     type: Number, // Liste fiyatı ve aktivite satış fiyatından düşük olan
     required: function() {
-      return this.saleType === 'satis';
+      return this.saleType !== 'kapora';
     }
   },
   

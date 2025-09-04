@@ -48,10 +48,11 @@ const validateSaleType = async (value) => {
         return Promise.reject(`Geçersiz satış tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
       }
     } else {
-      // Aktif satış türleri arasında kontrol et
-      if (!validSaleTypeValues.includes(value)) {
-        return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${validSaleTypeValues.join(', ')}`);
-      }
+          // Aktif satış türleri arasında kontrol et (unique yap)
+    const uniqueValues = [...new Set(validSaleTypeValues)];
+    if (!uniqueValues.includes(value)) {
+      return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${uniqueValues.join(', ')}`);
+    }
     }
     
     console.log('✅ Sale type validation passed:', value);
