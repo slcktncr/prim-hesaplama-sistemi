@@ -10,37 +10,26 @@ const moment = require('moment');
 
 const router = express.Router();
 
-// Ödeme tipi validasyonu için custom validator
-const validatePaymentType = async (value) => {
-  if (!value || value === '') return Promise.resolve(true); // Optional field
+// Ödeme tipi validasyonu - çok esnek yaklaşım
+const validatePaymentType = (value) => {
+  console.log('🔍 PaymentType validation - Value:', value, 'Type:', typeof value);
   
-  try {
-    const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
-    const validPaymentTypes = activePaymentMethods.map(method => method.name);
-    
-    // Eğer PaymentMethod tablosu boşsa, varsayılan değerleri kabul et
-    if (validPaymentTypes.length === 0) {
-      const defaultTypes = ['Nakit', 'Kredi Kartı', 'Taksit', 'Diğer'];
-      if (!defaultTypes.includes(value)) {
-        return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
-      }
-      return Promise.resolve(true);
-    }
-    
-    if (!validPaymentTypes.includes(value)) {
-      return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
-    }
-    
-    return Promise.resolve(true);
-  } catch (error) {
-    console.error('Payment type validation error:', error);
-    // Hata durumunda varsayılan değerleri kabul et
-    const defaultTypes = ['Nakit', 'Kredi Kartı', 'Taksit', 'Diğer'];
-    if (!defaultTypes.includes(value)) {
-      return Promise.reject(`Geçersiz ödeme tipi (varsayılan). Geçerli değerler: ${defaultTypes.join(', ')}`);
-    }
-    return Promise.resolve(true);
+  if (!value || value === '') return true; // Optional field
+  
+  // Sadece string olup olmadığını kontrol et, içeriği kontrol etme
+  if (typeof value !== 'string') {
+    console.log('❌ Payment type must be string:', value);
+    throw new Error('Ödeme tipi string olmalıdır');
   }
+  
+  // Çok kısa veya çok uzun değerleri reddet
+  if (value.length < 2 || value.length > 50) {
+    console.log('❌ Payment type length invalid:', value);
+    throw new Error('Ödeme tipi 2-50 karakter arasında olmalıdır');
+  }
+  
+  console.log('✅ Payment type validation passed:', value);
+  return true;
 };
 
 // Satış dönemini otomatik belirle
@@ -575,41 +564,53 @@ router.put('/:id/cancel', auth, async (req, res) => {
       // Prim ödenmişse kesinti işlemi oluştur - BİR SONRAKİ DÖNEMDE KESİNTİ
       console.log('💸 Prim ödendi - Kesinti transaction ekleniyor (bir sonraki döneme)');
       
-      // İptal tarihi
-      const cancelDate = new Date();
-      const cancelYear = cancelDate.getFullYear();
-      const cancelMonth = cancelDate.getMonth() + 1; // 0-11 arası olduğu için +1
-      
-      // Bir sonraki ayı hesapla
-      let nextMonth = cancelMonth + 1;
-      let nextYear = cancelYear;
-      
-      if (nextMonth > 12) {
-        nextMonth = 1;
-        nextYear = nextYear + 1;
-      }
-      
-      // Bir sonraki ayın ilk gününü oluştur (dönem oluşturmak için)
-      const nextPeriodDate = new Date(nextYear, nextMonth - 1, 1);
-      const nextPeriodDateString = nextPeriodDate.toISOString().split('T')[0];
-      
-      console.log(`📅 İptal tarihi: ${cancelYear}/${cancelMonth} → Kesinti dönemi: ${nextYear}/${nextMonth}`);
-      
-      // Bir sonraki dönem oluştur/bul
-      const nextPeriodId = await getOrCreatePrimPeriod(nextPeriodDateString, req.user._id);
-      
-      const primTransaction = new PrimTransaction({
-        salesperson: sale.salesperson,
+      // Önce bu satış için önceden oluşturulmuş kesinti transaction'ı var mı kontrol et
+      const existingDeduction = await PrimTransaction.findOne({
         sale: sale._id,
-        primPeriod: nextPeriodId, // Bir sonraki dönem
         transactionType: 'kesinti',
-        amount: -sale.primAmount,
-        description: `${sale.contractNo} sözleşme iptal kesintisi (${cancelYear}/${cancelMonth} iptal → ${nextYear}/${nextMonth} kesinti)`,
-        createdBy: req.user._id
+        salesperson: sale.salesperson
       });
-      await primTransaction.save();
       
-      console.log(`✅ Kesinti eklendi: ${sale.primAmount} TL - Dönem: ${nextYear}/${nextMonth} (${nextPeriodId})`);
+      if (existingDeduction) {
+        console.log(`⚠️ Bu satış için zaten kesinti var: ${existingDeduction.amount} TL`);
+        console.log('Mevcut kesinti transaction korunuyor, yeni eklenmeyecek');
+      } else {
+        // İptal tarihi
+        const cancelDate = new Date();
+        const cancelYear = cancelDate.getFullYear();
+        const cancelMonth = cancelDate.getMonth() + 1; // 0-11 arası olduğu için +1
+        
+        // Bir sonraki ayı hesapla
+        let nextMonth = cancelMonth + 1;
+        let nextYear = cancelYear;
+        
+        if (nextMonth > 12) {
+          nextMonth = 1;
+          nextYear = nextYear + 1;
+        }
+        
+        // Bir sonraki ayın ilk gününü oluştur (dönem oluşturmak için)
+        const nextPeriodDate = new Date(nextYear, nextMonth - 1, 1);
+        const nextPeriodDateString = nextPeriodDate.toISOString().split('T')[0];
+        
+        console.log(`📅 İptal tarihi: ${cancelYear}/${cancelMonth} → Kesinti dönemi: ${nextYear}/${nextMonth}`);
+        
+        // Bir sonraki dönem oluştur/bul
+        const nextPeriodId = await getOrCreatePrimPeriod(nextPeriodDateString, req.user._id);
+        
+        const primTransaction = new PrimTransaction({
+          salesperson: sale.salesperson,
+          sale: sale._id,
+          primPeriod: nextPeriodId, // Bir sonraki dönem
+          transactionType: 'kesinti',
+          amount: -sale.primAmount,
+          description: `${sale.contractNo} sözleşme iptal kesintisi (${cancelYear}/${cancelMonth} iptal → ${nextYear}/${nextMonth} kesinti)`,
+          createdBy: req.user._id
+        });
+        await primTransaction.save();
+        
+        console.log(`✅ Kesinti eklendi: ${sale.primAmount} TL - Dönem: ${nextYear}/${nextMonth} (${nextPeriodId})`);
+      }
     }
 
     const updatedSale = await Sale.findById(sale._id)

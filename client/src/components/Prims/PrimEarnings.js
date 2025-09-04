@@ -123,6 +123,28 @@ const PrimEarnings = () => {
     return Math.min((Math.abs(current) / max) * 100, 100);
   };
 
+  const handleCleanupDuplicates = async () => {
+    if (!window.confirm('Yinelenen kesinti transaction\'larını temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await primsAPI.cleanupDuplicateDeductions();
+      
+      toast.success(`${response.data.cleanedCount} yinelenen kesinti temizlendi. Toplam: ${response.data.totalAmount.toLocaleString('tr-TR')} TL`);
+      
+      // Listeyi yenile
+      fetchEarnings();
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      const message = error.response?.data?.message || 'Temizleme işleminde hata oluştu';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
 
   if (loading && earnings.length === 0) {
@@ -194,6 +216,16 @@ const PrimEarnings = () => {
                     <FiFilter className="me-2" />
                     Temizle
                   </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="outline-danger" 
+                      onClick={handleCleanupDuplicates}
+                      disabled={loading}
+                      title="Yinelenen kesinti transaction'larını temizle"
+                    >
+                      🧹 Temizle
+                    </Button>
+                  )}
                 </div>
               </Form.Group>
             </Col>

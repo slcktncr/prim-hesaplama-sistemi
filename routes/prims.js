@@ -333,7 +333,7 @@ router.get('/deductions', auth, async (req, res) => {
     console.log('🔍 Deductions request:', { period, salesperson, userRole: req.user.role });
     
     let query = {
-      transactionType: { $in: ['kesinti', 'transfer_giden'] } // Sadece kesinti türü transaction'lar
+      transactionType: 'kesinti' // Sadece kesinti transaction'ları
     };
     
     // Admin değilse sadece kendi kesintilerini görsün
@@ -497,6 +497,74 @@ router.put('/sales/:id/period', [auth, adminAuth], [
   } catch (error) {
     console.error('Update sale period error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   POST /api/prims/cleanup-duplicate-deductions
+// @desc    Yinelenen kesinti transaction'larını temizle
+// @access  Private (Admin only)
+router.post('/cleanup-duplicate-deductions', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🧹 Duplicate deductions cleanup started by:', req.user?.email);
+
+    // Aynı satış için birden fazla kesinti transaction'ı olan kayıtları bul
+    const duplicateDeductions = await PrimTransaction.aggregate([
+      {
+        $match: {
+          transactionType: 'kesinti',
+          sale: { $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$sale',
+          count: { $sum: 1 },
+          transactions: { $push: '$$ROOT' }
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 1 }
+        }
+      }
+    ]);
+
+    let cleanedCount = 0;
+    let totalAmount = 0;
+
+    for (const group of duplicateDeductions) {
+      const transactions = group.transactions;
+      // En son oluşturulanı koru, diğerlerini sil
+      const sortedTransactions = transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const toKeep = sortedTransactions[0];
+      const toDelete = sortedTransactions.slice(1);
+
+      console.log(`📋 Sale ${group._id}: ${transactions.length} kesinti bulundu, ${toDelete.length} silinecek`);
+
+      for (const transaction of toDelete) {
+        await PrimTransaction.deleteOne({ _id: transaction._id });
+        cleanedCount++;
+        totalAmount += Math.abs(transaction.amount);
+        console.log(`🗑️ Silindi: ${transaction._id} - ${transaction.amount} TL`);
+      }
+
+      console.log(`✅ Korundu: ${toKeep._id} - ${toKeep.amount} TL`);
+    }
+
+    console.log(`🎯 Cleanup completed: ${cleanedCount} duplicate deductions removed, ${totalAmount} TL cleaned`);
+
+    res.json({
+      message: 'Yinelenen kesinti transaction\'ları başarıyla temizlendi',
+      cleanedCount,
+      totalAmount,
+      duplicateGroups: duplicateDeductions.length
+    });
+  } catch (error) {
+    console.error('❌ Cleanup deductions error:', error);
+    res.status(500).json({ 
+      message: 'Kesinti temizleme işleminde hata oluştu',
+      error: error.message 
+    });
   }
 });
 
