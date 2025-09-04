@@ -146,10 +146,14 @@ const SaleForm = () => {
 
   // İndirim hesaplama fonksiyonu
   const calculateDiscountedPrice = (originalPrice, discountRate) => {
-    if (!originalPrice || !discountRate) return originalPrice;
+    if (!originalPrice || !discountRate) return '';
+    
     const original = parseFloat(originalPrice);
     const discount = parseFloat(discountRate);
-    if (isNaN(original) || isNaN(discount) || discount < 0 || discount > 100) return originalPrice;
+    
+    if (isNaN(original) || isNaN(discount) || discount < 0 || discount > 100) {
+      return '';
+    }
     
     const result = original * (1 - discount / 100);
     return result.toFixed(2);
@@ -170,27 +174,26 @@ const SaleForm = () => {
 
       // Yeni fiyat hesaplama mantığı
       if (name === 'listPrice') {
-        // Liste fiyatı değiştiğinde, orijinal liste fiyatını sakla
-        if (value && !prev.originalListPrice) {
-          newData.originalListPrice = value;
-        }
-        // Eğer indirim varsa, indirimsiz liste fiyatını güncelle
+        // Liste fiyatı değiştiğinde
+        newData.originalListPrice = value; // Her zaman güncelle
+        
+        // Eğer indirim varsa, yeniden hesapla
         if (prev.discountRate && value) {
-          newData.originalListPrice = value;
           newData.discountedListPrice = calculateDiscountedPrice(value, prev.discountRate);
         }
       } else if (name === 'discountRate') {
         // İndirim oranı değiştiğinde
-        const originalPrice = prev.originalListPrice || prev.listPrice;
-        if (value && originalPrice) {
-          newData.discountedListPrice = calculateDiscountedPrice(originalPrice, value);
-          // Orijinal fiyat henüz saklanmamışsa sakla
-          if (!prev.originalListPrice) {
-            newData.originalListPrice = prev.listPrice;
-          }
-        } else if (!value) {
-          // İndirim temizlendiğinde indirimsiz fiyatı temizle
+        const basePrice = prev.listPrice; // Doğrudan listPrice kullan
+        
+        if (value && basePrice) {
+          // Orijinal fiyatı kaydet
+          newData.originalListPrice = basePrice;
+          // İndirimli fiyatı hesapla
+          newData.discountedListPrice = calculateDiscountedPrice(basePrice, value);
+        } else if (!value || value === '0') {
+          // İndirim temizlendiğinde
           newData.discountedListPrice = '';
+          newData.originalListPrice = '';
         }
       }
 
