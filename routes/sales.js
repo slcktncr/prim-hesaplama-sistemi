@@ -508,10 +508,38 @@ router.get('/', auth, async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
+    // Satış türü adlarını ekle
+    const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {
+      const saleObj = sale.toObject();
+      
+      // Satış türü adını bul
+      if (saleObj.saleType === 'kapora') {
+        saleObj.saleTypeName = 'Kapora Durumu';
+      } else if (saleObj.saleType === 'satis') {
+        saleObj.saleTypeName = 'Normal Satış';
+      } else {
+        // Yeni satış türleri için SaleType tablosundan isim bul
+        try {
+          const saleTypes = await SaleType.find({ isActive: true }).select('name');
+          const matchingType = saleTypes.find(type => {
+            const lowerName = type.name.toLowerCase();
+            const mappedValue = lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
+            return mappedValue === saleObj.saleType;
+          });
+          saleObj.saleTypeName = matchingType ? matchingType.name : saleObj.saleType;
+        } catch (error) {
+          console.error('SaleType name lookup error:', error);
+          saleObj.saleTypeName = saleObj.saleType;
+        }
+      }
+      
+      return saleObj;
+    }));
+
     const total = await Sale.countDocuments(query);
 
     res.json({
-      sales,
+      sales: salesWithTypeNames,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total

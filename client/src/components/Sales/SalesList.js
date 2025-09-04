@@ -429,7 +429,7 @@ const SalesList = () => {
                           bg={sale.saleType === 'kapora' ? 'warning' : 'success'} 
                           className="mb-1"
                         >
-                          {sale.saleType === 'kapora' ? 'Kapora' : 'Satış'}
+                          {sale.saleTypeName || (sale.saleType === 'kapora' ? 'Kapora' : 'Satış')}
                         </Badge>
                       </td>
                       <td>
