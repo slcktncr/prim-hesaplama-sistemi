@@ -10,22 +10,16 @@ const moment = require('moment');
 
 const router = express.Router();
 
-// Ödeme tipi validasyonu - çok esnek yaklaşım
+// Ödeme tipi validasyonu - model enum'ı kullanıyor
 const validatePaymentType = (value) => {
   console.log('🔍 PaymentType validation - Value:', value, 'Type:', typeof value);
   
   if (!value || value === '') return true; // Optional field
   
-  // Sadece string olup olmadığını kontrol et, içeriği kontrol etme
+  // Basit string kontrolü - enum kontrolü model'de yapılıyor
   if (typeof value !== 'string') {
     console.log('❌ Payment type must be string:', value);
     throw new Error('Ödeme tipi string olmalıdır');
-  }
-  
-  // Çok kısa veya çok uzun değerleri reddet
-  if (value.length < 2 || value.length > 50) {
-    console.log('❌ Payment type length invalid:', value);
-    throw new Error('Ödeme tipi 2-50 karakter arasında olmalıdır');
   }
   
   console.log('✅ Payment type validation passed:', value);
