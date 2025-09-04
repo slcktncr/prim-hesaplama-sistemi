@@ -37,6 +37,7 @@ const PrimTransactions = () => {
   const [periods, setPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalDeductions, setTotalDeductions] = useState(0);
   const [filters, setFilters] = useState({
     page: 1,
     limit: 15,
@@ -63,7 +64,10 @@ const PrimTransactions = () => {
   }, []);
 
   useEffect(() => {
-    const debouncedFetch = debounce(fetchTransactions, 300);
+    const debouncedFetch = debounce(() => {
+      fetchTransactions();
+      fetchTotalDeductions();
+    }, 300);
     debouncedFetch();
   }, [filters]);
 
@@ -93,6 +97,27 @@ const PrimTransactions = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchTotalDeductions = async () => {
+    try {
+      // Kesinti toplamı için ayrı API çağrısı - sadece kesinti tipindeki işlemleri al
+      const deductionFilters = {
+        ...filters,
+        type: 'kesinti',
+        limit: 1000 // Tüm kesintileri al
+      };
+      const response = await primsAPI.getTransactions(deductionFilters);
+      const deductionTotal = Math.abs(
+        (response.data.transactions || [])
+          .filter(t => t.transactionType === 'kesinti')
+          .reduce((sum, t) => sum + t.amount, 0)
+      );
+      setTotalDeductions(deductionTotal);
+    } catch (error) {
+      console.error('Total deductions fetch error:', error);
+      setTotalDeductions(0);
     }
   };
 
@@ -267,11 +292,7 @@ const PrimTransactions = () => {
           <Card className="text-center">
             <Card.Body>
               <div className="h4 text-danger mb-1">
-                {formatCurrency(
-                  Math.abs(transactions
-                    .filter(t => t.transactionType === 'kesinti')
-                    .reduce((sum, t) => sum + t.amount, 0))
-                )}
+                {formatCurrency(totalDeductions)}
               </div>
               <div className="text-muted small">Toplam Kesinti</div>
             </Card.Body>
