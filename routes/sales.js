@@ -408,7 +408,9 @@ router.put('/:id', auth, [
     let needsPrimRecalculation = false;
     if (sale.saleType === 'satis' || updates.saleType === 'satis') {
       // Prim etkileyecek alanlar değişti mi?
-      if (updates.listPrice !== undefined || updates.activitySalePrice !== undefined || updates.discountRate !== undefined) {
+      if (updates.listPrice !== undefined || updates.activitySalePrice !== undefined || 
+          updates.discountRate !== undefined || updates.originalListPrice !== undefined || 
+          updates.discountedListPrice !== undefined) {
         needsPrimRecalculation = true;
       }
     }
@@ -431,20 +433,38 @@ router.put('/:id', auth, [
       }
 
       // İndirim hesaplama
-      let listPriceNum = parseFloat(sale.listPrice);
+      const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
       const discountRateNum = parseFloat(sale.discountRate) || 0;
+      let discountedListPriceNum = 0;
 
-      if (discountRateNum > 0 && sale.originalListPrice) {
-        // İndirim varsa orijinal fiyattan hesapla
-        const originalPrice = parseFloat(sale.originalListPrice);
-        listPriceNum = originalPrice * (1 - discountRateNum / 100);
-        sale.listPrice = listPriceNum;
-        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalPrice} TL → ${listPriceNum} TL`);
+      if (discountRateNum > 0 && originalListPriceNum > 0) {
+        discountedListPriceNum = originalListPriceNum * (1 - discountRateNum / 100);
+        sale.discountedListPrice = discountedListPriceNum;
+        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
       }
 
-      // Prim hesaplama
-      const activitySalePriceNum = parseFloat(sale.activitySalePrice);
-      const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
+      // Yeni prim hesaplama mantığı - 3 fiyat arasından en düşüğü
+      const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
+      
+      const validPrices = [];
+      
+      // Orijinal liste fiyatı
+      if (originalListPriceNum > 0) {
+        validPrices.push(originalListPriceNum);
+      }
+      
+      // İndirimli liste fiyatı (varsa)
+      if (discountRateNum > 0 && discountedListPriceNum > 0) {
+        validPrices.push(discountedListPriceNum);
+      }
+      
+      // Aktivite fiyatı
+      if (activitySalePriceNum > 0) {
+        validPrices.push(activitySalePriceNum);
+      }
+      
+      // En düşük fiyat üzerinden prim hesapla
+      const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
       const primAmount = basePrimPrice * currentPrimRate.rate;
 
       sale.primRate = currentPrimRate.rate;
@@ -452,8 +472,10 @@ router.put('/:id', auth, [
       sale.primAmount = primAmount;
 
       console.log('💰 Yeni prim hesaplama:');
-      console.log('Liste fiyatı:', listPriceNum);
+      console.log('Orijinal liste fiyatı:', originalListPriceNum);
+      console.log('İndirimli liste fiyatı:', discountedListPriceNum);
       console.log('Aktivite fiyatı:', activitySalePriceNum);
+      console.log('Geçerli fiyatlar:', validPrices);
       console.log('Base prim fiyatı:', basePrimPrice);
       console.log('Prim oranı:', currentPrimRate.rate);
       console.log('Hesaplanan prim:', primAmount);
