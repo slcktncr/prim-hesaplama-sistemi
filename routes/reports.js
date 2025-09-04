@@ -216,7 +216,18 @@ router.get('/sales-summary', auth, async (req, res) => {
     // Ödeme tipi dağılımı
     const paymentTypeDistribution = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
-      { $group: { _id: '$paymentType', count: { $sum: 1 }, totalAmount: { $sum: '$basePrimPrice' } } },
+      {
+        $addFields: {
+          paymentTypeDisplay: {
+            $cond: {
+              if: { $or: [{ $eq: ['$paymentType', null] }, { $eq: ['$paymentType', ''] }] },
+              then: 'Kapora',
+              else: '$paymentType'
+            }
+          }
+        }
+      },
+      { $group: { _id: '$paymentTypeDisplay', count: { $sum: 1 }, totalAmount: { $sum: '$basePrimPrice' } } },
       { $sort: { count: -1 } }
     ]);
 
