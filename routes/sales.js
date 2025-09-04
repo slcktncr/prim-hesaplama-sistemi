@@ -4,10 +4,25 @@ const Sale = require('../models/Sale');
 const PrimRate = require('../models/PrimRate');
 const PrimPeriod = require('../models/PrimPeriod');
 const PrimTransaction = require('../models/PrimTransaction');
+const PaymentMethod = require('../models/PaymentMethod');
 const { auth, adminAuth } = require('../middleware/auth');
 const moment = require('moment');
 
 const router = express.Router();
+
+// Ödeme tipi validasyonu için custom validator
+const validatePaymentType = async (value) => {
+  if (!value) return true; // Optional field
+  
+  const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
+  const validPaymentTypes = activePaymentMethods.map(method => method.name);
+  
+  if (!validPaymentTypes.includes(value)) {
+    throw new Error(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
+  }
+  
+  return true;
+};
 
 // Satış dönemini otomatik belirle
 const getOrCreatePrimPeriod = async (saleDate, createdBy) => {
@@ -50,7 +65,7 @@ router.post('/', auth, [
   body('kaporaDate').if(body('saleType').equals('kapora')).isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
   body('listPrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
   body('activitySalePrice').if(body('saleType').equals('satis')).isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
-  body('paymentType').if(body('saleType').equals('satis')).isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
+  body('paymentType').if(body('saleType').equals('satis')).custom(validatePaymentType)
 ], async (req, res) => {
   try {
     console.log('🔍 Sale POST request received');
@@ -253,14 +268,28 @@ router.put('/:id', auth, [
   body('customerName').optional().trim().notEmpty().withMessage('Müşteri adı soyadı gereklidir'),
   body('blockNo').optional().trim().notEmpty().withMessage('Blok no gereklidir'),
   body('apartmentNo').optional().trim().notEmpty().withMessage('Daire no gereklidir'),
+  body('periodNo').optional().trim().notEmpty().withMessage('Dönem no gereklidir'),
+  body('contractNo').optional().trim().isLength({ min: 6, max: 6 }).withMessage('Sözleşme no tam olarak 6 hane olmalıdır'),
+  body('saleType').optional().isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
+  body('saleDate').optional().isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
+  body('kaporaDate').optional().isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
   body('listPrice').optional().isFloat({ min: 0 }).withMessage('Liste fiyatı 0\'dan büyük olmalıdır'),
   body('activitySalePrice').optional().isFloat({ min: 0 }).withMessage('Aktivite satış fiyatı 0\'dan büyük olmalıdır'),
-  body('paymentType').optional().isIn(['Nakit', 'Kredi', 'Taksit', 'Diğer']).withMessage('Geçerli bir ödeme tipi seçiniz')
+  body('paymentType').optional().custom(validatePaymentType)
 ], async (req, res) => {
   try {
+    console.log('🔍 Sale UPDATE request received');
+    console.log('User:', req.user?.email);
+    console.log('Sale ID:', req.params.id);
+    console.log('Body:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.log('❌ Validation errors:', errors.array());
+      return res.status(400).json({ 
+        message: 'Validasyon hatası',
+        errors: errors.array() 
+      });
     }
 
     const sale = await Sale.findById(req.params.id);
@@ -273,13 +302,100 @@ router.put('/:id', auth, [
       return res.status(403).json({ message: 'Bu satışı düzenleme yetkiniz bulunmamaktadır' });
     }
 
-    // Güncelleme
     const updates = req.body;
+    
+    // Sözleşme no değişikliği kontrolü
+    if (updates.contractNo && updates.contractNo !== sale.contractNo) {
+      const existingSale = await Sale.findOne({ 
+        contractNo: updates.contractNo,
+        _id: { $ne: sale._id }
+      });
+      if (existingSale) {
+        return res.status(400).json({ message: 'Bu sözleşme numarası ile kayıtlı başka bir satış bulunmaktadır' });
+      }
+    }
+
+    // Prim hesaplama (sadece normal satış için)
+    let needsPrimRecalculation = false;
+    if (sale.saleType === 'satis' || updates.saleType === 'satis') {
+      // Prim etkileyecek alanlar değişti mi?
+      if (updates.listPrice !== undefined || updates.activitySalePrice !== undefined || updates.discountRate !== undefined) {
+        needsPrimRecalculation = true;
+      }
+    }
+
+    // Güncelleme işlemi
     Object.keys(updates).forEach(key => {
       if (updates[key] !== undefined) {
         sale[key] = updates[key];
       }
     });
+
+    // Prim yeniden hesaplama
+    if (needsPrimRecalculation && sale.saleType === 'satis') {
+      console.log('💰 Prim yeniden hesaplanıyor...');
+      
+      // Aktif prim oranını al
+      const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+      if (!currentPrimRate) {
+        return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+      }
+
+      // İndirim hesaplama
+      let listPriceNum = parseFloat(sale.listPrice);
+      const discountRateNum = parseFloat(sale.discountRate) || 0;
+
+      if (discountRateNum > 0 && sale.originalListPrice) {
+        // İndirim varsa orijinal fiyattan hesapla
+        const originalPrice = parseFloat(sale.originalListPrice);
+        listPriceNum = originalPrice * (1 - discountRateNum / 100);
+        sale.listPrice = listPriceNum;
+        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalPrice} TL → ${listPriceNum} TL`);
+      }
+
+      // Prim hesaplama
+      const activitySalePriceNum = parseFloat(sale.activitySalePrice);
+      const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
+      const primAmount = basePrimPrice * currentPrimRate.rate;
+
+      sale.primRate = currentPrimRate.rate;
+      sale.basePrimPrice = basePrimPrice;
+      sale.primAmount = primAmount;
+
+      console.log('💰 Yeni prim hesaplama:');
+      console.log('Liste fiyatı:', listPriceNum);
+      console.log('Aktivite fiyatı:', activitySalePriceNum);
+      console.log('Base prim fiyatı:', basePrimPrice);
+      console.log('Prim oranı:', currentPrimRate.rate);
+      console.log('Hesaplanan prim:', primAmount);
+
+      // Prim transaction'ını güncelle (sadece ödenmemişse)
+      if (sale.primStatus === 'ödenmedi') {
+        await PrimTransaction.findOneAndUpdate(
+          { sale: sale._id, transactionType: 'kazanç' },
+          { 
+            amount: primAmount,
+            description: `${sale.contractNo} sözleşme numaralı satış primi (güncellendi)`
+          }
+        );
+        console.log('✅ Prim transaction güncellendi');
+      }
+    }
+
+    // Satış tarihine göre dönem güncelleme (sadece ödenmemiş primler için)
+    if (updates.saleDate && sale.primStatus === 'ödenmedi') {
+      const newPrimPeriodId = await getOrCreatePrimPeriod(updates.saleDate, req.user._id);
+      if (newPrimPeriodId.toString() !== sale.primPeriod.toString()) {
+        sale.primPeriod = newPrimPeriodId;
+        
+        // Prim transaction'ının dönemini de güncelle
+        await PrimTransaction.findOneAndUpdate(
+          { sale: sale._id, transactionType: 'kazanç' },
+          { primPeriod: newPrimPeriodId }
+        );
+        console.log('📅 Prim dönemi güncellendi');
+      }
+    }
 
     await sale.save();
 
@@ -287,13 +403,20 @@ router.put('/:id', auth, [
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
+    console.log(`✅ Satış güncellendi: ${sale.contractNo}`);
+
     res.json({
       message: 'Satış başarıyla güncellendi',
       sale: updatedSale
     });
   } catch (error) {
-    console.error('Update sale error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Update sale error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    res.status(500).json({ 
+      message: 'Satış güncellenirken hata oluştu',
+      error: error.message 
+    });
   }
 });
 

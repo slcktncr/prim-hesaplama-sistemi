@@ -339,10 +339,24 @@ const SaleForm = () => {
 
     try {
       const saleData = {
-        ...formData,
-        listPrice: parseFloat(formData.listPrice),
-        activitySalePrice: parseFloat(formData.activitySalePrice)
+        ...formData
       };
+
+      // Sadece normal satış için fiyat alanlarını parse et
+      if (formData.saleType === 'satis') {
+        saleData.listPrice = parseFloat(formData.listPrice) || 0;
+        saleData.activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
+        
+        // İndirim bilgileri
+        if (formData.discountRate) {
+          saleData.discountRate = parseFloat(formData.discountRate) || 0;
+        }
+        if (formData.originalListPrice) {
+          saleData.originalListPrice = parseFloat(formData.originalListPrice) || 0;
+        }
+      }
+
+      console.log('📤 Sending sale data:', saleData);
 
       if (isEdit) {
         await salesAPI.updateSale(id, saleData);
