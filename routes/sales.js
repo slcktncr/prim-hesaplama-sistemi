@@ -99,7 +99,7 @@ router.post('/', auth, [
     const {
       customerName, blockNo, apartmentNo, periodNo, saleDate, kaporaDate,
       contractNo, listPrice, activitySalePrice, paymentType, saleType,
-      entryDate, exitDate, notes, discountRate
+      entryDate, exitDate, notes, discountRate, originalListPrice, discountedListPrice
     } = req.body;
 
     // Sözleşme no kontrolü
@@ -122,18 +122,17 @@ router.post('/', auth, [
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
 
       // İndirim hesaplama
-      let originalListPriceNum = parseFloat(listPrice);
-      let finalListPriceNum = originalListPriceNum;
+      const originalListPriceNum = parseFloat(originalListPrice || listPrice) || 0;
       const discountRateNum = parseFloat(discountRate) || 0;
+      let discountedListPriceNum = 0;
 
-      if (discountRateNum > 0) {
-        finalListPriceNum = originalListPriceNum * (1 - discountRateNum / 100);
-        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${finalListPriceNum} TL`);
+      if (discountRateNum > 0 && originalListPriceNum > 0) {
+        discountedListPriceNum = parseFloat(discountedListPrice) || (originalListPriceNum * (1 - discountRateNum / 100));
+        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
       }
 
       // Yeni prim hesaplama mantığı - 3 fiyat arasından en düşüğü
-      listPriceNum = finalListPriceNum; // İndirimli fiyat (varsa)
-      activitySalePriceNum = parseFloat(activitySalePrice);
+      activitySalePriceNum = parseFloat(activitySalePrice) || 0;
       
       const validPrices = [];
       
@@ -143,8 +142,8 @@ router.post('/', auth, [
       }
       
       // İndirimli liste fiyatı (varsa)
-      if (discountRateNum > 0 && finalListPriceNum > 0) {
-        validPrices.push(finalListPriceNum);
+      if (discountRateNum > 0 && discountedListPriceNum > 0) {
+        validPrices.push(discountedListPriceNum);
       }
       
       // Aktivite fiyatı
@@ -159,8 +158,9 @@ router.post('/', auth, [
       console.log('💰 Prim hesaplama:');
       console.log('Orijinal liste fiyatı:', originalListPriceNum);
       console.log('İndirim oranı:', discountRateNum + '%');
-      console.log('İndirimli liste fiyatı:', listPriceNum);
+      console.log('İndirimli liste fiyatı:', discountedListPriceNum);
       console.log('Aktivite fiyatı:', activitySalePriceNum);
+      console.log('Geçerli fiyatlar:', validPrices);
       console.log('Base prim fiyatı:', basePrimPrice);
       console.log('Prim oranı:', currentPrimRate.rate);
       console.log('Hesaplanan prim:', primAmount);
@@ -190,18 +190,17 @@ router.post('/', auth, [
     // Satış tipine göre farklı alanlar ekle
     if (saleType === 'satis') {
       saleData.saleDate = saleDate;
-      saleData.listPrice = listPriceNum; // İndirimli fiyat
+      saleData.listPrice = parseFloat(listPrice) || 0; // Ana liste fiyatı
       saleData.activitySalePrice = activitySalePriceNum;
       saleData.paymentType = paymentType;
       saleData.primRate = currentPrimRate.rate;
       saleData.basePrimPrice = basePrimPrice;
       
       // İndirim bilgileri
-      const discountRateNum = parseFloat(discountRate) || 0;
       if (discountRateNum > 0) {
         saleData.discountRate = discountRateNum;
-        saleData.originalListPrice = parseFloat(listPrice); // Orijinal fiyat
-        saleData.discountedListPrice = finalListPriceNum; // İndirimli fiyat
+        saleData.originalListPrice = originalListPriceNum; // Orijinal fiyat
+        saleData.discountedListPrice = discountedListPriceNum; // İndirimli fiyat
       }
     } else {
       saleData.kaporaDate = kaporaDate;
