@@ -34,7 +34,7 @@ const saleSchema = new mongoose.Schema({
   saleDate: {
     type: Date,
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     }
   },
   kaporaDate: {
@@ -52,7 +52,7 @@ const saleSchema = new mongoose.Schema({
   listPrice: {
     type: Number,
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     },
     min: 0
   },
@@ -75,20 +75,20 @@ const saleSchema = new mongoose.Schema({
   originalListPrice: {
     type: Number, // İndirim öncesi orijinal liste fiyatı
     required: function() {
-      return this.saleType !== 'kapora' && this.discountRate > 0;
+      return this.saleType !== 'kapora' && this.discountRate > 0; // Kapora değilse ve indirim varsa gerekli
     }
   },
   activitySalePrice: {
     type: Number,
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     },
     min: 0
   },
   paymentType: {
     type: String,
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     },
     trim: true,
     maxlength: [50, 'Ödeme tipi 50 karakterden uzun olamaz']
@@ -147,13 +147,13 @@ const saleSchema = new mongoose.Schema({
   primRate: {
     type: Number,
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     }
   },
   basePrimPrice: {
     type: Number, // Liste fiyatı ve aktivite satış fiyatından düşük olan
     required: function() {
-      return this.saleType !== 'kapora';
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     }
   },
   

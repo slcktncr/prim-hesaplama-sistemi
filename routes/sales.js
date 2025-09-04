@@ -12,22 +12,32 @@ const moment = require('moment');
 const router = express.Router();
 
 // Ödeme tipi validasyonu - PaymentMethods tablosundan dinamik kontrol
+// Satış türünün kapora türü olup olmadığını kontrol et
+const isKaporaType = (saleTypeValue) => {
+  return saleTypeValue === 'kapora';
+};
+
 // Satış tipi validasyonu - SaleTypes tablosundan dinamik kontrol
 const validateSaleType = async (value) => {
   console.log('🔍 SaleType validation - Value:', value, 'Type:', typeof value);
   
   if (!value || value === '') {
+    console.log('❌ SaleType validation failed: Empty value');
     return Promise.reject('Satış tipi gereklidir');
   }
   
   // String kontrolü
   if (typeof value !== 'string') {
+    console.log('❌ SaleType validation failed: Not string');
     return Promise.reject('Satış tipi string olmalıdır');
   }
   
   try {
+    console.log('📋 SaleType tablosundan aktif türler getiriliyor...');
     // SaleTypes tablosundan aktif satış türlerini al
     const activeSaleTypes = await SaleType.find({ isActive: true }).select('name');
+    console.log('📋 Aktif SaleTypes:', activeSaleTypes.map(t => t.name));
+    
     const validSaleTypeValues = activeSaleTypes.map(type => {
       const lowerName = type.name.toLowerCase();
       if (lowerName.includes('kapora')) return 'kapora';
@@ -38,31 +48,43 @@ const validateSaleType = async (value) => {
     // Eski sistem değerleri de ekle
     validSaleTypeValues.push('satis', 'kapora');
     
-    console.log('📋 Geçerli satış türleri:', validSaleTypeValues);
+    console.log('📋 Geçerli satış türleri (mapped):', validSaleTypeValues);
     
     // Eğer SaleType tablosu boşsa, varsayılan değerleri kabul et
-    if (validSaleTypeValues.length === 0) {
+    if (activeSaleTypes.length === 0) {
       console.log('⚠️ SaleType tablosu boş, varsayılan değerler kullanılıyor');
       const defaultTypes = ['satis', 'kapora'];
       if (!defaultTypes.includes(value)) {
+        console.log('❌ SaleType validation failed: Not in default types');
         return Promise.reject(`Geçersiz satış tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
       }
     } else {
-          // Aktif satış türleri arasında kontrol et (unique yap)
-    const uniqueValues = [...new Set(validSaleTypeValues)];
-    if (!uniqueValues.includes(value)) {
-      return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${uniqueValues.join(', ')}`);
-    }
+      // Aktif satış türleri arasında kontrol et (unique yap)
+      const uniqueValues = [...new Set(validSaleTypeValues)];
+      console.log('📋 Unique geçerli değerler:', uniqueValues);
+      console.log('🔍 Aranan değer:', value, 'İçinde var mı?', uniqueValues.includes(value));
+      
+      if (!uniqueValues.includes(value)) {
+        console.log('❌ SaleType validation failed: Not in valid types');
+        return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${uniqueValues.join(', ')}`);
+      }
     }
     
     console.log('✅ Sale type validation passed:', value);
     return Promise.resolve(true);
   } catch (error) {
     console.error('❌ Sale type validation error:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
     // Hata durumunda eski sistem değerlerini kabul et
     if (['satis', 'kapora'].includes(value)) {
+      console.log('⚠️ Fallback: Eski sistem değeri kabul edildi');
       return Promise.resolve(true);
     }
+    console.log('❌ Fallback failed: Satış tipi doğrulanamadı');
     return Promise.reject('Satış tipi doğrulanamadı');
   }
 };
@@ -146,37 +168,37 @@ router.post('/', auth, [
   body('saleType').custom(validateSaleType),
   // Koşullu validasyonlar
   body('saleDate').custom((value, { req }) => {
-    if (req.body.saleType === 'kapora') return true; // Kapora için tarih gerekli değil
+    if (isKaporaType(req.body.saleType)) return true; // Kapora için tarih gerekli değil
     if (!value) throw new Error('Satış tarihi gereklidir');
     if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) throw new Error('Geçerli bir satış tarihi giriniz (YYYY-MM-DD)');
     return true;
   }),
   body('kaporaDate').if(body('saleType').equals('kapora')).isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
   body('listPrice').custom((value, { req }) => {
-    if (req.body.saleType === 'kapora') return true; // Kapora için fiyat gerekli değil
+    if (isKaporaType(req.body.saleType)) return true; // Kapora için fiyat gerekli değil
     if (!value || parseFloat(value) <= 0) throw new Error('Liste fiyatı 0\'dan büyük olmalıdır');
     return true;
   }),
   body('activitySalePrice').custom((value, { req }) => {
-    if (req.body.saleType === 'kapora') return true; // Kapora için fiyat gerekli değil
+    if (isKaporaType(req.body.saleType)) return true; // Kapora için fiyat gerekli değil
     if (!value || parseFloat(value) <= 0) throw new Error('Aktivite satış fiyatı 0\'dan büyük olmalıdır');
     return true;
   }),
   body('paymentType').custom((value, { req }) => {
-    if (req.body.saleType === 'kapora') return true; // Kapora için ödeme tipi gerekli değil
+    if (isKaporaType(req.body.saleType)) return true; // Kapora için ödeme tipi gerekli değil
     return validatePaymentType(value);
   })
 ], async (req, res) => {
   try {
     console.log('🔍 Sale POST request received');
     console.log('User:', req.user?.email);
-    console.log('Body:', req.body);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('SaleType:', req.body.saleType);
     console.log('PaymentType:', req.body.paymentType);
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ Validation errors:', errors.array());
+      console.log('❌ Validation errors:', JSON.stringify(errors.array(), null, 2));
       const errorMessages = errors.array().map(err => `${err.param}: ${err.msg}`).join(', ');
       return res.status(400).json({ 
         message: `Validasyon hatası: ${errorMessages}`,
@@ -205,7 +227,7 @@ router.post('/', auth, [
     let discountedListPriceNum = 0;
 
     // Kapora değilse prim hesapla
-    if (saleType !== 'kapora') {
+    if (!isKaporaType(saleType)) {
           console.log('💰 Normal satış - Prim hesaplanıyor');
     console.log('📊 Fiyat bilgileri:', { 
       listPrice, 
@@ -306,7 +328,7 @@ router.post('/', auth, [
     };
 
     // Satış tipine göre farklı alanlar ekle
-    if (saleType === 'satis') {
+    if (!isKaporaType(saleType)) {
       saleData.saleDate = saleDate;
       saleData.listPrice = parseFloat(listPrice) || 0; // Ana liste fiyatı
       saleData.activitySalePrice = activitySalePriceNum;
@@ -337,12 +359,39 @@ router.post('/', auth, [
     
     const sale = new Sale(saleData);
     console.log('💾 Sale modeli oluşturuldu, kaydediliyor...');
+    console.log('📋 Sale data before save:', JSON.stringify(sale.toObject(), null, 2));
 
-    await sale.save();
-    console.log('✅ Sale başarıyla kaydedildi, ID:', sale._id);
+    try {
+      await sale.save();
+      console.log('✅ Sale başarıyla kaydedildi, ID:', sale._id);
+    } catch (saveError) {
+      console.error('❌ Sale kaydetme hatası:', saveError);
+      console.error('❌ Sale kaydetme hatası detayları:', {
+        message: saveError.message,
+        name: saveError.name,
+        errors: saveError.errors,
+        stack: saveError.stack
+      });
+      
+      if (saveError.name === 'ValidationError') {
+        const validationErrors = Object.keys(saveError.errors).map(key => ({
+          field: key,
+          message: saveError.errors[key].message,
+          value: saveError.errors[key].value
+        }));
+        console.error('❌ Mongoose Validation Errors:', JSON.stringify(validationErrors, null, 2));
+        return res.status(400).json({
+          message: 'Veritabanı validasyon hatası',
+          errors: validationErrors
+        });
+      }
+      
+      throw saveError; // Diğer hataları üst catch bloğuna fırlat
+    }
 
     // Sadece normal satış için prim işlemi kaydet
-    if (saleType === 'satis') {
+    if (!isKaporaType(saleType)) {
+      console.log('💰 Prim transaction oluşturuluyor...');
       const primTransaction = new PrimTransaction({
         salesperson: req.user._id,
         sale: sale._id,
@@ -353,7 +402,21 @@ router.post('/', auth, [
         createdBy: req.user._id
       });
 
-      await primTransaction.save();
+      console.log('📋 PrimTransaction data:', JSON.stringify(primTransaction.toObject(), null, 2));
+
+      try {
+        await primTransaction.save();
+        console.log('✅ Prim transaction kaydedildi, ID:', primTransaction._id);
+      } catch (primError) {
+        console.error('❌ PrimTransaction kaydetme hatası:', primError);
+        console.error('❌ PrimTransaction error details:', {
+          message: primError.message,
+          name: primError.name,
+          errors: primError.errors
+        });
+        // Prim transaction hatası sale'i silmemeli, sadece log
+        console.error('⚠️ Sale kaydedildi ama prim transaction başarısız!');
+      }
     }
 
     // Populate ile döndür
@@ -502,7 +565,7 @@ router.put('/:id', auth, [
   body('saleType').optional().custom(validateSaleType),
   body('saleDate').optional().custom((value, { req }) => {
     if (!value) return true; // Optional field
-    if (req.body.saleType === 'satis' && !value) {
+    if (!isKaporaType(req.body.saleType) && !value) {
       throw new Error('Normal satış için satış tarihi gereklidir');
     }
     if (value && !value.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -566,7 +629,7 @@ router.put('/:id', auth, [
 
     // Prim hesaplama (sadece normal satış için)
     let needsPrimRecalculation = false;
-    if (sale.saleType === 'satis' || updates.saleType === 'satis') {
+    if (!isKaporaType(sale.saleType) || !isKaporaType(updates.saleType)) {
       // Prim etkileyecek alanlar değişti mi?
       if (updates.listPrice !== undefined || updates.activitySalePrice !== undefined || 
           updates.discountRate !== undefined || updates.originalListPrice !== undefined || 
@@ -583,7 +646,7 @@ router.put('/:id', auth, [
     });
 
     // Prim yeniden hesaplama
-    if (needsPrimRecalculation && sale.saleType === 'satis') {
+    if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
       console.log('💰 Prim yeniden hesaplanıyor...');
       
       // Aktif prim oranını al
@@ -916,7 +979,7 @@ router.put('/:id/transfer', [auth, adminAuth], [
     await sale.save();
 
     // Sadece normal satışlar için prim transaction'ı oluştur
-    if (sale.saleType === 'satis') {
+    if (!isKaporaType(sale.saleType)) {
       // Eski temsilciden kesinti
       const deductionTransaction = new PrimTransaction({
         salesperson: oldSalesperson,
@@ -1150,7 +1213,7 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
 
-    if (sale.saleType !== 'kapora') {
+    if (!isKaporaType(sale.saleType)) {
       return res.status(400).json({ message: 'Bu satış zaten normal satış durumunda' });
     }
 
