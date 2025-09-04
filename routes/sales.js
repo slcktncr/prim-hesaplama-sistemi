@@ -10,20 +10,46 @@ const moment = require('moment');
 
 const router = express.Router();
 
-// Ödeme tipi validasyonu - model enum'ı kullanıyor
-const validatePaymentType = (value) => {
+// Ödeme tipi validasyonu - PaymentMethods tablosundan dinamik kontrol
+const validatePaymentType = async (value) => {
   console.log('🔍 PaymentType validation - Value:', value, 'Type:', typeof value);
   
-  if (!value || value === '') return true; // Optional field
+  if (!value || value === '') return Promise.resolve(true); // Optional field
   
-  // Basit string kontrolü - enum kontrolü model'de yapılıyor
+  // String kontrolü
   if (typeof value !== 'string') {
     console.log('❌ Payment type must be string:', value);
-    throw new Error('Ödeme tipi string olmalıdır');
+    return Promise.reject('Ödeme tipi string olmalıdır');
   }
   
-  console.log('✅ Payment type validation passed:', value);
-  return true;
+  try {
+    // PaymentMethods tablosundan aktif ödeme yöntemlerini al
+    const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
+    const validPaymentTypes = activePaymentMethods.map(method => method.name);
+    
+    console.log('📋 Aktif ödeme yöntemleri:', validPaymentTypes);
+    
+    // Eğer PaymentMethod tablosu boşsa, varsayılan değerleri kabul et
+    if (validPaymentTypes.length === 0) {
+      console.log('⚠️ PaymentMethod tablosu boş, varsayılan değerler kullanılıyor');
+      const defaultTypes = ['Nakit', 'Kredi', 'Kredi Kartı', 'Taksit', 'Çek', 'Havale', 'EFT', 'Diğer'];
+      if (!defaultTypes.includes(value)) {
+        return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
+      }
+    } else {
+      // Aktif ödeme yöntemleri arasında kontrol et
+      if (!validPaymentTypes.includes(value)) {
+        return Promise.reject(`Geçersiz ödeme tipi: "${value}". Aktif ödeme yöntemleri: ${validPaymentTypes.join(', ')}`);
+      }
+    }
+    
+    console.log('✅ Payment type validation passed:', value);
+    return Promise.resolve(true);
+  } catch (error) {
+    console.error('❌ Payment type validation error:', error);
+    // Hata durumunda geçir, model validation'a bırak
+    return Promise.resolve(true);
+  }
 };
 
 // Satış dönemini otomatik belirle

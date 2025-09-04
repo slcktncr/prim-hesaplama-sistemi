@@ -89,7 +89,8 @@ const saleSchema = new mongoose.Schema({
     required: function() {
       return this.saleType === 'satis';
     },
-    enum: ['Nakit', 'Kredi', 'Kredi Kartı', 'Taksit', 'Çek', 'Havale', 'EFT', 'Diğer']
+    trim: true,
+    maxlength: [50, 'Ödeme tipi 50 karakterden uzun olamaz']
   },
   
   // Giriş-çıkış tarihleri (gün/ay formatında)
