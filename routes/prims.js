@@ -226,12 +226,6 @@ router.get('/earnings', auth, async (req, res) => {
           }
         }
       },
-      // Sadece gerçek prim hakedişi olanları göster (0 TL olanları filtrele)
-      {
-        $match: {
-          transactionCount: { $gt: 0 }
-        }
-      },
       {
         $lookup: {
           from: 'users',
@@ -293,6 +287,12 @@ router.get('/earnings', auth, async (req, res) => {
               }
             }
           }
+        }
+      },
+      // Satış bilgilerini kontrol et - satış yoksa gösterme
+      {
+        $match: {
+          salesCount: { $gt: 0 }  // En az 1 satış olmalı
         }
       },
       {

@@ -273,7 +273,7 @@ const PrimEarnings = () => {
                   <th>Dönem</th>
                   <th>Satış Bilgileri</th>
                   <th>Ödeme Durumu</th>
-                  <th>Toplam Hakediş</th>
+                  <th>Toplam Prim</th>
                   <th>İşlem Detayları</th>
                 </tr>
               </thead>
@@ -338,12 +338,12 @@ const PrimEarnings = () => {
                     </td>
                     <td>
                       <div>
-                        <div className={`h5 mb-1 ${earning.totalEarnings >= 0 ? 'text-success' : 'text-danger'}`}>
-                          {earning.totalEarnings >= 0 ? '+' : ''}{formatCurrency(earning.totalEarnings)}
+                        <div className="h5 mb-1 text-primary">
+                          {formatCurrency((earning.paidAmount || 0) + (earning.unpaidAmount || 0))}
                         </div>
-                        <Badge bg={getEarningsBadgeVariant(earning.totalEarnings)}>
-                          {earning.totalEarnings >= 0 ? 'Pozitif' : 'Negatif'}
-                        </Badge>
+                        <div className="small text-muted">
+                          Toplam Prim Hakediş
+                        </div>
                       </div>
                     </td>
                     <td>
