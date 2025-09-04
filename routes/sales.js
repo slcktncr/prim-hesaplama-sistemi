@@ -566,25 +566,44 @@ router.put('/:id/cancel', auth, async (req, res) => {
         salesperson: sale.salesperson
       });
     } else if (sale.primStatus === 'ödendi') {
-      // Prim ödenmişse kesinti işlemi oluştur - İPTAL TARİHİNE GÖRE DÖNEM BELİRLE
-      console.log('💸 Prim ödendi - Kesinti transaction ekleniyor (iptal tarihine göre dönem)');
+      // Prim ödenmişse kesinti işlemi oluştur - BİR SONRAKİ DÖNEMDE KESİNTİ
+      console.log('💸 Prim ödendi - Kesinti transaction ekleniyor (bir sonraki döneme)');
       
-      // İptal işlemi yapılan tarihe göre dönem oluştur/bul
-      const cancelDate = new Date(); // Şu anki tarih (iptal tarihi)
-      const cancelPeriodId = await getOrCreatePrimPeriod(cancelDate.toISOString().split('T')[0], req.user._id);
+      // İptal tarihi
+      const cancelDate = new Date();
+      const cancelYear = cancelDate.getFullYear();
+      const cancelMonth = cancelDate.getMonth() + 1; // 0-11 arası olduğu için +1
+      
+      // Bir sonraki ayı hesapla
+      let nextMonth = cancelMonth + 1;
+      let nextYear = cancelYear;
+      
+      if (nextMonth > 12) {
+        nextMonth = 1;
+        nextYear = nextYear + 1;
+      }
+      
+      // Bir sonraki ayın ilk gününü oluştur (dönem oluşturmak için)
+      const nextPeriodDate = new Date(nextYear, nextMonth - 1, 1);
+      const nextPeriodDateString = nextPeriodDate.toISOString().split('T')[0];
+      
+      console.log(`📅 İptal tarihi: ${cancelYear}/${cancelMonth} → Kesinti dönemi: ${nextYear}/${nextMonth}`);
+      
+      // Bir sonraki dönem oluştur/bul
+      const nextPeriodId = await getOrCreatePrimPeriod(nextPeriodDateString, req.user._id);
       
       const primTransaction = new PrimTransaction({
         salesperson: sale.salesperson,
         sale: sale._id,
-        primPeriod: cancelPeriodId, // İptal tarihinin dönemi
+        primPeriod: nextPeriodId, // Bir sonraki dönem
         transactionType: 'kesinti',
         amount: -sale.primAmount,
-        description: `${sale.contractNo} sözleşme iptal kesintisi (${sale.cancelledAt ? sale.cancelledAt.toLocaleDateString('tr-TR') : 'bugün'})`,
+        description: `${sale.contractNo} sözleşme iptal kesintisi (${cancelYear}/${cancelMonth} iptal → ${nextYear}/${nextMonth} kesinti)`,
         createdBy: req.user._id
       });
       await primTransaction.save();
       
-      console.log(`✅ Kesinti eklendi: ${sale.primAmount} TL - Dönem: ${cancelPeriodId}`);
+      console.log(`✅ Kesinti eklendi: ${sale.primAmount} TL - Dönem: ${nextYear}/${nextMonth} (${nextPeriodId})`);
     }
 
     const updatedSale = await Sale.findById(sale._id)
@@ -1020,6 +1039,73 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
   } catch (error) {
     console.error('❌ Convert to sale error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/sales/transaction/:transactionId/period
+// @desc    PrimTransaction dönemini değiştir (Admin only)
+// @access  Private (Admin only)
+router.put('/transaction/:transactionId/period', [auth, adminAuth], [
+  body('newPeriodId').notEmpty().withMessage('Yeni dönem seçilmelidir')
+], async (req, res) => {
+  try {
+    console.log('🔄 PrimTransaction dönem değiştirme isteği:', {
+      transactionId: req.params.transactionId,
+      user: req.user?.email,
+      body: req.body
+    });
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { newPeriodId } = req.body;
+
+    // Transaction'ı bul
+    const transaction = await PrimTransaction.findById(req.params.transactionId)
+      .populate('primPeriod', 'name')
+      .populate('salesperson', 'name email')
+      .populate('sale', 'contractNo');
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'Prim transaction bulunamadı' });
+    }
+
+    // Yeni dönem kontrolü
+    const PrimPeriod = require('../models/PrimPeriod');
+    const newPeriod = await PrimPeriod.findById(newPeriodId);
+    if (!newPeriod) {
+      return res.status(404).json({ message: 'Yeni dönem bulunamadı' });
+    }
+
+    const oldPeriodName = transaction.primPeriod?.name || 'Bilinmeyen';
+    const newPeriodName = newPeriod.name;
+
+    // Transaction dönemini güncelle
+    transaction.primPeriod = newPeriodId;
+    transaction.description += ` (Dönem değiştirildi: ${oldPeriodName} → ${newPeriodName})`;
+    await transaction.save();
+
+    // Güncellenmiş transaction'ı döndür
+    const updatedTransaction = await PrimTransaction.findById(transaction._id)
+      .populate('primPeriod', 'name')
+      .populate('salesperson', 'name email')
+      .populate('sale', 'contractNo');
+
+    console.log(`✅ Transaction dönem değişikliği tamamlandı: ${transaction._id} - ${oldPeriodName} → ${newPeriodName}`);
+
+    res.json({
+      message: `Transaction dönemi başarıyla değiştirildi: ${oldPeriodName} → ${newPeriodName}`,
+      transaction: updatedTransaction
+    });
+  } catch (error) {
+    console.error('❌ Transaction period change error:', error);
+    res.status(500).json({ 
+      message: 'Transaction dönem değiştirme işleminde hata oluştu',
+      error: error.message 
+    });
   }
 });
 

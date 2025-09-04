@@ -9,7 +9,8 @@ import {
   Badge, 
   Alert,
   Pagination,
-  Button
+  Button,
+  Modal
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { 
@@ -20,7 +21,7 @@ import {
   FiCalendar
 } from 'react-icons/fi';
 
-import { primsAPI } from '../../utils/api';
+import { primsAPI, salesAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
   formatCurrency, 
@@ -50,6 +51,12 @@ const PrimTransactions = () => {
 
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+
+  // Dönem değiştirme modal state'leri
+  const [showPeriodModal, setShowPeriodModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     fetchPeriods();
@@ -117,6 +124,47 @@ const PrimTransactions = () => {
       default:
         return '💰';
     }
+  };
+
+  // Dönem değiştirme fonksiyonları
+  const handleChangePeriod = (transaction) => {
+    setSelectedTransaction(transaction);
+    setSelectedPeriod(transaction.primPeriod?._id || '');
+    setShowPeriodModal(true);
+  };
+
+  const handlePeriodUpdate = async () => {
+    if (!selectedTransaction || !selectedPeriod) {
+      toast.error('Lütfen dönem seçiniz');
+      return;
+    }
+
+    if (selectedPeriod === selectedTransaction.primPeriod?._id) {
+      toast.info('Aynı dönem seçildi, değişiklik yapılmadı');
+      setShowPeriodModal(false);
+      return;
+    }
+
+    try {
+      setModalLoading(true);
+      await salesAPI.updateTransactionPeriod(selectedTransaction._id, selectedPeriod);
+      
+      toast.success('Transaction dönemi başarıyla değiştirildi');
+      setShowPeriodModal(false);
+      fetchTransactions(); // Listeyi yenile
+    } catch (error) {
+      console.error('Period update error:', error);
+      const message = error.response?.data?.message || 'Dönem değiştirme işleminde hata oluştu';
+      toast.error(message);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closePeriodModal = () => {
+    setShowPeriodModal(false);
+    setSelectedTransaction(null);
+    setSelectedPeriod('');
   };
 
   if (loading && transactions.length === 0) {
@@ -272,6 +320,7 @@ const PrimTransactions = () => {
                     <th>Dönem</th>
                     {isAdmin && <th>Temsilci</th>}
                     <th>Tutar</th>
+                    {isAdmin && <th>İşlemler</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -328,6 +377,18 @@ const PrimTransactions = () => {
                           {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
                         </div>
                       </td>
+                      {isAdmin && (
+                        <td>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => handleChangePeriod(transaction)}
+                            title="Dönem Değiştir"
+                          >
+                            📅
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -386,6 +447,58 @@ const PrimTransactions = () => {
           )}
         </Card.Body>
       </Card>
+
+      {/* Dönem Değiştirme Modal */}
+      <Modal show={showPeriodModal} onHide={closePeriodModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Dönem Değiştir</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedTransaction && (
+            <div>
+              <div className="mb-3">
+                <strong>İşlem:</strong> {selectedTransaction.description}
+              </div>
+              <div className="mb-3">
+                <strong>Tutar:</strong> {' '}
+                <span className={selectedTransaction.amount >= 0 ? 'text-success' : 'text-danger'}>
+                  {selectedTransaction.amount >= 0 ? '+' : ''}{formatCurrency(selectedTransaction.amount)}
+                </span>
+              </div>
+              <div className="mb-3">
+                <strong>Mevcut Dönem:</strong> {selectedTransaction.primPeriod?.name || 'Bilinmeyen'}
+              </div>
+              
+              <Form.Group>
+                <Form.Label>Yeni Dönem</Form.Label>
+                <Form.Select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  <option value="">Dönem seçiniz...</option>
+                  {periods.map(period => (
+                    <option key={period._id} value={period._id}>
+                      {period.name}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closePeriodModal} disabled={modalLoading}>
+            İptal
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handlePeriodUpdate} 
+            disabled={modalLoading || !selectedPeriod}
+          >
+            {modalLoading ? 'Güncelleniyor...' : 'Dönem Değiştir'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
