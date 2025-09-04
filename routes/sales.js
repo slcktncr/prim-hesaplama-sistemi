@@ -19,24 +19,22 @@ const isKaporaType = (saleTypeValue) => {
 
 // Satış tipi validasyonu - SaleTypes tablosundan dinamik kontrol
 const validateSaleType = async (value) => {
-  console.log('🔍 SaleType validation - Value:', value, 'Type:', typeof value);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 SaleType validation - Value:', value, 'Type:', typeof value);
+  }
   
   if (!value || value === '') {
-    console.log('❌ SaleType validation failed: Empty value');
     return Promise.reject('Satış tipi gereklidir');
   }
   
   // String kontrolü
   if (typeof value !== 'string') {
-    console.log('❌ SaleType validation failed: Not string');
     return Promise.reject('Satış tipi string olmalıdır');
   }
   
   try {
-    console.log('📋 SaleType tablosundan aktif türler getiriliyor...');
     // SaleTypes tablosundan aktif satış türlerini al
     const activeSaleTypes = await SaleType.find({ isActive: true }).select('name');
-    console.log('📋 Aktif SaleTypes:', activeSaleTypes.map(t => t.name));
     
     const validSaleTypeValues = activeSaleTypes.map(type => {
       const lowerName = type.name.toLowerCase();
@@ -48,55 +46,37 @@ const validateSaleType = async (value) => {
     // Eski sistem değerleri de ekle
     validSaleTypeValues.push('satis', 'kapora');
     
-    console.log('📋 Geçerli satış türleri (mapped):', validSaleTypeValues);
-    
     // Eğer SaleType tablosu boşsa, varsayılan değerleri kabul et
     if (activeSaleTypes.length === 0) {
-      console.log('⚠️ SaleType tablosu boş, varsayılan değerler kullanılıyor');
       const defaultTypes = ['satis', 'kapora'];
       if (!defaultTypes.includes(value)) {
-        console.log('❌ SaleType validation failed: Not in default types');
         return Promise.reject(`Geçersiz satış tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
       }
     } else {
       // Aktif satış türleri arasında kontrol et (unique yap)
       const uniqueValues = [...new Set(validSaleTypeValues)];
-      console.log('📋 Unique geçerli değerler:', uniqueValues);
-      console.log('🔍 Aranan değer:', value, 'İçinde var mı?', uniqueValues.includes(value));
       
       if (!uniqueValues.includes(value)) {
-        console.log('❌ SaleType validation failed: Not in valid types');
         return Promise.reject(`Geçersiz satış tipi: "${value}". Geçerli satış türleri: ${uniqueValues.join(', ')}`);
       }
     }
     
-    console.log('✅ Sale type validation passed:', value);
     return Promise.resolve(true);
   } catch (error) {
     console.error('❌ Sale type validation error:', error);
-    console.error('❌ Error details:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack
-    });
     // Hata durumunda eski sistem değerlerini kabul et
     if (['satis', 'kapora'].includes(value)) {
-      console.log('⚠️ Fallback: Eski sistem değeri kabul edildi');
       return Promise.resolve(true);
     }
-    console.log('❌ Fallback failed: Satış tipi doğrulanamadı');
     return Promise.reject('Satış tipi doğrulanamadı');
   }
 };
 
 const validatePaymentType = async (value) => {
-  console.log('🔍 PaymentType validation - Value:', value, 'Type:', typeof value);
-  
   if (!value || value === '') return Promise.resolve(true); // Optional field
   
   // String kontrolü
   if (typeof value !== 'string') {
-    console.log('❌ Payment type must be string:', value);
     return Promise.reject('Ödeme tipi string olmalıdır');
   }
   
@@ -105,11 +85,8 @@ const validatePaymentType = async (value) => {
     const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
     const validPaymentTypes = activePaymentMethods.map(method => method.name);
     
-    console.log('📋 Aktif ödeme yöntemleri:', validPaymentTypes);
-    
     // Eğer PaymentMethod tablosu boşsa, varsayılan değerleri kabul et
     if (validPaymentTypes.length === 0) {
-      console.log('⚠️ PaymentMethod tablosu boş, varsayılan değerler kullanılıyor');
       const defaultTypes = ['Nakit', 'Kredi', 'Kredi Kartı', 'Taksit', 'Çek', 'Havale', 'EFT', 'Diğer'];
       if (!defaultTypes.includes(value)) {
         return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
@@ -121,7 +98,6 @@ const validatePaymentType = async (value) => {
       }
     }
     
-    console.log('✅ Payment type validation passed:', value);
     return Promise.resolve(true);
   } catch (error) {
     console.error('❌ Payment type validation error:', error);
@@ -190,11 +166,11 @@ router.post('/', auth, [
   })
 ], async (req, res) => {
   try {
-    console.log('🔍 Sale POST request received');
-    console.log('User:', req.user?.email);
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('SaleType:', req.body.saleType);
-    console.log('PaymentType:', req.body.paymentType);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Sale POST request received');
+      console.log('User:', req.user?.email);
+      console.log('SaleType:', req.body.saleType);
+    }
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -228,14 +204,6 @@ router.post('/', auth, [
 
     // Kapora değilse prim hesapla
     if (!isKaporaType(saleType)) {
-          console.log('💰 Normal satış - Prim hesaplanıyor');
-    console.log('📊 Fiyat bilgileri:', { 
-      listPrice, 
-      originalListPrice, 
-      discountRate, 
-      discountedListPrice, 
-      activitySalePrice 
-    });
     
     // originalListPrice eksikse listPrice'dan al
     if (!originalListPrice && listPrice) {
@@ -358,12 +326,11 @@ router.post('/', auth, [
     }
     
     const sale = new Sale(saleData);
-    console.log('💾 Sale modeli oluşturuldu, kaydediliyor...');
-    console.log('📋 Sale data before save:', JSON.stringify(sale.toObject(), null, 2));
+    // Sale modeli kaydediliyor
 
     try {
       await sale.save();
-      console.log('✅ Sale başarıyla kaydedildi, ID:', sale._id);
+      // Sale başarıyla kaydedildi
     } catch (saveError) {
       console.error('❌ Sale kaydetme hatası:', saveError);
       console.error('❌ Sale kaydetme hatası detayları:', {

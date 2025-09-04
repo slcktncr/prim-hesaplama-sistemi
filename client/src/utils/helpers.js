@@ -161,6 +161,19 @@ export const debounce = (func, wait) => {
   };
 };
 
+// Satış türü ismine göre value mapping - Frontend ve Backend arasında tutarlılık için
+export const getSaleTypeValue = (name) => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('kapora')) {
+    return 'kapora';
+  } else if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
+    return 'satis';
+  } else {
+    // Yeni türler için unique value oluştur
+    return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
+  }
+};
+
 // Local storage helpers
 export const setLocalStorage = (key, value) => {
   try {

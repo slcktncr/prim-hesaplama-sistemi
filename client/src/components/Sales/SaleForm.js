@@ -6,7 +6,8 @@ import { salesAPI, primsAPI, paymentMethodsAPI, systemSettingsAPI } from '../../
 import { 
   validateRequired, 
   validatePositiveNumber, 
-  formatCurrency 
+  formatCurrency,
+  getSaleTypeValue 
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import { FiFileText, FiInfo } from 'react-icons/fi';
@@ -130,18 +131,6 @@ const SaleForm = () => {
     }
   };
 
-  // Satış türü ismine göre eski sistem value'sunu döndür
-  const getSaleTypeValue = (name) => {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes('kapora')) {
-      return 'kapora';
-    } else if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
-      return 'satis';
-    } else {
-      // Yeni türler için unique value oluştur
-      return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
-    }
-  };
 
   const fetchSale = async () => {
     try {
