@@ -12,7 +12,7 @@ const router = express.Router();
 
 // Ödeme tipi validasyonu için custom validator
 const validatePaymentType = async (value) => {
-  if (!value || value === '') return true; // Optional field
+  if (!value || value === '') return Promise.resolve(true); // Optional field
   
   try {
     const activePaymentMethods = await PaymentMethod.find({ isActive: true }).select('name');
@@ -20,20 +20,26 @@ const validatePaymentType = async (value) => {
     
     // Eğer PaymentMethod tablosu boşsa, varsayılan değerleri kabul et
     if (validPaymentTypes.length === 0) {
-      const defaultTypes = ['Nakit', 'Kredi', 'Taksit', 'Diğer'];
-      return defaultTypes.includes(value);
+      const defaultTypes = ['Nakit', 'Kredi Kartı', 'Taksit', 'Diğer'];
+      if (!defaultTypes.includes(value)) {
+        return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${defaultTypes.join(', ')}`);
+      }
+      return Promise.resolve(true);
     }
     
     if (!validPaymentTypes.includes(value)) {
-      throw new Error(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
+      return Promise.reject(`Geçersiz ödeme tipi. Geçerli değerler: ${validPaymentTypes.join(', ')}`);
     }
     
-    return true;
+    return Promise.resolve(true);
   } catch (error) {
     console.error('Payment type validation error:', error);
     // Hata durumunda varsayılan değerleri kabul et
-    const defaultTypes = ['Nakit', 'Kredi', 'Taksit', 'Diğer'];
-    return defaultTypes.includes(value);
+    const defaultTypes = ['Nakit', 'Kredi Kartı', 'Taksit', 'Diğer'];
+    if (!defaultTypes.includes(value)) {
+      return Promise.reject(`Geçersiz ödeme tipi (varsayılan). Geçerli değerler: ${defaultTypes.join(', ')}`);
+    }
+    return Promise.resolve(true);
   }
 };
 

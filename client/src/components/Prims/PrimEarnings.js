@@ -32,6 +32,7 @@ import Loading from '../Common/Loading';
 
 const PrimEarnings = () => {
   const [earnings, setEarnings] = useState([]);
+  const [deductions, setDeductions] = useState([]);
   const [periods, setPeriods] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,8 +60,15 @@ const PrimEarnings = () => {
   const fetchEarnings = async () => {
     try {
       setLoading(true);
-      const response = await primsAPI.getEarnings(filters);
-      setEarnings(response.data || []);
+      
+      // Hem earnings hem de deductions getir
+      const [earningsResponse, deductionsResponse] = await Promise.all([
+        primsAPI.getEarnings(filters),
+        primsAPI.getDeductions(filters)
+      ]);
+      
+      setEarnings(earningsResponse.data || []);
+      setDeductions(deductionsResponse.data || []);
       setError(null);
     } catch (error) {
       console.error('Earnings fetch error:', error);
@@ -377,6 +385,84 @@ const PrimEarnings = () => {
           )}
         </Card.Body>
       </Card>
+
+      {/* Deductions Table */}
+      {deductions.length > 0 && (
+        <Card className="mt-4">
+          <Card.Header className="bg-danger text-white">
+            <div className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">📉 Kesinti Dönemleri</h5>
+              <Badge bg="light" text="dark">{deductions.length} kesinti</Badge>
+            </div>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <Table responsive hover className="mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th>Temsilci</th>
+                  <th>Dönem</th>
+                  <th>Kesinti Tutarı</th>
+                  <th>İşlem Detayları</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deductions.map((deduction, index) => (
+                  <tr key={`${deduction._id.salesperson}-${deduction._id.primPeriod}`}>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <div className="me-3">
+                          <div 
+                            className="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
+                            style={{ width: '32px', height: '32px', fontSize: '14px', fontWeight: 'bold' }}
+                          >
+                            {deduction.salesperson?.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="fw-bold">{deduction.salesperson?.name || 'Bilinmeyen'}</div>
+                          <div className="small text-muted">
+                            <FiUser className="me-1" size={12} />
+                            Temsilci
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <FiCalendar className="me-2 text-muted" size={16} />
+                        <div>
+                          <div className="fw-bold">{deduction.primPeriod?.name || 'Bilinmeyen'}</div>
+                          <div className="small text-muted">Kesinti Dönemi</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="text-center">
+                        <div className="h5 mb-1 text-danger">
+                          {formatCurrency(deduction.totalDeductions)}
+                        </div>
+                        <div className="small text-muted">Toplam Kesinti</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="small">
+                        <Badge variant="danger" className="me-2">
+                          {deduction.transactionCount} İşlem
+                        </Badge>
+                        <div className="mt-1">
+                          <small className="text-muted">
+                            Bu dönemde satış yok, sadece kesinti var
+                          </small>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+      )}
 
       {/* Additional Info */}
       {earnings.length > 0 && (

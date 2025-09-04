@@ -289,13 +289,10 @@ router.get('/earnings', auth, async (req, res) => {
           }
         }
       },
-      // Satış veya transaction varsa göster
+      // Sadece satışı olan dönemler gösterilsin
       {
         $match: {
-          $or: [
-            { salesCount: { $gt: 0 } },  // En az 1 satış varsa
-            { transactionCount: { $gt: 0 } }  // Veya en az 1 transaction varsa
-          ]
+          salesCount: { $gt: 0 }  // En az 1 satış olmalı
         }
       },
       {
@@ -323,6 +320,122 @@ router.get('/earnings', auth, async (req, res) => {
     res.json(earnings);
   } catch (error) {
     console.error('Get prim earnings error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/prims/deductions
+// @desc    Kesinti transaction'larını getir (satış olmayan dönemler için)
+// @access  Private
+router.get('/deductions', auth, async (req, res) => {
+  try {
+    const { period, salesperson } = req.query;
+    console.log('🔍 Deductions request:', { period, salesperson, userRole: req.user.role });
+    
+    let query = {
+      transactionType: { $in: ['kesinti', 'transfer_giden'] } // Sadece kesinti türü transaction'lar
+    };
+    
+    // Admin değilse sadece kendi kesintilerini görsün
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user._id;
+    } else if (salesperson && salesperson !== '') {
+      query.salesperson = new mongoose.Types.ObjectId(salesperson);
+    }
+    
+    // Dönem filtresi
+    if (period && period !== '') {
+      query.primPeriod = new mongoose.Types.ObjectId(period);
+    }
+    
+    console.log('📊 Deductions query:', query);
+
+    // Kesinti transaction'larını getir
+    const deductions = await PrimTransaction.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            primPeriod: '$primPeriod'
+          },
+          totalDeductions: { $sum: '$amount' },
+          transactionCount: { $sum: 1 },
+          transactions: { $push: '$$ROOT' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id.salesperson',
+          foreignField: '_id',
+          as: 'salesperson'
+        }
+      },
+      {
+        $lookup: {
+          from: 'primperiods',
+          localField: '_id.primPeriod',
+          foreignField: '_id',
+          as: 'primPeriod'
+        }
+      },
+      // Bu dönemde satış var mı kontrol et
+      {
+        $lookup: {
+          from: 'sales',
+          let: { 
+            salespersonId: '$_id.salesperson', 
+            periodId: '$_id.primPeriod' 
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$salesperson', '$$salespersonId'] },
+                    { $eq: ['$primPeriod', '$$periodId'] },
+                    { $eq: ['$saleType', 'satis'] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'sales'
+        }
+      },
+      {
+        $addFields: {
+          salesCount: { $size: '$sales' },
+          hasNoSales: { $eq: [{ $size: '$sales' }, 0] } // Satış yoksa true
+        }
+      },
+      // Sadece satışı olmayan dönemlerdeki kesintileri göster
+      {
+        $match: {
+          hasNoSales: true
+        }
+      },
+      {
+        $project: {
+          salesperson: { $arrayElemAt: ['$salesperson', 0] },
+          primPeriod: { $arrayElemAt: ['$primPeriod', 0] },
+          totalDeductions: 1,
+          transactionCount: 1,
+          salesCount: 1,
+          transactions: 1
+        }
+      },
+      {
+        $sort: { 'primPeriod.year': -1, 'primPeriod.month': -1, 'salesperson.name': 1 }
+      }
+    ]);
+
+    console.log('✅ Deductions result count:', deductions.length);
+
+    res.json(deductions);
+  } catch (error) {
+    console.error('Get prim deductions error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

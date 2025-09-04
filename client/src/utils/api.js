@@ -66,6 +66,7 @@ export const primsAPI = {
   createPeriod: (periodData) => API.post('/prims/periods', periodData),
   getTransactions: (params) => API.get('/prims/transactions', { params }),
   getEarnings: (params) => API.get('/prims/earnings', { params }),
+  getDeductions: (params) => API.get('/prims/deductions', { params }),
   updateSalePeriod: (id, primPeriod) => API.put(`/prims/sales/${id}/period`, { primPeriod }),
 };
 
