@@ -105,6 +105,13 @@ const SaleForm = () => {
       const sale = response.data;
       
       if (sale) {
+        // İndirimli fiyatı hesapla (eğer kayıtlı değilse)
+        let calculatedDiscountedPrice = '';
+        if (sale.discountRate > 0 && sale.listPrice) {
+          calculatedDiscountedPrice = sale.discountedListPrice?.toString() || 
+            calculateDiscountedPrice(sale.listPrice, sale.discountRate);
+        }
+
         setFormData({
           customerName: sale.customerName || '',
           blockNo: sale.blockNo || '',
@@ -115,8 +122,9 @@ const SaleForm = () => {
           kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toISOString().split('T')[0] : '',
           contractNo: sale.contractNo || '',
           listPrice: sale.listPrice?.toString() || '',
-          originalListPrice: sale.originalListPrice?.toString() || '',
+          originalListPrice: sale.originalListPrice?.toString() || sale.listPrice?.toString() || '',
           discountRate: sale.discountRate?.toString() || '',
+          discountedListPrice: calculatedDiscountedPrice,
           activitySalePrice: sale.activitySalePrice?.toString() || '',
           paymentType: sale.paymentType || 'Nakit',
           entryDate: sale.entryDate || '',
@@ -142,7 +150,9 @@ const SaleForm = () => {
     const original = parseFloat(originalPrice);
     const discount = parseFloat(discountRate);
     if (isNaN(original) || isNaN(discount) || discount < 0 || discount > 100) return originalPrice;
-    return (original * (1 - discount / 100)).toFixed(2);
+    
+    const result = original * (1 - discount / 100);
+    return result.toFixed(2);
   };
 
   const handleChange = (e) => {
