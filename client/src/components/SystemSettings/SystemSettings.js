@@ -51,7 +51,7 @@ const SystemSettings = () => {
               <Nav.Item>
                 <Nav.Link eventKey="payment-types">
                   <FiCreditCard className="me-2" />
-                  Ödeme Tipleri
+                  Ödeme Yöntemleri
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
