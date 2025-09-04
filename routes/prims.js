@@ -266,6 +266,39 @@ router.get('/earnings', auth, async (req, res) => {
           as: 'sales'
         }
       },
+      // Kesinti transaction'larını da getir (tüm dönemlerden)
+      {
+        $lookup: {
+          from: 'primtransactions',
+          let: { salespersonId: '$_id.salesperson' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$salesperson', '$$salespersonId'] },
+                    { $eq: ['$transactionType', 'kesinti'] }
+                  ]
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: 'sales',
+                localField: 'sale',
+                foreignField: '_id',
+                as: 'saleDetails'
+              }
+            },
+            {
+              $addFields: {
+                saleDetails: { $arrayElemAt: ['$saleDetails', 0] }
+              }
+            }
+          ],
+          as: 'deductionTransactions'
+        }
+      },
       {
         $addFields: {
           salesCount: { $size: '$sales' },
@@ -286,7 +319,11 @@ router.get('/earnings', auth, async (req, res) => {
                 in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödenmedi'] }, '$$sale.primAmount', 0] }
               }
             }
-          }
+          },
+          totalDeductions: {
+            $sum: '$deductionTransactions.amount'
+          },
+          deductionsCount: { $size: '$deductionTransactions' }
         }
       },
       // Sadece satışı olan dönemler gösterilsin
@@ -307,7 +344,10 @@ router.get('/earnings', auth, async (req, res) => {
           transferGidenCount: 1,
           salesCount: 1,
           paidAmount: 1,
-          unpaidAmount: 1
+          unpaidAmount: 1,
+          totalDeductions: 1,
+          deductionsCount: 1,
+          deductionTransactions: 1
         }
       },
       {

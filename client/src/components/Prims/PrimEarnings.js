@@ -8,7 +8,8 @@ import {
   Badge, 
   Alert,
   Button,
-  ProgressBar
+  ProgressBar,
+  Modal
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { 
@@ -41,6 +42,10 @@ const PrimEarnings = () => {
     period: '',
     salesperson: ''
   });
+
+  // Kesinti modal state'leri
+  const [showDeductionModal, setShowDeductionModal] = useState(false);
+  const [selectedDeductions, setSelectedDeductions] = useState(null);
 
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -143,6 +148,16 @@ const PrimEarnings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleShowDeductionModal = (earning) => {
+    setSelectedDeductions(earning);
+    setShowDeductionModal(true);
+  };
+
+  const closeDeductionModal = () => {
+    setShowDeductionModal(false);
+    setSelectedDeductions(null);
   };
 
   const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
@@ -366,7 +381,7 @@ const PrimEarnings = () => {
                             {formatCurrency(earning.paidAmount || 0)}
                           </span>
                         </div>
-                        <div className="d-flex justify-content-between">
+                        <div className="d-flex justify-content-between mb-1">
                           <span className="text-warning">
                             Ödenmemiş:
                           </span>
@@ -374,6 +389,20 @@ const PrimEarnings = () => {
                             {formatCurrency(earning.unpaidAmount || 0)}
                           </span>
                         </div>
+                        {(earning.totalDeductions < 0 || earning.deductionsCount > 0) && (
+                          <div 
+                            className="d-flex justify-content-between cursor-pointer"
+                            onClick={() => handleShowDeductionModal(earning)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <span className="text-danger">
+                              Yapılacak Kesinti:
+                            </span>
+                            <span className="fw-bold text-danger">
+                              {formatCurrency(earning.totalDeductions || 0)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -418,84 +447,6 @@ const PrimEarnings = () => {
         </Card.Body>
       </Card>
 
-      {/* Deductions Table */}
-      {deductions.length > 0 && (
-        <Card className="mt-4">
-          <Card.Header className="bg-danger text-white">
-            <div className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">📉 Kesinti Dönemleri</h5>
-              <Badge bg="light" text="dark">{deductions.length} kesinti</Badge>
-            </div>
-          </Card.Header>
-          <Card.Body className="p-0">
-            <Table responsive hover className="mb-0">
-              <thead className="bg-light">
-                <tr>
-                  <th>Temsilci</th>
-                  <th>Dönem</th>
-                  <th>Kesinti Tutarı</th>
-                  <th>İşlem Detayları</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deductions.map((deduction, index) => (
-                  <tr key={`${deduction._id.salesperson}-${deduction._id.primPeriod}`}>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <div className="me-3">
-                          <div 
-                            className="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
-                            style={{ width: '32px', height: '32px', fontSize: '14px', fontWeight: 'bold' }}
-                          >
-                            {deduction.salesperson?.name?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="fw-bold">{deduction.salesperson?.name || 'Bilinmeyen'}</div>
-                          <div className="small text-muted">
-                            <FiUser className="me-1" size={12} />
-                            Temsilci
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <FiCalendar className="me-2 text-muted" size={16} />
-                        <div>
-                          <div className="fw-bold">{deduction.primPeriod?.name || 'Bilinmeyen'}</div>
-                          <div className="small text-muted">Kesinti Dönemi</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-center">
-                        <div className="h5 mb-1 text-danger">
-                          {formatCurrency(deduction.totalDeductions)}
-                        </div>
-                        <div className="small text-muted">Toplam Kesinti</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="small">
-                        <Badge variant="danger" className="me-2">
-                          {deduction.transactionCount} İşlem
-                        </Badge>
-                        <div className="mt-1">
-                          <small className="text-muted">
-                            Bu dönemde satış yok, sadece kesinti var
-                          </small>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card.Body>
-        </Card>
-      )}
-
       {/* Additional Info */}
       {earnings.length > 0 && (
         <Card className="mt-4">
@@ -521,6 +472,96 @@ const PrimEarnings = () => {
           </Card.Body>
         </Card>
       )}
+
+      {/* Kesinti Detayları Modal */}
+      <Modal show={showDeductionModal} onHide={closeDeductionModal} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            📉 Kesinti Detayları - {selectedDeductions?.salesperson?.name}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedDeductions && (
+            <div>
+              <div className="mb-3">
+                <h6>Özet Bilgiler</h6>
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="d-flex justify-content-between">
+                      <span>Toplam Kesinti:</span>
+                      <span className="fw-bold text-danger">
+                        {formatCurrency(selectedDeductions.totalDeductions || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="d-flex justify-content-between">
+                      <span>Kesinti Sayısı:</span>
+                      <span className="fw-bold">
+                        {selectedDeductions.deductionsCount || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h6>İptal Edilen Satışlar</h6>
+              {selectedDeductions.deductionTransactions && selectedDeductions.deductionTransactions.length > 0 ? (
+                <Table responsive hover size="sm">
+                  <thead>
+                    <tr>
+                      <th>Sözleşme No</th>
+                      <th>Müşteri</th>
+                      <th>Satış Tarihi</th>
+                      <th>Prim Tutarı</th>
+                      <th>Kesinti Tarihi</th>
+                      <th>Açıklama</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedDeductions.deductionTransactions.map((transaction, index) => (
+                      <tr key={transaction._id}>
+                        <td>
+                          <strong>{transaction.saleDetails?.contractNo || 'N/A'}</strong>
+                        </td>
+                        <td>{transaction.saleDetails?.customerName || 'N/A'}</td>
+                        <td>
+                          {transaction.saleDetails?.saleDate ? 
+                            new Date(transaction.saleDetails.saleDate).toLocaleDateString('tr-TR') : 
+                            'N/A'
+                          }
+                        </td>
+                        <td>
+                          <span className="text-danger fw-bold">
+                            {formatCurrency(Math.abs(transaction.amount))}
+                          </span>
+                        </td>
+                        <td>
+                          {new Date(transaction.createdAt).toLocaleDateString('tr-TR')}
+                        </td>
+                        <td>
+                          <small className="text-muted">
+                            {transaction.description}
+                          </small>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <Alert variant="info">
+                  Bu temsilci için kesinti bulunmuyor.
+                </Alert>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeDeductionModal}>
+            Kapat
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
