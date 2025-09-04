@@ -416,9 +416,9 @@ const SalesList = () => {
                           </div>
                         ) : (
                           <div>
-                            {/* Ana Liste Fiyatı */}
+                            {/* İndirim Öncesi Orijinal Liste Fiyatı */}
                             <div>
-                              <strong>Liste: {formatCurrency(sale.listPrice)}</strong>
+                              <strong>Liste: {formatCurrency(sale.originalListPrice || sale.listPrice)}</strong>
                             </div>
                             
                             {/* İndirim Varsa Göster */}
@@ -442,12 +442,12 @@ const SalesList = () => {
                             <div>
                               <small className="text-info">
                                 Prim Tabanı: {(() => {
-                                  const listPrice = sale.listPrice || 0;
-                                  const discountedPrice = sale.discountedListPrice || (sale.discountRate > 0 ? listPrice * (1 - sale.discountRate / 100) : 0);
+                                  const originalListPrice = sale.originalListPrice || sale.listPrice || 0;
+                                  const discountedPrice = sale.discountedListPrice || (sale.discountRate > 0 ? originalListPrice * (1 - sale.discountRate / 100) : 0);
                                   const activityPrice = sale.activitySalePrice || 0;
                                   
                                   const validPrices = [];
-                                  if (listPrice > 0) validPrices.push(listPrice);
+                                  if (originalListPrice > 0) validPrices.push(originalListPrice);
                                   if (discountedPrice > 0) validPrices.push(discountedPrice);
                                   if (activityPrice > 0) validPrices.push(activityPrice);
                                   
