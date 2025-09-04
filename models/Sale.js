@@ -69,10 +69,7 @@ const saleSchema = new mongoose.Schema({
   },
   discountedListPrice: {
     type: Number,
-    min: 0,
-    default: function() {
-      return this.discountRate > 0 ? this.listPrice * (1 - this.discountRate / 100) : null;
-    }
+    min: 0
   },
   originalListPrice: {
     type: Number, // İndirim öncesi orijinal liste fiyatı

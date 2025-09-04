@@ -71,7 +71,7 @@ router.post('/', auth, [
   body('blockNo').trim().notEmpty().withMessage('Blok no gereklidir'),
   body('apartmentNo').trim().notEmpty().withMessage('Daire no gereklidir'),
   body('periodNo').trim().notEmpty().withMessage('Dönem no gereklidir'),
-  body('contractNo').trim().isLength({ min: 6, max: 6 }).withMessage('Sözleşme no tam olarak 6 hane olmalıdır'),
+  body('contractNo').trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
   body('saleType').isIn(['kapora', 'satis']).withMessage('Geçerli bir satış tipi seçiniz'),
   // Koşullu validasyonlar
   body('saleDate').if(body('saleType').equals('satis')).isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
@@ -109,6 +109,11 @@ router.post('/', auth, [
     }
 
     let currentPrimRate, primPeriodId, listPriceNum, activitySalePriceNum, basePrimPrice, primAmount;
+    
+    // Değişkenleri global scope'da tanımla
+    const originalListPriceNum = parseFloat(originalListPrice || listPrice) || 0;
+    const discountRateNum = parseFloat(discountRate) || 0;
+    let discountedListPriceNum = 0;
 
     // Kapora değilse prim hesapla
     if (saleType === 'satis') {
@@ -122,10 +127,6 @@ router.post('/', auth, [
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
 
       // İndirim hesaplama
-      const originalListPriceNum = parseFloat(originalListPrice || listPrice) || 0;
-      const discountRateNum = parseFloat(discountRate) || 0;
-      let discountedListPriceNum = 0;
-
       if (discountRateNum > 0 && originalListPriceNum > 0) {
         discountedListPriceNum = parseFloat(discountedListPrice) || (originalListPriceNum * (1 - discountRateNum / 100));
         console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);

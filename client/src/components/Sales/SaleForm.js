@@ -164,8 +164,8 @@ const SaleForm = () => {
     
     // Sözleşme no için karakter sınırı kontrolü
     if (name === 'contractNo') {
-      if (value.length > 6) {
-        return; // 6 karakterden fazla girişi engelle
+      if (value.length > 10) {
+        return; // 10 karakterden fazla girişi engelle
       }
     }
     
