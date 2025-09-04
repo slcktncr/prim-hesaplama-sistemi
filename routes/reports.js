@@ -219,11 +219,7 @@ router.get('/sales-summary', auth, async (req, res) => {
       {
         $addFields: {
           paymentTypeDisplay: {
-            $cond: {
-              if: { $or: [{ $eq: ['$paymentType', null] }, { $eq: ['$paymentType', ''] }] },
-              then: 'Kapora',
-              else: '$paymentType'
-            }
+            $ifNull: ['$paymentType', 'Kapora']
           }
         }
       },
