@@ -390,11 +390,11 @@ const SaleForm = () => {
         saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
         
         // İndirim bilgileri
-        if (formData.discountRate) {
-          saleData.discountRate = parseFloat(formData.discountRate) || 0;
-        }
-        if (formData.discountedListPrice) {
-          saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
+        if (formData.discountRate && parseFloat(formData.discountRate) > 0) {
+          saleData.discountRate = parseFloat(formData.discountRate);
+          if (formData.discountedListPrice) {
+            saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
+          }
         }
       } else if (formData.saleType === 'kapora') {
         saleData.kaporaDate = formData.kaporaDate;

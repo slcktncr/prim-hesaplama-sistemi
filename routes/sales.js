@@ -143,6 +143,12 @@ router.post('/', auth, [
       if (discountRateNum > 0 && originalListPriceNum > 0) {
         discountedListPriceNum = parseFloat(discountedListPrice) || (originalListPriceNum * (1 - discountRateNum / 100));
         console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
+        
+        // NaN veya Infinity kontrolü
+        if (!isFinite(discountedListPriceNum) || discountedListPriceNum < 0) {
+          console.log('❌ İndirimli fiyat hesaplama hatası:', discountedListPriceNum);
+          return res.status(400).json({ message: 'İndirimli fiyat hesaplamasında hata oluştu' });
+        }
       }
 
       // Yeni prim hesaplama mantığı - 3 fiyat arasından en düşüğü
@@ -168,6 +174,12 @@ router.post('/', auth, [
       // En düşük fiyat üzerinden prim hesapla
       basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
       primAmount = basePrimPrice * currentPrimRate.rate;
+      
+      // NaN veya Infinity kontrolü
+      if (!isFinite(primAmount) || primAmount < 0) {
+        console.log('❌ Prim hesaplama hatası:', { basePrimPrice, primRate: currentPrimRate.rate, primAmount });
+        return res.status(400).json({ message: 'Prim hesaplamasında hata oluştu' });
+      }
 
       console.log('💰 Prim hesaplama:');
       console.log('Orijinal liste fiyatı:', originalListPriceNum);
@@ -221,6 +233,16 @@ router.post('/', auth, [
     }
 
     console.log('💾 Sale oluşturuluyor, saleData:', saleData);
+    
+    // SaleData validation
+    const requiredFields = ['customerName', 'blockNo', 'apartmentNo', 'periodNo', 'contractNo', 'saleType'];
+    for (const field of requiredFields) {
+      if (!saleData[field]) {
+        console.log(`❌ Gerekli alan eksik: ${field}`);
+        return res.status(400).json({ message: `Gerekli alan eksik: ${field}` });
+      }
+    }
+    
     const sale = new Sale(saleData);
     console.log('💾 Sale modeli oluşturuldu, kaydediliyor...');
 
