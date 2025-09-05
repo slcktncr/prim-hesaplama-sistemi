@@ -165,8 +165,7 @@ const PeriodComparisonReport = () => {
                 <tbody>
                   {comparisonData.map((period, index) => {
                     const previousPeriod = comparisonData[index + 1];
-                    const successRate = period.activeSales + period.cancelledSales > 0 ? 
-                      (period.activeSales / (period.activeSales + period.cancelledSales)) * 100 : 0;
+                    const successRate = period.successRate || 0;
 
                     return (
                       <tr key={period.periodId}>
@@ -187,8 +186,11 @@ const PeriodComparisonReport = () => {
                           <Badge 
                             bg={successRate >= 80 ? 'success' : successRate >= 60 ? 'warning' : 'danger'}
                           >
-                            %{successRate.toFixed(1)}
+                            %{successRate}
                           </Badge>
+                          <div className="small text-muted">
+                            {period.realSalesCount || 0}/{period.totalSalesCount || 0}
+                          </div>
                         </td>
                         <td>
                           <div className="fw-bold">
@@ -261,12 +263,14 @@ const PeriodComparisonReport = () => {
                 <Card.Body>
                   <div className="h4 text-warning">
                     {comparisonData.length > 0 ? 
-                      `%${((comparisonData.reduce((sum, p) => sum + p.activeSales, 0) / 
-                        comparisonData.reduce((sum, p) => sum + p.activeSales + p.cancelledSales, 0)) * 100).toFixed(1)}` : 
+                      `%${(comparisonData.reduce((sum, p) => sum + (p.successRate || 0), 0) / comparisonData.length).toFixed(1)}` : 
                       '%0'
                     }
                   </div>
                   <div className="text-muted small">Ortalama Başarı</div>
+                  <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    (Gerçek satış / Toplam giriş)
+                  </div>
                 </Card.Body>
               </Card>
             </Col>

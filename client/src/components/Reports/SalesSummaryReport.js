@@ -146,7 +146,7 @@ const SalesSummaryReport = () => {
     );
   }
 
-  const { activeSales, cancelledSales, paymentTypeDistribution, monthlySales } = reportData || {};
+  const { activeSales, cancelledSales, paymentTypeDistribution, monthlySales, successRateData } = reportData || {};
 
   // Prepare chart data
   const paymentChartData = paymentTypeDistribution?.map(item => ({
@@ -427,14 +427,27 @@ const SalesSummaryReport = () => {
                     <td><strong className="text-danger">{formatCurrency(cancelledSales?.totalBasePrimPrice || 0)}</strong></td>
                   </tr>
                   <tr>
+                    <td>Toplam Giriş:</td>
+                    <td><strong className="text-primary">{formatNumber(successRateData?.totalSalesCount || 0)}</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Kapora Durumu:</td>
+                    <td><strong className="text-warning">{formatNumber(successRateData?.kaporaSalesCount || 0)}</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Gerçek Satış:</td>
+                    <td><strong className="text-success">{formatNumber(successRateData?.realSalesCount || 0)}</strong></td>
+                  </tr>
+                  <tr>
                     <td>Başarı Oranı:</td>
                     <td>
                       <strong className="text-info">
-                        {activeSales?.count > 0 ? 
-                          `%${(((activeSales.count) / (activeSales.count + (cancelledSales?.count || 0))) * 100).toFixed(1)}` : 
-                          '%0'
-                        }
+                        %{successRateData?.successRate || 0}
                       </strong>
+                      <br />
+                      <small className="text-muted">
+                        ({successRateData?.realSalesCount || 0} gerçek satış / {successRateData?.totalSalesCount || 0} toplam giriş)
+                      </small>
                     </td>
                   </tr>
                 </tbody>

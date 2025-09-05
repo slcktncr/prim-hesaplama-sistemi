@@ -176,13 +176,6 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
         </div>
       </div>
 
-      {/* Info Alert for Non-Admin Users */}
-      {!isAdmin && (
-        <Alert variant="info" className="mb-4">
-          <strong>Bilgi:</strong> Bu sayfada sadece kendi satış ve prim verilerinizi görebilirsiniz. 
-          Genel raporlar için admin yetkisi gereklidir.
-        </Alert>
-      )}
 
       {/* Report Tabs */}
       <Card>

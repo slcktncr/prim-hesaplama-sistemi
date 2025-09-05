@@ -240,11 +240,37 @@ router.get('/sales-summary', auth, async (req, res) => {
       { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
 
+    // Başarı oranı hesaplama için toplam satış sayısı (kapora + normal + iptal)
+    const totalSalesCount = await Sale.countDocuments(query);
+    
+    // Gerçek satış sayısı (aktif durumda olan ve kapora olmayan satışlar)
+    const realSalesCount = await Sale.countDocuments({
+      ...query,
+      status: 'aktif',
+      saleType: { $ne: 'kapora' }
+    });
+    
+    // Kapora durumundaki satışlar
+    const kaporaSalesCount = await Sale.countDocuments({
+      ...query,
+      saleType: 'kapora'
+    });
+    
+    // Başarı oranı hesaplama
+    const successRate = totalSalesCount > 0 ? ((realSalesCount / totalSalesCount) * 100) : 0;
+
     res.json({
       activeSales: activeSales[0] || { count: 0, totalListPrice: 0, totalActivityPrice: 0, totalBasePrimPrice: 0, totalPrimAmount: 0, paidPrims: 0, unpaidPrims: 0 },
       cancelledSales: cancelledSales[0] || { count: 0, totalListPrice: 0, totalActivityPrice: 0, totalBasePrimPrice: 0, totalPrimAmount: 0 },
       paymentTypeDistribution,
-      monthlySales
+      monthlySales,
+      successRateData: {
+        totalSalesCount,      // Toplam giriş (kapora + normal + iptal)
+        realSalesCount,       // Gerçek satış (aktif + kapora olmayan)
+        kaporaSalesCount,     // Kapora durumundaki
+        cancelledCount: cancelledSales[0]?.count || 0, // İptal edilenler
+        successRate: parseFloat(successRate.toFixed(1)) // Başarı oranı
+      }
     });
   } catch (error) {
     console.error('Sales summary error:', error);
@@ -407,6 +433,19 @@ router.get('/period-comparison', auth, async (req, res) => {
         
         const cancelledSales = await Sale.countDocuments({ ...periodQuery, status: 'iptal' });
         
+        // Başarı oranı hesaplama
+        const totalSalesCount = await Sale.countDocuments(periodQuery);
+        const realSalesCount = await Sale.countDocuments({
+          ...periodQuery,
+          status: 'aktif',
+          saleType: { $ne: 'kapora' }
+        });
+        const kaporaSalesCount = await Sale.countDocuments({
+          ...periodQuery,
+          saleType: 'kapora'
+        });
+        const successRate = totalSalesCount > 0 ? ((realSalesCount / totalSalesCount) * 100) : 0;
+        
         return {
           period: period.name,
           periodId: period._id,
@@ -414,7 +453,11 @@ router.get('/period-comparison', auth, async (req, res) => {
           cancelledSales,
           totalAmount: activeSales[0]?.totalAmount || 0,
           totalPrim: activeSales[0]?.totalPrim || 0,
-          paidPrims: activeSales[0]?.paidPrims || 0
+          paidPrims: activeSales[0]?.paidPrims || 0,
+          totalSalesCount,
+          realSalesCount,
+          kaporaSalesCount,
+          successRate: parseFloat(successRate.toFixed(1))
         };
       })
     );
