@@ -420,7 +420,13 @@ const PrimEarnings = () => {
                         </div>
                         {earning.totalDeductions < 0 && (
                           <div className="small text-danger mt-1">
-                            Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}
+                            {earning.carriedForwardDeductions < 0 && (
+                              <div>Geçmişten Devreden: {formatCurrency(Math.abs(earning.carriedForwardDeductions))}</div>
+                            )}
+                            {earning.currentPeriodDeductions < 0 && (
+                              <div>Güncel Dönem: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}</div>
+                            )}
+                            <div className="fw-bold">Toplam Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}</div>
                           </div>
                         )}
                         <div className="small text-info">
@@ -440,6 +446,12 @@ const PrimEarnings = () => {
                           <span className="text-danger">
                             <FiTrendingDown className="me-1" size={12} />
                             Kesinti: {earning.deductionsCount || 0}
+                            {earning.carriedForwardCount > 0 && (
+                              <div className="small">Geçmişten: {earning.carriedForwardCount}</div>
+                            )}
+                            {earning.currentPeriodDeductionsCount > 0 && (
+                              <div className="small">Güncel: {earning.currentPeriodDeductionsCount}</div>
+                            )}
                             {earning.deductionsCount > 0 && (
                               <Button
                                 variant="link"
@@ -564,15 +576,32 @@ const PrimEarnings = () => {
                           {new Date(transaction.createdAt).toLocaleDateString('tr-TR')}
                         </td>
                         <td>
-                          <Badge 
-                            bg={transaction.description?.includes('İptalden kaynaklı') ? 'danger' : 'warning'}
-                            className="small"
-                          >
-                            {transaction.description?.includes('İptalden kaynaklı') ? 'İptalden Kaynaklı Kesinti' : 'Diğer Kesinti'}
-                          </Badge>
-                          <div className="small text-muted mt-1">
+                          <div className="mb-1">
+                            <Badge 
+                              bg={transaction.description?.includes('İptalden kaynaklı') ? 'danger' : 'warning'}
+                              className="small me-1"
+                            >
+                              {transaction.description?.includes('İptalden kaynaklı') ? 'İptalden Kaynaklı Kesinti' : 'Diğer Kesinti'}
+                            </Badge>
+                            {transaction.isCarriedForward && (
+                              <Badge bg="info" className="small">
+                                Geçmişten Devreden
+                              </Badge>
+                            )}
+                            {transaction.isCurrentPeriodDeduction && (
+                              <Badge bg="secondary" className="small">
+                                Güncel Dönem
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="small text-muted">
                             {transaction.description}
                           </div>
+                          {transaction.deductionPeriod && (
+                            <div className="small text-info">
+                              Kesinti Dönemi: {transaction.deductionPeriod.name}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

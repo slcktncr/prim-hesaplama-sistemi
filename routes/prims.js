@@ -266,7 +266,10 @@ router.get('/earnings', auth, async (req, res) => {
       {
         $lookup: {
           from: 'primtransactions',
-          let: { salespersonId: '$_id.salesperson' },
+          let: { 
+            salespersonId: '$_id.salesperson',
+            currentPeriodId: '$_id.primPeriod'
+          },
           pipeline: [
             {
               $match: {
@@ -287,8 +290,19 @@ router.get('/earnings', auth, async (req, res) => {
               }
             },
             {
+              $lookup: {
+                from: 'primperiods',
+                localField: 'primPeriod',
+                foreignField: '_id',
+                as: 'deductionPeriod'
+              }
+            },
+            {
               $addFields: {
-                saleDetails: { $arrayElemAt: ['$saleDetails', 0] }
+                saleDetails: { $arrayElemAt: ['$saleDetails', 0] },
+                deductionPeriod: { $arrayElemAt: ['$deductionPeriod', 0] },
+                isCurrentPeriodDeduction: { $eq: ['$primPeriod', '$$currentPeriodId'] },
+                isCarriedForward: { $ne: ['$primPeriod', '$$currentPeriodId'] }
               }
             }
           ],
@@ -320,6 +334,52 @@ router.get('/earnings', auth, async (req, res) => {
             $sum: '$deductionTransactions.amount'
           },
           deductionsCount: { $size: '$deductionTransactions' },
+          // Geçmişten devreden kesintiler
+          carriedForwardDeductions: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: '$deductionTransactions',
+                    cond: { $eq: ['$$this.isCarriedForward', true] }
+                  }
+                },
+                as: 'deduction',
+                in: '$$deduction.amount'
+              }
+            }
+          },
+          carriedForwardCount: {
+            $size: {
+              $filter: {
+                input: '$deductionTransactions',
+                cond: { $eq: ['$$this.isCarriedForward', true] }
+              }
+            }
+          },
+          // Güncel dönem kesintileri
+          currentPeriodDeductions: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: '$deductionTransactions',
+                    cond: { $eq: ['$$this.isCurrentPeriodDeduction', true] }
+                  }
+                },
+                as: 'deduction',
+                in: '$$deduction.amount'
+              }
+            }
+          },
+          currentPeriodDeductionsCount: {
+            $size: {
+              $filter: {
+                input: '$deductionTransactions',
+                cond: { $eq: ['$$this.isCurrentPeriodDeduction', true] }
+              }
+            }
+          },
           // Net hakediş hesapla (ödenmemiş primler - mevcut dönemdeki kesintiler)
           netUnpaidAmount: {
             $subtract: [
