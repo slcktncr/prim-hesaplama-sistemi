@@ -180,6 +180,21 @@ router.get('/transactions', auth, async (req, res) => {
 // @access  Private
 router.get('/earnings', auth, async (req, res) => {
   try {
+    // Mevcut kesintilerin deductionStatus'unu güncelle (migration)
+    const updateResult = await PrimTransaction.updateMany(
+      { 
+        transactionType: 'kesinti',
+        deductionStatus: { $exists: false }
+      },
+      { 
+        $set: { deductionStatus: 'yapıldı' } // Mevcut kesintiler onaylanmış sayılsın
+      }
+    );
+    
+    if (updateResult.modifiedCount > 0) {
+      console.log(`📊 Updated ${updateResult.modifiedCount} existing deductions to 'yapıldı' status`);
+    }
+    
     const { period, salesperson } = req.query;
     console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
     
@@ -277,7 +292,15 @@ router.get('/earnings', auth, async (req, res) => {
                   $and: [
                     { $eq: ['$salesperson', '$$salespersonId'] },
                     { $eq: ['$transactionType', 'kesinti'] },
-                    { $eq: ['$deductionStatus', 'yapıldı'] } // Sadece onaylanmış kesintiler
+                    {
+                      $or: [
+                        { $eq: ['$deductionStatus', 'yapıldı'] },
+                        { $and: [
+                          { $eq: ['$deductionStatus', null] },
+                          { $lt: ['$createdAt', new Date('2024-01-01')] } // Eski kesintiler onaylanmış sayılsın
+                        ]}
+                      ]
+                    }
                   ]
                 }
               }
@@ -325,7 +348,13 @@ router.get('/earnings', auth, async (req, res) => {
                   $and: [
                     { $eq: ['$salesperson', '$$salespersonId'] },
                     { $eq: ['$transactionType', 'kesinti'] },
-                    { $eq: ['$deductionStatus', 'beklemede'] } // Bekleyen kesintiler
+                    {
+                      $or: [
+                        { $eq: ['$deductionStatus', 'beklemede'] },
+                        { $eq: ['$deductionStatus', null] },
+                        { $not: { $ifNull: ['$deductionStatus', false] } }
+                      ]
+                    }
                   ]
                 }
               }
@@ -489,6 +518,16 @@ router.get('/earnings', auth, async (req, res) => {
     ]);
 
     console.log('✅ Earnings result count:', earnings.length);
+    
+    // Debug: Bekleyen kesintileri kontrol et
+    if (earnings.length > 0) {
+      console.log('📊 Sample earning with pending deductions:', {
+        salesperson: earnings[0].salesperson?.name,
+        pendingDeductionsCount: earnings[0].pendingDeductionsCount,
+        pendingDeductions: earnings[0].pendingDeductions,
+        totalDeductions: earnings[0].totalDeductions
+      });
+    }
 
     res.json(earnings);
   } catch (error) {

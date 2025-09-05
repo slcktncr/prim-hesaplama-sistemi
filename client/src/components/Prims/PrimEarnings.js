@@ -418,7 +418,7 @@ const PrimEarnings = () => {
                             {formatCurrency(earning.unpaidAmount || 0)}
                           </span>
                         </div>
-                        {(earning.totalDeductions < 0 || earning.deductionsCount > 0) && (
+                        {(earning.totalDeductions < 0 || earning.deductionsCount > 0 || earning.pendingDeductionsCount > 0) && (
                           <div 
                             className="cursor-pointer"
                             onClick={() => handleShowDeductionModal(earning)}
@@ -441,11 +441,10 @@ const PrimEarnings = () => {
                                 Yapılan Kesinti: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}
                               </div>
                             )}
-                            {earning.pendingDeductions < 0 && (
-                              <div className="small text-warning">
-                                Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductions))} ({earning.pendingDeductionsCount} adet)
-                              </div>
-                            )}
+                            {/* Bekleyen kesintileri her zaman göster */}
+                            <div className="small text-warning">
+                              Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductions || 0))} ({earning.pendingDeductionsCount || 0} adet)
+                            </div>
                           </div>
                         )}
                       </div>
@@ -580,7 +579,13 @@ const PrimEarnings = () => {
               </div>
 
               <h6>İptal Edilen Satışlar</h6>
-              {selectedDeductions.deductionTransactions && selectedDeductions.deductionTransactions.length > 0 ? (
+              {/* Onaylanmış ve bekleyen kesintileri birleştir */}
+              {(() => {
+                const allDeductions = [
+                  ...(selectedDeductions.deductionTransactions || []),
+                  ...(selectedDeductions.pendingDeductions || [])
+                ];
+                return allDeductions.length > 0 ? (
                 <Table responsive hover size="sm">
                   <thead>
                     <tr>
@@ -594,7 +599,7 @@ const PrimEarnings = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedDeductions.deductionTransactions.map((transaction, index) => (
+                    {allDeductions.map((transaction, index) => (
                       <tr key={transaction._id}>
                         <td>
                           <strong>{transaction.saleDetails?.contractNo || 'N/A'}</strong>
@@ -686,11 +691,12 @@ const PrimEarnings = () => {
                     ))}
                   </tbody>
                 </Table>
-              ) : (
+                ) : (
                 <Alert variant="info">
                   Bu temsilci için kesinti bulunmuyor.
                 </Alert>
-              )}
+              );
+              })()}
             </div>
           )}
         </Modal.Body>
