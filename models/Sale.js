@@ -214,10 +214,17 @@ const saleSchema = new mongoose.Schema({
 
 // Prim hesaplama middleware
 saleSchema.pre('save', function(next) {
-  // En düşük fiyatı bul
-  this.basePrimPrice = Math.min(this.listPrice, this.activitySalePrice);
+  // İndirimli liste fiyatını hesapla
+  const discountedListPrice = this.discountRate ? 
+    this.listPrice * (1 - this.discountRate / 100) : 
+    this.listPrice;
+  
+  // En düşük fiyatı bul (indirimli liste fiyatı vs aktivite satış fiyatı)
+  this.basePrimPrice = Math.min(discountedListPrice, this.activitySalePrice || discountedListPrice);
+  
   // Prim tutarını hesapla
-  this.primAmount = this.basePrimPrice * this.primRate;
+  this.primAmount = this.basePrimPrice * (this.primRate / 100);
+  
   this.updatedAt = Date.now();
   next();
 });

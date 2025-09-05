@@ -664,8 +664,12 @@ router.post('/export', auth, async (req, res) => {
       .sort({ saleDate: -1 });
     
     // Güncel dönem performansı için aktif dönemi bul
-    const currentPeriod = await require('../models/PrimPeriod').findOne({ isActive: true });
+    const currentPeriod = await PrimPeriod.findOne({ isActive: true });
     let currentPeriodPerformance = [];
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Current period found:', currentPeriod ? currentPeriod.name : 'No active period');
+    }
     
     if (currentPeriod) {
       currentPeriodPerformance = await Sale.aggregate([
@@ -679,9 +683,9 @@ router.post('/export', auth, async (req, res) => {
           $group: {
             _id: '$salesperson',
             totalSales: { $sum: 1 },
-            totalAmount: { $sum: '$listPrice' },
+            totalAmount: { $sum: '$basePrimPrice' },
             totalPrimAmount: { $sum: '$primAmount' },
-            avgSaleAmount: { $avg: '$listPrice' }
+            avgSaleAmount: { $avg: '$basePrimPrice' }
           }
         },
         {
@@ -707,6 +711,11 @@ router.post('/export', auth, async (req, res) => {
         },
         { $sort: { totalSales: -1, totalPrimAmount: -1 } }
       ]);
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Current period performance count:', currentPeriodPerformance.length);
+        console.log('📊 Current period performance sample:', currentPeriodPerformance[0]);
+      }
     }
     
     if (process.env.NODE_ENV === 'development') {
@@ -743,7 +752,7 @@ router.post('/export', auth, async (req, res) => {
         ['Ödenen Primler:', sales.filter(s => s.primStatus === 'ödendi').length],
         ['Bekleyen Primler:', sales.filter(s => s.primStatus === 'ödenmedi').length],
         ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + (s.primAmount || 0), 0)],
-        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.listPrice || 0), 0)],
+        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.basePrimPrice || s.listPrice || 0), 0)],
         [''],
         ['TEMSİLCİ PERFORMANSI']
       ];
@@ -783,7 +792,7 @@ router.post('/export', auth, async (req, res) => {
           salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += (sale.listPrice || 0);
+        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
