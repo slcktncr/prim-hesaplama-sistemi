@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Row, Col, Card, Form, Button, Alert, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { salesAPI, primsAPI, paymentMethodsAPI, systemSettingsAPI } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { 
   validateRequired, 
   validatePositiveNumber, 
@@ -43,6 +44,7 @@ const SaleForm = () => {
   const [periods, setPeriods] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [saleTypes, setSaleTypes] = useState([]);
+  const [currentSaleType, setCurrentSaleType] = useState(null); // Seçili satış türü detayları
   const [currentRate, setCurrentRate] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -57,6 +59,14 @@ const SaleForm = () => {
       fetchSale();
     }
   }, [id, isEdit]);
+
+  // Satış türü değiştiğinde currentSaleType'ı güncelle
+  useEffect(() => {
+    if (formData.saleType && saleTypes.length > 0) {
+      const selectedType = saleTypes.find(type => type.value === formData.saleType);
+      setCurrentSaleType(selectedType);
+    }
+  }, [formData.saleType, saleTypes]);
 
   const fetchPeriods = async () => {
     try {
@@ -134,13 +144,35 @@ const SaleForm = () => {
     }
   };
 
-  // Sözleşme no gerekliliğini kontrol et
-  const isContractRequired = () => {
+  // Dinamik alan gereklilik kontrolleri
+  const isFieldRequired = (fieldName) => {
+    // Eğer currentSaleType varsa ve requiredFields tanımlıysa onu kullan
+    if (currentSaleType?.requiredFields?.[fieldName] !== undefined) {
+      return currentSaleType.requiredFields[fieldName];
+    }
+    
+    // Fallback: eski mantık
     const saleTypeValue = getSaleTypeValue(formData.saleType);
-    // Yazlık ev, kışlık ev ve kapora durumu için sözleşme no gerekli değil
-    const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
-    return !nonContractTypes.includes(saleTypeValue);
+    
+    switch (fieldName) {
+      case 'contractNo':
+        const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
+        return !nonContractTypes.includes(saleTypeValue);
+      case 'listPrice':
+      case 'activitySalePrice':
+      case 'paymentType':
+        return saleTypeValue !== 'kapora';
+      case 'saleDate':
+        return saleTypeValue !== 'kapora';
+      case 'kaporaDate':
+        return saleTypeValue === 'kapora';
+      default:
+        return true;
+    }
   };
+
+  // Backward compatibility
+  const isContractRequired = () => isFieldRequired('contractNo');
 
 
   const fetchSale = async () => {
@@ -355,19 +387,16 @@ const SaleForm = () => {
       newErrors.periodNo = 'Dönem no gereklidir';
     }
 
-    // Satış tipine göre tarih validasyonu
-    if (formData.saleType === 'satis') {
+    // Dinamik tarih validasyonu
+    if (isFieldRequired('saleDate')) {
       if (!validateRequired(formData.saleDate)) {
         newErrors.saleDate = 'Satış tarihi gereklidir';
       }
-    } else if (formData.saleType === 'kapora') {
+    }
+    
+    if (isFieldRequired('kaporaDate')) {
       if (!validateRequired(formData.kaporaDate)) {
         newErrors.kaporaDate = 'Kapora tarihi gereklidir';
-      }
-    } else {
-      // Yeni satış türleri için varsayılan olarak satış tarihi gerekli
-      if (!validateRequired(formData.saleDate)) {
-        newErrors.saleDate = 'Satış tarihi gereklidir';
       }
     }
 
@@ -380,35 +409,30 @@ const SaleForm = () => {
       }
     }
 
-    // Fiyat validasyonu sadece normal satış için
-    if (formData.saleType === 'satis') {
+    // Dinamik fiyat validasyonu
+    if (isFieldRequired('listPrice')) {
       if (!validatePositiveNumber(formData.listPrice)) {
         newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
       }
+    }
 
+    if (isFieldRequired('activitySalePrice')) {
       if (!validatePositiveNumber(formData.activitySalePrice)) {
         newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
       }
-    } else if (formData.saleType !== 'kapora') {
-      // Yeni satış türleri için de fiyat gerekli (kapora hariç)
-      if (!validatePositiveNumber(formData.listPrice)) {
-        newErrors.listPrice = 'Geçerli bir liste fiyatı giriniz';
-      }
+    }
 
-      if (!validatePositiveNumber(formData.activitySalePrice)) {
-        newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
-      }
-
+    if (isFieldRequired('paymentType')) {
       if (!validateRequired(formData.paymentType)) {
         newErrors.paymentType = 'Ödeme tipi seçiniz';
       }
+    }
 
-      // İndirim oranı validasyonu
-      if (formData.discountRate) {
-        const discountRate = parseFloat(formData.discountRate);
-        if (isNaN(discountRate) || discountRate < 0 || discountRate > 100) {
-          newErrors.discountRate = 'İndirim oranı 0-100 arasında olmalıdır';
-        }
+    // İndirim oranı validasyonu (fiyat gerekli olan türlerde)
+    if (isFieldRequired('listPrice') && formData.discountRate) {
+      const discountRate = parseFloat(formData.discountRate);
+      if (isNaN(discountRate) || discountRate < 0 || discountRate > 100) {
+        newErrors.discountRate = 'İndirim oranı 0-100 arasında olmalıdır';
       }
     }
 

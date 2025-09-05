@@ -37,7 +37,15 @@ const SaleTypesManagement = () => {
     isDefault: false,
     isActive: true,
     color: 'success',
-    sortOrder: 0
+    sortOrder: 0,
+    requiredFields: {
+      contractNo: true,
+      listPrice: true,
+      activitySalePrice: true,
+      paymentType: true,
+      saleDate: true,
+      kaporaDate: false
+    }
   });
 
   useEffect(() => {
@@ -87,7 +95,15 @@ const SaleTypesManagement = () => {
       isDefault: item.isDefault,
       isActive: item.isActive,
       color: item.color || 'success',
-      sortOrder: item.sortOrder || 0
+      sortOrder: item.sortOrder || 0,
+      requiredFields: item.requiredFields || {
+        contractNo: true,
+        listPrice: true,
+        activitySalePrice: true,
+        paymentType: true,
+        saleDate: true,
+        kaporaDate: false
+      }
     });
     setShowModal(true);
   };
@@ -116,7 +132,15 @@ const SaleTypesManagement = () => {
       isDefault: false,
       isActive: true,
       color: 'success',
-      sortOrder: 0
+      sortOrder: 0,
+      requiredFields: {
+        contractNo: true,
+        listPrice: true,
+        activitySalePrice: true,
+        paymentType: true,
+        saleDate: true,
+        kaporaDate: false
+      }
     });
   };
 
@@ -338,6 +362,106 @@ const SaleTypesManagement = () => {
                 </Form.Group>
               </Col>
             </Row>
+            
+            {/* Alan Gereksinimleri */}
+            <div className="mb-4">
+              <h6 className="mb-3">📋 Zorunlu Alanlar</h6>
+              <div className="p-3 bg-light rounded">
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Sözleşme No"
+                        checked={formData.requiredFields.contractNo}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            contractNo: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Liste Fiyatı"
+                        checked={formData.requiredFields.listPrice}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            listPrice: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Aktivite Satış Fiyatı"
+                        checked={formData.requiredFields.activitySalePrice}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            activitySalePrice: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Ödeme Tipi"
+                        checked={formData.requiredFields.paymentType}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            paymentType: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Satış Tarihi"
+                        checked={formData.requiredFields.saleDate}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            saleDate: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Check
+                        type="checkbox"
+                        label="Kapora Tarihi"
+                        checked={formData.requiredFields.kaporaDate}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          requiredFields: { 
+                            ...prev.requiredFields, 
+                            kaporaDate: e.target.checked 
+                          } 
+                        }))}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Form.Text className="text-muted">
+                  İşaretlenen alanlar yeni satış oluştururken zorunlu olacaktır
+                </Form.Text>
+              </div>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

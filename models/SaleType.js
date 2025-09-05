@@ -30,6 +30,32 @@ const saleTypeSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  requiredFields: {
+    contractNo: {
+      type: Boolean,
+      default: true
+    },
+    listPrice: {
+      type: Boolean,
+      default: true
+    },
+    activitySalePrice: {
+      type: Boolean,
+      default: true
+    },
+    paymentType: {
+      type: Boolean,
+      default: true
+    },
+    saleDate: {
+      type: Boolean,
+      default: true
+    },
+    kaporaDate: {
+      type: Boolean,
+      default: false // Sadece kapora türü için true olacak
+    }
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
