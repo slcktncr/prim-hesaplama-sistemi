@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const XLSX = require('xlsx');
 const PDFDocument = require('pdfkit');
 const Sale = require('../models/Sale');
@@ -178,7 +179,7 @@ router.get('/sales-summary', auth, async (req, res) => {
     
     // Dönem filtresi
     if (period) {
-      query.primPeriod = period;
+      query.primPeriod = new mongoose.Types.ObjectId(period);
     }
 
     // Aktif satışlar
@@ -263,6 +264,10 @@ router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
   try {
     const { startDate, endDate, period } = req.query;
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Salesperson Performance Query Params:', { startDate, endDate, period });
+    }
+    
     let query = {};
     
     // Tarih filtresi
@@ -275,7 +280,11 @@ router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
     
     // Dönem filtresi
     if (period) {
-      query.primPeriod = period;
+      query.primPeriod = new mongoose.Types.ObjectId(period);
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Salesperson Performance MongoDB Query:', JSON.stringify(query, null, 2));
     }
 
     // Temsilci performansları
@@ -317,6 +326,11 @@ router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
       },
       { $sort: { totalSales: -1 } }
     ]);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Salesperson Performance Results Count:', performance.length);
+      console.log('Salesperson Performance Results:', JSON.stringify(performance, null, 2));
+    }
 
     // İptal edilen satışlar
     const cancelledSalesPerformance = await Sale.aggregate([
@@ -436,7 +450,7 @@ router.get('/top-performers', auth, async (req, res) => {
     
     // Dönem filtresi
     if (period) {
-      query.primPeriod = period;
+      query.primPeriod = new mongoose.Types.ObjectId(period);
     }
 
     const topPerformers = await Sale.aggregate([
@@ -508,7 +522,7 @@ router.get('/detailed-report', auth, async (req, res) => {
     
     // Dönem filtresi
     if (period) {
-      query.primPeriod = period;
+      query.primPeriod = new mongoose.Types.ObjectId(period);
     }
 
     const detailedReport = await Sale.find(query)
@@ -550,7 +564,7 @@ router.post('/export', auth, async (req, res) => {
           query.primPeriod = currentPeriod._id;
         }
       } else {
-        query.primPeriod = period;
+        query.primPeriod = new mongoose.Types.ObjectId(period);
       }
     }
     

@@ -46,7 +46,9 @@ const PerformanceReport = () => {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true);
+      console.log('Frontend - Fetching performance data with filters:', filters);
       const response = await reportsAPI.getSalespersonPerformance(filters);
+      console.log('Frontend - Performance data response:', response.data);
       setPerformanceData(response.data || []);
       setError(null);
     } catch (error) {
