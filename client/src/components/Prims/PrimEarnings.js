@@ -19,7 +19,8 @@ import {
   FiCalendar,
   FiTrendingUp,
   FiTrendingDown,
-  FiDollarSign
+  FiDollarSign,
+  FiClock
 } from 'react-icons/fi';
 
 import { primsAPI, usersAPI } from '../../utils/api';
@@ -442,8 +443,16 @@ const PrimEarnings = () => {
                               </div>
                             )}
                             {/* Bekleyen kesintileri her zaman göster */}
-                            <div className="small text-warning">
+                            <div 
+                              className="small text-warning cursor-pointer"
+                              onClick={() => earning.pendingDeductionsCount > 0 && showDeductionDetails(earning)}
+                              style={{ cursor: earning.pendingDeductionsCount > 0 ? 'pointer' : 'default' }}
+                              title={earning.pendingDeductionsCount > 0 ? 'Bekleyen kesintileri görüntülemek için tıklayın' : ''}
+                            >
                               Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductions || 0))} ({earning.pendingDeductionsCount || 0} adet)
+                              {earning.pendingDeductionsCount > 0 && (
+                                <span className="ms-1">👆</span>
+                              )}
                             </div>
                           </div>
                         )}
@@ -479,7 +488,7 @@ const PrimEarnings = () => {
                           <span className="text-danger">
                             <FiTrendingDown className="me-1" size={12} />
                             Kesinti: {earning.deductionsCount || 0}
-                            {earning.deductionsCount > 0 && (
+                            {(earning.deductionsCount > 0 || earning.pendingDeductionsCount > 0) && (
                               <Button
                                 variant="link"
                                 size="sm"
@@ -492,14 +501,19 @@ const PrimEarnings = () => {
                             )}
                           </span>
                         </div>
-                        {(earning.carriedForwardCount > 0 || earning.currentPeriodDeductionsCount > 0) && (
-                          <div className="small text-muted">
-                            {earning.carriedForwardCount > 0 && (
-                              <div>↳ Geçmişten: {earning.carriedForwardCount}</div>
-                            )}
-                            {earning.currentPeriodDeductionsCount > 0 && (
-                              <div>↳ Güncel: {earning.currentPeriodDeductionsCount}</div>
-                            )}
+                        {earning.pendingDeductionsCount > 0 && (
+                          <div className="small text-warning">
+                            <FiClock className="me-1" size={12} />
+                            Bekleyen: {earning.pendingDeductionsCount} adet
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 ms-1 text-warning"
+                              onClick={() => showDeductionDetails(earning)}
+                              title="Bekleyen kesintileri görüntüle ve onayla"
+                            >
+                              ⚠️
+                            </Button>
                           </div>
                         )}
                         <div className="d-flex justify-content-between mb-1">
