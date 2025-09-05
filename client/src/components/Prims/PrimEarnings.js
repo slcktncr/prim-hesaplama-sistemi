@@ -582,7 +582,7 @@ const PrimEarnings = () => {
       )}
 
       {/* Kesinti Detayları Modal */}
-      <Modal show={showDeductionModal} onHide={closeDeductionModal} size="lg" centered>
+      <Modal show={showDeductionModal} onHide={closeDeductionModal} size="xl" centered>
         <Modal.Header closeButton>
           <Modal.Title>
             📉 Kesinti Detayları - {selectedDeductions?.salesperson?.name}
@@ -591,23 +591,24 @@ const PrimEarnings = () => {
         <Modal.Body>
           {selectedDeductions && (
             <div>
-              <div className="mb-3">
-                <h6>Özet Bilgiler</h6>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="d-flex justify-content-between">
-                      <span>Toplam Kesinti:</span>
-                      <span className="fw-bold text-danger">
-                        {formatCurrency(selectedDeductions.totalDeductions || 0)}
-                      </span>
+              <div className="mb-3 p-3 bg-light rounded">
+                <div className="row text-center">
+                  <div className="col-md-4">
+                    <div className="small text-muted">Toplam Kesinti</div>
+                    <div className="h6 text-danger mb-0">
+                      {formatCurrency(selectedDeductions.totalDeductions || 0)}
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="d-flex justify-content-between">
-                      <span>Kesinti Sayısı:</span>
-                      <span className="fw-bold">
-                        {selectedDeductions.deductionsCount || 0}
-                      </span>
+                  <div className="col-md-4">
+                    <div className="small text-muted">Kesinti Sayısı</div>
+                    <div className="h6 text-primary mb-0">
+                      {selectedDeductions.deductionsCount || 0} adet
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="small text-muted">Bekleyen Onay</div>
+                    <div className="h6 text-warning mb-0">
+                      {selectedDeductions.pendingDeductionsCount || 0} adet
                     </div>
                   </div>
                 </div>
@@ -656,16 +657,16 @@ const PrimEarnings = () => {
                 console.log('🎯 All deductions:', allDeductions);
                 
                 return allDeductions.length > 0 ? (
-                <Table responsive hover size="sm">
-                  <thead>
+                <Table responsive hover size="sm" className="table-compact">
+                  <thead className="table-dark">
                     <tr>
-                      <th>Sözleşme No</th>
-                      <th>Müşteri</th>
-                      <th>Satış Tarihi</th>
-                      <th>Prim Tutarı</th>
-                      <th>Kesinti Tarihi</th>
-                      <th>Kesinti Türü</th>
-                      {isAdmin && <th>İşlemler</th>}
+                      <th style={{minWidth: '100px'}}>Sözleşme No</th>
+                      <th style={{minWidth: '120px'}}>Müşteri</th>
+                      <th style={{minWidth: '100px'}}>Satış Tarihi</th>
+                      <th style={{minWidth: '100px'}}>Prim Tutarı</th>
+                      <th style={{minWidth: '100px'}}>Kesinti Tarihi</th>
+                      <th style={{minWidth: '200px'}}>Durum & Dönem</th>
+                      {isAdmin && <th style={{minWidth: '120px'}}>İşlemler</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -690,51 +691,42 @@ const PrimEarnings = () => {
                           {new Date(transaction.createdAt).toLocaleDateString('tr-TR')}
                         </td>
                         <td>
-                          <div className="mb-1">
-                            <Badge 
-                              bg={transaction.description?.includes('İptalden kaynaklı') ? 'danger' : 'warning'}
-                              className="small me-1"
-                            >
-                              {transaction.description?.includes('İptalden kaynaklı') ? 'İptalden Kaynaklı Kesinti' : 'Diğer Kesinti'}
-                            </Badge>
-                            {transaction.isCarriedForward && (
-                              <Badge bg="info" className="small">
-                                Geçmişten Devreden
-                              </Badge>
-                            )}
-                            {transaction.isCurrentPeriodDeduction && (
-                              <Badge bg="secondary" className="small">
-                                Güncel Dönem
-                              </Badge>
-                            )}
-                            {transaction.deductionStatus === 'beklemede' && (
-                              <Badge bg="warning" className="small">
-                                Onay Bekliyor
-                              </Badge>
-                            )}
-                            {transaction.deductionStatus === 'yapıldı' && (
-                              <Badge bg="success" className="small">
-                                Onaylandı
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="small text-muted">
-                            {transaction.description}
-                          </div>
-                          {transaction.deductionPeriod && (
-                            <div className="small text-info">
-                              Kesinti Dönemi: {transaction.deductionPeriod.name}
+                          <div className="d-flex flex-column gap-1">
+                            {/* Durum Badge'leri */}
+                            <div className="d-flex flex-wrap gap-1">
+                              {transaction.deductionStatus === 'beklemede' && (
+                                <Badge bg="warning" size="sm">⏳ Bekliyor</Badge>
+                              )}
+                              {transaction.deductionStatus === 'yapıldı' && (
+                                <Badge bg="success" size="sm">✅ Onaylandı</Badge>
+                              )}
+                              {transaction.description?.includes('İptalden kaynaklı') && (
+                                <Badge bg="danger" size="sm">🚫 İptal</Badge>
+                              )}
                             </div>
-                          )}
+                            
+                            {/* Dönem Bilgisi */}
+                            {transaction.deductionPeriod && (
+                              <div className="small text-primary fw-bold">
+                                📅 {transaction.deductionPeriod.name}
+                              </div>
+                            )}
+                            
+                            {/* Açıklama (kısaltılmış) */}
+                            <div className="small text-muted" style={{fontSize: '0.75rem'}}>
+                              {transaction.description?.substring(0, 50)}...
+                            </div>
+                          </div>
                         </td>
                         {isAdmin && (
                           <td>
                             {transaction.deductionStatus === 'beklemede' && (
-                              <div className="d-flex gap-1">
+                              <div className="btn-group btn-group-sm">
                                 <Button
                                   type="button"
-                                  variant="success"
+                                  variant="outline-success"
                                   size="sm"
+                                  className="px-2 py-1"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -742,12 +734,13 @@ const PrimEarnings = () => {
                                   }}
                                   title="Kesinti Yap - Hakediş'ten Düş"
                                 >
-                                  ✓ Onayla
+                                  ✓
                                 </Button>
                                 <Button
                                   type="button"
-                                  variant="danger"
+                                  variant="outline-danger"
                                   size="sm"
+                                  className="px-2 py-1"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -755,15 +748,15 @@ const PrimEarnings = () => {
                                   }}
                                   title="Kesinti İptal Et"
                                 >
-                                  ✗ İptal
+                                  ✗
                                 </Button>
                               </div>
                             )}
                             {transaction.deductionStatus === 'yapıldı' && (
-                              <Badge bg="success">Onaylandı</Badge>
+                              <Badge bg="success" className="small">✅ Tamam</Badge>
                             )}
                             {transaction.deductionStatus === 'iptal' && (
-                              <Badge bg="secondary">İptal Edildi</Badge>
+                              <Badge bg="secondary" className="small">🚫 İptal</Badge>
                             )}
                           </td>
                         )}
@@ -780,9 +773,9 @@ const PrimEarnings = () => {
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeDeductionModal}>
-            Kapat
+        <Modal.Footer className="py-2">
+          <Button variant="outline-secondary" size="sm" onClick={closeDeductionModal}>
+            ✕ Kapat
           </Button>
         </Modal.Footer>
       </Modal>
