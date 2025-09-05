@@ -439,7 +439,7 @@ const PrimEarnings = () => {
                         <div className="d-flex justify-content-between mb-1">
                           <span className="text-danger">
                             <FiTrendingDown className="me-1" size={12} />
-                            Kesinti: {earning.kesintiCount}
+                            Kesinti: {earning.deductionsCount || 0}
                             {earning.deductionsCount > 0 && (
                               <Button
                                 variant="link"

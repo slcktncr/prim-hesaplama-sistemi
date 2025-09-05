@@ -131,6 +131,14 @@ const SaleForm = () => {
     }
   };
 
+  // Sözleşme no gerekliliğini kontrol et
+  const isContractRequired = () => {
+    const saleTypeValue = getSaleTypeValue(formData.saleType);
+    // Yazlık ev, kışlık ev ve kapora durumu için sözleşme no gerekli değil
+    const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
+    return !nonContractTypes.includes(saleTypeValue);
+  };
+
 
   const fetchSale = async () => {
     try {
@@ -205,7 +213,18 @@ const SaleForm = () => {
     }
     
     setFormData(prev => {
-      const newData = { ...prev, [name]: value };
+      const newFormData = { ...prev, [name]: value };
+      
+      // Satış tipi değiştiğinde sözleşme no'yu temizle (gerekli değilse)
+      if (name === 'saleType') {
+        const saleTypeValue = getSaleTypeValue(value);
+        const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
+        if (nonContractTypes.includes(saleTypeValue)) {
+          newFormData.contractNo = '';
+        }
+      }
+      
+      const newData = newFormData;
 
       // Yeni fiyat hesaplama mantığı
       if (name === 'listPrice') {
@@ -349,10 +368,13 @@ const SaleForm = () => {
       }
     }
 
-    if (!validateRequired(formData.contractNo)) {
-      newErrors.contractNo = 'Sözleşme no gereklidir';
-    } else if (formData.contractNo.length < 6 || formData.contractNo.length > 6) {
-      newErrors.contractNo = 'Sözleşme no tam olarak 6 hane olmalıdır';
+    // Sözleşme no validasyonu - sadece gerekli olan türler için
+    if (isContractRequired()) {
+      if (!validateRequired(formData.contractNo)) {
+        newErrors.contractNo = 'Sözleşme no gereklidir';
+      } else if (formData.contractNo.length < 6 || formData.contractNo.length > 6) {
+        newErrors.contractNo = 'Sözleşme no tam olarak 6 hane olmalıdır';
+      }
     }
 
     // Fiyat validasyonu sadece normal satış için
@@ -684,22 +706,26 @@ const SaleForm = () => {
                 <Row>
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Sözleşme No *</Form.Label>
+                      <Form.Label>
+                        Sözleşme No {!isContractRequired() && <small className="text-muted">(Opsiyonel)</small>}
+                        {isContractRequired() && ' *'}
+                      </Form.Label>
                       <Form.Control
                         type="text"
                         name="contractNo"
                         value={formData.contractNo}
                         onChange={handleChange}
                         isInvalid={!!errors.contractNo}
-                        placeholder=""
+                        placeholder={isContractRequired() ? "Sözleşme numarası" : "Gerekli değil"}
                         maxLength={6}
+                        disabled={!isContractRequired()}
                       />
                       <div className="d-flex justify-content-between">
                         <Form.Control.Feedback type="invalid">
                           {errors.contractNo}
                         </Form.Control.Feedback>
                         <Form.Text className="text-muted">
-                          {formData.contractNo.length}/6 karakter
+                          {isContractRequired() ? `${formData.contractNo.length}/6 karakter` : 'Bu satış tipi için sözleşme no gerekli değil'}
                         </Form.Text>
                       </div>
                     </Form.Group>
