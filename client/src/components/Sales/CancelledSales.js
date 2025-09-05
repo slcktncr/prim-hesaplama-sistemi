@@ -265,7 +265,24 @@ const CancelledSales = () => {
                       <td>
                         <div>
                           <div className="fw-bold text-danger">
-                            {formatCurrency(sale.primAmount)}
+                            {formatCurrency((() => {
+                              // Kapora ise prim yok
+                              if (sale.saleType === 'kapora') return 0;
+                              
+                              // Gerçek zamanlı prim hesaplama
+                              const originalListPrice = sale.originalListPrice || sale.listPrice || 0;
+                              const discountedPrice = sale.discountedListPrice || (sale.discountRate > 0 ? originalListPrice * (1 - sale.discountRate / 100) : 0);
+                              const activityPrice = sale.activitySalePrice || 0;
+                              const primRate = sale.primRate || 1; // Default %1
+                              
+                              const validPrices = [];
+                              if (originalListPrice > 0) validPrices.push(originalListPrice);
+                              if (discountedPrice > 0) validPrices.push(discountedPrice);
+                              if (activityPrice > 0) validPrices.push(activityPrice);
+                              
+                              const basePrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+                              return basePrice * (primRate / 100); // Doğru hesaplama
+                            })())}
                           </div>
                           <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
                             {sale.primStatus}

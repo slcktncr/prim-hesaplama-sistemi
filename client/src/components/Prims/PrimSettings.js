@@ -46,6 +46,10 @@ const PrimSettings = () => {
   const fetchCurrentRate = async () => {
     try {
       const response = await primsAPI.getRate();
+      console.log('📊 Frontend prim oranı alımı:');
+      console.log('response.data.rate:', response.data.rate);
+      console.log('typeof response.data.rate:', typeof response.data.rate);
+      
       setCurrentRate(response.data);
       setNewRate(response.data.rate.toString());
     } catch (error) {
@@ -100,6 +104,11 @@ const PrimSettings = () => {
     setSaving(true);
     try {
       const ratePercent = parseFloat(newRate);
+      console.log('🔍 Frontend prim oranı gönderimi:');
+      console.log('newRate (girilen):', newRate);
+      console.log('ratePercent (gönderilen):', ratePercent);
+      console.log('typeof ratePercent:', typeof ratePercent);
+      
       await primsAPI.updateRate(ratePercent);
       
       toast.success('Prim oranı başarıyla güncellendi');

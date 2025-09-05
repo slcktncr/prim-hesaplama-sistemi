@@ -534,7 +534,7 @@ const SaleForm = () => {
     // En az bir geçerli fiyat varsa, en düşüğü üzerinden hesapla
     if (validPrices.length > 0) {
       const basePrice = Math.min(...validPrices);
-      return basePrice * rate;
+      return basePrice * (rate / 100); // rate yüzde değeri olarak saklanıyor
     }
     
     return 0;
@@ -619,7 +619,7 @@ const SaleForm = () => {
                         ) : (
                           formData.saleType === 'kapora' 
                             ? 'Kapora durumunda prim hesaplanmaz' 
-                            : 'Normal satışta prim hesaplanır'
+                            : 'Bu satış türünde prim hesaplanır'
                         )}
                       </Form.Text>
                     </Form.Group>

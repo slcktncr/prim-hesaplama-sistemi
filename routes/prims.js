@@ -23,6 +23,10 @@ router.get('/rate', auth, async (req, res) => {
       return res.status(404).json({ message: 'Aktif prim oranı bulunamadı' });
     }
 
+    console.log('📊 Mevcut prim oranı getiriliyor:');
+    console.log('currentRate.rate:', currentRate.rate);
+    console.log('typeof currentRate.rate:', typeof currentRate.rate);
+
     res.json(currentRate);
   } catch (error) {
     console.error('Get prim rate error:', error);
@@ -43,6 +47,11 @@ router.post('/rate', [auth, adminAuth], [
     }
 
     const { rate } = req.body;
+    
+    console.log('🔍 Prim oranı güncelleme:');
+    console.log('Frontend\'den gelen rate:', rate);
+    console.log('parseFloat(rate):', parseFloat(rate));
+    console.log('typeof parseFloat(rate):', typeof parseFloat(rate));
 
     // Eski oranı pasif yap
     await PrimRate.updateMany({ isActive: true }, { isActive: false });
@@ -54,9 +63,17 @@ router.post('/rate', [auth, adminAuth], [
     });
 
     await newRate.save();
+    
+    console.log('💾 Kaydedilen prim oranı:');
+    console.log('newRate.rate:', newRate.rate);
+    console.log('typeof newRate.rate:', typeof newRate.rate);
 
     const populatedRate = await PrimRate.findById(newRate._id)
       .populate('createdBy', 'name');
+      
+    console.log('📖 Veritabanından okunan:');
+    console.log('populatedRate.rate:', populatedRate.rate);
+    console.log('typeof populatedRate.rate:', typeof populatedRate.rate);
 
     res.status(201).json({
       message: 'Prim oranı başarıyla güncellendi',
