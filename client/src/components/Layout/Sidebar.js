@@ -106,29 +106,8 @@ const Sidebar = ({ onLinkClick }) => {
 
         {isAdmin && (
           <>
-            <LinkContainer to="/prims/periods" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiCalendar className="me-2" />
-                Prim Dönemleri
-              </Nav.Link>
-            </LinkContainer>
-
             <div className="px-3 py-2 text-muted small mt-3">YÖNETİM</div>
             
-            <LinkContainer to="/admin/pending-users" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiClock className="me-2" />
-                Onay Bekleyenler
-              </Nav.Link>
-            </LinkContainer>
-
-            <LinkContainer to="/admin/user-permissions" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiShield className="me-2" />
-                Kullanıcı Yetkileri
-              </Nav.Link>
-            </LinkContainer>
-
             <LinkContainer to="/admin/system-settings" onClick={handleLinkClick}>
               <Nav.Link>
                 <FiSettings className="me-2" />

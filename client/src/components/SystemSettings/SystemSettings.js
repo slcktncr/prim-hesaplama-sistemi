@@ -11,13 +11,19 @@ import {
   FiTag,
   FiCreditCard,
   FiPercent,
-  FiUsers
+  FiUsers,
+  FiCalendar,
+  FiClock,
+  FiShield
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
 import PaymentMethods from '../Admin/PaymentMethods';
 import PrimSettings from '../Prims/PrimSettings';
 import ActiveUsers from '../Admin/ActiveUsers';
+import PrimPeriods from '../Prims/PrimPeriods';
+import PendingUsers from '../Admin/PendingUsers';
+import UserPermissions from '../Admin/UserPermissions';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -66,6 +72,24 @@ const SystemSettings = () => {
                   Kullanıcı Yönetimi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="periods">
+                  <FiCalendar className="me-2" />
+                  Prim Dönemleri
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="pending-users">
+                  <FiClock className="me-2" />
+                  Onay Bekleyenler
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="permissions">
+                  <FiShield className="me-2" />
+                  Kullanıcı Yetkileri
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -81,6 +105,15 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="users">
                   <ActiveUsers />
+                </Tab.Pane>
+                <Tab.Pane eventKey="periods">
+                  <PrimPeriods />
+                </Tab.Pane>
+                <Tab.Pane eventKey="pending-users">
+                  <PendingUsers />
+                </Tab.Pane>
+                <Tab.Pane eventKey="permissions">
+                  <UserPermissions />
                 </Tab.Pane>
               </Tab.Content>
             </div>

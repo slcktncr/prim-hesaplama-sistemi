@@ -283,10 +283,10 @@ router.get('/sales-summary', auth, async (req, res) => {
 // @access  Private
 router.get('/salesperson-performance', auth, async (req, res) => {
   try {
-    const { startDate, endDate, period } = req.query;
+    const { startDate, endDate, period, salesperson } = req.query;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('Salesperson Performance Query Params:', { startDate, endDate, period });
+      console.log('Salesperson Performance Query Params:', { startDate, endDate, period, salesperson });
     }
     
     let query = {};
@@ -302,6 +302,11 @@ router.get('/salesperson-performance', auth, async (req, res) => {
     // Dönem filtresi
     if (period) {
       query.primPeriod = new mongoose.Types.ObjectId(period);
+    }
+    
+    // Temsilci filtresi
+    if (salesperson && salesperson !== '') {
+      query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
     if (process.env.NODE_ENV === 'development') {

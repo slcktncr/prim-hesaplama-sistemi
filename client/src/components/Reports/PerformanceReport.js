@@ -13,23 +13,26 @@ import {
 import { toast } from 'react-toastify';
 import { FiRefreshCw, FiFilter, FiTrendingUp } from 'react-icons/fi';
 
-import { reportsAPI, primsAPI } from '../../utils/api';
+import { reportsAPI, primsAPI, usersAPI } from '../../utils/api';
 import { formatCurrency, formatNumber, debounce } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
 const PerformanceReport = () => {
   const [performanceData, setPerformanceData] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
-    period: ''
+    period: '',
+    salesperson: ''
   });
 
   useEffect(() => {
     fetchPeriods();
+    fetchUsers();
     const debouncedFetch = debounce(fetchPerformanceData, 500);
     debouncedFetch();
   }, [filters]);
@@ -40,6 +43,15 @@ const PerformanceReport = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getAllUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
     }
   };
 
@@ -71,7 +83,8 @@ const PerformanceReport = () => {
     setFilters({
       startDate: '',
       endDate: '',
-      period: ''
+      period: '',
+      salesperson: ''
     });
   };
 
@@ -111,7 +124,7 @@ const PerformanceReport = () => {
                 />
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Form.Group>
                 <Form.Label>Dönem</Form.Label>
                 <Form.Select
@@ -127,18 +140,33 @@ const PerformanceReport = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={2}>
+            <Col md={3}>
               <Form.Group>
-                <Form.Label>&nbsp;</Form.Label>
-                <div className="d-flex gap-2">
-                  <Button variant="outline-secondary" onClick={fetchPerformanceData}>
-                    <FiRefreshCw />
-                  </Button>
-                  <Button variant="outline-primary" onClick={clearFilters}>
-                    <FiFilter />
-                  </Button>
-                </div>
+                <Form.Label>Temsilci</Form.Label>
+                <Form.Select
+                  value={filters.salesperson}
+                  onChange={(e) => handleFilterChange('salesperson', e.target.value)}
+                >
+                  <option value="">Tüm Temsilciler</option>
+                  {users.map(user => (
+                    <option key={user._id} value={user._id}>
+                      {user.name}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
+            </Col>
+            <Col md={12} className="mt-3">
+              <div className="d-flex gap-2">
+                <Button variant="outline-secondary" onClick={fetchPerformanceData}>
+                  <FiRefreshCw className="me-1" />
+                  Yenile
+                </Button>
+                <Button variant="outline-primary" onClick={clearFilters}>
+                  <FiFilter className="me-1" />
+                  Filtreleri Temizle
+                </Button>
+              </div>
             </Col>
           </Row>
         </Card.Body>

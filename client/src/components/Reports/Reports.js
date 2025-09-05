@@ -23,7 +23,7 @@ import {
 import { toast } from 'react-toastify';
 
 import { useAuth } from '../../context/AuthContext';
-import { reportsAPI } from '../../utils/api';
+import { reportsAPI, usersAPI } from '../../utils/api';
 import SalesSummaryReport from './SalesSummaryReport';
 import PerformanceReport from './PerformanceReport';
 import PeriodComparisonReport from './PeriodComparisonReport';
@@ -39,6 +39,20 @@ const Reports = () => {
   const [exportScope, setExportScope] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('');
   const [selectedSalesperson, setSelectedSalesperson] = useState('');
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getAllUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -368,7 +382,11 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
                 >
                   <option value="">Temsilci seçin...</option>
                   <option value="all">Tüm Temsilciler</option>
-                  {/* Burada API'den temsilciler gelecek */}
+                  {users.map(user => (
+                    <option key={user._id} value={user._id}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
                 </Form.Select>
               </Form.Group>
             )}

@@ -698,33 +698,59 @@ const SaleForm = () => {
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        {formData.saleType === 'kapora' ? 'Kapora Tarihi *' : 'Satış Tarihi *'}
-                      </Form.Label>
-                      <Form.Control
-                        type="date"
-                        name={formData.saleType === 'kapora' ? 'kaporaDate' : 'saleDate'}
-                        value={formData.saleType === 'kapora' ? formData.kaporaDate : formData.saleDate}
-                        onChange={handleChange}
-                        isInvalid={!!(errors.saleDate || errors.kaporaDate)}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.saleDate || errors.kaporaDate}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  {/* Ödeme Tipi - Kapora Hariç Tüm Satış Türleri İçin */}
-                  {formData.saleType !== 'kapora' && (
+                  {/* Satış Tarihi - Dinamik Görünürlük */}
+                  {isFieldRequired('saleDate') && (
                     <Col md={4}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Ödeme Tipi *</Form.Label>
+                        <Form.Label>
+                          Satış Tarihi {isFieldRequired('saleDate') ? '*' : ''}
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="saleDate"
+                          value={formData.saleDate}
+                          onChange={handleChange}
+                          isInvalid={!!errors.saleDate}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.saleDate}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  )}
+                  {/* Kapora Tarihi - Dinamik Görünürlük */}
+                  {isFieldRequired('kaporaDate') && (
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          Kapora Tarihi {isFieldRequired('kaporaDate') ? '*' : ''}
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="kaporaDate"
+                          value={formData.kaporaDate}
+                          onChange={handleChange}
+                          isInvalid={!!errors.kaporaDate}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.kaporaDate}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  )}
+                  {/* Ödeme Tipi - Dinamik Görünürlük */}
+                  {isFieldRequired('paymentType') && (
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          Ödeme Tipi {isFieldRequired('paymentType') ? '*' : ''}
+                        </Form.Label>
                         <Form.Select
                           name="paymentType"
                           value={formData.paymentType}
                           onChange={handleChange}
                           isInvalid={!!errors.paymentType}
+                          disabled={!isFieldRequired('paymentType')}
                         >
                           <option value="">Ödeme tipi seçiniz</option>
                           {paymentMethods.map((method) => (
@@ -743,32 +769,33 @@ const SaleForm = () => {
                 </Row>
 
                 <Row>
-                  <Col md={4}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        Sözleşme No {!isContractRequired() && <small className="text-muted">(Opsiyonel)</small>}
-                        {isContractRequired() && ' *'}
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="contractNo"
-                        value={formData.contractNo}
-                        onChange={handleChange}
-                        isInvalid={!!errors.contractNo}
-                        placeholder={isContractRequired() ? "Sözleşme numarası" : "Gerekli değil"}
-                        maxLength={6}
-                        disabled={!isContractRequired()}
-                      />
-                      <div className="d-flex justify-content-between">
-                        <Form.Control.Feedback type="invalid">
-                          {errors.contractNo}
-                        </Form.Control.Feedback>
-                        <Form.Text className="text-muted">
-                          {isContractRequired() ? `${formData.contractNo.length}/6 karakter` : 'Bu satış tipi için sözleşme no gerekli değil'}
-                        </Form.Text>
-                      </div>
-                    </Form.Group>
-                  </Col>
+                  {/* Sözleşme No - Dinamik Görünürlük */}
+                  {isFieldRequired('contractNo') && (
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          Sözleşme No {isFieldRequired('contractNo') ? '*' : ''}
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="contractNo"
+                          value={formData.contractNo}
+                          onChange={handleChange}
+                          isInvalid={!!errors.contractNo}
+                          placeholder="Sözleşme numarası"
+                          maxLength={6}
+                        />
+                        <div className="d-flex justify-content-between">
+                          <Form.Control.Feedback type="invalid">
+                            {errors.contractNo}
+                          </Form.Control.Feedback>
+                          <Form.Text className="text-muted">
+                            {`${formData.contractNo.length}/6 karakter`}
+                          </Form.Text>
+                        </div>
+                      </Form.Group>
+                    </Col>
+                  )}
                   {/* Giriş/Çıkış Tarihleri - Hem Kapora Hem Normal Satış İçin */}
                   <Col md={4}>
                     <Form.Group className="mb-3">
@@ -878,58 +905,64 @@ const SaleForm = () => {
                   </Col>
                 </Row>
 
-                {/* Fiyat Alanları - Kapora Hariç Tüm Satış Türleri İçin */}
-                {formData.saleType !== 'kapora' && (
+                {/* Fiyat Alanları - Dinamik Görünürlük */}
+                {(isFieldRequired('listPrice') || isFieldRequired('activitySalePrice')) && (
                   <>
                     {/* Ana Liste Fiyatı */}
                     <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Liste Fiyatı (₺) *</Form.Label>
-                          <Form.Control
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            name="listPrice"
-                            value={formData.listPrice}
-                            onChange={handleChange}
-                            isInvalid={!!errors.listPrice}
-                            placeholder="0.00"
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.listPrice}
-                          </Form.Control.Feedback>
-                          <Form.Text className="text-muted">
-                            Ana liste fiyatını giriniz
-                          </Form.Text>
-                        </Form.Group>
-                      </Col>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>İndirim Oranı (%)</Form.Label>
-                          <Form.Control
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            name="discountRate"
-                            value={formData.discountRate}
-                            onChange={handleChange}
-                            isInvalid={!!errors.discountRate}
-                            placeholder="0.00"
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.discountRate}
-                          </Form.Control.Feedback>
-                          <Form.Text className="text-muted">
-                            İsteğe bağlı - Liste fiyatına uygulanacak indirim
-                          </Form.Text>
-                        </Form.Group>
-                      </Col>
+                      {isFieldRequired('listPrice') && (
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>
+                              Liste Fiyatı (₺) {isFieldRequired('listPrice') ? '*' : ''}
+                            </Form.Label>
+                            <Form.Control
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              name="listPrice"
+                              value={formData.listPrice}
+                              onChange={handleChange}
+                              isInvalid={!!errors.listPrice}
+                              placeholder="0.00"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {errors.listPrice}
+                            </Form.Control.Feedback>
+                            <Form.Text className="text-muted">
+                              Ana liste fiyatını giriniz
+                            </Form.Text>
+                          </Form.Group>
+                        </Col>
+                      )}
+                      {isFieldRequired('listPrice') && (
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>İndirim Oranı (%)</Form.Label>
+                            <Form.Control
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              name="discountRate"
+                              value={formData.discountRate}
+                              onChange={handleChange}
+                              isInvalid={!!errors.discountRate}
+                              placeholder="0.00"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {errors.discountRate}
+                            </Form.Control.Feedback>
+                            <Form.Text className="text-muted">
+                              İsteğe bağlı - Liste fiyatına uygulanacak indirim
+                            </Form.Text>
+                          </Form.Group>
+                        </Col>
+                      )}
                     </Row>
 
-                    {/* İndirim Sonrası Liste Fiyatı - Sadece indirim varsa göster */}
-                    {formData.discountRate && formData.discountedListPrice && (
+                    {/* İndirim Sonrası Liste Fiyatı - Sadece indirim ve liste fiyatı gerekli ise göster */}
+                    {isFieldRequired('listPrice') && formData.discountRate && formData.discountedListPrice && (
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
@@ -953,41 +986,55 @@ const SaleForm = () => {
                       </Row>
                     )}
 
-                    {/* Aktivite Satış Fiyatı */}
-                    <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3">
-                          <Form.Label>Aktivite Satış Fiyatı (₺) *</Form.Label>
-                          <Form.Control
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            name="activitySalePrice"
-                            value={formData.activitySalePrice}
-                            onChange={handleChange}
-                            isInvalid={!!errors.activitySalePrice}
-                            placeholder="0.00"
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.activitySalePrice}
-                          </Form.Control.Feedback>
-                          <Form.Text className="text-muted">
-                            İndirimden etkilenmez
-                          </Form.Text>
-                        </Form.Group>
-                      </Col>
-                    </Row>
+                    {/* Aktivite Satış Fiyatı - Dinamik Görünürlük */}
+                    {isFieldRequired('activitySalePrice') && (
+                      <Row>
+                        <Col md={6}>
+                          <Form.Group className="mb-3">
+                            <Form.Label>
+                              Aktivite Satış Fiyatı (₺) {isFieldRequired('activitySalePrice') ? '*' : ''}
+                            </Form.Label>
+                            <Form.Control
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              name="activitySalePrice"
+                              value={formData.activitySalePrice}
+                              onChange={handleChange}
+                              isInvalid={!!errors.activitySalePrice}
+                              placeholder="0.00"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {errors.activitySalePrice}
+                            </Form.Control.Feedback>
+                            <Form.Text className="text-muted">
+                              İndirimden etkilenmez
+                            </Form.Text>
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                    )}
                   </>
                 )}
 
-                {/* Kapora Durumu Bilgilendirmesi */}
-                {formData.saleType === 'kapora' && (
+                {/* Bilgilendirme Mesajları */}
+                {isFieldRequired('kaporaDate') && !isFieldRequired('listPrice') && !isFieldRequired('activitySalePrice') && (
                   <Row>
                     <Col md={12}>
                       <Alert variant="info" className="mb-3">
                         <strong>Kapora Durumu:</strong> Bu kayıt kapora olarak işaretlenmiştir. 
                         Fiyat bilgileri ve prim hesaplama yapılmayacaktır. 
                         Daha sonra "Satışa Dönüştür" seçeneği ile normal satışa çevirebilirsiniz.
+                      </Alert>
+                    </Col>
+                  </Row>
+                )}
+                {!isFieldRequired('listPrice') && !isFieldRequired('activitySalePrice') && !isFieldRequired('kaporaDate') && (
+                  <Row>
+                    <Col md={12}>
+                      <Alert variant="warning" className="mb-3">
+                        <strong>{currentSaleType?.name || 'Bu Satış Türü'}:</strong> Bu satış türü için fiyat bilgileri gerekli değildir.
+                        Prim hesaplama yapılmayacaktır.
                       </Alert>
                     </Col>
                   </Row>
