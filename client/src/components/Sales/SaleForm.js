@@ -12,7 +12,6 @@ import {
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import { FiFileText, FiInfo } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthContext';
 
 const SaleForm = () => {
   const navigate = useNavigate();
