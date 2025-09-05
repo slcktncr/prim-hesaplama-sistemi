@@ -345,7 +345,7 @@ router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
           avgSaleAmount: 1
         }
       },
-      { $sort: { totalSales: -1 } }
+      { $sort: { totalSales: -1, totalPrimAmount: -1 } }
     ]);
     
     if (process.env.NODE_ENV === 'development') {
@@ -517,7 +517,7 @@ router.get('/top-performers', auth, async (req, res) => {
           avgSaleAmount: 1
         }
       },
-      { $sort: { totalSales: -1 } },
+      { $sort: { totalSales: -1, totalPrim: -1 } },
       { $limit: parseInt(limit) }
     ]);
 
@@ -644,7 +644,27 @@ router.post('/export', auth, async (req, res) => {
         ['TEMSİLCİ PERFORMANSI']
       ];
 
-      // Temsilci performans verilerini ekle
+      // Temsilci performans verilerini ekle (PrimEarnings'deki gibi)
+      const { PrimTransaction } = require('../models');
+      
+      // Temsilci başına kesinti bilgilerini getir
+      const deductionsByUser = {};
+      try {
+        const allDeductions = await PrimTransaction.find({
+          transactionType: 'kesinti'
+        }).populate('salesperson', 'name');
+        
+        allDeductions.forEach(deduction => {
+          const userName = deduction.salesperson?.name || 'Bilinmiyor';
+          if (!deductionsByUser[userName]) {
+            deductionsByUser[userName] = 0;
+          }
+          deductionsByUser[userName] += Math.abs(deduction.amount);
+        });
+      } catch (error) {
+        console.error('Deductions fetch error:', error);
+      }
+
       const salesByUser = {};
       sales.forEach(sale => {
         const userName = sale.salesperson?.name || 'Bilinmiyor';
@@ -656,14 +676,31 @@ router.post('/export', auth, async (req, res) => {
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
+      // Net hakediş hesapla (brüt prim - kesintiler)
       Object.entries(salesByUser)
-        .sort((a, b) => b[1].count - a[1].count)
+        .sort((a, b) => {
+          // Önce satış adedine göre sırala
+          if (b[1].count !== a[1].count) {
+            return b[1].count - a[1].count;
+          }
+          // Satış adedi aynıysa prim tutarına göre sırala
+          return b[1].primAmount - a[1].primAmount;
+        })
         .forEach(([name, data]) => {
-          summaryData.push([name, `${data.count} satış`, `${data.amount.toLocaleString('tr-TR')} ₺`, `${data.primAmount.toLocaleString('tr-TR')} ₺ prim`]);
+          const deductions = deductionsByUser[name] || 0;
+          const netPrim = data.primAmount - deductions;
+          summaryData.push([
+            name, 
+            `${data.count} satış`, 
+            `${data.amount.toLocaleString('tr-TR')} ₺ ciro`, 
+            `${data.primAmount.toLocaleString('tr-TR')} ₺ brüt prim`,
+            deductions > 0 ? `${deductions.toLocaleString('tr-TR')} ₺ kesinti` : 'Kesinti yok',
+            `${netPrim.toLocaleString('tr-TR')} ₺ net hakediş`
+          ]);
         });
 
       const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-      summaryWs['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+      summaryWs['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
       XLSX.utils.book_append_sheet(wb, summaryWs, 'Özet');
 
       // 2. DETAYLI SATIŞ LİSTESİ
@@ -736,31 +773,45 @@ router.post('/export', auth, async (req, res) => {
 
       XLSX.utils.book_append_sheet(wb, detailedWs, 'Detaylı Satışlar');
 
-      // 3. TEMSİLCİ BAZLI ÖZET
-      const salesmanData = Object.entries(salesByUser).map(([name, data]) => ({
-        'Temsilci Adı': name,
-        'Toplam Satış': data.count,
-        'Toplam Ciro': data.amount,
-        'Toplam Prim': data.primAmount,
-        'Ortalama Satış': Math.round(data.amount / data.count),
-        'Ortalama Prim': Math.round(data.primAmount / data.count),
-        'Prim Oranı': `%${((data.primAmount / data.amount) * 100).toFixed(2)}`
-      }));
+      // 3. TEMSİLCİ BAZLI ÖZET (Web sitesindeki verilerle tutarlı)
+      const salesmanData = Object.entries(salesByUser)
+        .sort((a, b) => {
+          // Önce satış adedine göre sırala
+          if (b[1].count !== a[1].count) {
+            return b[1].count - a[1].count;
+          }
+          // Satış adedi aynıysa prim tutarına göre sırala
+          return b[1].primAmount - a[1].primAmount;
+        })
+        .map(([name, data]) => {
+          const deductions = deductionsByUser[name] || 0;
+          const netPrim = data.primAmount - deductions;
+          return {
+            'Temsilci Adı': name,
+            'Toplam Satış': data.count,
+            'Toplam Ciro': data.amount,
+            'Brüt Prim': data.primAmount,
+            'Kesinti': deductions,
+            'Net Hakediş': netPrim,
+            'Ortalama Satış': Math.round(data.amount / data.count),
+            'Prim Oranı': `%${((data.primAmount / data.amount) * 100).toFixed(2)}`
+          };
+        });
 
       const salesmanWs = XLSX.utils.json_to_sheet(salesmanData);
       salesmanWs['!cols'] = [
         { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, 
-        { wch: 15 }, { wch: 15 }, { wch: 12 }
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }
       ];
 
-      // Para formatı
+      // Para formatı (yeni sütunlar için)
       const salesmanRange = XLSX.utils.decode_range(salesmanWs['!ref']);
       for (let row = 1; row <= salesmanRange.e.r; row++) {
-        [2, 3, 4, 5].forEach(col => { // Ciro ve prim sütunları
+        [2, 3, 4, 5, 6].forEach(col => { // Ciro, Brüt Prim, Kesinti, Net Hakediş, Ortalama
           const cell = XLSX.utils.encode_cell({ r: row, c: col });
           if (salesmanWs[cell]) {
             salesmanWs[cell].t = 'n';
-            if (col === 2 || col === 3 || col === 4 || col === 5) {
+            if (col === 2 || col === 3 || col === 4 || col === 5 || col === 6) {
               salesmanWs[cell].z = '#,##0"₺"';
             }
           }
@@ -914,7 +965,14 @@ router.post('/export', auth, async (req, res) => {
       });
 
       const topPerformers = Object.entries(salesByUser)
-        .sort((a, b) => b[1].count - a[1].count)
+        .sort((a, b) => {
+          // Önce satış adedine göre sırala
+          if (b[1].count !== a[1].count) {
+            return b[1].count - a[1].count;
+          }
+          // Satış adedi aynıysa prim tutarına göre sırala
+          return b[1].primAmount - a[1].primAmount;
+        })
         .slice(0, 3);
 
       // Kart boyutları

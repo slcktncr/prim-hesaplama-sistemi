@@ -538,7 +538,7 @@ const SaleForm = () => {
   };
 
   if (initialLoading) {
-    return <Loading text={isEdit ? 'Satış bilgileri yükleniyor...' : 'Yükleniyor...'} />;
+    return <Loading variant="ripple" size="large" />;
   }
 
   const primAmount = calculatePrim();

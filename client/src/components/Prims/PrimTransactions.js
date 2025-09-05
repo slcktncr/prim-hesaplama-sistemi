@@ -210,7 +210,7 @@ const PrimTransactions = () => {
   };
 
   if (loading && transactions.length === 0) {
-    return <Loading text="Prim işlemleri yükleniyor..." />;
+    return <Loading variant="dots" size="large" />;
   }
 
   return (

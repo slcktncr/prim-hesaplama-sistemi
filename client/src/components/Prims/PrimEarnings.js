@@ -168,7 +168,7 @@ const PrimEarnings = () => {
   const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
 
   if (loading && earnings.length === 0) {
-    return <Loading text="Prim hakedişleri yükleniyor..." />;
+    return <Loading variant="dots" size="large" />;
   }
 
   return (

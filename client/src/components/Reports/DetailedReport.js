@@ -120,7 +120,7 @@ const DetailedReport = () => {
   };
 
   if (loading) {
-    return <Loading text="Detaylı rapor yükleniyor..." />;
+    return <Loading variant="pulse" size="large" />;
   }
 
   if (error) {

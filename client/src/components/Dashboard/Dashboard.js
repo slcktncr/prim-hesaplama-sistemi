@@ -36,7 +36,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <Loading text="Dashboard yükleniyor..." />;
+    return <Loading variant="pulse" size="large" />;
   }
 
   if (error) {

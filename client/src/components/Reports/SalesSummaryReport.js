@@ -135,7 +135,7 @@ const SalesSummaryReport = () => {
   };
 
   if (loading) {
-    return <Loading text="Satış özet raporu yükleniyor..." />;
+    return <Loading variant="pulse" size="large" />;
   }
 
   if (error) {

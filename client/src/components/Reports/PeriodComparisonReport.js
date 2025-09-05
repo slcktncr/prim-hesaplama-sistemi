@@ -50,7 +50,7 @@ const PeriodComparisonReport = () => {
   };
 
   if (loading) {
-    return <Loading text="Dönem karşılaştırma raporu yükleniyor..." />;
+    return <Loading variant="ripple" size="large" />;
   }
 
   if (error) {

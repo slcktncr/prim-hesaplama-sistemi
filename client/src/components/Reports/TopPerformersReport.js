@@ -89,7 +89,7 @@ const TopPerformersReport = () => {
   };
 
   if (loading) {
-    return <Loading text="En iyi performans raporu yükleniyor..." />;
+    return <Loading variant="ripple" size="large" />;
   }
 
   if (error) {

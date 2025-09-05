@@ -76,7 +76,7 @@ const PerformanceReport = () => {
   };
 
   if (loading) {
-    return <Loading text="Performans raporu yükleniyor..." />;
+    return <Loading variant="dots" size="large" />;
   }
 
   if (error) {

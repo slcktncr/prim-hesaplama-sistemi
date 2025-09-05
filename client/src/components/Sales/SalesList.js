@@ -206,7 +206,7 @@ const SalesList = () => {
   };
 
   if (loading && sales.length === 0) {
-    return <Loading text="Satışlar yükleniyor..." />;
+    return <Loading variant="pulse" size="large" />;
   }
 
   return (

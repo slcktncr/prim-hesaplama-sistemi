@@ -39,7 +39,7 @@ const RecentActivity = () => {
           </div>
         </Card.Header>
         <Card.Body>
-          <Loading size="sm" text="" />
+          <Loading variant="dots" size="small" />
         </Card.Body>
       </Card>
     );
