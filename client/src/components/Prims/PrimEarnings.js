@@ -151,7 +151,9 @@ const PrimEarnings = () => {
     }
   };
 
-  const handleShowDeductionModal = (earning) => {
+  // Modal açma fonksiyonu (dönem ataması gibi)
+  const showDeductionDetails = (earning) => {
+    console.log('🔍 Opening deduction modal for:', earning.salesperson?.name);
     setSelectedDeductions(earning);
     setShowDeductionModal(true);
   };
@@ -185,10 +187,6 @@ const PrimEarnings = () => {
     }
   };
 
-  const showDeductionDetails = (earning) => {
-    setSelectedDeductions(earning);
-    setShowDeductionModal(true);
-  };
 
   const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
 
@@ -422,7 +420,7 @@ const PrimEarnings = () => {
                         {(earning.totalDeductions < 0 || earning.deductionsCount > 0 || earning.pendingDeductionsCount > 0) && (
                           <div 
                             className="cursor-pointer"
-                            onClick={() => handleShowDeductionModal(earning)}
+                            onClick={() => showDeductionDetails(earning)}
                             style={{ cursor: 'pointer' }}
                           >
                             <div className="d-flex justify-content-between">
@@ -445,7 +443,13 @@ const PrimEarnings = () => {
                             {/* Bekleyen kesintileri her zaman göster */}
                             <div 
                               className="small text-warning cursor-pointer"
-                              onClick={() => earning.pendingDeductionsCount > 0 && showDeductionDetails(earning)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (earning.pendingDeductionsCount > 0) {
+                                  showDeductionDetails(earning);
+                                }
+                              }}
                               style={{ cursor: earning.pendingDeductionsCount > 0 ? 'pointer' : 'default' }}
                               title={earning.pendingDeductionsCount > 0 ? 'Bekleyen kesintileri görüntülemek için tıklayın' : ''}
                             >
@@ -490,10 +494,15 @@ const PrimEarnings = () => {
                             Kesinti: {earning.deductionsCount || 0}
                             {(earning.deductionsCount > 0 || earning.pendingDeductionsCount > 0) && (
                               <Button
+                                type="button"
                                 variant="link"
                                 size="sm"
                                 className="p-0 ms-1"
-                                onClick={() => showDeductionDetails(earning)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  showDeductionDetails(earning);
+                                }}
                                 title="Kesinti detaylarını göster"
                               >
                                 📋
@@ -506,10 +515,15 @@ const PrimEarnings = () => {
                             <FiClock className="me-1" size={12} />
                             Bekleyen: {earning.pendingDeductionsCount} adet
                             <Button
+                              type="button"
                               variant="link"
                               size="sm"
                               className="p-0 ms-1 text-warning"
-                              onClick={() => showDeductionDetails(earning)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                showDeductionDetails(earning);
+                              }}
                               title="Bekleyen kesintileri görüntüle ve onayla"
                             >
                               ⚠️
@@ -676,17 +690,27 @@ const PrimEarnings = () => {
                             {transaction.deductionStatus === 'beklemede' && (
                               <div className="d-flex gap-1">
                                 <Button
+                                  type="button"
                                   variant="success"
                                   size="sm"
-                                  onClick={() => handleApproveDeduction(transaction._id)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleApproveDeduction(transaction._id);
+                                  }}
                                   title="Kesinti Yap - Hakediş'ten Düş"
                                 >
                                   ✓ Onayla
                                 </Button>
                                 <Button
+                                  type="button"
                                   variant="danger"
                                   size="sm"
-                                  onClick={() => handleCancelDeduction(transaction._id)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleCancelDeduction(transaction._id);
+                                  }}
                                   title="Kesinti İptal Et"
                                 >
                                   ✗ İptal
