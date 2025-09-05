@@ -137,10 +137,8 @@ router.get('/transactions', auth, async (req, res) => {
     
     let query = {};
     
-    // Admin değilse sadece kendi işlemlerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (salesperson && salesperson !== '') {
+    // Tüm kullanıcılar tüm işlemleri görebilir (sadece görüntüleme için)
+    if (salesperson && salesperson !== '') {
       query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
@@ -187,10 +185,8 @@ router.get('/earnings', auth, async (req, res) => {
     
     let query = {};
     
-    // Admin değilse sadece kendi hakedişini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (salesperson && salesperson !== '') {
+    // Tüm kullanıcılar tüm hakedişleri görebilir (sadece görüntüleme için)
+    if (salesperson && salesperson !== '') {
       query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     

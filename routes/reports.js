@@ -17,10 +17,7 @@ router.get('/dashboard', auth, async (req, res) => {
   try {
     let query = {};
     
-    // Admin değilse sadece kendi verilerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
+    // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
     // Genel istatistikler
     const totalSales = await Sale.countDocuments({ ...query, status: 'aktif' });
@@ -162,10 +159,8 @@ router.get('/sales-summary', auth, async (req, res) => {
     
     let query = {};
     
-    // Admin değilse sadece kendi verilerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (salesperson) {
+    // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
+    if (salesperson) {
       query.salesperson = salesperson;
     }
     
@@ -386,10 +381,7 @@ router.get('/period-comparison', auth, async (req, res) => {
   try {
     let query = {};
     
-    // Admin değilse sadece kendi verilerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
+    // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
     // Son 6 ayın dönemlerini al
     const periods = await PrimPeriod.find({ isActive: true })
@@ -443,10 +435,7 @@ router.get('/top-performers', auth, async (req, res) => {
     
     let query = { status: 'aktif' };
     
-    // Admin değilse sadece kendi verilerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
+    // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
     
     // Dönem filtresi
     if (period) {
@@ -505,10 +494,8 @@ router.get('/detailed-report', auth, async (req, res) => {
     
     let query = { status };
     
-    // Admin değilse sadece kendi verilerini görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (salesperson) {
+    // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
+    if (salesperson) {
       query.salesperson = salesperson;
     }
     

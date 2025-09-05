@@ -428,11 +428,9 @@ router.get('/', auth, async (req, res) => {
     
     let query = { status };
     
-    // Admin değilse sadece kendi satışlarını görsün
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (salesperson && salesperson !== '') {
-      // Admin ise ve temsilci seçilmişse o temsilciyi filtrele
+    // Tüm kullanıcılar tüm satışları görebilir (sadece görüntüleme için)
+    if (salesperson && salesperson !== '') {
+      // Temsilci seçilmişse o temsilciyi filtrele
       query.salesperson = salesperson;
     }
     

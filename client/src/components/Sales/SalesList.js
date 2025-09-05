@@ -81,10 +81,8 @@ const SalesList = () => {
 
   useEffect(() => {
     fetchPeriods();
-    if (isAdmin) {
-      fetchUsers();
-    }
-  }, [isAdmin]);
+    fetchUsers(); // Tüm kullanıcılar temsilci listesini görebilir
+  }, []);
 
   useEffect(() => {
     const debouncedFetch = debounce(fetchSales, 500);
@@ -287,24 +285,22 @@ const SalesList = () => {
             <>
               <hr />
               <Row>
-                {isAdmin && (
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Label>Temsilci</Form.Label>
-                      <Form.Select
-                        value={filters.salesperson}
-                        onChange={(e) => handleFilterChange('salesperson', e.target.value)}
-                      >
-                        <option value="">Tüm Temsilciler</option>
-                        {users.map(user => (
-                          <option key={user._id} value={user._id}>
-                            {user.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                )}
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label>Temsilci</Form.Label>
+                    <Form.Select
+                      value={filters.salesperson}
+                      onChange={(e) => handleFilterChange('salesperson', e.target.value)}
+                    >
+                      <option value="">Tüm Temsilciler</option>
+                      {users.map(user => (
+                        <option key={user._id} value={user._id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
                 <Col md={3}>
                   <Form.Group>
                     <Form.Label>Prim Durumu</Form.Label>
