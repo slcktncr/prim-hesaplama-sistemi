@@ -616,9 +616,36 @@ const PrimEarnings = () => {
               <h6>İptal Edilen Satışlar</h6>
               {/* Onaylanmış ve bekleyen kesintileri birleştir */}
               {(() => {
+                console.log('🔍 selectedDeductions data:', selectedDeductions);
+                console.log('🔍 deductionTransactions:', selectedDeductions.deductionTransactions);
+                console.log('🔍 pendingDeductions:', selectedDeductions.pendingDeductions);
+                console.log('🔍 pendingDeductions type:', typeof selectedDeductions.pendingDeductions);
+                console.log('🔍 is pendingDeductions array?', Array.isArray(selectedDeductions.pendingDeductions));
+                
+                // Güvenli array çıkarma
+                let deductionTransactions = [];
+                let pendingDeductions = [];
+                
+                // deductionTransactions kontrolü
+                if (Array.isArray(selectedDeductions.deductionTransactions)) {
+                  deductionTransactions = selectedDeductions.deductionTransactions;
+                } else if (selectedDeductions.deductionTransactions) {
+                  console.warn('⚠️ deductionTransactions is not array:', typeof selectedDeductions.deductionTransactions);
+                }
+                
+                // pendingDeductions kontrolü - hem array hem de nested property kontrol et
+                if (Array.isArray(selectedDeductions.pendingDeductions)) {
+                  pendingDeductions = selectedDeductions.pendingDeductions;
+                } else if (selectedDeductions.pendingDeductions && Array.isArray(selectedDeductions.pendingDeductions.transactions)) {
+                  // Eğer nested structure varsa
+                  pendingDeductions = selectedDeductions.pendingDeductions.transactions;
+                } else if (selectedDeductions.pendingDeductions) {
+                  console.warn('⚠️ pendingDeductions is not array:', typeof selectedDeductions.pendingDeductions, selectedDeductions.pendingDeductions);
+                }
+                
                 const allDeductions = [
-                  ...(selectedDeductions.deductionTransactions || []),
-                  ...(selectedDeductions.pendingDeductions || [])
+                  ...deductionTransactions,
+                  ...pendingDeductions
                 ];
                 return allDeductions.length > 0 ? (
                 <Table responsive hover size="sm">
