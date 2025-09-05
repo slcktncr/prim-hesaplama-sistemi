@@ -43,6 +43,15 @@ const primTransactionSchema = new mongoose.Schema({
     default: 'onaylandı'
   },
   
+  // Kesinti durumu (sadece kesinti işlemleri için)
+  deductionStatus: {
+    type: String,
+    enum: ['beklemede', 'yapıldı', 'iptal'],
+    default: function() {
+      return this.transactionType === 'kesinti' ? 'beklemede' : undefined;
+    }
+  },
+  
   // İlgili işlemler
   relatedTransaction: {
     type: mongoose.Schema.Types.ObjectId,

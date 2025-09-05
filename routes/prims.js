@@ -276,7 +276,8 @@ router.get('/earnings', auth, async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ['$salesperson', '$$salespersonId'] },
-                    { $eq: ['$transactionType', 'kesinti'] }
+                    { $eq: ['$transactionType', 'kesinti'] },
+                    { $eq: ['$deductionStatus', 'yapıldı'] } // Sadece onaylanmış kesintiler
                   ]
                 }
               }
@@ -307,6 +308,54 @@ router.get('/earnings', auth, async (req, res) => {
             }
           ],
           as: 'deductionTransactions'
+        }
+      },
+      // Bekleyen kesintileri de getir (onay bekleyen)
+      {
+        $lookup: {
+          from: 'primtransactions',
+          let: { 
+            salespersonId: '$_id.salesperson',
+            currentPeriodId: '$_id.primPeriod'
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$salesperson', '$$salespersonId'] },
+                    { $eq: ['$transactionType', 'kesinti'] },
+                    { $eq: ['$deductionStatus', 'beklemede'] } // Bekleyen kesintiler
+                  ]
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: 'sales',
+                localField: 'sale',
+                foreignField: '_id',
+                as: 'saleDetails'
+              }
+            },
+            {
+              $lookup: {
+                from: 'primperiods',
+                localField: 'primPeriod',
+                foreignField: '_id',
+                as: 'deductionPeriod'
+              }
+            },
+            {
+              $addFields: {
+                saleDetails: { $arrayElemAt: ['$saleDetails', 0] },
+                deductionPeriod: { $arrayElemAt: ['$deductionPeriod', 0] },
+                isCurrentPeriodDeduction: { $eq: ['$primPeriod', '$$currentPeriodId'] },
+                isCarriedForward: { $ne: ['$primPeriod', '$$currentPeriodId'] }
+              }
+            }
+          ],
+          as: 'pendingDeductions'
         }
       },
       {
@@ -380,6 +429,11 @@ router.get('/earnings', auth, async (req, res) => {
               }
             }
           },
+          // Bekleyen kesintiler
+          pendingDeductions: {
+            $sum: '$pendingDeductions.amount'
+          },
+          pendingDeductionsCount: { $size: '$pendingDeductions' },
           // Net hakediş hesapla (ödenmemiş primler - mevcut dönemdeki kesintiler)
           netUnpaidAmount: {
             $subtract: [
@@ -418,8 +472,15 @@ router.get('/earnings', auth, async (req, res) => {
           unpaidAmount: 1,
           totalDeductions: 1,
           deductionsCount: 1,
+          carriedForwardDeductions: 1,
+          carriedForwardCount: 1,
+          currentPeriodDeductions: 1,
+          currentPeriodDeductionsCount: 1,
+          pendingDeductions: 1,
+          pendingDeductionsCount: 1,
           netUnpaidAmount: 1,
-          deductionTransactions: 1
+          deductionTransactions: 1,
+          pendingDeductions: 1
         }
       },
       {
@@ -655,6 +716,82 @@ router.post('/cleanup-duplicate-deductions', [auth, adminAuth], async (req, res)
       message: 'Kesinti temizleme işleminde hata oluştu',
       error: error.message 
     });
+  }
+});
+
+// @route   PUT /api/prims/deductions/:id/approve
+// @desc    Kesinti işlemini onayla (hakediş'ten düş)
+// @access  Private (Admin only)
+router.put('/deductions/:id/approve', [auth, adminAuth], async (req, res) => {
+  try {
+    const deduction = await PrimTransaction.findById(req.params.id);
+    if (!deduction) {
+      return res.status(404).json({ message: 'Kesinti bulunamadı' });
+    }
+
+    if (deduction.transactionType !== 'kesinti') {
+      return res.status(400).json({ message: 'Bu işlem bir kesinti değil' });
+    }
+
+    if (deduction.deductionStatus === 'yapıldı') {
+      return res.status(400).json({ message: 'Bu kesinti zaten onaylanmış' });
+    }
+
+    // Kesinti durumunu "yapıldı" olarak güncelle
+    deduction.deductionStatus = 'yapıldı';
+    deduction.description += ' (Onaylandı)';
+    await deduction.save();
+
+    const updatedDeduction = await PrimTransaction.findById(deduction._id)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name')
+      .populate('sale', 'contractNo customerName');
+
+    res.json({
+      message: 'Kesinti onaylandı ve hakediş\'ten düşüldü',
+      deduction: updatedDeduction
+    });
+  } catch (error) {
+    console.error('Approve deduction error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/prims/deductions/:id/cancel
+// @desc    Kesinti işlemini iptal et
+// @access  Private (Admin only)
+router.put('/deductions/:id/cancel', [auth, adminAuth], async (req, res) => {
+  try {
+    const deduction = await PrimTransaction.findById(req.params.id);
+    if (!deduction) {
+      return res.status(404).json({ message: 'Kesinti bulunamadı' });
+    }
+
+    if (deduction.transactionType !== 'kesinti') {
+      return res.status(400).json({ message: 'Bu işlem bir kesinti değil' });
+    }
+
+    if (deduction.deductionStatus === 'yapıldı') {
+      return res.status(400).json({ message: 'Onaylanmış kesinti iptal edilemez' });
+    }
+
+    // Kesinti durumunu "iptal" olarak güncelle
+    deduction.deductionStatus = 'iptal';
+    deduction.description += ' (İptal edildi)';
+    await deduction.save();
+
+    const updatedDeduction = await PrimTransaction.findById(deduction._id)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name')
+      .populate('sale', 'contractNo customerName');
+
+    res.json({
+      message: 'Kesinti iptal edildi',
+      deduction: updatedDeduction
+    });
+  } catch (error) {
+    console.error('Cancel deduction error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 

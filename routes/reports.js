@@ -663,6 +663,52 @@ router.post('/export', auth, async (req, res) => {
       .populate('primPeriod', 'name')
       .sort({ saleDate: -1 });
     
+    // Güncel dönem performansı için aktif dönemi bul
+    const currentPeriod = await require('../models/PrimPeriod').findOne({ isActive: true });
+    let currentPeriodPerformance = [];
+    
+    if (currentPeriod) {
+      currentPeriodPerformance = await Sale.aggregate([
+        { 
+          $match: { 
+            primPeriod: currentPeriod._id,
+            status: 'aktif'
+          } 
+        },
+        {
+          $group: {
+            _id: '$salesperson',
+            totalSales: { $sum: 1 },
+            totalAmount: { $sum: '$listPrice' },
+            totalPrimAmount: { $sum: '$primAmount' },
+            avgSaleAmount: { $avg: '$listPrice' }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        },
+        {
+          $project: {
+            name: '$user.name',
+            email: '$user.email',
+            totalSales: 1,
+            totalAmount: 1,
+            totalPrimAmount: 1,
+            avgSaleAmount: 1
+          }
+        },
+        { $sort: { totalSales: -1, totalPrimAmount: -1 } }
+      ]);
+    }
+    
     if (process.env.NODE_ENV === 'development') {
       console.log('📊 Sales data for export:', { 
         salesCount: sales.length, 
@@ -697,7 +743,7 @@ router.post('/export', auth, async (req, res) => {
         ['Ödenen Primler:', sales.filter(s => s.primStatus === 'ödendi').length],
         ['Bekleyen Primler:', sales.filter(s => s.primStatus === 'ödenmedi').length],
         ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + (s.primAmount || 0), 0)],
-        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.basePrimPrice || s.listPrice || 0), 0)],
+        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.listPrice || 0), 0)],
         [''],
         ['TEMSİLCİ PERFORMANSI']
       ];
@@ -737,7 +783,7 @@ router.post('/export', auth, async (req, res) => {
           salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        salesByUser[userName].amount += (sale.listPrice || 0);
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
@@ -958,6 +1004,36 @@ router.post('/export', auth, async (req, res) => {
       XLSX.utils.book_append_sheet(wb, paymentWs, 'Ödeme Analizi');
       console.log('✅ Payment analysis sheet added');
 
+      // 6. GÜNCEL DÖNEM PERFORMANSI
+      if (currentPeriodPerformance.length > 0) {
+        const currentPeriodData = currentPeriodPerformance.map(performer => ({
+          'Temsilci Adı': performer.name,
+          'Satış Sayısı': performer.totalSales,
+          'Toplam Ciro': performer.totalAmount,
+          'Toplam Prim': performer.totalPrimAmount,
+          'Ortalama Satış': Math.round(performer.avgSaleAmount),
+          'Prim Oranı': `%${((performer.totalPrimAmount / performer.totalAmount) * 100).toFixed(2)}`
+        }));
+
+        const currentPeriodWs = XLSX.utils.json_to_sheet(currentPeriodData);
+        currentPeriodWs['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
+
+        // Para formatı
+        const currentRange = XLSX.utils.decode_range(currentPeriodWs['!ref']);
+        for (let row = 1; row <= currentRange.e.r; row++) {
+          [2, 3, 4].forEach(col => { // Ciro, Prim, Ortalama
+            const cell = XLSX.utils.encode_cell({ r: row, c: col });
+            if (currentPeriodWs[cell]) {
+              currentPeriodWs[cell].t = 'n';
+              currentPeriodWs[cell].z = '#,##0"₺"';
+            }
+          });
+        }
+
+        XLSX.utils.book_append_sheet(wb, currentPeriodWs, 'Güncel Dönem Performansı');
+        console.log('✅ Current period performance sheet added');
+      }
+
       console.log('📊 Creating Excel buffer...');
       // Excel buffer oluştur
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
@@ -1037,7 +1113,7 @@ router.post('/export', auth, async (req, res) => {
           salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        salesByUser[userName].amount += (sale.listPrice || 0);
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
@@ -1309,7 +1385,7 @@ router.post('/export', auth, async (req, res) => {
         // Net Prim tutarı (en sağ)
         doc.fillColor('#28a745')
            .fontSize(14)
-           .text(`₺${data.netPrimAmount.toLocaleString('tr-TR')}`, margin + contentWidth - 80, yPos + 20);
+           .text(`₺${(data.netPrimAmount || data.primAmount || 0).toLocaleString('tr-TR')}`, margin + contentWidth - 80, yPos + 20);
         
         doc.fillColor('#6c757d')
            .fontSize(8)

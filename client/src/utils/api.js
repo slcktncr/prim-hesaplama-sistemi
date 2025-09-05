@@ -69,6 +69,8 @@ export const primsAPI = {
   getDeductions: (params) => API.get('/prims/deductions', { params }),
   updateSalePeriod: (id, primPeriod) => API.put(`/prims/sales/${id}/period`, { primPeriod }),
   cleanupDuplicateDeductions: () => API.post('/prims/cleanup-duplicate-deductions'),
+  approveDeduction: (id) => API.put(`/prims/deductions/${id}/approve`),
+  cancelDeduction: (id) => API.put(`/prims/deductions/${id}/cancel`),
 };
 
 // Reports API calls

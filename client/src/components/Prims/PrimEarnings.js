@@ -160,6 +160,30 @@ const PrimEarnings = () => {
     setSelectedDeductions(null);
   };
 
+  const handleApproveDeduction = async (deductionId) => {
+    try {
+      await primsAPI.approveDeduction(deductionId);
+      toast.success('Kesinti onaylandı ve hakediş\'ten düşüldü');
+      fetchEarnings(); // Verileri yenile
+      closeDeductionModal();
+    } catch (error) {
+      console.error('Approve deduction error:', error);
+      toast.error(error.response?.data?.message || 'Kesinti onaylama hatası');
+    }
+  };
+
+  const handleCancelDeduction = async (deductionId) => {
+    try {
+      await primsAPI.cancelDeduction(deductionId);
+      toast.success('Kesinti iptal edildi');
+      fetchEarnings(); // Verileri yenile
+      closeDeductionModal();
+    } catch (error) {
+      console.error('Cancel deduction error:', error);
+      toast.error(error.response?.data?.message || 'Kesinti iptal hatası');
+    }
+  };
+
   const showDeductionDetails = (earning) => {
     setSelectedDeductions(earning);
     setShowDeductionModal(true);
@@ -414,7 +438,12 @@ const PrimEarnings = () => {
                             </div>
                             {earning.currentPeriodDeductions < 0 && (
                               <div className="small text-muted">
-                                Güncel Dönem Kesinti: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}
+                                Yapılan Kesinti: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}
+                              </div>
+                            )}
+                            {earning.pendingDeductions < 0 && (
+                              <div className="small text-warning">
+                                Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductions))} ({earning.pendingDeductionsCount} adet)
                               </div>
                             )}
                           </div>
@@ -561,6 +590,7 @@ const PrimEarnings = () => {
                       <th>Prim Tutarı</th>
                       <th>Kesinti Tarihi</th>
                       <th>Kesinti Türü</th>
+                      {isAdmin && <th>İşlemler</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -602,6 +632,16 @@ const PrimEarnings = () => {
                                 Güncel Dönem
                               </Badge>
                             )}
+                            {transaction.deductionStatus === 'beklemede' && (
+                              <Badge bg="warning" className="small">
+                                Onay Bekliyor
+                              </Badge>
+                            )}
+                            {transaction.deductionStatus === 'yapıldı' && (
+                              <Badge bg="success" className="small">
+                                Onaylandı
+                              </Badge>
+                            )}
                           </div>
                           <div className="small text-muted">
                             {transaction.description}
@@ -612,6 +652,36 @@ const PrimEarnings = () => {
                             </div>
                           )}
                         </td>
+                        {isAdmin && (
+                          <td>
+                            {transaction.deductionStatus === 'beklemede' && (
+                              <div className="d-flex gap-1">
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => handleApproveDeduction(transaction._id)}
+                                  title="Kesinti Yap - Hakediş'ten Düş"
+                                >
+                                  ✓ Onayla
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleCancelDeduction(transaction._id)}
+                                  title="Kesinti İptal Et"
+                                >
+                                  ✗ İptal
+                                </Button>
+                              </div>
+                            )}
+                            {transaction.deductionStatus === 'yapıldı' && (
+                              <Badge bg="success">Onaylandı</Badge>
+                            )}
+                            {transaction.deductionStatus === 'iptal' && (
+                              <Badge bg="secondary">İptal Edildi</Badge>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
