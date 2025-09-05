@@ -460,7 +460,7 @@ const PrimEarnings = () => {
                               style={{ cursor: earning.pendingDeductionsCount > 0 ? 'pointer' : 'default' }}
                               title={earning.pendingDeductionsCount > 0 ? 'Bekleyen kesintileri görüntülemek için tıklayın' : ''}
                             >
-                              Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductions || 0))} ({earning.pendingDeductionsCount || 0} adet)
+                              Bekleyen Kesinti: {formatCurrency(Math.abs(earning.pendingDeductionsAmount || 0))} ({earning.pendingDeductionsCount || 0} adet)
                               {earning.pendingDeductionsCount > 0 && (
                                 <span className="ms-1">👆</span>
                               )}
@@ -647,6 +647,14 @@ const PrimEarnings = () => {
                   ...deductionTransactions,
                   ...pendingDeductions
                 ];
+                
+                console.log('🎯 Final arrays:', {
+                  deductionTransactions: deductionTransactions.length,
+                  pendingDeductions: pendingDeductions.length,
+                  allDeductions: allDeductions.length
+                });
+                console.log('🎯 All deductions:', allDeductions);
+                
                 return allDeductions.length > 0 ? (
                 <Table responsive hover size="sm">
                   <thead>

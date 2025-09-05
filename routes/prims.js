@@ -195,6 +195,22 @@ router.get('/earnings', auth, async (req, res) => {
       console.log(`📊 Updated ${updateResult.modifiedCount} existing deductions to 'yapıldı' status`);
     }
     
+    // Debug: Bekleyen kesintileri database'de kontrol et
+    const pendingDeductionsInDB = await PrimTransaction.find({
+      transactionType: 'kesinti',
+      deductionStatus: 'beklemede'
+    }).populate('salesperson', 'name');
+    
+    console.log('🔍 Pending deductions in database:', {
+      count: pendingDeductionsInDB.length,
+      deductions: pendingDeductionsInDB.map(d => ({
+        id: d._id,
+        salesperson: d.salesperson?.name,
+        amount: d.amount,
+        status: d.deductionStatus
+      }))
+    });
+    
     const { period, salesperson } = req.query;
     console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
     
@@ -458,8 +474,8 @@ router.get('/earnings', auth, async (req, res) => {
               }
             }
           },
-          // Bekleyen kesintiler
-          pendingDeductions: {
+          // Bekleyen kesintiler (amount ve array ayrı tutulmalı)
+          pendingDeductionsAmount: {
             $sum: '$pendingDeductions.amount'
           },
           pendingDeductionsCount: { $size: '$pendingDeductions' },
@@ -506,10 +522,10 @@ router.get('/earnings', auth, async (req, res) => {
           currentPeriodDeductions: 1,
           currentPeriodDeductionsCount: 1,
           pendingDeductions: 1,
+          pendingDeductionsAmount: 1,
           pendingDeductionsCount: 1,
           netUnpaidAmount: 1,
-          deductionTransactions: 1,
-          pendingDeductions: 1
+          deductionTransactions: 1
         }
       },
       {
@@ -525,8 +541,22 @@ router.get('/earnings', auth, async (req, res) => {
         salesperson: earnings[0].salesperson?.name,
         pendingDeductionsCount: earnings[0].pendingDeductionsCount,
         pendingDeductions: earnings[0].pendingDeductions,
+        pendingDeductionsType: typeof earnings[0].pendingDeductions,
+        pendingDeductionsLength: Array.isArray(earnings[0].pendingDeductions) ? earnings[0].pendingDeductions.length : 'Not array',
         totalDeductions: earnings[0].totalDeductions
       });
+      
+      // Sıla Pazarlı'yı özel olarak kontrol et
+      const silaPazarli = earnings.find(e => e.salesperson?.name?.includes('Sıla'));
+      if (silaPazarli) {
+        console.log('🎯 Sıla Pazarlı specific data:', {
+          name: silaPazarli.salesperson?.name,
+          pendingDeductionsCount: silaPazarli.pendingDeductionsCount,
+          pendingDeductions: silaPazarli.pendingDeductions,
+          pendingDeductionsArray: Array.isArray(silaPazarli.pendingDeductions),
+          pendingDeductionsLength: Array.isArray(silaPazarli.pendingDeductions) ? silaPazarli.pendingDeductions.length : 'Not array'
+        });
+      }
     }
 
     res.json(earnings);
