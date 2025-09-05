@@ -160,6 +160,11 @@ const PrimEarnings = () => {
     setSelectedDeductions(null);
   };
 
+  const showDeductionDetails = (earning) => {
+    setSelectedDeductions(earning);
+    setShowDeductionModal(true);
+  };
+
   const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
 
   if (loading && earnings.length === 0) {
@@ -408,10 +413,18 @@ const PrimEarnings = () => {
                     <td>
                       <div>
                         <div className="h5 mb-1 text-primary">
-                          {formatCurrency((earning.paidAmount || 0) + (earning.unpaidAmount || 0))}
+                          {formatCurrency(earning.netUnpaidAmount || earning.unpaidAmount || 0)}
                         </div>
                         <div className="small text-muted">
-                          Toplam Prim Hakediş
+                          Net Prim Hakediş
+                        </div>
+                        {earning.totalDeductions < 0 && (
+                          <div className="small text-danger mt-1">
+                            Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}
+                          </div>
+                        )}
+                        <div className="small text-info">
+                          Brüt: {formatCurrency((earning.paidAmount || 0) + (earning.unpaidAmount || 0))}
                         </div>
                       </div>
                     </td>
@@ -427,6 +440,17 @@ const PrimEarnings = () => {
                           <span className="text-danger">
                             <FiTrendingDown className="me-1" size={12} />
                             Kesinti: {earning.kesintiCount}
+                            {earning.deductionsCount > 0 && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="p-0 ms-1"
+                                onClick={() => showDeductionDetails(earning)}
+                                title="Kesinti detaylarını göster"
+                              >
+                                📋
+                              </Button>
+                            )}
                           </span>
                         </div>
                         <div className="d-flex justify-content-between mb-1">
@@ -515,7 +539,7 @@ const PrimEarnings = () => {
                       <th>Satış Tarihi</th>
                       <th>Prim Tutarı</th>
                       <th>Kesinti Tarihi</th>
-                      <th>Açıklama</th>
+                      <th>Kesinti Türü</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -540,9 +564,15 @@ const PrimEarnings = () => {
                           {new Date(transaction.createdAt).toLocaleDateString('tr-TR')}
                         </td>
                         <td>
-                          <small className="text-muted">
+                          <Badge 
+                            bg={transaction.description?.includes('İptalden kaynaklı') ? 'danger' : 'warning'}
+                            className="small"
+                          >
+                            {transaction.description?.includes('İptalden kaynaklı') ? 'İptalden Kaynaklı Kesinti' : 'Diğer Kesinti'}
+                          </Badge>
+                          <div className="small text-muted mt-1">
                             {transaction.description}
-                          </small>
+                          </div>
                         </td>
                       </tr>
                     ))}

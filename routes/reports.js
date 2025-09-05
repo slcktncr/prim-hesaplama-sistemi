@@ -682,9 +682,9 @@ router.post('/export', auth, async (req, res) => {
         'Ödeme Tipi': sale.paymentType || 'Belirsiz',
         'Prim Oranı': sale.primRate || 0,
         'Prim Tutarı': sale.primAmount || 0,
-        'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
-        'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
-        'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
+      'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
+      'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
+      'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
         'Durum': sale.status === 'aktif' ? 'Aktif' : 'İptal',
         'Notlar': sale.notes || '',
         'Oluşturma Tarihi': sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('tr-TR') : '',
@@ -956,8 +956,8 @@ router.post('/export', auth, async (req, res) => {
            .fontSize(11)
            .text(name.toUpperCase(), xPos + 5, yPos + 80, { 
              width: cardWidth - 10, 
-             align: 'center' 
-           });
+          align: 'center' 
+        });
         
         // Satış sayısı
         doc.fillColor('#3498db')
@@ -1018,8 +1018,8 @@ router.post('/export', auth, async (req, res) => {
       doc.text(`₺${totalPrimAmount.toLocaleString('tr-TR')}`, statsBoxX + 120, statY + 80);
       
       // Yeni sayfa
-      doc.addPage();
-      yPos = margin;
+          doc.addPage();
+          yPos = margin;
       
       // 4 Ana İstatistik Kartı - sistemdeki gibi
       const cardStatHeight = 80;
@@ -1188,7 +1188,7 @@ router.post('/export', auth, async (req, res) => {
       if (yPos < pageHeight - 100) {
         yPos = pageHeight - 80;
       }
-      
+
       // Alt bilgi
       doc.rect(margin, yPos, contentWidth, 50)
          .fillAndStroke('#2c3e50', '#2c3e50');
@@ -1205,7 +1205,7 @@ router.post('/export', auth, async (req, res) => {
                margin + 20, yPos + 32, { 
                  width: contentWidth - 40, 
                  align: 'center' 
-               });
+         });
 
       // PDF'yi sonlandır
       doc.end();

@@ -319,7 +319,22 @@ router.get('/earnings', auth, async (req, res) => {
           totalDeductions: {
             $sum: '$deductionTransactions.amount'
           },
-          deductionsCount: { $size: '$deductionTransactions' }
+          deductionsCount: { $size: '$deductionTransactions' },
+          // Net hakediş hesapla (ödenmemiş primler - mevcut dönemdeki kesintiler)
+          netUnpaidAmount: {
+            $subtract: [
+              {
+                $sum: {
+                  $map: {
+                    input: '$sales',
+                    as: 'sale',
+                    in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödenmedi'] }, '$$sale.primAmount', 0] }
+                  }
+                }
+              },
+              { $abs: { $sum: '$deductionTransactions.amount' } }
+            ]
+          }
         }
       },
       // Sadece satışı olan dönemler gösterilsin
@@ -343,6 +358,7 @@ router.get('/earnings', auth, async (req, res) => {
           unpaidAmount: 1,
           totalDeductions: 1,
           deductionsCount: 1,
+          netUnpaidAmount: 1,
           deductionTransactions: 1
         }
       },

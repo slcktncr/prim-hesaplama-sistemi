@@ -825,7 +825,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
           primPeriod: nextPeriodId, // Bir sonraki dönem
           transactionType: 'kesinti',
           amount: -sale.primAmount,
-          description: `${sale.contractNo} sözleşme iptal kesintisi (${cancelYear}/${cancelMonth} iptal → ${nextYear}/${nextMonth} kesinti)`,
+          description: `İptalden kaynaklı kesinti - ${sale.contractNo} (${cancelYear}/${cancelMonth} iptal → ${nextYear}/${nextMonth} kesinti)`,
           createdBy: req.user._id
         });
         await primTransaction.save();
