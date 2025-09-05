@@ -575,7 +575,13 @@ router.get('/detailed-report', auth, async (req, res) => {
 // @access  Private
 router.post('/export', auth, async (req, res) => {
   try {
+    console.log('🔍 Export request started:', { body: req.body, user: req.user?.name });
+    
     const { type, scope, period, salesperson } = req.body;
+    
+    if (!type) {
+      return res.status(400).json({ message: 'Export tipi belirtilmeli' });
+    }
     
     if (process.env.NODE_ENV === 'development') {
       console.log('🔍 Export request received:', { type, scope, period, salesperson });
@@ -620,6 +626,7 @@ router.post('/export', auth, async (req, res) => {
     }
     
     if (type === 'excel') {
+      console.log('📊 Creating Excel workbook...');
       // Excel workbook oluştur
       const wb = XLSX.utils.book_new();
 
@@ -645,14 +652,17 @@ router.post('/export', auth, async (req, res) => {
       ];
 
       // Temsilci performans verilerini ekle (PrimEarnings'deki gibi)
-      const { PrimTransaction } = require('../models');
+      // PrimTransaction zaten import edildi
       
       // Temsilci başına kesinti bilgilerini getir
       const deductionsByUser = {};
       try {
+        console.log('📊 Fetching deductions...');
         const allDeductions = await PrimTransaction.find({
           transactionType: 'kesinti'
         }).populate('salesperson', 'name');
+        
+        console.log('📊 Deductions found:', allDeductions.length);
         
         allDeductions.forEach(deduction => {
           const userName = deduction.salesperson?.name || 'Bilinmiyor';
@@ -661,8 +671,11 @@ router.post('/export', auth, async (req, res) => {
           }
           deductionsByUser[userName] += Math.abs(deduction.amount);
         });
+        
+        console.log('📊 Deductions by user:', deductionsByUser);
       } catch (error) {
-        console.error('Deductions fetch error:', error);
+        console.error('❌ Deductions fetch error:', error);
+        // Hata olursa boş obje ile devam et
       }
 
       const salesByUser = {};
@@ -699,9 +712,11 @@ router.post('/export', auth, async (req, res) => {
           ]);
         });
 
+      console.log('📊 Creating summary sheet...');
       const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
       summaryWs['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
       XLSX.utils.book_append_sheet(wb, summaryWs, 'Özet');
+      console.log('✅ Summary sheet added');
 
       // 2. DETAYLI SATIŞ LİSTESİ
       const detailedData = sales.map(sale => ({
@@ -772,6 +787,7 @@ router.post('/export', auth, async (req, res) => {
       }
 
       XLSX.utils.book_append_sheet(wb, detailedWs, 'Detaylı Satışlar');
+      console.log('✅ Detailed sales sheet added');
 
       // 3. TEMSİLCİ BAZLI ÖZET (Web sitesindeki verilerle tutarlı)
       const salesmanData = Object.entries(salesByUser)
@@ -819,6 +835,7 @@ router.post('/export', auth, async (req, res) => {
       }
 
       XLSX.utils.book_append_sheet(wb, salesmanWs, 'Temsilci Analizi');
+      console.log('✅ Salesman analysis sheet added');
 
       // 4. DÖNEMSEL ANALİZ
       const periodData = {};
@@ -859,6 +876,7 @@ router.post('/export', auth, async (req, res) => {
       }
 
       XLSX.utils.book_append_sheet(wb, periodWs, 'Dönemsel Analiz');
+      console.log('✅ Period analysis sheet added');
 
       // 5. ÖDEME TİPİ ANALİZİ
       const paymentData = {};
@@ -884,12 +902,16 @@ router.post('/export', auth, async (req, res) => {
       paymentWs['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
 
       XLSX.utils.book_append_sheet(wb, paymentWs, 'Ödeme Analizi');
+      console.log('✅ Payment analysis sheet added');
 
+      console.log('📊 Creating Excel buffer...');
       // Excel buffer oluştur
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+      console.log('📊 Excel buffer created, size:', excelBuffer.length);
       
       // Dosya adı oluştur
       const fileName = `prim_raporu_detayli_${new Date().toISOString().split('T')[0]}.xlsx`;
+      console.log('📊 Sending Excel file:', fileName);
       
       // Response headers ayarla
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -898,6 +920,7 @@ router.post('/export', auth, async (req, res) => {
       
       // Excel dosyasını gönder
       res.send(excelBuffer);
+      console.log('✅ Excel file sent successfully');
       
     } else {
       // PDF export - sistem görüntüsü formatında
