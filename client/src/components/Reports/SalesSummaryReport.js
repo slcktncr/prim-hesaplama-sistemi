@@ -30,13 +30,14 @@ import {
   FiFilter
 } from 'react-icons/fi';
 
-import { reportsAPI, primsAPI } from '../../utils/api';
+import { reportsAPI, primsAPI, usersAPI } from '../../utils/api';
 import { 
   formatCurrency, 
   formatNumber,
   debounce 
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
+import MultiSelectDropdown from '../Common/MultiSelectDropdown';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 

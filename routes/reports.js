@@ -668,6 +668,33 @@ router.post('/export', auth, async (req, res) => {
       }
     }
     
+    // Filtrelenmiş veri export'u
+    if (scope === 'filtered') {
+      const { startDate, endDate, periods, salespersons } = req.body;
+      
+      // Tarih filtresi
+      if (startDate && endDate) {
+        query.saleDate = {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        };
+      }
+      
+      // Çoklu dönem filtresi
+      if (periods && Array.isArray(periods) && periods.length > 0) {
+        query.primPeriod = { $in: periods.map(p => new mongoose.Types.ObjectId(p)) };
+      }
+      
+      // Çoklu temsilci filtresi
+      if (salespersons && Array.isArray(salespersons) && salespersons.length > 0) {
+        query.salesperson = { $in: salespersons.map(s => new mongoose.Types.ObjectId(s)) };
+      }
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Filtered export query:', JSON.stringify(query, null, 2));
+      }
+    }
+    
     // Satışları getir
     const sales = await Sale.find(query)
       .populate('salesperson', 'name email')

@@ -16,6 +16,7 @@ import { FiRefreshCw, FiFilter, FiTrendingUp } from 'react-icons/fi';
 import { reportsAPI, primsAPI, usersAPI } from '../../utils/api';
 import { formatCurrency, formatNumber, debounce } from '../../utils/helpers';
 import Loading from '../Common/Loading';
+import MultiSelectDropdown from '../Common/MultiSelectDropdown';
 
 const PerformanceReport = () => {
   const [performanceData, setPerformanceData] = useState([]);
@@ -120,6 +121,46 @@ const PerformanceReport = () => {
     });
   };
 
+  const exportFilteredData = async (type) => {
+    try {
+      toast.info(`${type === 'excel' ? 'Excel' : 'PDF'} raporu hazırlanıyor...`);
+      
+      const exportData = {
+        type,
+        scope: 'filtered',
+        ...filters
+      };
+      
+      const response = await reportsAPI.exportExcel(exportData);
+      
+      // Blob'dan dosya oluştur
+      const blob = new Blob([response.data], {
+        type: type === 'excel' 
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'application/pdf'
+      });
+      
+      // Dosya adı oluştur
+      const fileName = `filtrelenmis_performans_raporu_${new Date().toISOString().split('T')[0]}.${type === 'excel' ? 'xlsx' : 'pdf'}`;
+      
+      // Dosyayı indir
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`${type === 'excel' ? 'Excel' : 'PDF'} raporu başarıyla indirildi!`);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(`${type === 'excel' ? 'Excel' : 'PDF'} raporu indirme sırasında hata oluştu`);
+    }
+  };
+
   if (loading) {
     return <Loading variant="dots" size="large" />;
   }
@@ -135,8 +176,8 @@ const PerformanceReport = () => {
       {/* Filters */}
       <Card className="mb-4">
         <Card.Body>
-          <Row>
-            <Col md={3}>
+          <Row className="align-items-end">
+            <Col md={2}>
               <Form.Group>
                 <Form.Label>Başlangıç Tarihi</Form.Label>
                 <Form.Control
@@ -146,7 +187,7 @@ const PerformanceReport = () => {
                 />
               </Form.Group>
             </Col>
-            <Col md={3}>
+            <Col md={2}>
               <Form.Group>
                 <Form.Label>Bitiş Tarihi</Form.Label>
                 <Form.Control
@@ -157,70 +198,66 @@ const PerformanceReport = () => {
               </Form.Group>
             </Col>
             <Col md={3}>
-              <Form.Group>
-                <Form.Label>Dönemler (Çoklu Seçim)</Form.Label>
-                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #ced4da', borderRadius: '0.375rem', padding: '0.375rem' }}>
-                  <Form.Check
-                    type="checkbox"
-                    label="Tüm Dönemler"
-                    checked={filters.periods.length === 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setFilters(prev => ({ ...prev, periods: [] }));
-                      }
-                    }}
-                  />
-                  {periods.map(period => (
-                    <Form.Check
-                      key={period._id}
-                      type="checkbox"
-                      label={period.name}
-                      checked={filters.periods.includes(period._id)}
-                      onChange={(e) => handleMultiSelectChange('periods', period._id, e.target.checked)}
-                    />
-                  ))}
-                </div>
-              </Form.Group>
+              <MultiSelectDropdown
+                label="Dönemler"
+                placeholder="Dönem seçin..."
+                options={periods.map(period => ({ value: period._id, label: period.name }))}
+                selectedValues={filters.periods}
+                onChange={(values) => setFilters(prev => ({ ...prev, periods: values }))}
+              />
             </Col>
             <Col md={3}>
-              <Form.Group>
-                <Form.Label>Temsilciler (Çoklu Seçim)</Form.Label>
-                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #ced4da', borderRadius: '0.375rem', padding: '0.375rem' }}>
-                  <Form.Check
-                    type="checkbox"
-                    label="Tüm Temsilciler"
-                    checked={filters.salespersons.length === 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setFilters(prev => ({ ...prev, salespersons: [] }));
-                      }
-                    }}
-                  />
-                  {users.map(user => (
-                    <Form.Check
-                      key={user._id}
-                      type="checkbox"
-                      label={user.name}
-                      checked={filters.salespersons.includes(user._id)}
-                      onChange={(e) => handleMultiSelectChange('salespersons', user._id, e.target.checked)}
-                    />
-                  ))}
-                </div>
-              </Form.Group>
+              <MultiSelectDropdown
+                label="Temsilciler"
+                placeholder="Temsilci seçin..."
+                options={users.map(user => ({ value: user._id, label: user.name }))}
+                selectedValues={filters.salespersons}
+                onChange={(values) => setFilters(prev => ({ ...prev, salespersons: values }))}
+              />
             </Col>
-            <Col md={12} className="mt-3">
-              <div className="d-flex gap-2">
-                <Button variant="outline-secondary" onClick={fetchPerformanceData}>
+            <Col md={2}>
+              <div className="d-flex flex-column gap-2">
+                <Button variant="outline-secondary" size="sm" onClick={fetchPerformanceData}>
                   <FiRefreshCw className="me-1" />
                   Yenile
                 </Button>
-                <Button variant="outline-primary" onClick={clearFilters}>
+                <Button variant="outline-primary" size="sm" onClick={clearFilters}>
                   <FiFilter className="me-1" />
-                  Filtreleri Temizle
+                  Temizle
                 </Button>
               </div>
             </Col>
           </Row>
+          
+          {/* Filtered Export Buttons */}
+          {(filters.periods.length > 0 || filters.salespersons.length > 0 || filters.startDate || filters.endDate) && (
+            <Row className="mt-3 pt-3 border-top">
+              <Col>
+                <div className="d-flex align-items-center gap-3">
+                  <span className="text-muted small">
+                    <FiTrendingUp className="me-1" />
+                    Filtrelenmiş Veriyi Raporla:
+                  </span>
+                  <div className="d-flex gap-2">
+                    <Button 
+                      variant="success" 
+                      size="sm"
+                      onClick={() => exportFilteredData('excel')}
+                    >
+                      📊 Excel İndir
+                    </Button>
+                    <Button 
+                      variant="danger" 
+                      size="sm"
+                      onClick={() => exportFilteredData('pdf')}
+                    >
+                      📄 PDF İndir
+                    </Button>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          )}
         </Card.Body>
       </Card>
 
