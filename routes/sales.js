@@ -217,6 +217,8 @@ router.post('/', auth, [
         return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
       }
       console.log('✅ Prim oranı bulundu:', currentPrimRate.rate);
+      console.log('🔍 Prim oranı tipi:', typeof currentPrimRate.rate);
+      console.log('🔍 Prim oranı * 100:', currentPrimRate.rate * 100);
 
       // Prim dönemini belirle
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
@@ -271,6 +273,7 @@ router.post('/', auth, [
       console.log('Geçerli fiyatlar:', validPrices);
       console.log('Base prim fiyatı:', basePrimPrice);
       console.log('Prim oranı:', currentPrimRate.rate);
+      console.log('🧮 Hesaplama:', `${basePrimPrice} * ${currentPrimRate.rate} = ${primAmount}`);
       console.log('Hesaplanan prim:', primAmount);
     } else {
       // Kapora için prim dönemi belirle (kapora tarihine göre)
