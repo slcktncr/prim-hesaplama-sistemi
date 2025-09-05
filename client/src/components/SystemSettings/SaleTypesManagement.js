@@ -35,7 +35,9 @@ const SaleTypesManagement = () => {
     name: '',
     description: '',
     isDefault: false,
-    isActive: true
+    isActive: true,
+    color: 'success',
+    sortOrder: 0
   });
 
   useEffect(() => {
@@ -83,7 +85,9 @@ const SaleTypesManagement = () => {
       name: item.name,
       description: item.description || '',
       isDefault: item.isDefault,
-      isActive: item.isActive
+      isActive: item.isActive,
+      color: item.color || 'success',
+      sortOrder: item.sortOrder || 0
     });
     setShowModal(true);
   };
@@ -110,7 +114,9 @@ const SaleTypesManagement = () => {
       name: '',
       description: '',
       isDefault: false,
-      isActive: true
+      isActive: true,
+      color: 'success',
+      sortOrder: 0
     });
   };
 
@@ -148,7 +154,9 @@ const SaleTypesManagement = () => {
       <Table striped bordered hover responsive>
         <thead>
           <tr>
+            <th>Sıra</th>
             <th>Adı</th>
+            <th>Renk</th>
             <th>Açıklama</th>
             <th>Durum</th>
             <th>Varsayılan</th>
@@ -160,15 +168,33 @@ const SaleTypesManagement = () => {
         <tbody>
           {saleTypes.length === 0 ? (
             <tr>
-              <td colSpan="7" className="text-center text-muted">
+              <td colSpan="9" className="text-center text-muted">
                 Henüz satış türü eklenmemiş
               </td>
             </tr>
           ) : (
-            saleTypes.map((item) => (
+            saleTypes
+              .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+              .map((item) => (
               <tr key={item._id}>
                 <td>
-                  <strong>{item.name}</strong>
+                  <Badge bg="light" text="dark">
+                    {item.sortOrder || 0}
+                  </Badge>
+                </td>
+                <td>
+                  <Badge bg={item.color || 'success'} className="me-2">
+                    {item.name}
+                  </Badge>
+                </td>
+                <td>
+                  <div className="d-flex align-items-center">
+                    <div 
+                      className={`badge bg-${item.color || 'success'} me-2`}
+                      style={{ width: '20px', height: '20px' }}
+                    ></div>
+                    <span className="text-capitalize">{item.color || 'success'}</span>
+                  </div>
                 </td>
                 <td>{item.description || '-'}</td>
                 <td>
@@ -241,6 +267,48 @@ const SaleTypesManagement = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     maxLength={200}
                   />
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Renk *</Form.Label>
+                  <Form.Select
+                    value={formData.color}
+                    onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                    required
+                  >
+                    <option value="primary">🔵 Mavi (Primary)</option>
+                    <option value="secondary">⚫ Gri (Secondary)</option>
+                    <option value="success">🟢 Yeşil (Success)</option>
+                    <option value="danger">🔴 Kırmızı (Danger)</option>
+                    <option value="warning">🟡 Sarı (Warning)</option>
+                    <option value="info">🔵 Açık Mavi (Info)</option>
+                    <option value="light">⚪ Açık Gri (Light)</option>
+                    <option value="dark">⚫ Koyu Gri (Dark)</option>
+                  </Form.Select>
+                  <div className="mt-2">
+                    <Badge bg={formData.color} className="me-2">
+                      Örnek: {formData.name || 'Satış Türü'}
+                    </Badge>
+                  </div>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Sıralama</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.sortOrder}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
+                    min={0}
+                    max={100}
+                  />
+                  <Form.Text className="text-muted">
+                    Düşük sayılar önce görünür (0-100)
+                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>

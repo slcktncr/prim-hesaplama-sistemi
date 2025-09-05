@@ -21,6 +21,15 @@ const saleTypeSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  color: {
+    type: String,
+    default: 'success', // Bootstrap color classes: primary, secondary, success, danger, warning, info, light, dark
+    enum: ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
+  },
+  sortOrder: {
+    type: Number,
+    default: 0
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

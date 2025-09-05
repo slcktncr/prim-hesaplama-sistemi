@@ -476,28 +476,41 @@ router.get('/', auth, async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
-    // Satış türü adlarını ekle
+    // Satış türü adlarını ve renklerini ekle
     const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {
       const saleObj = sale.toObject();
       
-      // Satış türü adını bul
+      // Satış türü adını ve rengini bul
       if (saleObj.saleType === 'kapora') {
         saleObj.saleTypeName = 'Kapora Durumu';
+        saleObj.saleTypeDetails = { color: 'warning' };
       } else if (saleObj.saleType === 'satis') {
         saleObj.saleTypeName = 'Normal Satış';
+        saleObj.saleTypeDetails = { color: 'success' };
       } else {
-        // Yeni satış türleri için SaleType tablosundan isim bul
+        // Yeni satış türleri için SaleType tablosundan isim ve renk bul
         try {
-          const saleTypes = await SaleType.find({ isActive: true }).select('name');
+          const saleTypes = await SaleType.find({ isActive: true }).select('name color sortOrder');
           const matchingType = saleTypes.find(type => {
             const lowerName = type.name.toLowerCase();
             const mappedValue = lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
             return mappedValue === saleObj.saleType;
           });
-          saleObj.saleTypeName = matchingType ? matchingType.name : saleObj.saleType;
+          
+          if (matchingType) {
+            saleObj.saleTypeName = matchingType.name;
+            saleObj.saleTypeDetails = { 
+              color: matchingType.color || 'success',
+              sortOrder: matchingType.sortOrder || 0
+            };
+          } else {
+            saleObj.saleTypeName = saleObj.saleType;
+            saleObj.saleTypeDetails = { color: 'success' };
+          }
         } catch (error) {
           console.error('SaleType name lookup error:', error);
           saleObj.saleTypeName = saleObj.saleType;
+          saleObj.saleTypeDetails = { color: 'success' };
         }
       }
       

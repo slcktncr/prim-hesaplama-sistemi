@@ -752,7 +752,7 @@ router.post('/export', auth, async (req, res) => {
         ['Ödenen Primler:', sales.filter(s => s.primStatus === 'ödendi').length],
         ['Bekleyen Primler:', sales.filter(s => s.primStatus === 'ödenmedi').length],
         ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + (s.primAmount || 0), 0)],
-        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.basePrimPrice || s.listPrice || 0), 0)],
+        ['Toplam Satış Tutarı:', sales.filter(s => s.status === 'aktif').reduce((sum, s) => sum + (s.basePrimPrice || 0), 0)],
         [''],
         ['TEMSİLCİ PERFORMANSI']
       ];
@@ -760,22 +760,36 @@ router.post('/export', auth, async (req, res) => {
       // Temsilci performans verilerini ekle (PrimEarnings'deki gibi)
       // PrimTransaction zaten import edildi
       
-      // Temsilci başına kesinti bilgilerini getir
+      // Temsilci başına kesinti bilgilerini getir (web sitesi ile aynı mantık)
       const deductionsByUser = {};
+      const deductionsByUserId = {}; // ID bazlı mapping için
       try {
         console.log('📊 Fetching deductions...');
         const allDeductions = await PrimTransaction.find({
-          transactionType: 'kesinti'
+          transactionType: 'kesinti',
+          deductionStatus: 'yapıldı' // Sadece onaylanmış kesintiler
         }).populate('salesperson', 'name');
         
         console.log('📊 Deductions found:', allDeductions.length);
         
         allDeductions.forEach(deduction => {
           const userName = deduction.salesperson?.name || 'Bilinmiyor';
+          const userId = deduction.salesperson?._id?.toString();
+          
           if (!deductionsByUser[userName]) {
-            deductionsByUser[userName] = 0;
+            deductionsByUser[userName] = { count: 0, amount: 0 };
           }
-          deductionsByUser[userName] += Math.abs(deduction.amount);
+          if (userId && !deductionsByUserId[userId]) {
+            deductionsByUserId[userId] = { count: 0, amount: 0 };
+          }
+          
+          deductionsByUser[userName].count++;
+          deductionsByUser[userName].amount += Math.abs(deduction.amount);
+          
+          if (userId) {
+            deductionsByUserId[userId].count++;
+            deductionsByUserId[userId].amount += Math.abs(deduction.amount);
+          }
         });
         
         console.log('📊 Deductions by user:', deductionsByUser);
@@ -784,19 +798,26 @@ router.post('/export', auth, async (req, res) => {
         // Hata olursa boş obje ile devam et
       }
 
-      // Satış verilerini temsilci bazında topla
+      // Satış verilerini temsilci bazında topla (web sitesi ile aynı mantık)
       const salesByUser = {};
-      sales.forEach(sale => {
+      sales.filter(sale => sale.status === 'aktif').forEach(sale => { // Sadece aktif satışlar
         const userName = sale.salesperson?.name || 'Bilinmiyor';
         if (!salesByUser[userName]) {
           salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        salesByUser[userName].amount += (sale.basePrimPrice || 0); // Web sitesi basePrimPrice kullanıyor
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
       console.log('📊 Sales by user (before deductions):', salesByUser);
+      console.log('📊 Total active sales used:', sales.filter(sale => sale.status === 'aktif').length);
+      console.log('📊 Sample active sale data:', sales.filter(sale => sale.status === 'aktif')[0] ? {
+        customerName: sales.filter(sale => sale.status === 'aktif')[0].customerName,
+        basePrimPrice: sales.filter(sale => sale.status === 'aktif')[0].basePrimPrice,
+        primAmount: sales.filter(sale => sale.status === 'aktif')[0].primAmount,
+        salesperson: sales.filter(sale => sale.status === 'aktif')[0].salesperson?.name
+      } : 'No active sales');
 
       // Net hakediş hesapla (brüt prim - kesintiler)
       Object.entries(salesByUser)
@@ -809,7 +830,7 @@ router.post('/export', auth, async (req, res) => {
           return b[1].primAmount - a[1].primAmount;
         })
         .forEach(([name, data]) => {
-          const deductions = deductionsByUser[name] || 0;
+          const deductions = deductionsByUser[name]?.amount || 0;
           const netPrim = data.primAmount - deductions;
           summaryData.push([
             name, 
@@ -909,7 +930,7 @@ router.post('/export', auth, async (req, res) => {
           return b[1].primAmount - a[1].primAmount;
         })
         .map(([name, data]) => {
-          const deductions = deductionsByUser[name] || 0;
+          const deductions = deductionsByUser[name]?.amount || 0;
           const netPrim = data.primAmount - deductions;
           return {
             'Temsilci Adı': name,
@@ -918,8 +939,8 @@ router.post('/export', auth, async (req, res) => {
             'Brüt Prim': data.primAmount,
             'Kesinti': deductions,
             'Net Hakediş': netPrim,
-            'Ortalama Satış': Math.round(data.amount / data.count),
-            'Prim Oranı': `%${((data.primAmount / data.amount) * 100).toFixed(2)}`
+            'Ortalama Satış': data.count > 0 ? Math.round(data.amount / data.count) : 0,
+            'Prim Oranı': data.amount > 0 ? `%${((data.primAmount / data.amount) * 100).toFixed(2)}` : '%0.00'
           };
         });
 

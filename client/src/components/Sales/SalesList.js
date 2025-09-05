@@ -422,10 +422,15 @@ const SalesList = () => {
                       </td>
                       <td>
                         <Badge 
-                          bg={sale.saleType === 'kapora' ? 'warning' : 'success'} 
+                          bg={(() => {
+                            // Kapora için özel renk
+                            if (sale.saleType === 'kapora') return 'warning';
+                            // SaleType objesinden renk al, yoksa varsayılan
+                            return sale.saleTypeDetails?.color || 'success';
+                          })()} 
                           className="mb-1"
                         >
-                          {sale.saleTypeName || (sale.saleType === 'kapora' ? 'Kapora' : 'Satış')}
+                          {sale.saleTypeName || (sale.saleType === 'kapora' ? 'Kapora Durumu' : 'Satış')}
                         </Badge>
                       </td>
                       <td>

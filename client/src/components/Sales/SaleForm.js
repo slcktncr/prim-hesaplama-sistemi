@@ -603,7 +603,9 @@ const SaleForm = () => {
                         isInvalid={!!errors.saleType}
                         disabled={isEdit && !isAdmin} // Edit modunda sadece admin değiştirebilir
                       >
-                        {saleTypes.map(type => (
+                        {saleTypes
+                          .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+                          .map(type => (
                           <option key={type._id} value={type.value}>
                             {type.name}
                           </option>
