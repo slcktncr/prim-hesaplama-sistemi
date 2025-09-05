@@ -33,6 +33,8 @@ import {
 import Loading from '../Common/Loading';
 
 const PrimEarnings = () => {
+  console.log('🚀 PrimEarnings component mounting...');
+  
   const [earnings, setEarnings] = useState([]);
   const [deductions, setDeductions] = useState([]);
   const [periods, setPeriods] = useState([]);
@@ -111,11 +113,11 @@ const PrimEarnings = () => {
   };
 
   const calculateTotalEarnings = () => {
-    return earnings.reduce((sum, earning) => sum + earning.totalEarnings, 0);
+    return (earnings || []).reduce((sum, earning) => sum + (earning?.totalEarnings || 0), 0);
   };
 
   const calculateTotalTransactions = () => {
-    return earnings.reduce((sum, earning) => sum + earning.transactionCount, 0);
+    return (earnings || []).reduce((sum, earning) => sum + (earning?.transactionCount || 0), 0);
   };
 
   const getEarningsBadgeVariant = (amount) => {
@@ -188,14 +190,19 @@ const PrimEarnings = () => {
   };
 
 
-  const maxEarning = Math.max(...earnings.map(e => Math.abs(e.totalEarnings)), 1);
+  const maxEarning = Math.max(...(earnings || []).map(e => Math.abs(e?.totalEarnings || 0)), 1);
 
+  console.log('🔍 PrimEarnings render state:', { loading, earningsCount: earnings.length, error });
+  
   if (loading && earnings.length === 0) {
+    console.log('📊 Showing loading...');
     return <Loading variant="dots" size="large" />;
   }
 
-  return (
-    <div>
+  try {
+    console.log('🎨 Rendering PrimEarnings component...');
+    return (
+      <div>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -361,8 +368,8 @@ const PrimEarnings = () => {
                 </tr>
               </thead>
               <tbody>
-                {earnings.map((earning, index) => (
-                  <tr key={`${earning._id.salesperson}-${earning._id.primPeriod}`}>
+                {(earnings || []).map((earning, index) => (
+                  <tr key={`${earning?._id?.salesperson || index}-${earning?._id?.primPeriod || index}`}>
                     <td>
                       <div className="d-flex align-items-center">
                         <div className="me-3">
@@ -746,6 +753,20 @@ const PrimEarnings = () => {
       </Modal>
     </div>
   );
+  } catch (error) {
+    console.error('🚨 PrimEarnings render error:', error);
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger">
+          <h4>Render Hatası</h4>
+          <p>Component render edilirken hata oluştu: {error.message}</p>
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>
+            Sayfayı Yenile
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default PrimEarnings;
