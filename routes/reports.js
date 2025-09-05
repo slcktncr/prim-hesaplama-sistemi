@@ -849,12 +849,16 @@ router.post('/export', auth, async (req, res) => {
       res.send(excelBuffer);
       
     } else {
-      // PDF export - yatay format ile gelişmiş PDF oluştur
+      // PDF export - kapsamlı rapor
       const doc = new PDFDocument({ 
-        layout: 'landscape', // Yatay format
-        margin: 30,
+        layout: 'portrait',
+        margin: 40,
         size: 'A4'
       });
+      
+      // Türkçe karakter desteği için font ayarla
+      doc.registerFont('Arial', 'Helvetica');
+      doc.font('Arial');
       
       // PDF'yi buffer olarak topla
       const buffers = [];
@@ -874,165 +878,316 @@ router.post('/export', auth, async (req, res) => {
         res.send(pdfBuffer);
       });
 
-      // Sayfa boyutları (landscape A4)
-      const pageWidth = 842;
-      const pageHeight = 595;
-      const margin = 30;
+      // Sayfa boyutları (portrait A4)
+      const pageWidth = 595;
+      const pageHeight = 842;
+      const margin = 40;
       const contentWidth = pageWidth - (margin * 2);
 
       // PDF içeriği oluştur
       let yPos = margin;
 
-      // Başlık bölümü
-      doc.fontSize(18)
-         .text('MOLA PRİM SİSTEMİ RAPORU', margin, yPos, { 
+      // Ana başlık
+      doc.fontSize(20)
+         .fillColor('#2c3e50')
+         .text('MOLA PRİM SİSTEMİ', margin, yPos, { 
+           align: 'center', 
+           width: contentWidth 
+         });
+      yPos += 25;
+      
+      doc.fontSize(16)
+         .fillColor('#34495e')
+         .text('DETAYLI RAPOR ANALİZİ', margin, yPos, { 
            align: 'center', 
            width: contentWidth 
          });
       yPos += 30;
+      
+      // Rapor bilgi kutusu
+      doc.rect(margin, yPos, contentWidth, 60)
+         .fillAndStroke('#ecf0f1', '#bdc3c7');
+      
+      doc.fillColor('#2c3e50')
+         .fontSize(10);
+      
+      const reportDate = new Date().toLocaleDateString('tr-TR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      doc.text(`Rapor Tarihi: ${reportDate}`, margin + 10, yPos + 10);
+      doc.text(`Rapor Saati: ${new Date().toLocaleTimeString('tr-TR')}`, margin + 10, yPos + 25);
+      doc.text(`Toplam Kayıt Sayısı: ${sales.length}`, margin + 10, yPos + 40);
+      
+      const reportTotalAmount = sales.reduce((sum, s) => sum + (s.basePrimPrice || s.listPrice || 0), 0);
+      const reportTotalPrimAmount = sales.reduce((sum, s) => sum + (s.primAmount || 0), 0);
+      
+      doc.text(`Toplam Ciro: ${reportTotalAmount.toLocaleString('tr-TR')} ₺`, margin + 280, yPos + 10);
+      doc.text(`Toplam Prim: ${reportTotalPrimAmount.toLocaleString('tr-TR')} ₺`, margin + 280, yPos + 25);
+      doc.text(`Ortalama Prim: ${sales.length > 0 ? (reportTotalPrimAmount / sales.length).toLocaleString('tr-TR') : '0'} ₺`, margin + 280, yPos + 40);
+      
+      yPos += 80;
 
-      doc.fontSize(10)
-         .text(`Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, margin, yPos, { align: 'left' })
-         .text(`Toplam Kayıt: ${sales.length}`, margin + 200, yPos)
-         .text(`Toplam Tutar: ${sales.reduce((sum, s) => sum + s.listPrice, 0).toLocaleString('tr-TR')} ₺`, margin + 400, yPos);
-      yPos += 20;
-
-      // Çizgi
-      doc.moveTo(margin, yPos).lineTo(pageWidth - margin, yPos).stroke();
-      yPos += 15;
-
-      // Özet istatistikler kutusu
-      const statsHeight = 60;
-      doc.rect(margin, yPos, contentWidth, statsHeight)
-         .stroke();
-
-      // İstatistikler
-      const totalSales = sales.length;
-      const activeSales = sales.filter(s => s.status === 'aktif').length;
-      const paidPrims = sales.filter(s => s.primStatus === 'ödendi').length;
-      const totalPrimAmount = sales.reduce((sum, s) => sum + s.primAmount, 0);
-
-      doc.fontSize(9);
-      doc.text('ÖZET İSTATİSTİKLER', margin + 10, yPos + 10, { width: 150 });
-      doc.text(`Toplam Satış: ${totalSales}`, margin + 10, yPos + 25);
-      doc.text(`Aktif Satış: ${activeSales}`, margin + 10, yPos + 40);
-
-      doc.text(`Ödenen Primler: ${paidPrims}`, margin + 200, yPos + 25);
-      doc.text(`Toplam Prim: ${totalPrimAmount.toLocaleString('tr-TR')} ₺`, margin + 200, yPos + 40);
-
-      // Temsilci performans özeti
+      // 1. GENEL İSTATİSTİKLER BÖLÜMÜ
+      doc.fontSize(14)
+         .fillColor('#2c3e50')
+         .text('1. GENEL İSTATİSTİKLER', margin, yPos);
+      yPos += 25;
+      
+      const activeSales = sales.filter(s => s.status === 'aktif');
+      const cancelledSales = sales.filter(s => s.status === 'iptal');
+      const kaporaSales = sales.filter(s => s.saleType === 'kapora');
+      const paidPrims = sales.filter(s => s.primStatus === 'ödendi');
+      const unpaidPrims = sales.filter(s => s.primStatus === 'ödenmedi');
+      
+      // İstatistik kutuları
+      const statBoxHeight = 80;
+      const statBoxWidth = (contentWidth - 20) / 3;
+      
+      // Aktif satışlar kutusu
+      doc.rect(margin, yPos, statBoxWidth, statBoxHeight)
+         .fillAndStroke('#e8f5e8', '#27ae60');
+      doc.fillColor('#27ae60')
+         .fontSize(16)
+         .text(activeSales.length.toString(), margin + 10, yPos + 15, { width: statBoxWidth - 20, align: 'center' });
+      doc.fillColor('#2c3e50')
+         .fontSize(10)
+         .text('Aktif Satışlar', margin + 10, yPos + 35, { width: statBoxWidth - 20, align: 'center' });
+      doc.text(`${activeSales.reduce((sum, s) => sum + (s.basePrimPrice || 0), 0).toLocaleString('tr-TR')} ₺`, 
+               margin + 10, yPos + 50, { width: statBoxWidth - 20, align: 'center' });
+      
+      // İptal edilen satışlar kutusu
+      doc.rect(margin + statBoxWidth + 10, yPos, statBoxWidth, statBoxHeight)
+         .fillAndStroke('#ffeaa7', '#e17055');
+      doc.fillColor('#e17055')
+         .fontSize(16)
+         .text(cancelledSales.length.toString(), margin + statBoxWidth + 20, yPos + 15, { width: statBoxWidth - 20, align: 'center' });
+      doc.fillColor('#2c3e50')
+         .fontSize(10)
+         .text('İptal Edilen', margin + statBoxWidth + 20, yPos + 35, { width: statBoxWidth - 20, align: 'center' });
+      doc.text(`${cancelledSales.reduce((sum, s) => sum + (s.basePrimPrice || 0), 0).toLocaleString('tr-TR')} ₺`, 
+               margin + statBoxWidth + 20, yPos + 50, { width: statBoxWidth - 20, align: 'center' });
+      
+      // Kapora satışlar kutusu
+      doc.rect(margin + (statBoxWidth + 10) * 2, yPos, statBoxWidth, statBoxHeight)
+         .fillAndStroke('#dda0dd', '#8e44ad');
+      doc.fillColor('#8e44ad')
+         .fontSize(16)
+         .text(kaporaSales.length.toString(), margin + (statBoxWidth + 10) * 2 + 10, yPos + 15, { width: statBoxWidth - 20, align: 'center' });
+      doc.fillColor('#2c3e50')
+         .fontSize(10)
+         .text('Kapora Durumu', margin + (statBoxWidth + 10) * 2 + 10, yPos + 35, { width: statBoxWidth - 20, align: 'center' });
+      
+      yPos += statBoxHeight + 30;
+      
+      // 2. TEMSİLCİ PERFORMANSI
+      doc.fontSize(14)
+         .fillColor('#2c3e50')
+         .text('2. TEMSİLCİ PERFORMANS ANALİZİ', margin, yPos);
+      yPos += 25;
+      
       const salesByUser = {};
       sales.forEach(sale => {
         const userName = sale.salesperson?.name || 'Bilinmiyor';
         if (!salesByUser[userName]) {
-          salesByUser[userName] = { count: 0, amount: 0 };
+          salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += sale.primAmount;
+        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
-
-      const topPerformers = Object.entries(salesByUser)
+      
+      const sortedPerformers = Object.entries(salesByUser)
         .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 3);
-
-      doc.text('EN İYİ PERFORMANS', margin + 400, yPos + 10, { width: 150 });
-      topPerformers.forEach((performer, index) => {
-        doc.text(`${index + 1}. ${performer[0]}: ${performer[1].count} satış`, margin + 400, yPos + 25 + (index * 12));
-      });
-
-      yPos += statsHeight + 20;
-
-      // Tablo başlıkları - yatay formata uygun
-      const columnWidths = [90, 60, 40, 70, 80, 80, 80, 70, 60, 90, 80];
-      const headers = [
-        'Müşteri Adı', 'Blok/Daire', 'Dönem', 'Satış Tarihi', 'Sözleşme No',
-        'Liste Fiyatı', 'Satış Fiyatı', 'Prim Tutarı', 'Durum', 'Temsilci', 'Prim Dönemi'
-      ];
-
-      // Tablo başlık arka planı
+        .slice(0, 5);
+      
+      // Performans tablosu başlık
       doc.rect(margin, yPos, contentWidth, 20)
-         .fillAndStroke('#f0f0f0', '#000000');
-
-      doc.fillColor('#000000')
-         .fontSize(8);
-
-      let xPos = margin + 5;
-      headers.forEach((header, index) => {
-        doc.text(header, xPos, yPos + 6, { 
-          width: columnWidths[index] - 10, 
-          align: 'center' 
-        });
-        xPos += columnWidths[index];
-      });
-
+         .fillAndStroke('#3498db', '#2980b9');
+      doc.fillColor('#ffffff')
+         .fontSize(9)
+         .text('Temsilci', margin + 5, yPos + 6, { width: 120 })
+         .text('Satış Sayısı', margin + 130, yPos + 6, { width: 80, align: 'center' })
+         .text('Toplam Ciro', margin + 220, yPos + 6, { width: 100, align: 'center' })
+         .text('Toplam Prim', margin + 330, yPos + 6, { width: 100, align: 'center' })
+         .text('Ortalama', margin + 440, yPos + 6, { width: 70, align: 'center' });
+      
       yPos += 25;
-
-      // Veri satırları
-      sales.forEach((sale, index) => {
-        // Sayfa sonu kontrolü
-        if (yPos > pageHeight - 100) {
-          doc.addPage();
-          yPos = margin;
-        }
-
+      
+      // Performans verileri
+      sortedPerformers.forEach((performer, index) => {
+        const [name, data] = performer;
+        const avgSale = data.count > 0 ? (data.amount / data.count) : 0;
+        
         // Alternatif satır rengi
-        if (index % 2 === 1) {
+        if (index % 2 === 0) {
           doc.rect(margin, yPos, contentWidth, 18)
-             .fill('#f9f9f9');
+             .fill('#f8f9fa');
         }
-
-        doc.fillColor('#000000')
-           .fontSize(7);
-
-        const rowData = [
-          sale.customerName.substring(0, 15),
-          `${sale.blockNo}/${sale.apartmentNo}`,
-          sale.periodNo.toString(),
-          new Date(sale.saleDate).toLocaleDateString('tr-TR'),
-          sale.contractNo.substring(0, 12),
-          `${(sale.listPrice / 1000).toFixed(0)}K`,
-          `${(sale.activitySalePrice / 1000).toFixed(0)}K`,
-          `${(sale.primAmount / 1000).toFixed(0)}K`,
-          sale.primStatus === 'ödendi' ? 'Ödendi' : 'Bekliyor',
-          sale.salesperson?.name?.substring(0, 15) || 'Bilinmiyor',
-          sale.primPeriod?.name?.substring(0, 12) || 'Belirsiz'
-        ];
-
-        xPos = margin + 5;
-        rowData.forEach((data, colIndex) => {
-          doc.text(data, xPos, yPos + 4, { 
-            width: columnWidths[colIndex] - 10, 
-            align: colIndex >= 5 && colIndex <= 7 ? 'right' : 'left'
-          });
-          xPos += columnWidths[colIndex];
-        });
-
-        yPos += 18;
+        
+        doc.fillColor('#2c3e50')
+           .fontSize(8)
+           .text(name.substring(0, 18), margin + 5, yPos + 5, { width: 120 })
+           .text(data.count.toString(), margin + 130, yPos + 5, { width: 80, align: 'center' })
+           .text(`${(data.amount / 1000).toFixed(0)}K ₺`, margin + 220, yPos + 5, { width: 100, align: 'center' })
+           .text(`${(data.primAmount / 1000).toFixed(0)}K ₺`, margin + 330, yPos + 5, { width: 100, align: 'center' })
+           .text(`${(avgSale / 1000).toFixed(0)}K ₺`, margin + 440, yPos + 5, { width: 70, align: 'center' });
+        
+        yPos += 20;
       });
-
-      // Alt özet
+      
       yPos += 20;
-      doc.moveTo(margin, yPos).lineTo(pageWidth - margin, yPos).stroke();
-      yPos += 15;
 
-      const totalAmount = sales.reduce((sum, sale) => sum + (sale.listPrice || 0), 0);
-      const totalPrim = sales.reduce((sum, sale) => sum + (sale.primAmount || 0), 0);
+      // Yeni sayfa ekle
+      doc.addPage();
+      yPos = margin;
+      
+      // 3. BAŞARI ORANI ANALİZİ
+      doc.fontSize(14)
+         .fillColor('#2c3e50')
+         .text('3. BAŞARI ORANI ANALİZİ', margin, yPos);
+      yPos += 25;
+      
+      const totalSalesCount = sales.length;
+      const realSalesCount = sales.filter(s => s.status === 'aktif' && s.saleType !== 'kapora').length;
+      const successRate = totalSalesCount > 0 ? ((realSalesCount / totalSalesCount) * 100) : 0;
+      
+      // Başarı oranı kutusu
+      doc.rect(margin, yPos, contentWidth, 100)
+         .fillAndStroke('#e8f5e8', '#27ae60');
+      
+      doc.fillColor('#27ae60')
+         .fontSize(32)
+         .text(`%${successRate.toFixed(1)}`, margin + 50, yPos + 30, { width: 200, align: 'center' });
+      
+      doc.fillColor('#2c3e50')
+         .fontSize(12)
+         .text('GENEL BAŞARI ORANI', margin + 50, yPos + 75, { width: 200, align: 'center' });
+      
+      // Detay bilgileri
+      doc.fontSize(11)
+         .text(`Toplam Giriş: ${totalSalesCount}`, margin + 300, yPos + 20)
+         .text(`Gerçek Satış: ${realSalesCount}`, margin + 300, yPos + 40)
+         .text(`Kapora: ${kaporaSales.length}`, margin + 300, yPos + 60)
+         .text(`İptal: ${cancelledSales.length}`, margin + 300, yPos + 80);
+      
+      yPos += 120;
+      
+      // 4. ÖDEME TİPİ DAĞILIMI
+      doc.fontSize(14)
+         .fillColor('#2c3e50')
+         .text('4. ÖDEME TİPİ DAĞILIMI', margin, yPos);
+      yPos += 25;
+      
+      const paymentData = {};
+      sales.forEach(sale => {
+        const paymentType = sale.paymentType || (sale.saleType === 'kapora' ? 'Kapora' : 'Belirsiz');
+        if (!paymentData[paymentType]) {
+          paymentData[paymentType] = { count: 0, amount: 0, primAmount: 0 };
+        }
+        paymentData[paymentType].count++;
+        paymentData[paymentType].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        paymentData[paymentType].primAmount += (sale.primAmount || 0);
+      });
+      
+      Object.entries(paymentData)
+        .sort((a, b) => b[1].count - a[1].count)
+        .forEach(([type, data], index) => {
+          const percentage = ((data.count / sales.length) * 100).toFixed(1);
+          
+          // Ödeme tipi çubuğu
+          const barWidth = (data.count / sales.length) * (contentWidth - 200);
+          
+          doc.rect(margin, yPos, 150, 25)
+             .fillAndStroke('#ecf0f1', '#bdc3c7');
+          
+          doc.rect(margin + 160, yPos, barWidth, 25)
+             .fillAndStroke('#3498db', '#2980b9');
+          
+          doc.fillColor('#2c3e50')
+             .fontSize(9)
+             .text(type, margin + 5, yPos + 8, { width: 140 })
+             .text(`${data.count} (${percentage}%)`, margin + 165, yPos + 8)
+             .text(`${(data.amount / 1000).toFixed(0)}K ₺`, margin + 400, yPos + 8, { width: 80, align: 'right' });
+          
+          yPos += 30;
+        });
+      
+      yPos += 20;
 
-      doc.fontSize(10);
-      doc.text(`Toplam Satış Tutarı: ${totalAmount.toLocaleString('tr-TR')} ₺`, margin, yPos);
-      doc.text(`Toplam Prim Tutarı: ${totalPrim.toLocaleString('tr-TR')} ₺`, margin + 250, yPos);
-      doc.text(`Aktif Satış Oranı: %${((activeSales / totalSales) * 100).toFixed(1)}`, margin + 500, yPos);
-
-      // Alt bilgi
+      // Yeni sayfa ekle - Özet
+      doc.addPage();
+      yPos = margin;
+      
+      // 5. GENEL ÖZET
+      doc.fontSize(14)
+         .fillColor('#2c3e50')
+         .text('5. GENEL ÖZET VE ANALİZ', margin, yPos);
       yPos += 30;
-      doc.fontSize(8)
-         .text('MOLA Prim Sistemi - Otomatik Rapor', margin, yPos, { 
-           align: 'center', 
-           width: contentWidth 
+      
+      // Özet kutusu
+      doc.rect(margin, yPos, contentWidth, 150)
+         .fillAndStroke('#f8f9fa', '#dee2e6');
+      
+      doc.fillColor('#2c3e50')
+         .fontSize(12)
+         .text('RAPOR ÖZETİ', margin + 20, yPos + 20);
+      
+      const summaryTotalAmount = sales.reduce((sum, sale) => sum + (sale.basePrimPrice || sale.listPrice || 0), 0);
+      const summaryTotalPrimAmount = sales.reduce((sum, sale) => sum + (sale.primAmount || 0), 0);
+      const avgSaleAmount = sales.length > 0 ? (summaryTotalAmount / sales.length) : 0;
+      const avgPrimAmount = sales.length > 0 ? (summaryTotalPrimAmount / sales.length) : 0;
+      
+      doc.fontSize(10)
+         .text(`📊 Toplam Kayıt Sayısı: ${sales.length}`, margin + 20, yPos + 45)
+         .text(`💰 Toplam Ciro: ${summaryTotalAmount.toLocaleString('tr-TR')} ₺`, margin + 20, yPos + 65)
+         .text(`🎯 Toplam Prim: ${summaryTotalPrimAmount.toLocaleString('tr-TR')} ₺`, margin + 20, yPos + 85)
+         .text(`📈 Ortalama Satış: ${avgSaleAmount.toLocaleString('tr-TR')} ₺`, margin + 20, yPos + 105)
+         .text(`🏆 Başarı Oranı: %${successRate.toFixed(1)}`, margin + 20, yPos + 125);
+      
+      // Sağ taraf - Durum dağılımı
+      doc.text(`✅ Aktif Satışlar: ${activeSales.length}`, margin + 300, yPos + 45)
+         .text(`⏳ Kapora Durumu: ${kaporaSales.length}`, margin + 300, yPos + 65)
+         .text(`❌ İptal Edilenler: ${cancelledSales.length}`, margin + 300, yPos + 85)
+         .text(`💵 Ödenen Primler: ${paidPrims.length}`, margin + 300, yPos + 105)
+         .text(`⏰ Bekleyen Primler: ${unpaidPrims.length}`, margin + 300, yPos + 125);
+      
+      yPos += 170;
+      
+      // Notlar ve açıklamalar
+      doc.fontSize(9)
+         .fillColor('#7f8c8d')
+         .text('RAPOR AÇIKLAMALARI:', margin, yPos)
+         .text('• Bu rapor sistemdeki tüm satış verilerini kapsamaktadır', margin, yPos + 15)
+         .text('• Başarı oranı = Gerçek satışlar / Toplam giriş kayıtları', margin, yPos + 30)
+         .text('• Kapora durumundaki satışlar henüz gerçek satışa dönüşmemiş kayıtlardır', margin, yPos + 45)
+         .text('• Detaylı veri analizi için Excel raporunu indirebilirsiniz', margin, yPos + 60);
+      
+      yPos += 90;
+      
+      // Alt bilgi kutusu
+      doc.rect(margin, yPos, contentWidth, 40)
+         .fillAndStroke('#2c3e50', '#2c3e50');
+      
+      doc.fillColor('#ffffff')
+         .fontSize(10)
+         .text('MOLA PRİM SİSTEMİ - DETAYLI RAPOR', margin + 20, yPos + 12, { 
+           width: contentWidth - 40, 
+           align: 'center' 
          })
-         .text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, margin, yPos + 15, { 
-           align: 'center', 
-           width: contentWidth 
+         .text(`Oluşturulma Tarihi: ${new Date().toLocaleString('tr-TR', { 
+           weekday: 'long', 
+           year: 'numeric', 
+           month: 'long', 
+           day: 'numeric',
+           hour: '2-digit',
+           minute: '2-digit'
+         })}`, margin + 20, yPos + 25, { 
+           width: contentWidth - 40, 
+           align: 'center' 
          });
 
       // PDF'yi sonlandır
