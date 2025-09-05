@@ -222,8 +222,9 @@ saleSchema.pre('save', function(next) {
   // En düşük fiyatı bul (indirimli liste fiyatı vs aktivite satış fiyatı)
   this.basePrimPrice = Math.min(discountedListPrice, this.activitySalePrice || discountedListPrice);
   
-  // Prim tutarını hesapla
-  this.primAmount = this.basePrimPrice * (this.primRate / 100);
+  // Prim tutarını hesapla  
+  // primRate zaten decimal olarak saklanıyor (0.01 = %1)
+  this.primAmount = this.basePrimPrice * this.primRate;
   
   this.updatedAt = Date.now();
   next();

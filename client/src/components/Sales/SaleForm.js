@@ -11,11 +11,14 @@ import {
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import { FiFileText, FiInfo } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 
 const SaleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -585,13 +588,20 @@ const SaleForm = () => {
                   </Col>
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Satış Türü *</Form.Label>
+                      <Form.Label>
+                        Satış Türü *
+                        {isEdit && !isAdmin && (
+                          <Badge bg="secondary" className="ms-2 small">
+                            Sadece Admin Değiştirebilir
+                          </Badge>
+                        )}
+                      </Form.Label>
                       <Form.Select
                         name="saleType"
                         value={formData.saleType}
                         onChange={handleChange}
                         isInvalid={!!errors.saleType}
-                        disabled={isEdit} // Edit modunda değiştirilemez
+                        disabled={isEdit && !isAdmin} // Edit modunda sadece admin değiştirebilir
                       >
                         {saleTypes.map(type => (
                           <option key={type._id} value={type.value}>
@@ -603,10 +613,14 @@ const SaleForm = () => {
                         {errors.saleType}
                       </Form.Control.Feedback>
                       <Form.Text className="text-muted">
-                        {formData.saleType === 'kapora' 
-                          ? 'Kapora durumunda prim hesaplanmaz' 
-                          : 'Normal satışta prim hesaplanır'
-                        }
+                        <FiInfo className="me-1" />
+                        {isEdit && !isAdmin ? (
+                          'Satış türü sadece admin tarafından değiştirilebilir.'
+                        ) : (
+                          formData.saleType === 'kapora' 
+                            ? 'Kapora durumunda prim hesaplanmaz' 
+                            : 'Normal satışta prim hesaplanır'
+                        )}
                       </Form.Text>
                     </Form.Group>
                   </Col>

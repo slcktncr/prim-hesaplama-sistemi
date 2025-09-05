@@ -255,7 +255,7 @@ router.post('/', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      primAmount = basePrimPrice * currentPrimRate.rate;
+      primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
       
       // NaN veya Infinity kontrolü
       if (!isFinite(primAmount) || primAmount < 0) {
@@ -609,6 +609,11 @@ router.put('/:id', auth, [
 
     const updates = req.body;
     
+    // Satış türü değişikliği için admin kontrolü
+    if (updates.saleType && updates.saleType !== sale.saleType && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Satış türü değişikliği sadece admin tarafından yapılabilir' });
+    }
+    
     // Sözleşme no değişikliği kontrolü
     if (updates.contractNo && updates.contractNo !== sale.contractNo) {
       const existingSale = await Sale.findOne({ 
@@ -681,7 +686,7 @@ router.put('/:id', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      const primAmount = basePrimPrice * currentPrimRate.rate;
+      const primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
 
       sale.primRate = currentPrimRate.rate;
       sale.basePrimPrice = basePrimPrice;
@@ -1226,7 +1231,7 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
     const listPriceNum = parseFloat(listPrice);
     const activitySalePriceNum = parseFloat(activitySalePrice);
     const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
-    const primAmount = (basePrimPrice * currentPrimRate.rate) / 100;
+    const primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
 
     // Satışı güncelle
     sale.saleType = 'satis';
