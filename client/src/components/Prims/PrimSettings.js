@@ -47,7 +47,7 @@ const PrimSettings = () => {
     try {
       const response = await primsAPI.getRate();
       setCurrentRate(response.data);
-      setNewRate((response.data.rate * 100).toString());
+      setNewRate(response.data.rate.toString());
     } catch (error) {
       console.error('Current rate fetch error:', error);
       setError('Aktif prim oranı yüklenirken hata oluştu');
@@ -99,8 +99,8 @@ const PrimSettings = () => {
 
     setSaving(true);
     try {
-      const rateDecimal = parseFloat(newRate) / 100;
-      await primsAPI.updateRate(rateDecimal);
+      const ratePercent = parseFloat(newRate);
+      await primsAPI.updateRate(ratePercent);
       
       toast.success('Prim oranı başarıyla güncellendi');
       await fetchCurrentRate();
@@ -161,7 +161,7 @@ const PrimSettings = () => {
                 <div>
                   <div className="text-center mb-4">
                     <div className="display-4 text-primary mb-2">
-                      %{(currentRate.rate * 100).toFixed(2)}
+                      %{currentRate.rate.toFixed(2)}
                     </div>
                     <Badge bg="success" className="mb-3">Aktif</Badge>
                     <div className="small text-muted">
@@ -176,7 +176,7 @@ const PrimSettings = () => {
                   
                   <Alert variant="info" className="small">
                     <strong>Bilgi:</strong> Prim, liste fiyatı ve aktivite satış fiyatından 
-                    düşük olanın %{(currentRate.rate * 100).toFixed(2)}'i üzerinden hesaplanır.
+                    düşük olanın %{currentRate.rate.toFixed(2)}'i üzerinden hesaplanır.
                   </Alert>
                 </div>
               ) : (
@@ -350,7 +350,7 @@ const PrimSettings = () => {
               <div className="col-6">
                 <strong>Mevcut Oran:</strong>
                 <div className="h4 text-muted">
-                  %{currentRate ? (currentRate.rate * 100).toFixed(2) : '0.00'}
+                  %{currentRate ? currentRate.rate.toFixed(2) : '0.00'}
                 </div>
               </div>
               <div className="col-6">

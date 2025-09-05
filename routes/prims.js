@@ -34,7 +34,7 @@ router.get('/rate', auth, async (req, res) => {
 // @desc    Yeni prim oranı belirle
 // @access  Private (Admin only)
 router.post('/rate', [auth, adminAuth], [
-  body('rate').isFloat({ min: 0, max: 1 }).withMessage('Prim oranı 0 ile 1 arasında olmalıdır')
+  body('rate').isFloat({ min: 0, max: 100 }).withMessage('Prim oranı 0 ile 100 arasında olmalıdır')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

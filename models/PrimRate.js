@@ -4,9 +4,9 @@ const primRateSchema = new mongoose.Schema({
   rate: {
     type: Number,
     required: true,
-    default: 0.01, // %1
+    default: 1, // %1
     min: 0,
-    max: 1
+    max: 100
   },
   effectiveDate: {
     type: Date,

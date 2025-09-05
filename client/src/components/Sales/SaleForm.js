@@ -1035,7 +1035,7 @@ const SaleForm = () => {
                   <div className="mb-3">
                     <small className="text-muted">Aktif Prim Oranı</small>
                     <div className="h5 text-primary">
-                      %{(currentRate.rate * 100).toFixed(2)}
+                      %{currentRate.rate.toFixed(2)}
                     </div>
                   </div>
                   

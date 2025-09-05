@@ -257,7 +257,7 @@ router.post('/', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
+      primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
       
       // NaN veya Infinity kontrolü
       if (!isFinite(primAmount) || primAmount < 0) {
@@ -689,7 +689,7 @@ router.put('/:id', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      const primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
+      const primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
 
       sale.primRate = currentPrimRate.rate;
       sale.basePrimPrice = basePrimPrice;
@@ -1234,7 +1234,7 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
     const listPriceNum = parseFloat(listPrice);
     const activitySalePriceNum = parseFloat(activitySalePrice);
     const basePrimPrice = Math.min(listPriceNum, activitySalePriceNum);
-    const primAmount = basePrimPrice * currentPrimRate.rate; // rate zaten decimal (0.01 = %1)
+    const primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
 
     // Satışı güncelle
     sale.saleType = 'satis';

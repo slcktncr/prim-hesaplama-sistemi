@@ -223,8 +223,8 @@ saleSchema.pre('save', function(next) {
   this.basePrimPrice = Math.min(discountedListPrice, this.activitySalePrice || discountedListPrice);
   
   // Prim tutarını hesapla  
-  // primRate zaten decimal olarak saklanıyor (0.01 = %1)
-  this.primAmount = this.basePrimPrice * this.primRate;
+  // primRate yüzde değeri olarak saklanıyor (1 = %1)
+  this.primAmount = this.basePrimPrice * (this.primRate / 100);
   
   this.updatedAt = Date.now();
   next();
