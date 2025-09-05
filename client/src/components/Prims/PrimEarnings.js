@@ -396,16 +396,27 @@ const PrimEarnings = () => {
                         </div>
                         {(earning.totalDeductions < 0 || earning.deductionsCount > 0) && (
                           <div 
-                            className="d-flex justify-content-between cursor-pointer"
+                            className="cursor-pointer"
                             onClick={() => handleShowDeductionModal(earning)}
                             style={{ cursor: 'pointer' }}
                           >
-                            <span className="text-danger">
-                              Yapılacak Kesinti:
-                            </span>
-                            <span className="fw-bold text-danger">
-                              {formatCurrency(earning.totalDeductions || 0)}
-                            </span>
+                            <div className="d-flex justify-content-between">
+                              <span className="text-danger">
+                                Yapılacak Kesinti:
+                              </span>
+                              <span className="fw-bold text-danger">
+                                {formatCurrency(earning.totalDeductions || 0)}
+                              </span>
+                            </div>
+                            {/* Geçmişten devreden kesintileri her zaman göster (varsa tutarı, yoksa 0) */}
+                            <div className="small text-muted mt-1">
+                              Geçmişten Devreden Kesinti: {formatCurrency(Math.abs(earning.carriedForwardDeductions || 0))}
+                            </div>
+                            {earning.currentPeriodDeductions < 0 && (
+                              <div className="small text-muted">
+                                Güncel Dönem Kesinti: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -420,13 +431,7 @@ const PrimEarnings = () => {
                         </div>
                         {earning.totalDeductions < 0 && (
                           <div className="small text-danger mt-1">
-                            {earning.carriedForwardDeductions < 0 && (
-                              <div>Geçmişten Devreden: {formatCurrency(Math.abs(earning.carriedForwardDeductions))}</div>
-                            )}
-                            {earning.currentPeriodDeductions < 0 && (
-                              <div>Güncel Dönem: {formatCurrency(Math.abs(earning.currentPeriodDeductions))}</div>
-                            )}
-                            <div className="fw-bold">Toplam Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}</div>
+                            Toplam Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}
                           </div>
                         )}
                         <div className="small text-info">
@@ -446,12 +451,6 @@ const PrimEarnings = () => {
                           <span className="text-danger">
                             <FiTrendingDown className="me-1" size={12} />
                             Kesinti: {earning.deductionsCount || 0}
-                            {earning.carriedForwardCount > 0 && (
-                              <div className="small">Geçmişten: {earning.carriedForwardCount}</div>
-                            )}
-                            {earning.currentPeriodDeductionsCount > 0 && (
-                              <div className="small">Güncel: {earning.currentPeriodDeductionsCount}</div>
-                            )}
                             {earning.deductionsCount > 0 && (
                               <Button
                                 variant="link"
@@ -465,6 +464,16 @@ const PrimEarnings = () => {
                             )}
                           </span>
                         </div>
+                        {(earning.carriedForwardCount > 0 || earning.currentPeriodDeductionsCount > 0) && (
+                          <div className="small text-muted">
+                            {earning.carriedForwardCount > 0 && (
+                              <div>↳ Geçmişten: {earning.carriedForwardCount}</div>
+                            )}
+                            {earning.currentPeriodDeductionsCount > 0 && (
+                              <div>↳ Güncel: {earning.currentPeriodDeductionsCount}</div>
+                            )}
+                          </div>
+                        )}
                         <div className="d-flex justify-content-between mb-1">
                           <span className="text-info">
                             ↔️ Transfer: {earning.transferGelenCount + earning.transferGidenCount}
