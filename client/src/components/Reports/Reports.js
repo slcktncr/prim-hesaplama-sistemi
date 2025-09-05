@@ -212,20 +212,18 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               <SalesSummaryReport />
             </Tab>
 
-            {/* Performance Report Tab - Admin Only */}
-            {isAdmin && (
-              <Tab 
-                eventKey="performance" 
-                title={
-                  <span>
-                    <FiTrendingUp className="me-2" />
-                    Temsilci Performansı
-                  </span>
-                }
-              >
-                <PerformanceReport />
-              </Tab>
-            )}
+            {/* Performance Report Tab */}
+            <Tab 
+              eventKey="performance" 
+              title={
+                <span>
+                  <FiTrendingUp className="me-2" />
+                  Temsilci Performansı
+                </span>
+              }
+            >
+              <PerformanceReport />
+            </Tab>
 
             {/* Period Comparison Tab */}
             <Tab 

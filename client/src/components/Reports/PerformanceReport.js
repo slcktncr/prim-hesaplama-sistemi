@@ -26,8 +26,8 @@ const PerformanceReport = () => {
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
-    period: '',
-    salesperson: ''
+    periods: [], // Çoklu dönem seçimi
+    salespersons: [] // Çoklu temsilci seçimi
   });
 
   useEffect(() => {
@@ -59,7 +59,22 @@ const PerformanceReport = () => {
     try {
       setLoading(true);
       console.log('Frontend - Fetching performance data with filters:', filters);
-      const response = await reportsAPI.getSalespersonPerformance(filters);
+      
+      // Çoklu filtreleri API'ye uygun formata dönüştür
+      const apiFilters = {
+        startDate: filters.startDate,
+        endDate: filters.endDate
+      };
+      
+      // Çoklu dönem ve temsilci filtrelerini ekle
+      if (filters.periods && filters.periods.length > 0) {
+        apiFilters.periods = filters.periods;
+      }
+      if (filters.salespersons && filters.salespersons.length > 0) {
+        apiFilters.salespersons = filters.salespersons;
+      }
+      
+      const response = await reportsAPI.getSalespersonPerformance(apiFilters);
       console.log('Frontend - Performance data response:', response.data);
       setPerformanceData(response.data || []);
       setError(null);
@@ -79,12 +94,29 @@ const PerformanceReport = () => {
     }));
   };
 
+  const handleMultiSelectChange = (field, value, checked) => {
+    setFilters(prev => {
+      const currentValues = prev[field] || [];
+      if (checked) {
+        return {
+          ...prev,
+          [field]: [...currentValues, value]
+        };
+      } else {
+        return {
+          ...prev,
+          [field]: currentValues.filter(item => item !== value)
+        };
+      }
+    });
+  };
+
   const clearFilters = () => {
     setFilters({
       startDate: '',
       endDate: '',
-      period: '',
-      salesperson: ''
+      periods: [],
+      salespersons: []
     });
   };
 
@@ -126,34 +158,54 @@ const PerformanceReport = () => {
             </Col>
             <Col md={3}>
               <Form.Group>
-                <Form.Label>Dönem</Form.Label>
-                <Form.Select
-                  value={filters.period}
-                  onChange={(e) => handleFilterChange('period', e.target.value)}
-                >
-                  <option value="">Tüm Dönemler</option>
+                <Form.Label>Dönemler (Çoklu Seçim)</Form.Label>
+                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #ced4da', borderRadius: '0.375rem', padding: '0.375rem' }}>
+                  <Form.Check
+                    type="checkbox"
+                    label="Tüm Dönemler"
+                    checked={filters.periods.length === 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setFilters(prev => ({ ...prev, periods: [] }));
+                      }
+                    }}
+                  />
                   {periods.map(period => (
-                    <option key={period._id} value={period._id}>
-                      {period.name}
-                    </option>
+                    <Form.Check
+                      key={period._id}
+                      type="checkbox"
+                      label={period.name}
+                      checked={filters.periods.includes(period._id)}
+                      onChange={(e) => handleMultiSelectChange('periods', period._id, e.target.checked)}
+                    />
                   ))}
-                </Form.Select>
+                </div>
               </Form.Group>
             </Col>
             <Col md={3}>
               <Form.Group>
-                <Form.Label>Temsilci</Form.Label>
-                <Form.Select
-                  value={filters.salesperson}
-                  onChange={(e) => handleFilterChange('salesperson', e.target.value)}
-                >
-                  <option value="">Tüm Temsilciler</option>
+                <Form.Label>Temsilciler (Çoklu Seçim)</Form.Label>
+                <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #ced4da', borderRadius: '0.375rem', padding: '0.375rem' }}>
+                  <Form.Check
+                    type="checkbox"
+                    label="Tüm Temsilciler"
+                    checked={filters.salespersons.length === 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setFilters(prev => ({ ...prev, salespersons: [] }));
+                      }
+                    }}
+                  />
                   {users.map(user => (
-                    <option key={user._id} value={user._id}>
-                      {user.name}
-                    </option>
+                    <Form.Check
+                      key={user._id}
+                      type="checkbox"
+                      label={user.name}
+                      checked={filters.salespersons.includes(user._id)}
+                      onChange={(e) => handleMultiSelectChange('salespersons', user._id, e.target.checked)}
+                    />
                   ))}
-                </Form.Select>
+                </div>
               </Form.Group>
             </Col>
             <Col md={12} className="mt-3">

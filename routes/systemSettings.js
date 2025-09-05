@@ -42,7 +42,7 @@ router.post('/sale-types', [
       });
     }
 
-    const { name, description, isDefault } = req.body;
+    const { name, description, isDefault, color, sortOrder, requiredFields } = req.body;
 
     // Aynı isimde kayıt var mı kontrol et
     const existingSaleType = await SaleType.findOne({ name: name.trim() });
@@ -54,6 +54,16 @@ router.post('/sale-types', [
       name: name.trim(),
       description: description?.trim(),
       isDefault: isDefault || false,
+      color: color || 'success',
+      sortOrder: sortOrder || 0,
+      requiredFields: requiredFields || {
+        contractNo: true,
+        listPrice: true,
+        activitySalePrice: true,
+        paymentType: true,
+        saleDate: true,
+        kaporaDate: false
+      },
       createdBy: req.user._id
     });
 
@@ -82,6 +92,12 @@ router.put('/sale-types/:id', [
   body('name').isLength({ max: 50 }).withMessage('Satış türü adı 50 karakterden uzun olamaz')
 ], async (req, res) => {
   try {
+    console.log('🔍 Sale type update request:', {
+      id: req.params.id,
+      body: req.body,
+      user: req.user?.email
+    });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
@@ -90,7 +106,7 @@ router.put('/sale-types/:id', [
       });
     }
 
-    const { name, description, isActive, isDefault } = req.body;
+    const { name, description, isActive, isDefault, color, sortOrder, requiredFields } = req.body;
 
     const saleType = await SaleType.findById(req.params.id);
     if (!saleType) {
@@ -110,6 +126,27 @@ router.put('/sale-types/:id', [
     saleType.description = description?.trim();
     saleType.isActive = isActive;
     saleType.isDefault = isDefault || false;
+    
+    // Yeni alanları güncelle
+    if (color) {
+      saleType.color = color;
+    }
+    if (typeof sortOrder === 'number') {
+      saleType.sortOrder = sortOrder;
+    }
+    if (requiredFields && typeof requiredFields === 'object') {
+      saleType.requiredFields = {
+        ...saleType.requiredFields,
+        ...requiredFields
+      };
+    }
+
+    console.log('💾 Saving sale type with data:', {
+      name: saleType.name,
+      color: saleType.color,
+      sortOrder: saleType.sortOrder,
+      requiredFields: saleType.requiredFields
+    });
 
     await saleType.save();
 

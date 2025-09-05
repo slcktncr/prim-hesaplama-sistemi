@@ -71,10 +71,14 @@ const SaleTypesManagement = () => {
     e.preventDefault();
     
     try {
+      console.log('🔍 Form submission data:', formData);
+      
       if (editingItem) {
+        console.log('🔄 Updating sale type:', editingItem._id);
         await systemSettingsAPI.updateSaleType(editingItem._id, formData);
         toast.success('Satış türü başarıyla güncellendi');
       } else {
+        console.log('➕ Creating new sale type');
         await systemSettingsAPI.createSaleType(formData);
         toast.success('Satış türü başarıyla oluşturuldu');
       }

@@ -283,10 +283,10 @@ router.get('/sales-summary', auth, async (req, res) => {
 // @access  Private
 router.get('/salesperson-performance', auth, async (req, res) => {
   try {
-    const { startDate, endDate, period, salesperson } = req.query;
+    const { startDate, endDate, period, salesperson, periods, salespersons } = req.query;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('Salesperson Performance Query Params:', { startDate, endDate, period, salesperson });
+      console.log('Salesperson Performance Query Params:', { startDate, endDate, period, salesperson, periods, salespersons });
     }
     
     let query = {};
@@ -299,13 +299,19 @@ router.get('/salesperson-performance', auth, async (req, res) => {
       };
     }
     
-    // Dönem filtresi
-    if (period) {
+    // Çoklu dönem filtresi (yeni)
+    if (periods && Array.isArray(periods) && periods.length > 0) {
+      query.primPeriod = { $in: periods.map(p => new mongoose.Types.ObjectId(p)) };
+    } else if (period) {
+      // Eski tek dönem filtresi (geriye uyumluluk)
       query.primPeriod = new mongoose.Types.ObjectId(period);
     }
     
-    // Temsilci filtresi
-    if (salesperson && salesperson !== '') {
+    // Çoklu temsilci filtresi (yeni)
+    if (salespersons && Array.isArray(salespersons) && salespersons.length > 0) {
+      query.salesperson = { $in: salespersons.map(s => new mongoose.Types.ObjectId(s)) };
+    } else if (salesperson && salesperson !== '') {
+      // Eski tek temsilci filtresi (geriye uyumluluk)
       query.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
@@ -677,7 +683,11 @@ router.post('/export', auth, async (req, res) => {
     }
     
     if (currentPeriod) {
-      currentPeriodPerformance = await Sale.aggregate([
+      // Önce tüm kullanıcıları al
+      const allUsers = await User.find({ isActive: true }).select('name email');
+      
+      // Aktif dönemde satışı olan temsilcileri al
+      const salesPerformance = await Sale.aggregate([
         { 
           $match: { 
             primPeriod: currentPeriod._id,
@@ -692,32 +702,38 @@ router.post('/export', auth, async (req, res) => {
             totalPrimAmount: { $sum: '$primAmount' },
             avgSaleAmount: { $avg: '$basePrimPrice' }
           }
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'user'
-          }
-        },
-        {
-          $unwind: '$user'
-        },
-        {
-          $project: {
-            name: '$user.name',
-            email: '$user.email',
-            totalSales: 1,
-            totalAmount: 1,
-            totalPrimAmount: 1,
-            avgSaleAmount: 1
-          }
-        },
-        { $sort: { totalSales: -1, totalPrimAmount: -1 } }
+        }
       ]);
       
+      // Satış verilerini kullanıcı ID'sine göre map'le
+      const salesMap = {};
+      salesPerformance.forEach(perf => {
+        salesMap[perf._id.toString()] = perf;
+      });
+      
+      // Tüm kullanıcılar için performans verisi oluştur
+      currentPeriodPerformance = allUsers.map(user => {
+        const userSales = salesMap[user._id.toString()];
+        return {
+          name: user.name,
+          email: user.email,
+          totalSales: userSales ? userSales.totalSales : 0,
+          totalAmount: userSales ? userSales.totalAmount : 0,
+          totalPrimAmount: userSales ? userSales.totalPrimAmount : 0,
+          avgSaleAmount: userSales ? userSales.avgSaleAmount : 0
+        };
+      }).sort((a, b) => {
+        // Önce satış adedine göre sırala
+        if (b.totalSales !== a.totalSales) {
+          return b.totalSales - a.totalSales;
+        }
+        // Satış adedi aynıysa prim tutarına göre sırala
+        return b.totalPrimAmount - a.totalPrimAmount;
+      });
+      
       if (process.env.NODE_ENV === 'development') {
+        console.log('📊 All users count:', allUsers.length);
+        console.log('📊 Users with sales in current period:', salesPerformance.length);
         console.log('📊 Current period performance count:', currentPeriodPerformance.length);
         console.log('📊 Current period performance sample:', currentPeriodPerformance[0]);
       }
