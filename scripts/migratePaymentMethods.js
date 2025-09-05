@@ -5,7 +5,10 @@ const User = require('../models/User');
 // MongoDB bağlantısı
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://slcktncr:Ypwv6k1ffCPNhxP1@slcktncr.uqic6f.mongodb.net/?retryWrites=true&w=majority&appName=slcktncr');
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error('MongoDB connection error:', error);
