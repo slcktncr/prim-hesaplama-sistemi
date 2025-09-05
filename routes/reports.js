@@ -534,12 +534,14 @@ router.post('/export', auth, async (req, res) => {
   try {
     const { type, scope, period, salesperson } = req.body;
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Export request received:', { type, scope, period, salesperson });
+    }
+    
     let query = {};
     
-    // Admin değilse sadece kendi verilerini export edebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    } else if (scope === 'salesperson' && salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar tüm verileri export edebilir
+    if (scope === 'salesperson' && salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
     }
     
@@ -561,6 +563,19 @@ router.post('/export', auth, async (req, res) => {
       .populate('primPeriod', 'name')
       .sort({ saleDate: -1 });
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Sales data for export:', { 
+        salesCount: sales.length, 
+        query: JSON.stringify(query),
+        sampleSale: sales[0] ? {
+          customerName: sales[0].customerName,
+          contractNo: sales[0].contractNo,
+          salesperson: sales[0].salesperson?.name,
+          primPeriod: sales[0].primPeriod?.name
+        } : 'No sales found'
+      });
+    }
+    
     if (type === 'excel') {
       // Excel workbook oluştur
       const wb = XLSX.utils.book_new();
@@ -580,8 +595,8 @@ router.post('/export', auth, async (req, res) => {
         ['PRİM İSTATİSTİKLERİ'],
         ['Ödenen Primler:', sales.filter(s => s.primStatus === 'ödendi').length],
         ['Bekleyen Primler:', sales.filter(s => s.primStatus === 'ödenmedi').length],
-        ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + s.primAmount, 0)],
-        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + s.listPrice, 0)],
+        ['Toplam Prim Tutarı:', sales.reduce((sum, s) => sum + (s.primAmount || 0), 0)],
+        ['Toplam Satış Tutarı:', sales.reduce((sum, s) => sum + (s.basePrimPrice || s.listPrice || 0), 0)],
         [''],
         ['TEMSİLCİ PERFORMANSI']
       ];
@@ -594,8 +609,8 @@ router.post('/export', auth, async (req, res) => {
           salesByUser[userName] = { count: 0, amount: 0, primAmount: 0 };
         }
         salesByUser[userName].count++;
-        salesByUser[userName].amount += sale.listPrice;
-        salesByUser[userName].primAmount += sale.primAmount;
+        salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
       Object.entries(salesByUser)
@@ -610,39 +625,70 @@ router.post('/export', auth, async (req, res) => {
 
       // 2. DETAYLI SATIŞ LİSTESİ
       const detailedData = sales.map(sale => ({
-      'Müşteri Adı': sale.customerName,
-      'Blok/Daire': `${sale.blockNo}/${sale.apartmentNo}`,
-      'Dönem No': sale.periodNo,
-      'Satış Tarihi': new Date(sale.saleDate).toLocaleDateString('tr-TR'),
-      'Sözleşme No': sale.contractNo,
-        'Liste Fiyatı': sale.listPrice,
-        'Aktivite Satış Fiyatı': sale.activitySalePrice,
-      'Ödeme Tipi': sale.paymentType,
-        'Prim Tutarı': sale.primAmount,
-      'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
-      'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
-      'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
+        'Müşteri Adı': sale.customerName || '',
+        'Blok/Daire': `${sale.blockNo || ''}/${sale.apartmentNo || ''}`,
+        'Dönem No': sale.periodNo || '',
+        'Satış Tarihi': sale.saleDate ? new Date(sale.saleDate).toLocaleDateString('tr-TR') : '',
+        'Kapora Tarihi': sale.kaporaDate ? new Date(sale.kaporaDate).toLocaleDateString('tr-TR') : '',
+        'Sözleşme No': sale.contractNo || '',
+        'Satış Türü': sale.saleType || '',
+        'Liste Fiyatı': sale.listPrice || 0,
+        'Orijinal Liste Fiyatı': sale.originalListPrice || 0,
+        'Aktivite Satış Fiyatı': sale.activitySalePrice || 0,
+        'Baz Prim Fiyatı': sale.basePrimPrice || 0,
+        'Ödeme Tipi': sale.paymentType || 'Belirsiz',
+        'Prim Oranı': sale.primRate || 0,
+        'Prim Tutarı': sale.primAmount || 0,
+        'Prim Durumu': sale.primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi',
+        'Temsilci': sale.salesperson?.name || 'Bilinmiyor',
+        'Prim Dönemi': sale.primPeriod?.name || 'Bilinmiyor',
         'Durum': sale.status === 'aktif' ? 'Aktif' : 'İptal',
-        'Oluşturma Tarihi': new Date(sale.createdAt).toLocaleDateString('tr-TR')
+        'Notlar': sale.notes || '',
+        'Oluşturma Tarihi': sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('tr-TR') : '',
+        'Güncellenme Tarihi': sale.updatedAt ? new Date(sale.updatedAt).toLocaleDateString('tr-TR') : ''
       }));
 
       const detailedWs = XLSX.utils.json_to_sheet(detailedData);
       detailedWs['!cols'] = [
-        { wch: 25 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, 
-        { wch: 15 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, 
-        { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 12 }
+        { wch: 25 }, // Müşteri Adı
+        { wch: 12 }, // Blok/Daire
+        { wch: 10 }, // Dönem No
+        { wch: 12 }, // Satış Tarihi
+        { wch: 12 }, // Kapora Tarihi
+        { wch: 15 }, // Sözleşme No
+        { wch: 12 }, // Satış Türü
+        { wch: 15 }, // Liste Fiyatı
+        { wch: 18 }, // Orijinal Liste Fiyatı
+        { wch: 18 }, // Aktivite Satış Fiyatı
+        { wch: 15 }, // Baz Prim Fiyatı
+        { wch: 12 }, // Ödeme Tipi
+        { wch: 10 }, // Prim Oranı
+        { wch: 12 }, // Prim Tutarı
+        { wch: 12 }, // Prim Durumu
+        { wch: 20 }, // Temsilci
+        { wch: 15 }, // Prim Dönemi
+        { wch: 10 }, // Durum
+        { wch: 30 }, // Notlar
+        { wch: 12 }, // Oluşturma Tarihi
+        { wch: 12 }  // Güncellenme Tarihi
       ];
 
       // Para formatı uygula
       const range = XLSX.utils.decode_range(detailedWs['!ref']);
       for (let row = 1; row <= range.e.r; row++) {
-        [5, 6, 8].forEach(col => { // Liste Fiyatı, Aktivite Fiyatı, Prim Tutarı
+        [7, 8, 9, 10, 13].forEach(col => { // Liste Fiyatı, Orijinal Liste, Aktivite Fiyatı, Baz Prim, Prim Tutarı
           const cell = XLSX.utils.encode_cell({ r: row, c: col });
           if (detailedWs[cell]) {
             detailedWs[cell].t = 'n';
             detailedWs[cell].z = '#,##0"₺"';
           }
         });
+        // Prim oranı için yüzde formatı
+        const primRateCell = XLSX.utils.encode_cell({ r: row, c: 12 });
+        if (detailedWs[primRateCell]) {
+          detailedWs[primRateCell].t = 'n';
+          detailedWs[primRateCell].z = '0.00"%"';
+        }
       }
 
       XLSX.utils.book_append_sheet(wb, detailedWs, 'Detaylı Satışlar');
@@ -688,8 +734,8 @@ router.post('/export', auth, async (req, res) => {
           periodData[periodName] = { count: 0, amount: 0, primAmount: 0 };
         }
         periodData[periodName].count++;
-        periodData[periodName].amount += sale.listPrice;
-        periodData[periodName].primAmount += sale.primAmount;
+        periodData[periodName].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        periodData[periodName].primAmount += (sale.primAmount || 0);
       });
 
       const periodAnalysis = Object.entries(periodData).map(([period, data]) => ({
@@ -723,13 +769,13 @@ router.post('/export', auth, async (req, res) => {
       // 5. ÖDEME TİPİ ANALİZİ
       const paymentData = {};
       sales.forEach(sale => {
-        const paymentType = sale.paymentType || 'Belirsiz';
+        const paymentType = sale.paymentType || (sale.saleType === 'kapora' ? 'Kapora' : 'Belirsiz');
         if (!paymentData[paymentType]) {
           paymentData[paymentType] = { count: 0, amount: 0, primAmount: 0 };
         }
         paymentData[paymentType].count++;
-        paymentData[paymentType].amount += sale.listPrice;
-        paymentData[paymentType].primAmount += sale.primAmount;
+        paymentData[paymentType].amount += (sale.basePrimPrice || sale.listPrice || 0);
+        paymentData[paymentType].primAmount += (sale.primAmount || 0);
       });
 
       const paymentAnalysis = Object.entries(paymentData).map(([type, data]) => ({
@@ -951,8 +997,16 @@ router.post('/export', auth, async (req, res) => {
     }
     
   } catch (error) {
-    console.error('Export report error:', error);
-    res.status(500).json({ message: 'Rapor export edilirken hata oluştu' });
+    console.error('❌ Export report error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      requestBody: req.body
+    });
+    res.status(500).json({ 
+      message: 'Rapor export edilirken hata oluştu',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
