@@ -280,8 +280,8 @@ router.get('/sales-summary', auth, async (req, res) => {
 
 // @route   GET /api/reports/salesperson-performance
 // @desc    Temsilci performans raporu
-// @access  Private (Admin only)
-router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
+// @access  Private
+router.get('/salesperson-performance', auth, async (req, res) => {
   try {
     const { startDate, endDate, period } = req.query;
     
@@ -383,13 +383,35 @@ router.get('/salesperson-performance', [auth, adminAuth], async (req, res) => {
       }
     ]);
 
-    // Performans verilerini birleştir
+    // Kesinti bilgilerini getir
+    const deductions = await PrimTransaction.find({
+      transactionType: 'kesinti'
+    }).populate('salesperson', 'name');
+    
+    const deductionsByUser = {};
+    deductions.forEach(deduction => {
+      const userId = deduction.salesperson?._id?.toString();
+      if (userId) {
+        if (!deductionsByUser[userId]) {
+          deductionsByUser[userId] = { count: 0, amount: 0 };
+        }
+        deductionsByUser[userId].count++;
+        deductionsByUser[userId].amount += Math.abs(deduction.amount);
+      }
+    });
+
+    // Performans verilerini birleştir (kesintiler dahil)
     const combinedPerformance = performance.map(perf => {
       const cancelled = cancelledSalesPerformance.find(c => c._id.toString() === perf._id.toString());
+      const userDeductions = deductionsByUser[perf._id.toString()] || { count: 0, amount: 0 };
+      
       return {
         ...perf,
         cancelledSales: cancelled?.cancelledSales || 0,
-        cancelledAmount: cancelled?.cancelledAmount || 0
+        cancelledAmount: cancelled?.cancelledAmount || 0,
+        deductionCount: userDeductions.count,
+        deductionAmount: userDeductions.amount,
+        netPrimAmount: (perf.totalPrimAmount || 0) - userDeductions.amount
       };
     });
 
@@ -485,7 +507,7 @@ router.get('/top-performers', auth, async (req, res) => {
       query.primPeriod = new mongoose.Types.ObjectId(period);
     }
 
-    const topPerformers = await Sale.aggregate([
+    const topPerformersData = await Sale.aggregate([
       { $match: query },
       {
         $group: {
@@ -520,6 +542,35 @@ router.get('/top-performers', auth, async (req, res) => {
       { $sort: { totalSales: -1, totalPrim: -1 } },
       { $limit: parseInt(limit) }
     ]);
+
+    // Kesinti bilgilerini getir ve net prim hesapla
+    const deductions = await PrimTransaction.find({
+      transactionType: 'kesinti'
+    }).populate('salesperson', 'name');
+    
+    const deductionsByUser = {};
+    deductions.forEach(deduction => {
+      const userId = deduction.salesperson?._id?.toString();
+      if (userId) {
+        if (!deductionsByUser[userId]) {
+          deductionsByUser[userId] = { count: 0, amount: 0 };
+        }
+        deductionsByUser[userId].count++;
+        deductionsByUser[userId].amount += Math.abs(deduction.amount);
+      }
+    });
+
+    // Net prim ile birlikte sonuçları hazırla
+    const topPerformers = topPerformersData.map(performer => {
+      const userDeductions = deductionsByUser[performer._id.toString()] || { count: 0, amount: 0 };
+      
+      return {
+        ...performer,
+        deductionCount: userDeductions.count,
+        deductionAmount: userDeductions.amount,
+        netPrimAmount: (performer.totalPrim || 0) - userDeductions.amount
+      };
+    });
 
     res.json(topPerformers);
   } catch (error) {
@@ -678,6 +729,7 @@ router.post('/export', auth, async (req, res) => {
         // Hata olursa boş obje ile devam et
       }
 
+      // Satış verilerini temsilci bazında topla
       const salesByUser = {};
       sales.forEach(sale => {
         const userName = sale.salesperson?.name || 'Bilinmiyor';
@@ -688,6 +740,8 @@ router.post('/export', auth, async (req, res) => {
         salesByUser[userName].amount += (sale.basePrimPrice || sale.listPrice || 0);
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
+
+      console.log('📊 Sales by user (before deductions):', salesByUser);
 
       // Net hakediş hesapla (brüt prim - kesintiler)
       Object.entries(salesByUser)
@@ -987,6 +1041,13 @@ router.post('/export', auth, async (req, res) => {
         salesByUser[userName].primAmount += (sale.primAmount || 0);
       });
 
+      // Net prim hesapla (kesintiler dahil)
+      Object.keys(salesByUser).forEach(userName => {
+        const deductions = deductionsByUser[userName] || 0;
+        salesByUser[userName].netPrimAmount = salesByUser[userName].primAmount - deductions;
+        salesByUser[userName].deductions = deductions;
+      });
+
       const topPerformers = Object.entries(salesByUser)
         .sort((a, b) => {
           // Önce satış adedine göre sırala
@@ -1245,14 +1306,14 @@ router.post('/export', auth, async (req, res) => {
            .fontSize(10)
            .text(`₺${data.amount.toLocaleString('tr-TR')}`, margin + contentWidth - 150, yPos + 35);
         
-        // Prim tutarı (en sağ)
+        // Net Prim tutarı (en sağ)
         doc.fillColor('#28a745')
            .fontSize(14)
-           .text(`₺${data.primAmount.toLocaleString('tr-TR')}`, margin + contentWidth - 80, yPos + 20);
+           .text(`₺${data.netPrimAmount.toLocaleString('tr-TR')}`, margin + contentWidth - 80, yPos + 20);
         
         doc.fillColor('#6c757d')
            .fontSize(8)
-           .text('Prim', margin + contentWidth - 60, yPos + 40);
+           .text('Net Prim', margin + contentWidth - 60, yPos + 40);
         
         yPos += performanceCardHeight + 10;
         

@@ -172,6 +172,8 @@ const PerformanceReport = () => {
                   <th>Ortalama Satış</th>
                   <th>Prim Durumu</th>
                   <th>İptal Durumu</th>
+                  <th>Kesinti</th>
+                  <th>Net Prim</th>
                   <th>Performans</th>
                 </tr>
               </thead>
@@ -236,6 +238,30 @@ const PerformanceReport = () => {
                         ) : (
                           <div className="text-success">İptal yok</div>
                         )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="small">
+                        {performer.deductionCount > 0 ? (
+                          <>
+                            <div className="text-danger">
+                              İptal: {formatNumber(performer.deductionCount)}
+                            </div>
+                            <div className="text-muted">
+                              {formatCurrency(performer.deductionAmount)}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-success">Kesinti yok</div>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="fw-bold text-info">
+                        {formatCurrency(performer.netPrimAmount)}
+                      </div>
+                      <div className="small text-muted">
+                        Net Hakediş
                       </div>
                     </td>
                     <td style={{ width: '150px' }}>

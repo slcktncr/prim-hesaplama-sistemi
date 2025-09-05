@@ -193,10 +193,18 @@ const TopPerformersReport = () => {
                       </div>
                       <div className="mb-2">
                         <div className="h6 text-success">
-                          {formatCurrency(performer.totalPrim)}
+                          {formatCurrency(performer.netPrimAmount || performer.totalPrim)}
                         </div>
-                        <div className="small text-muted">Prim</div>
+                        <div className="small text-muted">Net Prim</div>
                       </div>
+                      {performer.deductionAmount > 0 && (
+                        <div className="mb-2">
+                          <div className="small text-danger">
+                            -{formatCurrency(performer.deductionAmount)}
+                          </div>
+                          <div className="small text-muted">Kesinti</div>
+                        </div>
+                      )}
                       <div className="small text-muted">
                         Ortalama: {formatCurrency(performer.avgSaleAmount)}
                       </div>
