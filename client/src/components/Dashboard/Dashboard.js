@@ -100,13 +100,61 @@ const Dashboard = () => {
             {user?.role === 'admin' && <span className="badge bg-warning ms-2">Admin</span>}
           </p>
         </div>
+        
+        {/* Dönem Seçici */}
+        <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center">
+            <FiCalendar className="me-2 text-muted" />
+            <Form.Select
+              value={selectedPeriod}
+              onChange={(e) => handlePeriodChange(e.target.value)}
+              style={{ minWidth: '200px' }}
+            >
+              <option value="all">Tüm Dönemler</option>
+              <option value="current">Güncel Dönem</option>
+              {periods.map(period => (
+                <option key={period._id} value={period._id}>
+                  {period.name}
+                </option>
+              ))}
+            </Form.Select>
+          </div>
+          <Button 
+            variant="outline-primary" 
+            size="sm"
+            onClick={fetchDashboardData}
+            disabled={loading}
+          >
+            <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
+            Yenile
+          </Button>
+        </div>
+      </div>
+
+      <style>{`
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      {/* Seçilen Dönem Bilgisi */}
+      <div className="mb-3">
+        <Alert variant="info" className="d-flex align-items-center mb-0 py-2">
+          <FiCalendar className="me-2" />
+          <strong>Seçilen Dönem:</strong> 
+          <span className="ms-2">{getSelectedPeriodName()}</span>
+        </Alert>
       </div>
 
       {/* İstatistik Kartları */}
       <Row className="mb-4">
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Toplam Satış"
+            title={selectedPeriod === 'all' ? "Toplam Satış" : "Dönem Satışları"}
             value={formatNumber(totalSales)}
             icon="shopping-bag"
             color="primary"
@@ -114,7 +162,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Bu Ay Satış"
+            title={selectedPeriod === 'all' ? "Bu Ay Satış" : "Dönem Satışları"}
             value={formatNumber(thisMonthSales)}
             icon="calendar"
             color="success"
@@ -122,7 +170,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Toplam Ciro"
+            title={selectedPeriod === 'all' ? "Toplam Ciro" : "Dönem Cirosu"}
             value={formatCurrency(totalSalesAmount)}
             icon="dollar-sign"
             color="info"
@@ -130,7 +178,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Toplam Prim"
+            title={selectedPeriod === 'all' ? "Toplam Prim" : "Dönem Primi"}
             value={formatCurrency(totalPrimAmount)}
             icon="trending-up"
             color="warning"
@@ -141,7 +189,7 @@ const Dashboard = () => {
       <Row className="mb-4">
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Ödenen Primler"
+            title={selectedPeriod === 'all' ? "Ödenen Primler" : "Dönem Ödenen Primler"}
             value={formatNumber(paidPrims)}
             icon="check-circle"
             color="success"
@@ -149,7 +197,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Ödenmemiş Primler"
+            title={selectedPeriod === 'all' ? "Ödenmemiş Primler" : "Dönem Ödenmemiş Primler"}
             value={formatNumber(unpaidPrims)}
             icon="clock"
             color="warning"
@@ -157,7 +205,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="İptal Edilen"
+            title={selectedPeriod === 'all' ? "İptal Edilen" : "Dönem İptal Edilen"}
             value={formatNumber(cancelledSales)}
             icon="x-circle"
             color="danger"
@@ -165,7 +213,7 @@ const Dashboard = () => {
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
-            title="Başarı Oranı"
+            title={selectedPeriod === 'all' ? "Başarı Oranı" : "Dönem Başarı Oranı"}
             value={totalSales > 0 ? `%${((totalSales / (totalSales + cancelledSales)) * 100).toFixed(1)}` : '%0'}
             icon="target"
             color="info"

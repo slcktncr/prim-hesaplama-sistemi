@@ -16,6 +16,24 @@ const router = express.Router();
 router.get('/dashboard', auth, async (req, res) => {
   try {
     let query = {};
+    const { period } = req.query;
+    
+    // Dönem filtresi
+    if (period && period !== 'all') {
+      if (period === 'current') {
+        const currentPeriod = await PrimPeriod.findOne({ isActive: true });
+        if (currentPeriod) {
+          query.primPeriod = currentPeriod._id;
+        }
+      } else {
+        query.primPeriod = new mongoose.Types.ObjectId(period);
+      }
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Dashboard query:', JSON.stringify(query, null, 2));
+      console.log('📅 Selected period:', period);
+    }
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
@@ -33,16 +51,22 @@ router.get('/dashboard', auth, async (req, res) => {
       { $group: { _id: null, total: { $sum: '$primAmount' } } }
     ]);
 
-    // Bu ayki satışlar
-    const currentMonth = new Date();
-    currentMonth.setDate(1);
-    currentMonth.setHours(0, 0, 0, 0);
-    
-    const thisMonthSales = await Sale.countDocuments({
-      ...query,
-      status: 'aktif',
-      saleDate: { $gte: currentMonth }
-    });
+    // Bu ayki satışlar (dönem seçiliyse dönem bazlı, değilse bu ay)
+    let thisMonthSales;
+    if (period && period !== 'all') {
+      // Dönem seçiliyse sadece o dönemdeki satışlar
+      thisMonthSales = totalSales;
+    } else {
+      // Dönem seçilmemişse bu ayki satışlar
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+      
+      thisMonthSales = await Sale.countDocuments({
+        status: 'aktif',
+        saleDate: { $gte: currentMonth }
+      });
+    }
 
     // Prim durumları
     const paidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödendi' });
@@ -587,6 +611,102 @@ router.get('/top-performers', auth, async (req, res) => {
   } catch (error) {
     console.error('Top performers error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/reports/cancellation-performance
+// @desc    İptal performansları raporu
+// @access  Private
+router.get('/cancellation-performance', auth, async (req, res) => {
+  try {
+    const { period, limit = 20 } = req.query;
+    
+    let matchQuery = {};
+    
+    // Dönem filtresi
+    if (period && period !== '') {
+      if (period === 'current') {
+        const currentPeriod = await PrimPeriod.findOne({ isActive: true });
+        if (currentPeriod) {
+          matchQuery.primPeriod = currentPeriod._id;
+        }
+      } else {
+        matchQuery.primPeriod = new mongoose.Types.ObjectId(period);
+      }
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚫 Cancellation performance query:', JSON.stringify(matchQuery, null, 2));
+    }
+    
+    // İptal performansları aggregation
+    const cancellationPerformance = await Sale.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: '$salesperson',
+          totalSales: { 
+            $sum: { $cond: [{ $eq: ['$status', 'aktif'] }, 1, 0] }
+          },
+          cancelledSales: { 
+            $sum: { $cond: [{ $eq: ['$status', 'iptal'] }, 1, 0] }
+          },
+          totalAmount: { 
+            $sum: { $cond: [{ $eq: ['$status', 'aktif'] }, '$basePrimPrice', 0] }
+          },
+          cancelledAmount: { 
+            $sum: { $cond: [{ $eq: ['$status', 'iptal'] }, '$basePrimPrice', 0] }
+          },
+          totalPrim: { 
+            $sum: { $cond: [{ $eq: ['$status', 'aktif'] }, '$primAmount', 0] }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          name: '$user.name',
+          email: '$user.email',
+          totalSales: { $add: ['$totalSales', '$cancelledSales'] }, // Toplam satış (aktif + iptal)
+          cancelledSales: 1,
+          activeSales: '$totalSales', // Sadece aktif satışlar
+          totalAmount: 1,
+          cancelledAmount: 1,
+          totalPrim: 1,
+          cancellationRate: {
+            $cond: [
+              { $eq: [{ $add: ['$totalSales', '$cancelledSales'] }, 0] },
+              0,
+              {
+                $multiply: [
+                  { $divide: ['$cancelledSales', { $add: ['$totalSales', '$cancelledSales'] }] },
+                  100
+                ]
+              }
+            ]
+          }
+        }
+      },
+      { $sort: { cancellationRate: -1 } }, // İptal oranına göre azalan sıralama
+      { $limit: parseInt(limit) }
+    ]);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚫 Cancellation performance results:', cancellationPerformance.length);
+    }
+    
+    res.json(cancellationPerformance);
+  } catch (error) {
+    console.error('Cancellation performance error:', error);
+    res.status(500).json({ message: 'İptal performans raporu alınırken hata oluştu' });
   }
 });
 

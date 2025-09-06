@@ -18,7 +18,8 @@ import {
   FiCalendar,
   FiTarget,
   FiDownload,
-  FiFileText
+  FiFileText,
+  FiXCircle
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
@@ -28,6 +29,7 @@ import SalesSummaryReport from './SalesSummaryReport';
 import PerformanceReport from './PerformanceReport';
 import PeriodComparisonReport from './PeriodComparisonReport';
 import TopPerformersReport from './TopPerformersReport';
+import CancellationPerformanceReport from './CancellationPerformanceReport';
 import DetailedReport from './DetailedReport';
 
 const Reports = () => {
@@ -249,6 +251,19 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               }
             >
               <TopPerformersReport />
+            </Tab>
+
+            {/* Cancellation Performance Tab */}
+            <Tab 
+              eventKey="cancellation-performance" 
+              title={
+                <span>
+                  <FiXCircle className="me-2" />
+                  İptal Performansları
+                </span>
+              }
+            >
+              <CancellationPerformanceReport />
             </Tab>
 
             {/* Detailed Report Tab */}

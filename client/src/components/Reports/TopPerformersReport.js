@@ -291,7 +291,7 @@ const TopPerformersReport = () => {
                 <div className="mb-3">
                   <div className="d-flex justify-content-between">
                     <span>En Yüksek Prim:</span>
-                    <strong>{formatCurrency(topPerformers[0]?.totalPrim || 0)}</strong>
+                    <strong>{formatCurrency(topPerformers[0]?.netPrimAmount || topPerformers[0]?.totalPrim || 0)}</strong>
                   </div>
                 </div>
                 <div className="mb-3">

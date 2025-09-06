@@ -75,11 +75,12 @@ export const primsAPI = {
 
 // Reports API calls
 export const reportsAPI = {
-  getDashboard: () => API.get('/reports/dashboard'),
+  getDashboard: (params = {}) => API.get('/reports/dashboard', { params }),
   getSalesSummary: (params) => API.get('/reports/sales-summary', { params }),
   getSalespersonPerformance: (params) => API.get('/reports/salesperson-performance', { params }),
   getPeriodComparison: () => API.get('/reports/period-comparison'),
   getTopPerformers: (params) => API.get('/reports/top-performers', { params }),
+  getCancellationPerformance: (params) => API.get('/reports/cancellation-performance', { params }),
   getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
   exportReport: (data) => API.post('/reports/export', data),
   exportExcel: (data) => API.post('/reports/export', data, { responseType: 'blob' }),
