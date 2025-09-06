@@ -132,7 +132,10 @@ export const communicationsAPI = {
   getToday: () => API.get('/communications/today'),
   saveDaily: (data) => API.post('/communications/daily', data),
   getRecords: (params) => API.get('/communications/records', { params }),
-  getReport: (params) => API.get('/communications/report', { params })
+  getReport: (params) => API.get('/communications/report', { params }),
+  createYear: (data) => API.post('/communications/years', data),
+  updateYear: (id, data) => API.put(`/communications/years/${id}`, data),
+  deleteYear: (id) => API.delete(`/communications/years/${id}`)
 };
 
 // Penalties API calls

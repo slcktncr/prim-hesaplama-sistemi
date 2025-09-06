@@ -16,7 +16,8 @@ import {
   FiClock,
   FiUsers,
   FiCreditCard,
-  FiShield
+  FiShield,
+  FiMessageSquare
 } from 'react-icons/fi';
 
 const Sidebar = ({ onLinkClick }) => {
@@ -85,6 +86,15 @@ const Sidebar = ({ onLinkClick }) => {
           <Nav.Link>
             <FiX className="me-2" />
             İptal Edilenler
+          </Nav.Link>
+        </LinkContainer>
+
+        <div className="px-3 py-2 text-muted small">İLETİŞİM</div>
+
+        <LinkContainer to="/communications/daily" onClick={handleLinkClick}>
+          <Nav.Link>
+            <FiMessageSquare className="me-2" />
+            Günlük Kayıt
           </Nav.Link>
         </LinkContainer>
 

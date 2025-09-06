@@ -141,8 +141,18 @@ router.get('/records', auth, async (req, res) => {
       month, 
       salesperson,
       page = 1, 
-      limit = 50 
+      limit = 50,
+      type = 'daily' // 'daily' veya 'yearly'
     } = req.query;
+
+    // Eğer yearly isteniyorsa, geçmiş yıl verilerini getir
+    if (type === 'yearly') {
+      const years = await CommunicationYear.find({})
+        .sort({ year: -1 })
+        .limit(parseInt(limit));
+      
+      return res.json(years);
+    }
 
     let query = {};
 
@@ -370,5 +380,90 @@ function getGroupKey(date, groupBy) {
       return d.toISOString().split('T')[0];
   }
 }
+
+// @route   POST /api/communications/years
+// @desc    Yeni yıl verisi oluştur
+// @access  Private (Admin only)
+router.post('/years', [auth, adminAuth], async (req, res) => {
+  try {
+    const { year, type, statistics } = req.body;
+    
+    // Yıl zaten var mı kontrol et
+    const existingYear = await CommunicationYear.findOne({ year });
+    if (existingYear) {
+      return res.status(400).json({ message: 'Bu yıl zaten kayıtlı' });
+    }
+
+    const newYear = new CommunicationYear({
+      year,
+      type,
+      statistics,
+      isActive: type === 'active'
+    });
+
+    await newYear.save();
+
+    res.json({
+      message: 'Yıl verisi başarıyla oluşturuldu',
+      year: newYear
+    });
+
+  } catch (error) {
+    console.error('Create year error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/communications/years/:id
+// @desc    Yıl verisini güncelle
+// @access  Private (Admin only)
+router.put('/years/:id', [auth, adminAuth], async (req, res) => {
+  try {
+    const { year, type, statistics } = req.body;
+    
+    const yearData = await CommunicationYear.findById(req.params.id);
+    if (!yearData) {
+      return res.status(404).json({ message: 'Yıl verisi bulunamadı' });
+    }
+
+    yearData.year = year;
+    yearData.type = type;
+    yearData.statistics = statistics;
+    yearData.isActive = type === 'active';
+
+    await yearData.save();
+
+    res.json({
+      message: 'Yıl verisi başarıyla güncellendi',
+      year: yearData
+    });
+
+  } catch (error) {
+    console.error('Update year error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   DELETE /api/communications/years/:id
+// @desc    Yıl verisini sil
+// @access  Private (Admin only)
+router.delete('/years/:id', [auth, adminAuth], async (req, res) => {
+  try {
+    const yearData = await CommunicationYear.findById(req.params.id);
+    if (!yearData) {
+      return res.status(404).json({ message: 'Yıl verisi bulunamadı' });
+    }
+
+    await CommunicationYear.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: 'Yıl verisi başarıyla silindi'
+    });
+
+  } catch (error) {
+    console.error('Delete year error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
 
 module.exports = router;

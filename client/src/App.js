@@ -19,6 +19,7 @@ import PendingUsers from './components/Admin/PendingUsers';
 import UserPermissions from './components/Admin/UserPermissions';
 import SystemSettings from './components/SystemSettings/SystemSettings';
 import Profile from './components/Profile/Profile';
+import DailyCommunicationEntry from './components/Communications/DailyCommunicationEntry';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -99,6 +100,9 @@ function AppContent() {
                     <Route path="/sales/new" element={<SaleForm />} />
                     <Route path="/sales/edit/:id" element={<SaleForm />} />
                     <Route path="/sales/cancelled" element={<CancelledSales />} />
+                    
+                    {/* İletişim Routes */}
+                    <Route path="/communications/daily" element={<DailyCommunicationEntry />} />
                     
                     {/* Prim Routes */}
                     <Route path="/prims/transactions" element={<PrimTransactions />} />
