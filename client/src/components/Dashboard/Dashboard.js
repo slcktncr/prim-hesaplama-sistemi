@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Alert, Form, Button, Nav, Tab } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { FiRefreshCw, FiCalendar, FiBarChart3, FiUsers } from 'react-icons/fi';
+import { FiRefreshCw, FiCalendar, FiBarChart, FiUsers } from 'react-icons/fi';
 import { reportsAPI, primsAPI } from '../../utils/api';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
@@ -108,7 +108,7 @@ const Dashboard = () => {
         <Nav variant="tabs" className="mb-4">
           <Nav.Item>
             <Nav.Link eventKey="analytics">
-              <FiBarChart3 className="me-2" />
+              <FiBarChart className="me-2" />
               Analitik
             </Nav.Link>
           </Nav.Item>
