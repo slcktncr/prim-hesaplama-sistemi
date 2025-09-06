@@ -98,6 +98,13 @@ const Sidebar = ({ onLinkClick }) => {
           </Nav.Link>
         </LinkContainer>
 
+        <LinkContainer to="/communications/reports" onClick={handleLinkClick}>
+          <Nav.Link>
+            <FiBarChart2 className="me-2" />
+            İletişim & Satış Raporu
+          </Nav.Link>
+        </LinkContainer>
+
         <div className="px-3 py-2 text-muted small">PRİMLER</div>
 
         <LinkContainer to="/prims/transactions" onClick={handleLinkClick}>
