@@ -1,0 +1,299 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Card, 
+  Table, 
+  Button, 
+  Badge, 
+  Modal, 
+  Form, 
+  Alert,
+  Row,
+  Col
+} from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { 
+  FiUsers, 
+  FiEdit, 
+  FiCheck, 
+  FiX, 
+  FiAlertTriangle,
+  FiInfo
+} from 'react-icons/fi';
+
+import { usersAPI } from '../../utils/api';
+import { formatDate } from '../../utils/helpers';
+import Loading from '../Common/Loading';
+
+const CommunicationRequirements = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [formData, setFormData] = useState({
+    requiresCommunicationEntry: true,
+    exemptReason: ''
+  });
+
+  useEffect(() => {
+    fetchCommunicationSettings();
+  }, []);
+
+  const fetchCommunicationSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await usersAPI.getCommunicationSettings();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Communication settings fetch error:', error);
+      toast.error('İletişim ayarları yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditRequirement = (user) => {
+    setSelectedUser(user);
+    setFormData({
+      requiresCommunicationEntry: user.requiresCommunicationEntry,
+      exemptReason: user.communicationExemptReason || ''
+    });
+    setShowModal(true);
+  };
+
+  const handleSaveRequirement = async () => {
+    try {
+      if (!formData.requiresCommunicationEntry && !formData.exemptReason.trim()) {
+        toast.error('Muafiyet sebebi giriniz');
+        return;
+      }
+
+      await usersAPI.updateCommunicationRequirement(selectedUser._id, formData);
+      
+      toast.success(
+        formData.requiresCommunicationEntry 
+          ? 'İletişim kaydı zorunluluğu aktifleştirildi'
+          : 'İletişim kaydı zorunluluğu kaldırıldı'
+      );
+      
+      setShowModal(false);
+      fetchCommunicationSettings();
+      
+    } catch (error) {
+      console.error('Update communication requirement error:', error);
+      toast.error('Ayar güncellenirken hata oluştu');
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedUser(null);
+    setFormData({
+      requiresCommunicationEntry: true,
+      exemptReason: ''
+    });
+  };
+
+  const getStatusBadge = (user) => {
+    if (!user.isActive) {
+      return <Badge bg="secondary">Pasif</Badge>;
+    }
+    
+    if (user.requiresCommunicationEntry) {
+      return <Badge bg="success">Zorunlu</Badge>;
+    } else {
+      return <Badge bg="warning">Muaf</Badge>;
+    }
+  };
+
+  const getStatusColor = (user) => {
+    if (!user.isActive) return 'table-secondary';
+    if (user.requiresCommunicationEntry) return '';
+    return 'table-warning';
+  };
+
+  if (loading) {
+    return <Loading variant="dots" size="large" />;
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4>
+            <FiUsers className="me-2" />
+            İletişim Kaydı Zorunlulukları
+          </h4>
+          <p className="text-muted mb-0">
+            Hangi temsilcilerin günlük iletişim kaydı girmesi gerektiğini yönetin
+          </p>
+        </div>
+      </div>
+
+      {/* Info Alert */}
+      <Alert variant="info" className="mb-4">
+        <FiInfo className="me-2" />
+        <strong>Bilgi:</strong> İletişim kaydı zorunlu olmayan kullanıcılar günlük veri girişi yapmak zorunda değildir ve ceza puanı almazlar.
+      </Alert>
+
+      {/* Users Table */}
+      <Card>
+        <Card.Header>
+          <div className="d-flex justify-content-between align-items-center">
+            <h6 className="mb-0">Temsilci Listesi</h6>
+            <Badge bg="primary">{users.length} temsilci</Badge>
+          </div>
+        </Card.Header>
+        <Card.Body className="p-0">
+          <Table responsive hover className="mb-0">
+            <thead className="table-light">
+              <tr>
+                <th>Temsilci</th>
+                <th>Email</th>
+                <th>Hesap Durumu</th>
+                <th>İletişim Zorunluluğu</th>
+                <th>Muafiyet Bilgisi</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user._id} className={getStatusColor(user)}>
+                  <td>
+                    <div className="fw-bold">{user.name}</div>
+                  </td>
+                  <td>
+                    <small className="text-muted">{user.email}</small>
+                  </td>
+                  <td>
+                    {user.isActive ? (
+                      <Badge bg="success">Aktif</Badge>
+                    ) : (
+                      <Badge bg="secondary">Pasif</Badge>
+                    )}
+                  </td>
+                  <td>
+                    {getStatusBadge(user)}
+                  </td>
+                  <td>
+                    {!user.requiresCommunicationEntry && user.communicationExemptReason ? (
+                      <div>
+                        <div className="small fw-bold text-warning">
+                          {user.communicationExemptReason}
+                        </div>
+                        <div className="small text-muted">
+                          {user.communicationExemptBy?.name} - {formatDate(user.communicationExemptAt)}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-muted">-</span>
+                    )}
+                  </td>
+                  <td>
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => handleEditRequirement(user)}
+                      disabled={!user.isActive}
+                    >
+                      <FiEdit className="me-1" />
+                      Düzenle
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
+
+      {/* Edit Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FiEdit className="me-2" />
+            İletişim Zorunluluğu Düzenle
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedUser && (
+            <>
+              <Alert variant="info" className="mb-3">
+                <strong>Temsilci:</strong> {selectedUser.name} ({selectedUser.email})
+              </Alert>
+
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>İletişim Kaydı Durumu</Form.Label>
+                  <div>
+                    <Form.Check
+                      type="radio"
+                      id="required"
+                      name="communicationRequirement"
+                      label="Zorunlu - Günlük iletişim kaydı girmeli"
+                      checked={formData.requiresCommunicationEntry}
+                      onChange={() => setFormData(prev => ({ 
+                        ...prev, 
+                        requiresCommunicationEntry: true,
+                        exemptReason: ''
+                      }))}
+                    />
+                    <Form.Check
+                      type="radio"
+                      id="exempt"
+                      name="communicationRequirement"
+                      label="Muaf - İletişim kaydı girmek zorunda değil"
+                      checked={!formData.requiresCommunicationEntry}
+                      onChange={() => setFormData(prev => ({ 
+                        ...prev, 
+                        requiresCommunicationEntry: false 
+                      }))}
+                    />
+                  </div>
+                </Form.Group>
+
+                {!formData.requiresCommunicationEntry && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Muafiyet Sebebi *</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={formData.exemptReason}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        exemptReason: e.target.value 
+                      }))}
+                      placeholder="Neden iletişim kaydı girme zorunluluğu kaldırılıyor?"
+                    />
+                    <Form.Text className="text-muted">
+                      Örnek: Yönetici pozisyonu, farklı görev tanımı, vb.
+                    </Form.Text>
+                  </Form.Group>
+                )}
+
+                {!formData.requiresCommunicationEntry && (
+                  <Alert variant="warning">
+                    <FiAlertTriangle className="me-2" />
+                    <strong>Uyarı:</strong> Bu temsilci artık günlük iletişim kaydı girmek zorunda olmayacak ve ceza puanı almayacaktır.
+                  </Alert>
+                )}
+              </Form>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            <FiX className="me-1" />
+            İptal
+          </Button>
+          <Button variant="primary" onClick={handleSaveRequirement}>
+            <FiCheck className="me-1" />
+            Kaydet
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default CommunicationRequirements;

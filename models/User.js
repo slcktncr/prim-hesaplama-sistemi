@@ -57,6 +57,33 @@ const userSchema = new mongoose.Schema({
   approvedAt: {
     type: Date
   },
+  
+  // Ceza puanı sistemi
+  isPenaltyDeactivated: {
+    type: Boolean,
+    default: false // Ceza puanı nedeniyle pasifleştirilmiş mi?
+  },
+  penaltyDeactivatedAt: {
+    type: Date
+  },
+  
+  // İletişim kayıt sistemi
+  requiresCommunicationEntry: {
+    type: Boolean,
+    default: true // İletişim kaydı girme zorunluluğu var mı?
+  },
+  communicationExemptReason: {
+    type: String,
+    trim: true // Muafiyet sebebi
+  },
+  communicationExemptBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User' // Muafiyeti kim verdi?
+  },
+  communicationExemptAt: {
+    type: Date // Muafiyet tarihi
+  },
+  
   createdAt: {
     type: Date,
     default: Date.now

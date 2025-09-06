@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Alert, Form, Button } from 'react-bootstrap';
+import { Row, Col, Card, Alert, Form, Button, Nav, Tab } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { FiRefreshCw, FiCalendar } from 'react-icons/fi';
+import { FiRefreshCw, FiCalendar, FiBarChart3, FiUsers } from 'react-icons/fi';
 import { reportsAPI, primsAPI } from '../../utils/api';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,7 @@ import Loading from '../Common/Loading';
 import StatsCard from './StatsCard';
 import TopPerformers from './TopPerformers';
 import RecentActivity from './RecentActivity';
+import TeamStatus from './TeamStatus';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -100,36 +101,55 @@ const Dashboard = () => {
             {user?.role === 'admin' && <span className="badge bg-warning ms-2">Admin</span>}
           </p>
         </div>
-        
-        {/* Dönem Seçici */}
-        <div className="d-flex align-items-center gap-3">
-          <div className="d-flex align-items-center">
-            <FiCalendar className="me-2 text-muted" />
-            <Form.Select
-              value={selectedPeriod}
-              onChange={(e) => handlePeriodChange(e.target.value)}
-              style={{ minWidth: '200px' }}
-            >
-              <option value="all">Tüm Dönemler</option>
-              <option value="current">Güncel Dönem</option>
-              {periods.map(period => (
-                <option key={period._id} value={period._id}>
-                  {period.name}
-                </option>
-              ))}
-            </Form.Select>
-          </div>
-          <Button 
-            variant="outline-primary" 
-            size="sm"
-            onClick={fetchDashboardData}
-            disabled={loading}
-          >
-            <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
-            Yenile
-          </Button>
-        </div>
       </div>
+
+      {/* Dashboard Tabs */}
+      <Tab.Container defaultActiveKey="analytics">
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link eventKey="analytics">
+              <FiBarChart3 className="me-2" />
+              Analitik
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="team-status">
+              <FiUsers className="me-2" />
+              Takım Durumları
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        <Tab.Content>
+          <Tab.Pane eventKey="analytics">
+            {/* Dönem Seçici */}
+            <div className="d-flex justify-content-end align-items-center gap-3 mb-4">
+              <div className="d-flex align-items-center">
+                <FiCalendar className="me-2 text-muted" />
+                <Form.Select
+                  value={selectedPeriod}
+                  onChange={(e) => handlePeriodChange(e.target.value)}
+                  style={{ minWidth: '200px' }}
+                >
+                  <option value="all">Tüm Dönemler</option>
+                  <option value="current">Güncel Dönem</option>
+                  {periods.map(period => (
+                    <option key={period._id} value={period._id}>
+                      {period.name}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={fetchDashboardData}
+                disabled={loading}
+              >
+                <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
+                Yenile
+              </Button>
+            </div>
 
       <style>{`
         .spin {
@@ -269,6 +289,13 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="team-status">
+            <TeamStatus />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
     </div>
   );
 };

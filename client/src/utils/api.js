@@ -98,6 +98,8 @@ export const usersAPI = {
   changeRole: (id, role) => API.put(`/users/${id}/role`, { role }),
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
   updateUser: (id, userData) => API.put(`/users/${id}`, userData),
+  updateCommunicationRequirement: (id, data) => API.put(`/users/${id}/communication-requirement`, data),
+  getCommunicationSettings: () => API.get('/users/communication-settings')
 };
 
 // Payment Methods API calls
@@ -123,6 +125,33 @@ export const systemSettingsAPI = {
   createPaymentType: (data) => API.post('/system-settings/payment-types', data),
   updatePaymentType: (id, data) => API.put(`/system-settings/payment-types/${id}`, data),
   deletePaymentType: (id) => API.delete(`/system-settings/payment-types/${id}`)
+};
+
+// Communications API calls
+export const communicationsAPI = {
+  getToday: () => API.get('/communications/today'),
+  saveDaily: (data) => API.post('/communications/daily', data),
+  getRecords: (params) => API.get('/communications/records', { params }),
+  getReport: (params) => API.get('/communications/report', { params })
+};
+
+// Penalties API calls
+export const penaltiesAPI = {
+  getMyStatus: () => API.get('/penalties/my-status'),
+  getAllUsers: (params) => API.get('/penalties/all-users', { params }),
+  reactivateUser: (userId, data) => API.post(`/penalties/reactivate/${userId}`, data),
+  checkDaily: (data) => API.post('/penalties/check-daily', data),
+  addManualPenalty: (data) => API.post('/penalties/manual-penalty', data)
+};
+
+// Daily Status API calls
+export const dailyStatusAPI = {
+  getMyStatus: () => API.get('/daily-status/my-status'),
+  setStatus: (status, statusNote) => API.post('/daily-status/set-status', { status, statusNote }),
+  getTeamStatus: () => API.get('/daily-status/team-status'),
+  getHistory: (params) => API.get('/daily-status/history', { params }),
+  adminSetStatus: (userId, status, statusNote, date) => API.post(`/daily-status/admin/set-status/${userId}`, { status, statusNote, date }),
+  adminGetAllStatuses: (date) => API.get('/daily-status/admin/all-statuses', { params: { date } })
 };
 
 export default API;

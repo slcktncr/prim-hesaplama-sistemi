@@ -272,4 +272,73 @@ router.put('/:id', [
   }
 });
 
+// @route   PUT /api/users/:id/communication-requirement
+// @desc    İletişim kaydı zorunluluğunu güncelle
+// @access  Private (Admin only)
+router.put('/:id/communication-requirement', [auth, adminAuth], async (req, res) => {
+  try {
+    const { requiresCommunicationEntry, exemptReason } = req.body;
+    
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // İletişim zorunluluğu durumunu güncelle
+    user.requiresCommunicationEntry = requiresCommunicationEntry;
+    
+    if (!requiresCommunicationEntry) {
+      // Muafiyet veriliyor
+      user.communicationExemptReason = exemptReason;
+      user.communicationExemptBy = req.user.id;
+      user.communicationExemptAt = new Date();
+    } else {
+      // Muafiyet kaldırılıyor
+      user.communicationExemptReason = undefined;
+      user.communicationExemptBy = undefined;
+      user.communicationExemptAt = undefined;
+    }
+
+    await user.save();
+
+    res.json({
+      message: requiresCommunicationEntry 
+        ? 'İletişim kaydı zorunluluğu aktifleştirildi'
+        : 'İletişim kaydı zorunluluğu kaldırıldı',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        requiresCommunicationEntry: user.requiresCommunicationEntry,
+        communicationExemptReason: user.communicationExemptReason,
+        communicationExemptAt: user.communicationExemptAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Update communication requirement error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/users/communication-settings
+// @desc    Tüm kullanıcıların iletişim ayarlarını getir
+// @access  Private (Admin only)
+router.get('/communication-settings', [auth, adminAuth], async (req, res) => {
+  try {
+    const users = await User.find({ 
+      role: 'salesperson',
+      isApproved: true 
+    })
+    .select('name email isActive requiresCommunicationEntry communicationExemptReason communicationExemptBy communicationExemptAt')
+    .populate('communicationExemptBy', 'name')
+    .sort({ name: 1 });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Get communication settings error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;

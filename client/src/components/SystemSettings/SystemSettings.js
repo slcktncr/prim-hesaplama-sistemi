@@ -14,7 +14,8 @@ import {
   FiUsers,
   FiCalendar,
   FiClock,
-  FiShield
+  FiShield,
+  FiMessageSquare
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
@@ -24,6 +25,7 @@ import ActiveUsers from '../Admin/ActiveUsers';
 import PrimPeriods from '../Prims/PrimPeriods';
 import PendingUsers from '../Admin/PendingUsers';
 import UserPermissions from '../Admin/UserPermissions';
+import CommunicationRequirements from './CommunicationRequirements';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -90,6 +92,12 @@ const SystemSettings = () => {
                   Kullanıcı Yetkileri
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="communication-requirements">
+                  <FiMessageSquare className="me-2" />
+                  İletişim Zorunlulukları
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -114,6 +122,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="permissions">
                   <UserPermissions />
+                </Tab.Pane>
+                <Tab.Pane eventKey="communication-requirements">
+                  <CommunicationRequirements />
                 </Tab.Pane>
               </Tab.Content>
             </div>
