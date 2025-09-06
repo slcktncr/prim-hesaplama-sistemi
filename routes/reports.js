@@ -89,7 +89,8 @@ router.get('/dashboard', auth, async (req, res) => {
           _id: '$salesperson', 
           count: { $sum: 1 }, 
           totalAmount: { $sum: '$basePrimPrice' },
-          totalPrim: { $sum: '$primAmount' }
+          totalPrim: { $sum: '$primAmount' },
+          maxSale: { $max: '$basePrimPrice' }
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
@@ -99,7 +100,8 @@ router.get('/dashboard', auth, async (req, res) => {
           count: 1, 
           totalAmount: 1, 
           totalPrim: 1,
-          avgAmount: { $divide: ['$totalAmount', '$count'] }
+          avgAmount: { $divide: ['$totalAmount', '$count'] },
+          maxSingleSale: '$maxSale'
         } },
         { $sort: { count: -1 } },
         { $limit: 5 }
@@ -112,7 +114,8 @@ router.get('/dashboard', auth, async (req, res) => {
           _id: '$salesperson', 
           count: { $sum: 1 }, 
           totalAmount: { $sum: '$basePrimPrice' },
-          totalPrim: { $sum: '$primAmount' }
+          totalPrim: { $sum: '$primAmount' },
+          maxSale: { $max: '$basePrimPrice' }
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
@@ -122,7 +125,8 @@ router.get('/dashboard', auth, async (req, res) => {
           count: 1, 
           totalAmount: 1, 
           totalPrim: 1,
-          avgAmount: { $divide: ['$totalAmount', '$count'] }
+          avgAmount: { $divide: ['$totalAmount', '$count'] },
+          maxSingleSale: '$maxSale'
         } },
         { $sort: { totalAmount: -1 } },
         { $limit: 5 }
@@ -135,7 +139,8 @@ router.get('/dashboard', auth, async (req, res) => {
           _id: '$salesperson', 
           count: { $sum: 1 }, 
           totalAmount: { $sum: '$basePrimPrice' },
-          totalPrim: { $sum: '$primAmount' }
+          totalPrim: { $sum: '$primAmount' },
+          maxSale: { $max: '$basePrimPrice' }
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
@@ -145,7 +150,8 @@ router.get('/dashboard', auth, async (req, res) => {
           count: 1, 
           totalAmount: 1, 
           totalPrim: 1,
-          avgAmount: { $divide: ['$totalAmount', '$count'] }
+          avgAmount: { $divide: ['$totalAmount', '$count'] },
+          maxSingleSale: '$maxSale'
         } },
         { $sort: { totalPrim: -1 } },
         { $limit: 5 }
@@ -550,7 +556,8 @@ router.get('/top-performers', auth, async (req, res) => {
           totalSales: { $sum: 1 },
           totalAmount: { $sum: '$basePrimPrice' },
           totalPrim: { $sum: '$primAmount' },
-          avgSaleAmount: { $avg: '$basePrimPrice' }
+          avgSaleAmount: { $avg: '$basePrimPrice' },
+          maxSingleSale: { $max: '$basePrimPrice' }
         }
       },
       {
@@ -571,7 +578,8 @@ router.get('/top-performers', auth, async (req, res) => {
           totalSales: 1,
           totalAmount: 1,
           totalPrim: 1,
-          avgSaleAmount: 1
+          avgSaleAmount: 1,
+          maxSingleSale: 1
         }
       },
       { $sort: { totalSales: -1, totalPrim: -1 } },

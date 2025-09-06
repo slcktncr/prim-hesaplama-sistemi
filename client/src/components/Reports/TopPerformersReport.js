@@ -285,13 +285,37 @@ const TopPerformersReport = () => {
                 <div className="mb-3">
                   <div className="d-flex justify-content-between">
                     <span>En Yüksek Satış:</span>
-                    <strong>{formatNumber(topPerformers[0]?.totalSales || 0)}</strong>
+                    <strong>
+                      {formatNumber(
+                        topPerformers.length > 0 ? 
+                        Math.max(...topPerformers.map(p => p.totalSales)) : 
+                        0
+                      )}
+                    </strong>
                   </div>
                 </div>
                 <div className="mb-3">
                   <div className="d-flex justify-content-between">
                     <span>En Yüksek Prim:</span>
-                    <strong>{formatCurrency(topPerformers[0]?.netPrimAmount || topPerformers[0]?.totalPrim || 0)}</strong>
+                    <strong>
+                      {formatCurrency(
+                        topPerformers.length > 0 ? 
+                        Math.max(...topPerformers.map(p => p.netPrimAmount || p.totalPrim || 0)) : 
+                        0
+                      )}
+                    </strong>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between">
+                    <span>En Yüksek Tek Satış:</span>
+                    <strong>
+                      {formatCurrency(
+                        topPerformers.length > 0 ? 
+                        Math.max(...topPerformers.map(p => p.maxSingleSale || p.avgSaleAmount || 0)) : 
+                        0
+                      )}
+                    </strong>
                   </div>
                 </div>
                 <div className="mb-3">
@@ -318,7 +342,7 @@ const TopPerformersReport = () => {
                   <div className="d-flex justify-content-between">
                     <span>Toplam Prim:</span>
                     <strong className="text-success">
-                      {formatCurrency(topPerformers.reduce((sum, p) => sum + p.totalPrim, 0))}
+                      {formatCurrency(topPerformers.reduce((sum, p) => sum + (p.netPrimAmount || p.totalPrim || 0), 0))}
                     </strong>
                   </div>
                 </div>
