@@ -8,8 +8,7 @@ const PenaltyRecord = require('../models/PenaltyRecord');
 const User = require('../models/User');
 const Sale = require('../models/Sale');
 
-const auth = require('../middleware/auth');
-const adminAuth = require('../middleware/adminAuth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 

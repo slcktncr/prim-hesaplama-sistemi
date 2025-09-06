@@ -7,8 +7,7 @@ const CommunicationYear = require('../models/CommunicationYear');
 const DailyStatus = require('../models/DailyStatus');
 const User = require('../models/User');
 
-const auth = require('../middleware/auth');
-const adminAuth = require('../middleware/adminAuth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
