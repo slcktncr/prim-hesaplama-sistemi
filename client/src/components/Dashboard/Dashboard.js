@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Alert } from 'react-bootstrap';
+import { Row, Col, Card, Alert, Form, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { reportsAPI } from '../../utils/api';
+import { FiRefreshCw, FiCalendar } from 'react-icons/fi';
+import { reportsAPI, primsAPI } from '../../utils/api';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
@@ -11,19 +12,38 @@ import RecentActivity from './RecentActivity';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [periods, setPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchPeriods();
   }, []);
+
+  useEffect(() => {
+    if (periods.length > 0) {
+      fetchDashboardData();
+    }
+  }, [selectedPeriod, periods]);
+
+  const fetchPeriods = async () => {
+    try {
+      const response = await primsAPI.getPeriods();
+      setPeriods(response.data);
+    } catch (error) {
+      console.error('Periods fetch error:', error);
+      toast.error('Dönemler yüklenirken hata oluştu');
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await reportsAPI.getDashboard();
+      const params = selectedPeriod !== 'all' ? { period: selectedPeriod } : {};
+      const response = await reportsAPI.getDashboard(params);
       setDashboardData(response.data);
       setError(null);
     } catch (error) {
@@ -33,6 +53,17 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePeriodChange = (periodId) => {
+    setSelectedPeriod(periodId);
+  };
+
+  const getSelectedPeriodName = () => {
+    if (selectedPeriod === 'all') return 'Tüm Dönemler';
+    if (selectedPeriod === 'current') return 'Güncel Dönem';
+    const period = periods.find(p => p._id === selectedPeriod);
+    return period ? period.name : 'Bilinmeyen Dönem';
   };
 
   if (loading) {
