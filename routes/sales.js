@@ -1359,4 +1359,144 @@ router.put('/transaction/:transactionId/period', [auth, adminAuth], [
   }
 });
 
+// @route   PUT /api/sales/:id/modify
+// @desc    Satış değişikliği yap
+// @access  Private
+router.put('/:id/modify', [
+  auth,
+  body('blockNo').notEmpty().withMessage('Blok no gereklidir'),
+  body('apartmentNo').notEmpty().withMessage('Daire no gereklidir'),
+  body('periodNo').notEmpty().withMessage('Dönem no gereklidir'),
+  body('listPrice').isNumeric().withMessage('Liste fiyatı sayısal olmalıdır'),
+  body('activitySalePrice').isNumeric().withMessage('Aktivite satış fiyatı sayısal olmalıdır'),
+  body('contractNo').notEmpty().withMessage('Sözleşme no gereklidir'),
+  body('saleDate').optional().isISO8601().withMessage('Geçerli bir satış tarihi giriniz'),
+  body('kaporaDate').optional().isISO8601().withMessage('Geçerli bir kapora tarihi giriniz'),
+  body('entryDate').notEmpty().withMessage('Giriş tarihi gereklidir'),
+  body('exitDate').notEmpty().withMessage('Çıkış tarihi gereklidir'),
+  body('reason').notEmpty().withMessage('Değişiklik sebebi gereklidir')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veri',
+        errors: errors.array() 
+      });
+    }
+
+    const { id } = req.params;
+    const {
+      blockNo,
+      apartmentNo,
+      periodNo,
+      listPrice,
+      discountRate,
+      activitySalePrice,
+      contractNo,
+      saleDate,
+      kaporaDate,
+      entryDate,
+      exitDate,
+      reason
+    } = req.body;
+
+    // Mevcut satışı bul
+    const sale = await Sale.findById(id);
+    if (!sale) {
+      return res.status(404).json({ message: 'Satış bulunamadı' });
+    }
+
+    // Sadece kendi satışını değiştirebilir (admin hariç)
+    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Bu satışı değiştirme yetkiniz yok' });
+    }
+
+    // Önceki verileri kaydet
+    const previousData = {
+      blockNo: sale.blockNo,
+      apartmentNo: sale.apartmentNo,
+      periodNo: sale.periodNo,
+      listPrice: sale.listPrice,
+      discountRate: sale.discountRate,
+      activitySalePrice: sale.activitySalePrice,
+      contractNo: sale.contractNo,
+      saleDate: sale.saleDate,
+      kaporaDate: sale.kaporaDate,
+      entryDate: sale.entryDate,
+      exitDate: sale.exitDate,
+      basePrimPrice: sale.basePrimPrice,
+      primAmount: sale.primAmount
+    };
+
+    // Yeni verileri uygula
+    sale.blockNo = blockNo;
+    sale.apartmentNo = apartmentNo;
+    sale.periodNo = periodNo;
+    sale.listPrice = listPrice;
+    sale.discountRate = discountRate || 0;
+    sale.activitySalePrice = activitySalePrice;
+    sale.contractNo = contractNo;
+    sale.entryDate = entryDate;
+    sale.exitDate = exitDate;
+
+    // Tarih alanlarını güncelle
+    if (saleDate) sale.saleDate = saleDate;
+    if (kaporaDate) sale.kaporaDate = kaporaDate;
+
+    // Güncel prim oranını al
+    const currentPrimRate = await PrimRate.findOne().sort({ createdAt: -1 });
+    if (currentPrimRate) {
+      sale.primRate = currentPrimRate.rate;
+    }
+
+    // Değişiklik geçmişini kaydet
+    const newData = {
+      blockNo: sale.blockNo,
+      apartmentNo: sale.apartmentNo,
+      periodNo: sale.periodNo,
+      listPrice: sale.listPrice,
+      discountRate: sale.discountRate,
+      activitySalePrice: sale.activitySalePrice,
+      contractNo: sale.contractNo,
+      saleDate: sale.saleDate,
+      kaporaDate: sale.kaporaDate,
+      entryDate: sale.entryDate,
+      exitDate: sale.exitDate,
+      basePrimPrice: 0, // save middleware'de hesaplanacak
+      primAmount: 0 // save middleware'de hesaplanacak
+    };
+
+    sale.isModified = true;
+    sale.modificationHistory.push({
+      modifiedBy: req.user.id,
+      reason: reason,
+      previousData: previousData,
+      newData: newData
+    });
+
+    await sale.save();
+
+    // Yeni hesaplanan değerleri güncelle
+    const updatedSale = await Sale.findById(id)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name');
+
+    // Değişiklik geçmişindeki son kayıttaki newData'yı güncelle
+    const lastModification = updatedSale.modificationHistory[updatedSale.modificationHistory.length - 1];
+    lastModification.newData.basePrimPrice = updatedSale.basePrimPrice;
+    lastModification.newData.primAmount = updatedSale.primAmount;
+    await updatedSale.save();
+
+    res.json({
+      message: 'Satış başarıyla güncellendi',
+      sale: updatedSale
+    });
+
+  } catch (error) {
+    console.error('Sale modification error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;

@@ -209,7 +209,57 @@ const saleSchema = new mongoose.Schema({
   transferredBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  
+  // Değişiklik geçmişi
+  isModified: {
+    type: Boolean,
+    default: false
+  },
+  modificationHistory: [{
+    modifiedAt: {
+      type: Date,
+      default: Date.now
+    },
+    modifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    reason: {
+      type: String,
+      trim: true
+    },
+    previousData: {
+      blockNo: String,
+      apartmentNo: String,
+      periodNo: String,
+      listPrice: Number,
+      discountRate: Number,
+      activitySalePrice: Number,
+      contractNo: String,
+      saleDate: Date,
+      kaporaDate: Date,
+      entryDate: String,
+      exitDate: String,
+      basePrimPrice: Number,
+      primAmount: Number
+    },
+    newData: {
+      blockNo: String,
+      apartmentNo: String,
+      periodNo: String,
+      listPrice: Number,
+      discountRate: Number,
+      activitySalePrice: Number,
+      contractNo: String,
+      saleDate: Date,
+      kaporaDate: Date,
+      entryDate: String,
+      exitDate: String,
+      basePrimPrice: Number,
+      primAmount: Number
+    }
+  }]
 });
 
 // Prim hesaplama middleware

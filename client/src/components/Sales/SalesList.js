@@ -27,7 +27,9 @@ import {
   FiTrash2,
   FiFilter,
   FiCalendar,
-  FiFileText
+  FiFileText,
+  FiClock,
+  FiEdit3
 } from 'react-icons/fi';
 
 import { salesAPI, primsAPI, usersAPI } from '../../utils/api';
@@ -44,6 +46,8 @@ import {
 import TransferModal from './TransferModal';
 import NotesModal from './NotesModal';
 import ConvertToSaleModal from './ConvertToSaleModal';
+import ModifySaleModal from './ModifySaleModal';
+import ModificationHistoryModal from './ModificationHistoryModal';
 import Loading from '../Common/Loading';
 
 const SalesList = () => {
@@ -74,6 +78,8 @@ const SalesList = () => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const [showModifyModal, setShowModifyModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
 
   const { user } = useAuth();
@@ -186,6 +192,16 @@ const SalesList = () => {
   const openConvertModal = (sale) => {
     setSelectedSale(sale);
     setShowConvertModal(true);
+  };
+
+  const openModifyModal = (sale) => {
+    setSelectedSale(sale);
+    setShowModifyModal(true);
+  };
+
+  const openHistoryModal = (sale) => {
+    setSelectedSale(sale);
+    setShowHistoryModal(true);
   };
 
   const handleDeleteSale = async (sale) => {
@@ -402,12 +418,23 @@ const SalesList = () => {
                   {sales.map((sale) => (
                     <tr key={sale._id}>
                       <td>
-                        <div>
-                          <strong>{sale.customerName}</strong>
-                          <br />
-                          <small className="text-muted">
-                            Dönem: {sale.periodNo}
-                          </small>
+                        <div className="d-flex align-items-start">
+                          <div className="flex-grow-1">
+                            <strong>{sale.customerName}</strong>
+                            {sale.isModified && (
+                              <FiEdit3 
+                                className="ms-2 text-warning" 
+                                size={14}
+                                style={{ cursor: 'pointer' }}
+                                title="Bu satış değiştirilmiş - Geçmişi görüntülemek için tıklayın"
+                                onClick={() => openHistoryModal(sale)}
+                              />
+                            )}
+                            <br />
+                            <small className="text-muted">
+                              Dönem: {sale.periodNo}
+                            </small>
+                          </div>
                         </div>
                       </td>
                       <td>
@@ -578,6 +605,28 @@ const SalesList = () => {
                               <Dropdown.Item as={Link} to={`/sales/edit/${sale._id}`}>
                                 <FiEdit className="me-2" />
                                 Düzenle
+                              </Dropdown.Item>
+                            )}
+
+                            {/* Değişiklik Yap - Sadece kendi satışı veya admin */}
+                            {sale.status === 'aktif' && (isAdmin || sale.salesperson?._id === user?._id) && (
+                              <Dropdown.Item 
+                                onClick={() => openModifyModal(sale)}
+                                className="text-warning"
+                              >
+                                <FiEdit3 className="me-2" />
+                                Değişiklik Yap
+                              </Dropdown.Item>
+                            )}
+
+                            {/* Değişiklik Geçmişi - Sadece değiştirilmiş satışlar için */}
+                            {sale.isModified && (
+                              <Dropdown.Item 
+                                onClick={() => openHistoryModal(sale)}
+                                className="text-info"
+                              >
+                                <FiClock className="me-2" />
+                                Değişiklik Geçmişi
                               </Dropdown.Item>
                             )}
 
@@ -774,6 +823,29 @@ const SalesList = () => {
             setShowConvertModal(false);
             setSelectedSale(null);
           }}
+        />
+      )}
+
+      {/* Modify Sale Modal */}
+      {showModifyModal && (
+        <ModifySaleModal
+          show={showModifyModal}
+          onHide={() => setShowModifyModal(false)}
+          sale={selectedSale}
+          onModified={() => {
+            fetchSales();
+            setShowModifyModal(false);
+            setSelectedSale(null);
+          }}
+        />
+      )}
+
+      {/* Modification History Modal */}
+      {showHistoryModal && (
+        <ModificationHistoryModal
+          show={showHistoryModal}
+          onHide={() => setShowHistoryModal(false)}
+          sale={selectedSale}
         />
       )}
     </div>

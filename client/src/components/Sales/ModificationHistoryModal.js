@@ -1,0 +1,122 @@
+import React from 'react';
+import { Modal, Table, Badge, Alert, Row, Col } from 'react-bootstrap';
+import { FiClock, FiUser, FiEdit } from 'react-icons/fi';
+
+import { formatCurrency, formatDate } from '../../utils/helpers';
+
+const ModificationHistoryModal = ({ show, onHide, sale }) => {
+  if (!sale || !sale.modificationHistory || sale.modificationHistory.length === 0) {
+    return (
+      <Modal show={show} onHide={onHide} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FiClock className="me-2" />
+            Değişiklik Geçmişi
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="info">
+            Bu satış için henüz değişiklik kaydı bulunmuyor.
+          </Alert>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
+  const renderComparisonRow = (label, previousValue, newValue, isDate = false, isCurrency = false) => {
+    const formatValue = (value) => {
+      if (!value && value !== 0) return '-';
+      if (isDate) return formatDate(value);
+      if (isCurrency) return formatCurrency(value);
+      return value.toString();
+    };
+
+    const hasChanged = previousValue !== newValue;
+
+    return (
+      <tr key={label}>
+        <td className="fw-bold">{label}</td>
+        <td className={hasChanged ? 'text-muted' : ''}>{formatValue(previousValue)}</td>
+        <td className={hasChanged ? 'text-primary fw-bold' : ''}>{formatValue(newValue)}</td>
+        <td className="text-center">
+          {hasChanged ? (
+            <Badge bg="warning">Değişti</Badge>
+          ) : (
+            <Badge bg="light" text="dark">Aynı</Badge>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
+  return (
+    <Modal show={show} onHide={onHide} size="xl">
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <FiClock className="me-2" />
+          Değişiklik Geçmişi
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert variant="info" className="mb-4">
+          <strong>Satış:</strong> {sale.customerName} - {sale.blockNo}/{sale.apartmentNo} - Dönem: {sale.periodNo}
+        </Alert>
+
+        {sale.modificationHistory.map((modification, index) => (
+          <div key={index} className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">
+                <FiEdit className="me-2" />
+                Değişiklik #{sale.modificationHistory.length - index}
+              </h6>
+              <div className="text-muted small">
+                <FiUser className="me-1" />
+                {modification.modifiedBy?.name || 'Bilinmeyen Kullanıcı'} - {formatDate(modification.modifiedAt)}
+              </div>
+            </div>
+
+            {modification.reason && (
+              <Alert variant="secondary" className="mb-3">
+                <strong>Sebep:</strong> {modification.reason}
+              </Alert>
+            )}
+
+            <Row>
+              <Col>
+                <Table striped bordered hover size="sm">
+                  <thead className="table-dark">
+                    <tr>
+                      <th>Alan</th>
+                      <th>Önceki Değer</th>
+                      <th>Yeni Değer</th>
+                      <th className="text-center">Durum</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {renderComparisonRow('Blok No', modification.previousData?.blockNo, modification.newData?.blockNo)}
+                    {renderComparisonRow('Daire No', modification.previousData?.apartmentNo, modification.newData?.apartmentNo)}
+                    {renderComparisonRow('Dönem No', modification.previousData?.periodNo, modification.newData?.periodNo)}
+                    {renderComparisonRow('Liste Fiyatı', modification.previousData?.listPrice, modification.newData?.listPrice, false, true)}
+                    {renderComparisonRow('İndirim Oranı (%)', modification.previousData?.discountRate, modification.newData?.discountRate)}
+                    {renderComparisonRow('Aktivite Satış Fiyatı', modification.previousData?.activitySalePrice, modification.newData?.activitySalePrice, false, true)}
+                    {renderComparisonRow('Sözleşme No', modification.previousData?.contractNo, modification.newData?.contractNo)}
+                    {modification.previousData?.saleDate && renderComparisonRow('Satış Tarihi', modification.previousData?.saleDate, modification.newData?.saleDate, true)}
+                    {modification.previousData?.kaporaDate && renderComparisonRow('Kapora Tarihi', modification.previousData?.kaporaDate, modification.newData?.kaporaDate, true)}
+                    {renderComparisonRow('Giriş Tarihi', modification.previousData?.entryDate, modification.newData?.entryDate)}
+                    {renderComparisonRow('Çıkış Tarihi', modification.previousData?.exitDate, modification.newData?.exitDate)}
+                    {renderComparisonRow('Base Prim Fiyatı', modification.previousData?.basePrimPrice, modification.newData?.basePrimPrice, false, true)}
+                    {renderComparisonRow('Prim Tutarı', modification.previousData?.primAmount, modification.newData?.primAmount, false, true)}
+                  </tbody>
+                </Table>
+              </Col>
+            </Row>
+
+            {index < sale.modificationHistory.length - 1 && <hr />}
+          </div>
+        ))}
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+export default ModificationHistoryModal;
