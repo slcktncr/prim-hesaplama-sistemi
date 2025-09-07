@@ -23,7 +23,8 @@ import {
   FiBarChart,
   FiUsers,
   FiMessageSquare,
-  FiPhone
+  FiPhone,
+  FiCheck
 } from 'react-icons/fi';
 
 import { communicationsAPI, usersAPI } from '../../utils/api';
@@ -100,14 +101,22 @@ const HistoricalDataManagement = () => {
       if (editingYear) {
         // Güncelleme
         await communicationsAPI.updateYear(editingYear._id, formData);
-        toast.success('Yıl verisi güncellendi');
+        toast.success('Yıl verisi güncellendi - Veri girişine devam edebilirsiniz');
       } else {
         // Yeni ekleme
         await communicationsAPI.createYear(formData);
-        toast.success('Yıl verisi eklendi');
+        toast.success('Yıl verisi eklendi - Veri girişine devam edebilirsiniz');
+        // Yeni ekleme sonrası düzenleme moduna geç
+        const response = await communicationsAPI.getRecords({ type: 'yearly', limit: 1 });
+        if (response.data && response.data.length > 0) {
+          const newYear = response.data.find(y => y.year === formData.year);
+          if (newYear) {
+            setEditingYear(newYear);
+          }
+        }
       }
       
-      setShowModal(false);
+      // Modal'ı kapatma, sadece verileri güncelle
       fetchData();
       
     } catch (error) {
@@ -675,7 +684,7 @@ const HistoricalDataManagement = () => {
             İptal
           </Button>
           <Button 
-            variant="primary" 
+            variant="success" 
             onClick={handleSaveYear}
             disabled={saving}
           >
@@ -688,6 +697,26 @@ const HistoricalDataManagement = () => {
               <>
                 <FiSave className="me-1" />
                 {editingYear ? 'Güncelle' : 'Kaydet'}
+              </>
+            )}
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={async () => {
+              await handleSaveYear();
+              setShowModal(false);
+            }}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <div className="spinner-border spinner-border-sm me-2" />
+                Kaydediliyor...
+              </>
+            ) : (
+              <>
+                <FiCheck className="me-1" />
+                Kaydet ve Kapat
               </>
             )}
           </Button>
