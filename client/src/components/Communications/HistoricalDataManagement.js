@@ -78,7 +78,9 @@ const HistoricalDataManagement = () => {
       year: new Date().getFullYear() - 1,
       type: 'historical',
       monthlyData: {},
-      historicalUsers: []
+      historicalUsers: [],
+      yearlySalesData: {},
+      yearlyCommunicationData: {}
     });
     setSelectedMonth(1);
     setShowModal(true);
