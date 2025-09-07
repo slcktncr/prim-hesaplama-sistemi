@@ -59,7 +59,7 @@ const HistoricalDataManagement = () => {
       setLoading(true);
       const [yearsResponse, usersResponse] = await Promise.all([
         communicationsAPI.getRecords({ type: 'yearly' }),
-        usersAPI.getSalespeople()
+        usersAPI.getAllUsers() // getSalespeople yerine getAllUsers kullan
       ]);
       
       console.log('=== HISTORICAL DATA DEBUG ===');
@@ -296,13 +296,22 @@ const HistoricalDataManagement = () => {
   };
 
   const getAllUsersForYear = () => {
-    // Sadece satış temsilcilerini dahil et, ziyaretçileri hariç tut
-    const activeRepresentatives = users.filter(user => user.role === 'salesperson');
+    // Sadece satış temsilcilerini dahil et, ziyaretçileri ve admin'leri hariç tut
+    const activeRepresentatives = users.filter(user => 
+      user.role === 'salesperson' && user.isActive !== false && user.isApproved !== false
+    );
     console.log('=== getAllUsersForYear DEBUG ===');
     console.log('Total users:', users.length);
+    console.log('All users details:', users.map(u => ({ 
+      name: u.name, 
+      role: u.role, 
+      isActive: u.isActive, 
+      isApproved: u.isApproved 
+    })));
     console.log('Active representatives:', activeRepresentatives.length);
+    console.log('Active representatives names:', activeRepresentatives.map(u => u.name));
     console.log('Historical users:', formData.historicalUsers.length);
-    console.log('Users sample:', users.slice(0, 2));
+    console.log('Historical users names:', formData.historicalUsers.map(u => u.name));
     console.log('=== END getAllUsersForYear DEBUG ===');
     return [...activeRepresentatives, ...formData.historicalUsers];
   };

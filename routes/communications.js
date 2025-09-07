@@ -55,11 +55,16 @@ router.post('/daily', [
   body('callOutgoing').isInt({ min: 0 }).withMessage('Giden arama sayısı 0 veya pozitif olmalıdır'),
   body('meetingNewCustomer').isInt({ min: 0 }).withMessage('Yeni müşteri görüşme sayısı 0 veya pozitif olmalıdır'),
   body('meetingAfterSale').isInt({ min: 0 }).withMessage('Satış sonrası görüşme sayısı 0 veya pozitif olmalıdır'),
-  body('date').isISO8601().withMessage('Geçerli bir tarih giriniz')
+  body('date').optional().isISO8601().withMessage('Geçerli bir tarih giriniz')
 ], async (req, res) => {
   try {
+    console.log('=== DAILY SAVE REQUEST ===');
+    console.log('Request body:', req.body);
+    console.log('User ID:', req.user.id);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ 
         message: 'Geçersiz veri',
         errors: errors.array() 
@@ -76,7 +81,8 @@ router.post('/daily', [
       notes
     } = req.body;
 
-    const recordDate = new Date(date);
+    // Eğer date gönderilmemişse bugünün tarihini kullan
+    const recordDate = date ? new Date(date) : new Date();
     recordDate.setHours(0, 0, 0, 0);
 
     // Mevcut kaydı bul veya yeni oluştur

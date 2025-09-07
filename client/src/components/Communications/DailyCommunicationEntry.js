@@ -94,8 +94,12 @@ const DailyCommunicationEntry = () => {
     try {
       setSaving(true);
       
+      console.log('=== SAVING DAILY DATA ===');
+      console.log('Form data to save:', formData);
+      
       const response = await communicationsAPI.saveDaily(formData);
       
+      console.log('Save response:', response);
       toast.success('Günlük iletişim verileriniz kaydedildi');
       setTodayData(response.data);
       
