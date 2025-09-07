@@ -821,7 +821,7 @@ const HistoricalDataManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {allUsers.map((user) => (
+                    {getAllUsersForYear().map((user) => (
                       <tr key={user._id}>
                         <td>
                           <div>
