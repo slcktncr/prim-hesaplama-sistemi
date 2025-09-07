@@ -79,6 +79,20 @@ const communicationYearSchema = new mongoose.Schema({
     default: new Map()
   },
 
+  // Yıllık satış verileri (sadece geçmiş yıllar için)
+  yearlySalesData: {
+    type: Map,
+    of: {
+      // Her temsilci için yıllık toplam satış verileri
+      totalSales: { type: Number, default: 0 },
+      totalAmount: { type: Number, default: 0 },
+      totalPrim: { type: Number, default: 0 },
+      cancellations: { type: Number, default: 0 },
+      cancellationAmount: { type: Number, default: 0 }
+    },
+    default: new Map()
+  },
+
   // Geçmiş temsilciler (artık sistemde olmayan)
   historicalUsers: [{
     _id: {

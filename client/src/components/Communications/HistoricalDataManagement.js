@@ -44,7 +44,8 @@ const HistoricalDataManagement = () => {
     year: new Date().getFullYear(),
     type: 'historical',
     monthlyData: {}, // Aylık veriler: { month: { userId: { whatsapp: 100, ... } } }
-    historicalUsers: [] // Eski temsilciler listesi
+    historicalUsers: [], // Eski temsilciler listesi
+    yearlySalesData: {} // Yıllık satış verileri: { userId: { totalSales: 10, totalAmount: 1000000, ... } }
   });
   const [selectedMonth, setSelectedMonth] = useState(1); // Seçili ay (1-12)
 
@@ -88,7 +89,8 @@ const HistoricalDataManagement = () => {
       year: year.year,
       type: year.type,
       monthlyData: year.monthlyData || {},
-      historicalUsers: year.historicalUsers || []
+      historicalUsers: year.historicalUsers || [],
+      yearlySalesData: year.yearlySalesData || {}
     });
     setSelectedMonth(1);
     setShowModal(true);
@@ -185,6 +187,33 @@ const HistoricalDataManagement = () => {
     return months[monthNumber - 1];
   };
 
+  // Satış verisi güncelleme fonksiyonu
+  const updateSalesData = (userId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      yearlySalesData: {
+        ...prev.yearlySalesData,
+        [userId]: {
+          ...prev.yearlySalesData[userId],
+          [field]: parseInt(value) || 0
+        }
+      }
+    }));
+  };
+
+  // Kullanıcının satış verisini getirme fonksiyonu
+  const getUserSalesData = (userId, field) => {
+    return formData.yearlySalesData[userId]?.[field] || 0;
+  };
+
+  // Toplam satış verisi hesaplama
+  const getTotalSalesForField = (field) => {
+    const yearlySalesData = formData.yearlySalesData || {};
+    return Object.values(yearlySalesData).reduce((total, userSales) => {
+      return total + (userSales[field] || 0);
+    }, 0);
+  };
+
   const handleAddHistoricalUser = () => {
     if (!newUserName.trim()) {
       toast.error('Temsilci adı giriniz');
@@ -278,6 +307,7 @@ const HistoricalDataManagement = () => {
                 <th>Tip</th>
                 <th>Temsilci Sayısı</th>
                 <th>Toplam İletişim</th>
+                <th>Toplam Satış</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
               </tr>
@@ -320,6 +350,16 @@ const HistoricalDataManagement = () => {
                         return total;
                       })()
                     )}
+                  </td>
+                  <td>
+                    {formatNumber(
+                      (() => {
+                        const yearlySalesData = year.yearlySalesData || {};
+                        return Object.values(yearlySalesData).reduce((total, userSales) => {
+                          return total + (userSales.totalSales || 0);
+                        }, 0);
+                      })()
+                    )} adet
                   </td>
                   <td>
                     {year.isActive ? (
@@ -563,6 +603,104 @@ const HistoricalDataManagement = () => {
                 </Table>
               </Tab>
 
+              <Tab eventKey="sales" title={
+                <span>
+                  <FiBarChart className="me-1" />
+                  Satış Verileri
+                </span>
+              }>
+                <Alert variant="info" className="mt-3">
+                  <strong>Not:</strong> Bu bölümde geçmiş yıl için toplam satış verilerini girebilirsiniz. 
+                  Aylık detay gerekmez, sadece yıllık toplam değerler.
+                </Alert>
+                
+                <Table responsive className="mt-3">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Temsilci</th>
+                      <th>Toplam Satış Adedi</th>
+                      <th>Toplam Ciro (TL)</th>
+                      <th>Toplam Prim (TL)</th>
+                      <th>İptal Adedi</th>
+                      <th>İptal Tutarı (TL)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allUsers.map((user) => (
+                      <tr key={user._id}>
+                        <td>
+                          <div>
+                            <strong>{user.name}</strong>
+                            {user.isHistorical && (
+                              <Badge bg="secondary" className="ms-2">Eski</Badge>
+                            )}
+                          </div>
+                          <small className="text-muted">{user.email}</small>
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            size="sm"
+                            value={getUserSalesData(user._id, 'totalSales')}
+                            onChange={(e) => updateSalesData(user._id, 'totalSales', e.target.value)}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            size="sm"
+                            value={getUserSalesData(user._id, 'totalAmount')}
+                            onChange={(e) => updateSalesData(user._id, 'totalAmount', e.target.value)}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            size="sm"
+                            value={getUserSalesData(user._id, 'totalPrim')}
+                            onChange={(e) => updateSalesData(user._id, 'totalPrim', e.target.value)}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            size="sm"
+                            value={getUserSalesData(user._id, 'cancellations')}
+                            onChange={(e) => updateSalesData(user._id, 'cancellations', e.target.value)}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            min="0"
+                            size="sm"
+                            value={getUserSalesData(user._id, 'cancellationAmount')}
+                            onChange={(e) => updateSalesData(user._id, 'cancellationAmount', e.target.value)}
+                            placeholder="0"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="table-info fw-bold">
+                      <td>TOPLAM</td>
+                      <td>{formatNumber(getTotalSalesForField('totalSales'))}</td>
+                      <td>{formatNumber(getTotalSalesForField('totalAmount'))} TL</td>
+                      <td>{formatNumber(getTotalSalesForField('totalPrim'))} TL</td>
+                      <td>{formatNumber(getTotalSalesForField('cancellations'))}</td>
+                      <td>{formatNumber(getTotalSalesForField('cancellationAmount'))} TL</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Tab>
+
               <Tab eventKey="summary" title={
                 <span>
                   <FiBarChart className="me-1" />
@@ -615,6 +753,46 @@ const HistoricalDataManagement = () => {
                           )}
                         </h4>
                         <small>Toplam İletişim (Yıllık)</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Satış Verileri Özeti */}
+                <Row className="mt-4">
+                  <Col md={3}>
+                    <Card className="text-center border-primary">
+                      <Card.Body>
+                        <FiBarChart size={24} className="text-primary mb-2" />
+                        <h4 className="text-primary">{formatNumber(getTotalSalesForField('totalSales'))}</h4>
+                        <small>Toplam Satış Adedi</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-success">
+                      <Card.Body>
+                        <FiBarChart size={24} className="text-success mb-2" />
+                        <h4 className="text-success">{formatNumber(getTotalSalesForField('totalAmount'))} TL</h4>
+                        <small>Toplam Ciro</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-warning">
+                      <Card.Body>
+                        <FiBarChart size={24} className="text-warning mb-2" />
+                        <h4 className="text-warning">{formatNumber(getTotalSalesForField('totalPrim'))} TL</h4>
+                        <small>Toplam Prim</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-danger">
+                      <Card.Body>
+                        <FiBarChart size={24} className="text-danger mb-2" />
+                        <h4 className="text-danger">{formatNumber(getTotalSalesForField('cancellations'))}</h4>
+                        <small>Toplam İptal</small>
                       </Card.Body>
                     </Card>
                   </Col>
