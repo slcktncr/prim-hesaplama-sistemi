@@ -45,7 +45,8 @@ const HistoricalDataManagement = () => {
     type: 'historical',
     monthlyData: {}, // Aylık veriler: { month: { userId: { whatsapp: 100, ... } } }
     historicalUsers: [], // Eski temsilciler listesi
-    yearlySalesData: {} // Yıllık satış verileri: { userId: { totalSales: 10, totalAmount: 1000000, ... } }
+    yearlySalesData: {}, // Yıllık satış verileri: { userId: { totalSales: 10, totalAmount: 1000000, ... } }
+    yearlyCommunicationData: {} // Yıllık iletişim verileri: { userId: { whatsapp: 100, calls: 50, ... } }
   });
   const [selectedMonth, setSelectedMonth] = useState(1); // Seçili ay (1-12)
 
@@ -90,7 +91,8 @@ const HistoricalDataManagement = () => {
       type: year.type,
       monthlyData: year.monthlyData || {},
       historicalUsers: year.historicalUsers || [],
-      yearlySalesData: year.yearlySalesData || {}
+      yearlySalesData: year.yearlySalesData || {},
+      yearlyCommunicationData: year.yearlyCommunicationData || {}
     });
     setSelectedMonth(1);
     setShowModal(true);
@@ -211,6 +213,33 @@ const HistoricalDataManagement = () => {
     const yearlySalesData = formData.yearlySalesData || {};
     return Object.values(yearlySalesData).reduce((total, userSales) => {
       return total + (userSales[field] || 0);
+    }, 0);
+  };
+
+  // Yıllık iletişim verisi güncelleme fonksiyonu
+  const updateYearlyCommunicationData = (userId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      yearlyCommunicationData: {
+        ...prev.yearlyCommunicationData,
+        [userId]: {
+          ...prev.yearlyCommunicationData[userId],
+          [field]: parseInt(value) || 0
+        }
+      }
+    }));
+  };
+
+  // Kullanıcının yıllık iletişim verisini getirme fonksiyonu
+  const getUserYearlyCommunicationData = (userId, field) => {
+    return formData.yearlyCommunicationData[userId]?.[field] || 0;
+  };
+
+  // Toplam yıllık iletişim verisi hesaplama
+  const getTotalYearlyCommunicationForField = (field) => {
+    const yearlyCommunicationData = formData.yearlyCommunicationData || {};
+    return Object.values(yearlyCommunicationData).reduce((total, userComm) => {
+      return total + (userComm[field] || 0);
     }, 0);
   };
 
@@ -336,18 +365,31 @@ const HistoricalDataManagement = () => {
                   <td>
                     {formatNumber(
                       (() => {
-                        const monthlyData = year.monthlyData || {};
-                        let total = 0;
-                        Object.values(monthlyData).forEach(monthData => {
-                          Object.values(monthData || {}).forEach(userStats => {
-                            total += (userStats.whatsappIncoming || 0) +
-                                   (userStats.callIncoming || 0) +
-                                   (userStats.callOutgoing || 0) +
-                                   (userStats.meetingNewCustomer || 0) +
-                                   (userStats.meetingAfterSale || 0);
+                        // 2025 ve sonrası için aylık veriler, geçmiş yıllar için yıllık veriler
+                        if (year.year >= 2025) {
+                          const monthlyData = year.monthlyData || {};
+                          let total = 0;
+                          Object.values(monthlyData).forEach(monthData => {
+                            Object.values(monthData || {}).forEach(userStats => {
+                              total += (userStats.whatsappIncoming || 0) +
+                                     (userStats.callIncoming || 0) +
+                                     (userStats.callOutgoing || 0) +
+                                     (userStats.meetingNewCustomer || 0) +
+                                     (userStats.meetingAfterSale || 0);
+                            });
                           });
-                        });
-                        return total;
+                          return total;
+                        } else {
+                          const yearlyCommunicationData = year.yearlyCommunicationData || {};
+                          return Object.values(yearlyCommunicationData).reduce((total, userComm) => {
+                            return total + 
+                              (userComm.whatsappIncoming || 0) +
+                              (userComm.callIncoming || 0) +
+                              (userComm.callOutgoing || 0) +
+                              (userComm.meetingNewCustomer || 0) +
+                              (userComm.meetingAfterSale || 0);
+                          }, 0);
+                        }
                       })()
                     )}
                   </td>
@@ -442,36 +484,55 @@ const HistoricalDataManagement = () => {
                 </>
               ) : (
                 <>
-                  <strong>Not:</strong> Her temsilci için aylık bazda değerleri girin. 
-                  Ay seçerek her ay için ayrı ayrı veri girebilirsiniz.
+                  <strong>Not:</strong> {formData.year >= 2025 ? (
+                    'Bu yıl için aylık bazda detaylı veri girişi yapabilirsiniz.'
+                  ) : (
+                    'Geçmiş yıllar için sadece yıllık toplam değerleri girin. Aylık detay gerekmez.'
+                  )}
                 </>
               )}
             </Alert>
 
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <div className="d-flex align-items-center gap-3">
-                <h6 className="mb-0">Aylık Veri Girişi</h6>
-                <Form.Select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  style={{ width: '150px' }}
+            {formData.year >= 2025 ? (
+              // 2025 ve sonrası için aylık veri girişi
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex align-items-center gap-3">
+                  <h6 className="mb-0">Aylık Veri Girişi</h6>
+                  <Form.Select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    style={{ width: '150px' }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                      <option key={month} value={month}>
+                        {getMonthName(month)}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </div>
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => setShowAddUserModal(true)}
                 >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                    <option key={month} value={month}>
-                      {getMonthName(month)}
-                    </option>
-                  ))}
-                </Form.Select>
+                  <FiPlus className="me-1" />
+                  Eski Temsilci Ekle
+                </Button>
               </div>
-              <Button 
-                variant="outline-primary" 
-                size="sm"
-                onClick={() => setShowAddUserModal(true)}
-              >
-                <FiPlus className="me-1" />
-                Eski Temsilci Ekle
-              </Button>
-            </div>
+            ) : (
+              // Geçmiş yıllar için sadece başlık ve eski temsilci ekleme
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="mb-0">Yıllık Toplam Veri Girişi</h6>
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => setShowAddUserModal(true)}
+                >
+                  <FiPlus className="me-1" />
+                  Eski Temsilci Ekle
+                </Button>
+              </div>
+            )}
 
             {/* User Statistics */}
             <Tabs defaultActiveKey="communication" className="mb-3">
@@ -481,126 +542,260 @@ const HistoricalDataManagement = () => {
                   İletişim Verileri
                 </span>
               }>
-                <Table responsive className="mt-3">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Temsilci</th>
-                      <th>WhatsApp</th>
-                      <th>Gelen Arama</th>
-                      <th>Giden Arama</th>
-                      <th>Yeni Müşteri</th>
-                      <th>Satış Sonrası</th>
-                      <th>Toplam</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getAllUsersForYear().map((user) => (
-                      <tr key={user._id}>
-                        <td>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <div className="fw-bold">
-                                {user.name}
-                                {user.isHistorical && (
-                                  <Badge bg="secondary" className="ms-2 small">Eski</Badge>
-                                )}
+                {formData.year >= 2025 ? (
+                  // 2025 ve sonrası için aylık veri girişi
+                  <Table responsive className="mt-3">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Temsilci</th>
+                        <th>WhatsApp</th>
+                        <th>Gelen Arama</th>
+                        <th>Giden Arama</th>
+                        <th>Yeni Müşteri</th>
+                        <th>Satış Sonrası</th>
+                        <th>Toplam</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getAllUsersForYear().map((user) => (
+                        <tr key={user._id}>
+                          <td>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <div className="fw-bold">
+                                  {user.name}
+                                  {user.isHistorical && (
+                                    <Badge bg="secondary" className="ms-2 small">Eski</Badge>
+                                  )}
+                                </div>
+                                <small className="text-muted">{user.email}</small>
                               </div>
-                              <small className="text-muted">{user.email}</small>
+                              {user.isHistorical && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveHistoricalUser(user._id)}
+                                  title="Eski temsilciyi kaldır"
+                                >
+                                  <FiTrash2 size={12} />
+                                </Button>
+                              )}
                             </div>
-                            {user.isHistorical && (
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleRemoveHistoricalUser(user._id)}
-                                title="Eski temsilciyi kaldır"
-                              >
-                                <FiTrash2 size={12} />
-                              </Button>
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              min="0"
+                              size="sm"
+                              value={getMonthlyUserStatistic(selectedMonth, user._id, 'whatsappIncoming')}
+                              onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'whatsappIncoming', e.target.value)}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              min="0"
+                              size="sm"
+                              value={getMonthlyUserStatistic(selectedMonth, user._id, 'callIncoming')}
+                              onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'callIncoming', e.target.value)}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              min="0"
+                              size="sm"
+                              value={getMonthlyUserStatistic(selectedMonth, user._id, 'callOutgoing')}
+                              onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'callOutgoing', e.target.value)}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              min="0"
+                              size="sm"
+                              value={getMonthlyUserStatistic(selectedMonth, user._id, 'meetingNewCustomer')}
+                              onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'meetingNewCustomer', e.target.value)}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td>
+                            <Form.Control
+                              type="number"
+                              min="0"
+                              size="sm"
+                              value={getMonthlyUserStatistic(selectedMonth, user._id, 'meetingAfterSale')}
+                              onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'meetingAfterSale', e.target.value)}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td>
+                            <Badge bg="primary">
+                              {(getMonthlyUserStatistic(selectedMonth, user._id, 'whatsappIncoming') +
+                                getMonthlyUserStatistic(selectedMonth, user._id, 'callIncoming') +
+                                getMonthlyUserStatistic(selectedMonth, user._id, 'callOutgoing') +
+                                getMonthlyUserStatistic(selectedMonth, user._id, 'meetingNewCustomer') +
+                                getMonthlyUserStatistic(selectedMonth, user._id, 'meetingAfterSale'))}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="table-info">
+                        <td><strong>{getMonthName(selectedMonth)} TOPLAM</strong></td>
+                        <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'whatsappIncoming'))}</strong></td>
+                        <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'callIncoming'))}</strong></td>
+                        <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'callOutgoing'))}</strong></td>
+                        <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'meetingNewCustomer'))}</strong></td>
+                        <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'meetingAfterSale'))}</strong></td>
+                        <td>
+                          <Badge bg="success" className="fs-6">
+                            {formatNumber(
+                              getMonthlyTotalForField(selectedMonth, 'whatsappIncoming') +
+                              getMonthlyTotalForField(selectedMonth, 'callIncoming') +
+                              getMonthlyTotalForField(selectedMonth, 'callOutgoing') +
+                              getMonthlyTotalForField(selectedMonth, 'meetingNewCustomer') +
+                              getMonthlyTotalForField(selectedMonth, 'meetingAfterSale')
                             )}
-                          </div>
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            size="sm"
-                            value={getMonthlyUserStatistic(selectedMonth, user._id, 'whatsappIncoming')}
-                            onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'whatsappIncoming', e.target.value)}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            size="sm"
-                            value={getMonthlyUserStatistic(selectedMonth, user._id, 'callIncoming')}
-                            onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'callIncoming', e.target.value)}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            size="sm"
-                            value={getMonthlyUserStatistic(selectedMonth, user._id, 'callOutgoing')}
-                            onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'callOutgoing', e.target.value)}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            size="sm"
-                            value={getMonthlyUserStatistic(selectedMonth, user._id, 'meetingNewCustomer')}
-                            onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'meetingNewCustomer', e.target.value)}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="number"
-                            min="0"
-                            size="sm"
-                            value={getMonthlyUserStatistic(selectedMonth, user._id, 'meetingAfterSale')}
-                            onChange={(e) => updateMonthlyStatistic(selectedMonth, user._id, 'meetingAfterSale', e.target.value)}
-                            placeholder="0"
-                          />
-                        </td>
-                        <td>
-                          <Badge bg="primary">
-                            {(getMonthlyUserStatistic(selectedMonth, user._id, 'whatsappIncoming') +
-                              getMonthlyUserStatistic(selectedMonth, user._id, 'callIncoming') +
-                              getMonthlyUserStatistic(selectedMonth, user._id, 'callOutgoing') +
-                              getMonthlyUserStatistic(selectedMonth, user._id, 'meetingNewCustomer') +
-                              getMonthlyUserStatistic(selectedMonth, user._id, 'meetingAfterSale'))}
                           </Badge>
                         </td>
                       </tr>
-                    ))}
-                    <tr className="table-info">
-                      <td><strong>{getMonthName(selectedMonth)} TOPLAM</strong></td>
-                      <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'whatsappIncoming'))}</strong></td>
-                      <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'callIncoming'))}</strong></td>
-                      <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'callOutgoing'))}</strong></td>
-                      <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'meetingNewCustomer'))}</strong></td>
-                      <td><strong>{formatNumber(getMonthlyTotalForField(selectedMonth, 'meetingAfterSale'))}</strong></td>
-                      <td>
-                        <Badge bg="success" className="fs-6">
-                          {formatNumber(
-                            getMonthlyTotalForField(selectedMonth, 'whatsappIncoming') +
-                            getMonthlyTotalForField(selectedMonth, 'callIncoming') +
-                            getMonthlyTotalForField(selectedMonth, 'callOutgoing') +
-                            getMonthlyTotalForField(selectedMonth, 'meetingNewCustomer') +
-                            getMonthlyTotalForField(selectedMonth, 'meetingAfterSale')
-                          )}
-                        </Badge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </Table>
+                    </tbody>
+                  </Table>
+                ) : (
+                  // Geçmiş yıllar için yıllık toplam veri girişi
+                  <>
+                    <Alert variant="info" className="mt-3">
+                      <strong>Not:</strong> Geçmiş yıllar için yıllık toplam iletişim verilerini giriniz. 
+                      Aylık detay gerekmez.
+                    </Alert>
+                    
+                    <Table responsive className="mt-3">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Temsilci</th>
+                          <th>WhatsApp (Yıllık)</th>
+                          <th>Gelen Arama (Yıllık)</th>
+                          <th>Giden Arama (Yıllık)</th>
+                          <th>Yeni Müşteri (Yıllık)</th>
+                          <th>Satış Sonrası (Yıllık)</th>
+                          <th>Toplam</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getAllUsersForYear().map((user) => (
+                          <tr key={user._id}>
+                            <td>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div>
+                                  <div className="fw-bold">
+                                    {user.name}
+                                    {user.isHistorical && (
+                                      <Badge bg="secondary" className="ms-2 small">Eski</Badge>
+                                    )}
+                                  </div>
+                                  <small className="text-muted">{user.email}</small>
+                                </div>
+                                {user.isHistorical && (
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleRemoveHistoricalUser(user._id)}
+                                    title="Eski temsilciyi kaldır"
+                                  >
+                                    <FiTrash2 size={12} />
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                size="sm"
+                                value={getUserYearlyCommunicationData(user._id, 'whatsappIncoming')}
+                                onChange={(e) => updateYearlyCommunicationData(user._id, 'whatsappIncoming', e.target.value)}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                size="sm"
+                                value={getUserYearlyCommunicationData(user._id, 'callIncoming')}
+                                onChange={(e) => updateYearlyCommunicationData(user._id, 'callIncoming', e.target.value)}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                size="sm"
+                                value={getUserYearlyCommunicationData(user._id, 'callOutgoing')}
+                                onChange={(e) => updateYearlyCommunicationData(user._id, 'callOutgoing', e.target.value)}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                size="sm"
+                                value={getUserYearlyCommunicationData(user._id, 'meetingNewCustomer')}
+                                onChange={(e) => updateYearlyCommunicationData(user._id, 'meetingNewCustomer', e.target.value)}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                size="sm"
+                                value={getUserYearlyCommunicationData(user._id, 'meetingAfterSale')}
+                                onChange={(e) => updateYearlyCommunicationData(user._id, 'meetingAfterSale', e.target.value)}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td>
+                              <Badge bg="primary">
+                                {formatNumber(
+                                  getUserYearlyCommunicationData(user._id, 'whatsappIncoming') +
+                                  getUserYearlyCommunicationData(user._id, 'callIncoming') +
+                                  getUserYearlyCommunicationData(user._id, 'callOutgoing') +
+                                  getUserYearlyCommunicationData(user._id, 'meetingNewCustomer') +
+                                  getUserYearlyCommunicationData(user._id, 'meetingAfterSale')
+                                )}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="table-info">
+                          <td><strong>TOPLAM (Yıllık)</strong></td>
+                          <td><strong>{formatNumber(getTotalYearlyCommunicationForField('whatsappIncoming'))}</strong></td>
+                          <td><strong>{formatNumber(getTotalYearlyCommunicationForField('callIncoming'))}</strong></td>
+                          <td><strong>{formatNumber(getTotalYearlyCommunicationForField('callOutgoing'))}</strong></td>
+                          <td><strong>{formatNumber(getTotalYearlyCommunicationForField('meetingNewCustomer'))}</strong></td>
+                          <td><strong>{formatNumber(getTotalYearlyCommunicationForField('meetingAfterSale'))}</strong></td>
+                          <td>
+                            <Badge bg="success" className="fs-6">
+                              {formatNumber(
+                                getTotalYearlyCommunicationForField('whatsappIncoming') +
+                                getTotalYearlyCommunicationForField('callIncoming') +
+                                getTotalYearlyCommunicationForField('callOutgoing') +
+                                getTotalYearlyCommunicationForField('meetingNewCustomer') +
+                                getTotalYearlyCommunicationForField('meetingAfterSale')
+                              )}
+                            </Badge>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </>
+                )}
               </Tab>
 
               <Tab eventKey="sales" title={
@@ -712,7 +907,13 @@ const HistoricalDataManagement = () => {
                     <Card className="text-center">
                       <Card.Body>
                         <FiMessageSquare size={24} className="text-success mb-2" />
-                        <h4 className="text-success">{formatNumber(getYearlyTotalForField('whatsappIncoming'))}</h4>
+                        <h4 className="text-success">
+                          {formatNumber(
+                            formData.year >= 2025 
+                              ? getYearlyTotalForField('whatsappIncoming')
+                              : getTotalYearlyCommunicationForField('whatsappIncoming')
+                          )}
+                        </h4>
                         <small>WhatsApp (Yıllık)</small>
                       </Card.Body>
                     </Card>
@@ -722,7 +923,11 @@ const HistoricalDataManagement = () => {
                       <Card.Body>
                         <FiPhone size={24} className="text-primary mb-2" />
                         <h4 className="text-primary">
-                          {formatNumber(getYearlyTotalForField('callIncoming') + getYearlyTotalForField('callOutgoing'))}
+                          {formatNumber(
+                            formData.year >= 2025 
+                              ? (getYearlyTotalForField('callIncoming') + getYearlyTotalForField('callOutgoing'))
+                              : (getTotalYearlyCommunicationForField('callIncoming') + getTotalYearlyCommunicationForField('callOutgoing'))
+                          )}
                         </h4>
                         <small>Telefon Aramaları (Yıllık)</small>
                       </Card.Body>
@@ -733,7 +938,11 @@ const HistoricalDataManagement = () => {
                       <Card.Body>
                         <FiUsers size={24} className="text-info mb-2" />
                         <h4 className="text-info">
-                          {formatNumber(getYearlyTotalForField('meetingNewCustomer') + getYearlyTotalForField('meetingAfterSale'))}
+                          {formatNumber(
+                            formData.year >= 2025 
+                              ? (getYearlyTotalForField('meetingNewCustomer') + getYearlyTotalForField('meetingAfterSale'))
+                              : (getTotalYearlyCommunicationForField('meetingNewCustomer') + getTotalYearlyCommunicationForField('meetingAfterSale'))
+                          )}
                         </h4>
                         <small>Görüşmeler (Yıllık)</small>
                       </Card.Body>
@@ -745,11 +954,19 @@ const HistoricalDataManagement = () => {
                         <FiBarChart size={24} className="text-success mb-2" />
                         <h4 className="text-success">
                           {formatNumber(
-                            getYearlyTotalForField('whatsappIncoming') +
-                            getYearlyTotalForField('callIncoming') +
-                            getYearlyTotalForField('callOutgoing') +
-                            getYearlyTotalForField('meetingNewCustomer') +
-                            getYearlyTotalForField('meetingAfterSale')
+                            formData.year >= 2025 ? (
+                              getYearlyTotalForField('whatsappIncoming') +
+                              getYearlyTotalForField('callIncoming') +
+                              getYearlyTotalForField('callOutgoing') +
+                              getYearlyTotalForField('meetingNewCustomer') +
+                              getYearlyTotalForField('meetingAfterSale')
+                            ) : (
+                              getTotalYearlyCommunicationForField('whatsappIncoming') +
+                              getTotalYearlyCommunicationForField('callIncoming') +
+                              getTotalYearlyCommunicationForField('callOutgoing') +
+                              getTotalYearlyCommunicationForField('meetingNewCustomer') +
+                              getTotalYearlyCommunicationForField('meetingAfterSale')
+                            )
                           )}
                         </h4>
                         <small>Toplam İletişim (Yıllık)</small>

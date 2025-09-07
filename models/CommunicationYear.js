@@ -79,6 +79,22 @@ const communicationYearSchema = new mongoose.Schema({
     default: new Map()
   },
 
+  // Yıllık iletişim verileri (sadece geçmiş yıllar için - 2024 ve öncesi)
+  yearlyCommunicationData: {
+    type: Map,
+    of: {
+      // Her temsilci için yıllık toplam iletişim verileri
+      whatsappIncoming: { type: Number, default: 0 },
+      callIncoming: { type: Number, default: 0 },
+      callOutgoing: { type: Number, default: 0 },
+      meetingNewCustomer: { type: Number, default: 0 },
+      meetingAfterSale: { type: Number, default: 0 },
+      totalMeetings: { type: Number, default: 0 },
+      totalCommunication: { type: Number, default: 0 }
+    },
+    default: new Map()
+  },
+
   // Yıllık satış verileri (sadece geçmiş yıllar için)
   yearlySalesData: {
     type: Map,

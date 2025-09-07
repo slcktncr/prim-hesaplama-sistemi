@@ -386,7 +386,7 @@ function getGroupKey(date, groupBy) {
 // @access  Private (Admin only)
 router.post('/years', [auth, adminAuth], async (req, res) => {
   try {
-    const { year, type, monthlyData, historicalUsers, yearlySalesData } = req.body;
+    const { year, type, monthlyData, historicalUsers, yearlySalesData, yearlyCommunicationData } = req.body;
     
     // Yıl zaten var mı kontrol et
     const existingYear = await CommunicationYear.findOne({ year });
@@ -400,6 +400,7 @@ router.post('/years', [auth, adminAuth], async (req, res) => {
       monthlyData: monthlyData || {},
       historicalUsers: historicalUsers || [],
       yearlySalesData: yearlySalesData || {},
+      yearlyCommunicationData: yearlyCommunicationData || {},
       isActive: type === 'active'
     });
 
@@ -421,7 +422,7 @@ router.post('/years', [auth, adminAuth], async (req, res) => {
 // @access  Private (Admin only)
 router.put('/years/:id', [auth, adminAuth], async (req, res) => {
   try {
-    const { year, type, monthlyData, historicalUsers, yearlySalesData } = req.body;
+    const { year, type, monthlyData, historicalUsers, yearlySalesData, yearlyCommunicationData } = req.body;
     
     const yearData = await CommunicationYear.findById(req.params.id);
     if (!yearData) {
@@ -433,6 +434,7 @@ router.put('/years/:id', [auth, adminAuth], async (req, res) => {
     yearData.monthlyData = monthlyData || {};
     yearData.historicalUsers = historicalUsers || [];
     yearData.yearlySalesData = yearlySalesData || {};
+    yearData.yearlyCommunicationData = yearlyCommunicationData || {};
     yearData.isActive = type === 'active';
 
     await yearData.save();
