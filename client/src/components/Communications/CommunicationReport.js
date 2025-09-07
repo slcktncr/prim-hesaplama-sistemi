@@ -140,6 +140,8 @@ const CommunicationReport = () => {
 
   const processCommunicationData = (summaryData, periodData) => {
     console.log('🔄 Processing communication data:', { summaryData, periodData });
+    console.log('📊 Period type:', filters.periodType);
+    console.log('📊 Raw period data length:', periodData?.length);
 
     // Kullanıcı bazlı veri işleme
     const userBasedData = summaryData.map(item => {
@@ -185,6 +187,8 @@ const CommunicationReport = () => {
 
     // Dönem bazlı veri işleme
     const processedPeriodData = processPeriodData(periodData, filters.periodType);
+    console.log('📊 Processed period data:', processedPeriodData.length, 'items');
+    console.log('📊 Sample processed period data:', processedPeriodData.slice(0, 2));
 
     // Dönem bazlı toplam istatistikler
     const periodTotals = processedPeriodData.reduce((acc, item) => ({
@@ -208,15 +212,77 @@ const CommunicationReport = () => {
     // Dönem türüne göre hangi totali kullanacağımızı belirle
     const totals = processedPeriodData.length > 0 ? periodTotals : summaryTotals;
 
-    // En aktif kullanıcılar
-    const topUsers = [...userBasedData]
+    // Dönem bazlı kullanıcı verilerini hazırla
+    let displayUsers = userBasedData;
+    
+    // Eğer dönem bazlı veri varsa, onu kullan
+    if (processedPeriodData.length > 0) {
+      // Dönem bazlı verileri kullanıcı bazında grupla
+      const periodUserMap = new Map();
+      
+      processedPeriodData.forEach(item => {
+        const userId = item.salesperson?._id;
+        if (!userId) return;
+        
+        if (!periodUserMap.has(userId)) {
+          periodUserMap.set(userId, {
+            user: item.salesperson,
+            communication: {
+              whatsappIncoming: 0,
+              callIncoming: 0,
+              callOutgoing: 0,
+              meetingNewCustomer: 0,
+              meetingAfterSale: 0,
+              total: 0
+            },
+            recordCount: 0
+          });
+        }
+        
+        const userData = periodUserMap.get(userId);
+        userData.communication.whatsappIncoming += item.communication.whatsappIncoming || 0;
+        userData.communication.callIncoming += item.communication.callIncoming || 0;
+        userData.communication.callOutgoing += item.communication.callOutgoing || 0;
+        userData.communication.meetingNewCustomer += item.communication.meetingNewCustomer || 0;
+        userData.communication.meetingAfterSale += item.communication.meetingAfterSale || 0;
+        userData.communication.total += item.communication.totalCommunication || 0;
+        userData.recordCount += 1;
+      });
+      
+      displayUsers = Array.from(periodUserMap.values());
+    }
+
+    // En aktif kullanıcıları displayUsers'dan hesapla
+    const topUsers = [...displayUsers]
       .filter(item => item.communication.total > 0)
       .sort((a, b) => b.communication.total - a.communication.total)
       .slice(0, 10);
 
+    console.log('📊 Display users length:', displayUsers.length);
+    console.log('📊 Using period data?', processedPeriodData.length > 0);
+
+    // Totalleri displayUsers'dan yeniden hesapla (tutarlılık için)
+    const finalTotals = displayUsers.reduce((acc, item) => ({
+      whatsappIncoming: acc.whatsappIncoming + item.communication.whatsappIncoming,
+      callIncoming: acc.callIncoming + item.communication.callIncoming,
+      callOutgoing: acc.callOutgoing + item.communication.callOutgoing,
+      meetingNewCustomer: acc.meetingNewCustomer + item.communication.meetingNewCustomer,
+      meetingAfterSale: acc.meetingAfterSale + item.communication.meetingAfterSale,
+      total: acc.total + item.communication.total,
+      activeUsers: acc.activeUsers + (item.communication.total > 0 ? 1 : 0)
+    }), {
+      whatsappIncoming: 0,
+      callIncoming: 0,
+      callOutgoing: 0,
+      meetingNewCustomer: 0,
+      meetingAfterSale: 0,
+      total: 0,
+      activeUsers: 0
+    });
+
     return {
-      users: userBasedData,
-      totals,
+      users: displayUsers,
+      totals: finalTotals,
       periods: processedPeriodData,
       topUsers,
       metadata: {
