@@ -91,12 +91,15 @@ const CommunicationSalesReport = () => {
         })
       ]);
 
+      console.log('=== FRONTEND DEBUG ===');
       console.log('Communication response:', communicationResponse);
       console.log('Communication data length:', communicationResponse?.data?.length);
+      console.log('Communication data sample:', communicationResponse?.data?.slice(0, 2));
       console.log('Sales response:', salesResponse);
       console.log('Daily response:', dailyResponse);
       console.log('Users array:', users);
       console.log('Users length:', users.length);
+      console.log('=== END FRONTEND DEBUG ===');
 
       // Günlük rapor verisini set et
       setDailyReportData(Array.isArray(dailyResponse.data) ? dailyResponse.data : []);

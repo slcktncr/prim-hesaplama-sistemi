@@ -265,9 +265,13 @@ router.get('/report', auth, async (req, res) => {
       isApproved: true 
     }).select('_id name email');
 
+    console.log('=== BACKEND DEBUG START ===');
     console.log('All users found:', allUsers.length);
+    console.log('User names:', allUsers.map(u => u.name));
     console.log('Historical years found:', historicalYears.length);
+    console.log('Historical years:', historicalYears.map(y => ({ year: y.year, type: y.type })));
     console.log('Daily records found:', dailyRecords.length);
+    console.log('=== BACKEND DEBUG END ===');
 
     // Kullanıcı bazlı veri birleştirme
     const userBasedData = allUsers.map(user => {
@@ -293,8 +297,12 @@ router.get('/report', auth, async (req, res) => {
       };
 
       historicalYears.forEach(yearData => {
+        console.log(`Processing year ${yearData.year} for user ${user.name}`);
+        console.log('Year data keys:', Object.keys(yearData.toObject()));
+        
         // Aylık verilerden topla (2025+ için)
         if (yearData.monthlyData && yearData.monthlyData.size > 0) {
+          console.log('Processing monthly data, size:', yearData.monthlyData.size);
           for (let [month, monthData] of yearData.monthlyData) {
             if (monthData && monthData.get && monthData.get(user._id.toString())) {
               const userData = monthData.get(user._id.toString());
@@ -309,14 +317,22 @@ router.get('/report', auth, async (req, res) => {
         }
 
         // Yıllık verilerden al (geçmiş yıllar için)
-        if (yearData.yearlyCommunicationData && yearData.yearlyCommunicationData.get(user._id.toString())) {
+        if (yearData.yearlyCommunicationData) {
+          console.log('Yearly communication data exists, type:', typeof yearData.yearlyCommunicationData);
+          console.log('Is Map:', yearData.yearlyCommunicationData instanceof Map);
+          console.log('Keys:', Array.from(yearData.yearlyCommunicationData.keys()));
+          
           const userData = yearData.yearlyCommunicationData.get(user._id.toString());
-          historicalData.whatsappIncoming += userData.whatsappIncoming || 0;
-          historicalData.callIncoming += userData.callIncoming || 0;
-          historicalData.callOutgoing += userData.callOutgoing || 0;
-          historicalData.meetingNewCustomer += userData.meetingNewCustomer || 0;
-          historicalData.meetingAfterSale += userData.meetingAfterSale || 0;
-          historicalData.totalCommunication += userData.totalCommunication || 0;
+          console.log(`User data for ${user.name}:`, userData);
+          
+          if (userData) {
+            historicalData.whatsappIncoming += userData.whatsappIncoming || 0;
+            historicalData.callIncoming += userData.callIncoming || 0;
+            historicalData.callOutgoing += userData.callOutgoing || 0;
+            historicalData.meetingNewCustomer += userData.meetingNewCustomer || 0;
+            historicalData.meetingAfterSale += userData.meetingAfterSale || 0;
+            historicalData.totalCommunication += userData.totalCommunication || 0;
+          }
         }
       });
 

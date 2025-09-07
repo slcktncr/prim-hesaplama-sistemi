@@ -62,6 +62,13 @@ const HistoricalDataManagement = () => {
         usersAPI.getSalespeople()
       ]);
       
+      console.log('=== HISTORICAL DATA DEBUG ===');
+      console.log('Years response:', yearsResponse);
+      console.log('Users response:', usersResponse);
+      console.log('Users data:', usersResponse.data);
+      console.log('Users length:', usersResponse.data?.length);
+      console.log('=== END HISTORICAL DATA DEBUG ===');
+      
       setYears(yearsResponse.data || []);
       setUsers(usersResponse.data || []);
     } catch (error) {
@@ -291,6 +298,12 @@ const HistoricalDataManagement = () => {
   const getAllUsersForYear = () => {
     // Sadece satış temsilcilerini dahil et, ziyaretçileri hariç tut
     const activeRepresentatives = users.filter(user => user.role === 'salesperson');
+    console.log('=== getAllUsersForYear DEBUG ===');
+    console.log('Total users:', users.length);
+    console.log('Active representatives:', activeRepresentatives.length);
+    console.log('Historical users:', formData.historicalUsers.length);
+    console.log('Users sample:', users.slice(0, 2));
+    console.log('=== END getAllUsersForYear DEBUG ===');
     return [...activeRepresentatives, ...formData.historicalUsers];
   };
 
