@@ -89,13 +89,16 @@ const CommunicationSalesReport = () => {
       console.log('Sales response:', salesResponse);
 
       // Verileri birleştir
-      const communicationData = communicationResponse.data || [];
-      const salesData = salesResponse.data || [];
+      const communicationData = Array.isArray(communicationResponse.data) ? communicationResponse.data : [];
+      const salesData = Array.isArray(salesResponse.data) ? salesResponse.data : [];
+
+      console.log('Communication data type:', typeof communicationData, 'is array:', Array.isArray(communicationData));
+      console.log('Sales data type:', typeof salesData, 'is array:', Array.isArray(salesData));
 
       // Kullanıcı bazında birleştirme
       const combinedData = users.map(user => {
-        const commData = communicationData.find(c => c.salesperson._id === user._id) || {};
-        const salesInfo = salesData.find(s => s.salesperson._id === user._id) || {};
+        const commData = communicationData.find(c => c.salesperson && c.salesperson._id === user._id) || {};
+        const salesInfo = salesData.find(s => s.salesperson && s.salesperson._id === user._id) || {};
 
         return {
           user: {
@@ -104,13 +107,13 @@ const CommunicationSalesReport = () => {
             email: user.email
           },
           communication: {
-            whatsappIncoming: commData.whatsappIncoming || 0,
-            callIncoming: commData.callIncoming || 0,
-            callOutgoing: commData.callOutgoing || 0,
-            meetingNewCustomer: commData.meetingNewCustomer || 0,
-            meetingAfterSale: commData.meetingAfterSale || 0,
-            totalCommunication: commData.totalCommunication || 0,
-            daysEntered: commData.daysEntered || 0,
+            whatsappIncoming: (commData.communication && commData.communication.whatsappIncoming) || 0,
+            callIncoming: (commData.communication && commData.communication.callIncoming) || 0,
+            callOutgoing: (commData.communication && commData.communication.callOutgoing) || 0,
+            meetingNewCustomer: (commData.communication && commData.communication.meetingNewCustomer) || 0,
+            meetingAfterSale: (commData.communication && commData.communication.meetingAfterSale) || 0,
+            totalCommunication: (commData.communication && commData.communication.totalCommunication) || 0,
+            daysEntered: commData.recordCount || 0,
             totalDays: commData.totalDays || 0,
             entryRate: commData.entryRate || 0
           },
@@ -126,11 +129,11 @@ const CommunicationSalesReport = () => {
           },
           performance: {
             communicationPerSale: salesInfo.totalSales > 0 ? 
-              Math.round((commData.totalCommunication || 0) / salesInfo.totalSales) : 0,
-            salesConversionRate: commData.totalCommunication > 0 ? 
-              ((salesInfo.totalSales || 0) / (commData.totalCommunication || 1) * 100).toFixed(1) : 0,
-            avgPrimPerCommunication: commData.totalCommunication > 0 ? 
-              ((salesInfo.netPrimAmount || 0) / (commData.totalCommunication || 1)).toFixed(0) : 0
+              Math.round(((commData.communication && commData.communication.totalCommunication) || 0) / salesInfo.totalSales) : 0,
+            salesConversionRate: (commData.communication && commData.communication.totalCommunication) > 0 ? 
+              ((salesInfo.totalSales || 0) / ((commData.communication && commData.communication.totalCommunication) || 1) * 100).toFixed(1) : 0,
+            avgPrimPerCommunication: (commData.communication && commData.communication.totalCommunication) > 0 ? 
+              ((salesInfo.netPrimAmount || 0) / ((commData.communication && commData.communication.totalCommunication) || 1)).toFixed(0) : 0
           }
         };
       });

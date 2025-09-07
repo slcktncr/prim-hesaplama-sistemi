@@ -198,9 +198,98 @@ router.get('/records', auth, async (req, res) => {
 });
 
 // @route   GET /api/communications/report
-// @desc    İletişim raporu (satış verileriyle birlikte)
+// @desc    İletişim raporu (kullanıcı bazlı)
 // @access  Private
 router.get('/report', auth, async (req, res) => {
+  try {
+    const { 
+      startDate, 
+      endDate, 
+      salesperson
+    } = req.query;
+
+    let query = {};
+    let salesQuery = {};
+
+    // Admin değilse sadece kendi verilerini görebilir
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user.id;
+      salesQuery.salesperson = req.user.id;
+    } else if (salesperson && salesperson !== 'all') {
+      query.salesperson = salesperson;
+      salesQuery.salesperson = salesperson;
+    }
+
+    // Tarih filtreleri
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+      salesQuery.saleDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    // Kullanıcı bazlı aggregation
+    const userBasedData = await CommunicationRecord.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: '$salesperson',
+          whatsappIncoming: { $sum: '$whatsappIncoming' },
+          callIncoming: { $sum: '$callIncoming' },
+          callOutgoing: { $sum: '$callOutgoing' },
+          meetingNewCustomer: { $sum: '$meetingNewCustomer' },
+          meetingAfterSale: { $sum: '$meetingAfterSale' },
+          totalCommunication: { $sum: '$totalCommunication' },
+          recordCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'salesperson'
+        }
+      },
+      {
+        $unwind: '$salesperson'
+      },
+      {
+        $project: {
+          salesperson: {
+            _id: '$salesperson._id',
+            name: '$salesperson.name',
+            email: '$salesperson.email'
+          },
+          communication: {
+            whatsappIncoming: '$whatsappIncoming',
+            callIncoming: '$callIncoming',
+            callOutgoing: '$callOutgoing',
+            meetingNewCustomer: '$meetingNewCustomer',
+            meetingAfterSale: '$meetingAfterSale',
+            totalCommunication: '$totalCommunication'
+          },
+          recordCount: '$recordCount'
+        }
+      }
+    ]);
+
+    res.json(userBasedData);
+
+  } catch (error) {
+    console.error('Communication report error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/communications/report-detailed
+// @desc    Detaylı iletişim raporu (tarih bazlı gruplama)
+// @access  Private
+router.get('/report-detailed', auth, async (req, res) => {
   try {
     const { 
       startDate, 
