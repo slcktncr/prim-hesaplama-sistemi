@@ -1,3 +1,4 @@
+// Bu dosya artık kullanılmıyor - AdvancedCommunicationReport.js kullanın
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
