@@ -286,6 +286,158 @@ router.get('/report', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/communications/daily-report
+// @desc    Günlük detaylı rapor (iletişim + satış + iptal + değişiklik)
+// @access  Private
+router.get('/daily-report', auth, async (req, res) => {
+  try {
+    const { 
+      startDate, 
+      endDate, 
+      salesperson
+    } = req.query;
+
+    let query = {};
+    let salesQuery = {};
+
+    // Admin değilse sadece kendi verilerini görebilir
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user.id;
+      salesQuery.salesperson = req.user.id;
+    } else if (salesperson && salesperson !== 'all') {
+      query.salesperson = salesperson;
+      salesQuery.salesperson = salesperson;
+    }
+
+    // Tarih filtreleri
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+      salesQuery.saleDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    // Günlük iletişim kayıtları
+    const communicationRecords = await CommunicationRecord.find(query)
+      .populate('salesperson', 'name email')
+      .sort({ date: -1 });
+
+    // Günlük satış verileri (tüm türler)
+    const salesRecords = await Sale.find(salesQuery)
+      .populate('salesperson', 'name email')
+      .populate('saleType', 'name color')
+      .sort({ saleDate: -1 });
+
+    // Günlük bazda gruplama
+    const dailyData = {};
+
+    // İletişim verilerini grupla
+    communicationRecords.forEach(record => {
+      const dateKey = record.date.toISOString().split('T')[0];
+      const userKey = record.salesperson._id.toString();
+      
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = {};
+      }
+      
+      if (!dailyData[dateKey][userKey]) {
+        dailyData[dateKey][userKey] = {
+          date: record.date,
+          salesperson: record.salesperson,
+          communication: {
+            whatsappIncoming: 0,
+            callIncoming: 0,
+            callOutgoing: 0,
+            meetingNewCustomer: 0,
+            meetingAfterSale: 0,
+            totalCommunication: 0
+          },
+          sales: [],
+          cancellations: [],
+          modifications: []
+        };
+      }
+      
+      dailyData[dateKey][userKey].communication = {
+        whatsappIncoming: record.whatsappIncoming,
+        callIncoming: record.callIncoming,
+        callOutgoing: record.callOutgoing,
+        meetingNewCustomer: record.meetingNewCustomer,
+        meetingAfterSale: record.meetingAfterSale,
+        totalCommunication: record.totalCommunication
+      };
+    });
+
+    // Satış verilerini grupla
+    salesRecords.forEach(sale => {
+      const dateKey = sale.saleDate.toISOString().split('T')[0];
+      const userKey = sale.salesperson._id.toString();
+      
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = {};
+      }
+      
+      if (!dailyData[dateKey][userKey]) {
+        dailyData[dateKey][userKey] = {
+          date: sale.saleDate,
+          salesperson: sale.salesperson,
+          communication: {
+            whatsappIncoming: 0,
+            callIncoming: 0,
+            callOutgoing: 0,
+            meetingNewCustomer: 0,
+            meetingAfterSale: 0,
+            totalCommunication: 0
+          },
+          sales: [],
+          cancellations: [],
+          modifications: []
+        };
+      }
+      
+      const saleData = {
+        _id: sale._id,
+        saleType: sale.saleType,
+        activitySalePrice: sale.activitySalePrice,
+        listPrice: sale.listPrice,
+        discountRate: sale.discountRate,
+        contractNo: sale.contractNo,
+        block: sale.block,
+        apartmentNo: sale.apartmentNo,
+        status: sale.status,
+        isModified: sale.isModified,
+        modificationHistory: sale.modificationHistory
+      };
+      
+      if (sale.status === 'iptal') {
+        dailyData[dateKey][userKey].cancellations.push(saleData);
+      } else if (sale.isModified) {
+        dailyData[dateKey][userKey].modifications.push(saleData);
+      } else {
+        dailyData[dateKey][userKey].sales.push(saleData);
+      }
+    });
+
+    // Array formatına çevir ve sırala
+    const result = [];
+    Object.keys(dailyData).sort().reverse().forEach(dateKey => {
+      Object.keys(dailyData[dateKey]).forEach(userKey => {
+        result.push(dailyData[dateKey][userKey]);
+      });
+    });
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Daily report error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // @route   GET /api/communications/report-detailed
 // @desc    Detaylı iletişim raporu (tarih bazlı gruplama)
 // @access  Private

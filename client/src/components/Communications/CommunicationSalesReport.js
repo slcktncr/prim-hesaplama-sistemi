@@ -36,6 +36,7 @@ import Loading from '../Common/Loading';
 const CommunicationSalesReport = () => {
   const { user } = useAuth();
   const [reportData, setReportData] = useState(null);
+  const [dailyReportData, setDailyReportData] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -72,7 +73,7 @@ const CommunicationSalesReport = () => {
       console.log('Fetching report data with filters:', filters);
       
       // Paralel olarak hem iletişim hem de satış verilerini getir
-      const [communicationResponse, salesResponse] = await Promise.all([
+      const [communicationResponse, salesResponse, dailyResponse] = await Promise.all([
         communicationsAPI.getReport({
           startDate: filters.startDate,
           endDate: filters.endDate,
@@ -82,11 +83,21 @@ const CommunicationSalesReport = () => {
           startDate: filters.startDate,
           endDate: filters.endDate,
           salespersons: filters.salesperson !== 'all' ? [filters.salesperson] : undefined
+        }),
+        communicationsAPI.getDailyReport({
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          salesperson: filters.salesperson !== 'all' ? filters.salesperson : undefined
         })
       ]);
 
       console.log('Communication response:', communicationResponse);
       console.log('Sales response:', salesResponse);
+      console.log('Daily response:', dailyResponse);
+      console.log('Users array:', users);
+
+      // Günlük rapor verisini set et
+      setDailyReportData(Array.isArray(dailyResponse.data) ? dailyResponse.data : []);
 
       // Verileri birleştir
       const communicationData = Array.isArray(communicationResponse.data) ? communicationResponse.data : [];
@@ -448,8 +459,8 @@ const CommunicationSalesReport = () => {
                         <th>WhatsApp</th>
                         <th>Gelen Arama</th>
                         <th>Giden Arama</th>
-                        <th>Yeni Müşteri</th>
-                        <th>Satış Sonrası</th>
+                        <th>Yeni Müşteri Birebir</th>
+                        <th>Eski Müşteri Birebir</th>
                         <th>Toplam</th>
                         <th>Kayıt Oranı</th>
                       </tr>
@@ -567,6 +578,121 @@ const CommunicationSalesReport = () => {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Tab>
+
+            <Tab eventKey="daily" title={
+              <span>
+                <FiCalendar className="me-1" />
+                Günlük Detay Raporu
+              </span>
+            }>
+              <Card>
+                <Card.Body className="p-0">
+                  <Table responsive hover className="mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Tarih</th>
+                        <th>Temsilci</th>
+                        <th>WhatsApp</th>
+                        <th>Gelen Arama</th>
+                        <th>Giden Arama</th>
+                        <th>Yeni Müşteri Birebir</th>
+                        <th>Eski Müşteri Birebir</th>
+                        <th>Satış Adedi</th>
+                        <th>Aktivite Satış Fiyatı</th>
+                        <th>İptal Adedi</th>
+                        <th>İptal Tutarı</th>
+                        <th>Değişiklik Adedi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dailyReportData.map((item, index) => (
+                        <tr key={`${item.salesperson._id}-${item.date}-${index}`}>
+                          <td>
+                            <div className="fw-bold text-primary">
+                              {formatDate(item.date)}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="fw-bold">{item.salesperson.name}</div>
+                          </td>
+                          <td>
+                            <Badge bg="success">{item.communication.whatsappIncoming}</Badge>
+                          </td>
+                          <td>
+                            <Badge bg="primary">{item.communication.callIncoming}</Badge>
+                          </td>
+                          <td>
+                            <Badge bg="warning">{item.communication.callOutgoing}</Badge>
+                          </td>
+                          <td>
+                            <Badge bg="info">{item.communication.meetingNewCustomer}</Badge>
+                          </td>
+                          <td>
+                            <Badge bg="secondary">{item.communication.meetingAfterSale}</Badge>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-success">
+                              {item.sales.length}
+                            </div>
+                            {item.sales.length > 0 && (
+                              <div className="small text-muted">
+                                {item.sales.map(sale => (
+                                  <Badge 
+                                    key={sale._id} 
+                                    bg="light" 
+                                    text="dark" 
+                                    className="me-1 mb-1"
+                                    style={{ backgroundColor: sale.saleType?.color || '#6c757d' }}
+                                  >
+                                    {sale.saleType?.name || 'Normal'}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div className="fw-bold text-success">
+                              {formatCurrency(
+                                item.sales.reduce((sum, sale) => sum + (sale.activitySalePrice || 0), 0)
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-danger">
+                              {item.cancellations.length}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-danger">
+                              {formatCurrency(
+                                item.cancellations.reduce((sum, sale) => sum + (sale.activitySalePrice || 0), 0)
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-warning">
+                              {item.modifications.length}
+                            </div>
+                            {item.modifications.length > 0 && (
+                              <div className="small text-muted">
+                                Değişiklik detayları
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {dailyReportData.length === 0 && (
+                        <tr>
+                          <td colSpan="12" className="text-center py-4 text-muted">
+                            Seçilen dönem için günlük veri bulunamadı
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </Table>
                 </Card.Body>

@@ -277,7 +277,7 @@ const DailyCommunicationEntry = () => {
                     <Form.Group>
                       <Form.Label>
                         <FiUsers className="me-2 text-info" />
-                        Yeni Müşteri Görüşmesi
+                        Yeni Müşteri Birebir Görüşmesi
                       </Form.Label>
                       <Form.Control
                         type="number"
@@ -298,7 +298,7 @@ const DailyCommunicationEntry = () => {
                     <Form.Group>
                       <Form.Label>
                         <FiUsers className="me-2 text-secondary" />
-                        Satış Sonrası Görüşme
+                        Eski Müşteri Birebir Görüşme
                       </Form.Label>
                       <Form.Control
                         type="number"
@@ -309,7 +309,7 @@ const DailyCommunicationEntry = () => {
                         disabled={isExempt}
                       />
                       <Form.Text className="text-muted">
-                        Mevcut müşterilerle satış sonrası birebir görüşme sayısı
+                        Eski müşterilerle birebir görüşme sayısı
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -369,8 +369,8 @@ const DailyCommunicationEntry = () => {
                 <div>WhatsApp: {formData.whatsappIncoming}</div>
                 <div>Gelen Arama: {formData.callIncoming}</div>
                 <div>Giden Arama: {formData.callOutgoing}</div>
-                <div>Yeni Müşteri: {formData.meetingNewCustomer}</div>
-                <div>Satış Sonrası: {formData.meetingAfterSale}</div>
+                <div>Yeni Müşteri Birebir: {formData.meetingNewCustomer}</div>
+                <div>Eski Müşteri Birebir: {formData.meetingAfterSale}</div>
               </div>
 
               {!isExempt && getTotalCommunication() === 0 && (
