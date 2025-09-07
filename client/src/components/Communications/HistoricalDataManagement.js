@@ -289,7 +289,9 @@ const HistoricalDataManagement = () => {
   };
 
   const getAllUsersForYear = () => {
-    return [...users, ...formData.historicalUsers];
+    // Sadece satış temsilcilerini dahil et, ziyaretçileri hariç tut
+    const activeRepresentatives = users.filter(user => user.role === 'salesperson');
+    return [...activeRepresentatives, ...formData.historicalUsers];
   };
 
   if (loading) {
