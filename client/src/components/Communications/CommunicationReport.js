@@ -24,11 +24,27 @@ import {
   FiTrendingUp,
   FiFilter,
   FiDownload,
-  FiRefreshCw
+  FiRefreshCw,
+  FiActivity
 } from 'react-icons/fi';
 
 import { communicationsAPI, usersAPI } from '../../utils/api';
 import { formatDate, formatNumber } from '../../utils/helpers';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
 
@@ -148,8 +164,8 @@ const CommunicationReport = () => {
       };
     });
 
-    // Toplam istatistikler
-    const totals = userBasedData.reduce((acc, item) => ({
+    // Toplam istatistikler - hem özet hem dönem bazlı
+    const summaryTotals = userBasedData.reduce((acc, item) => ({
       whatsappIncoming: acc.whatsappIncoming + item.communication.whatsappIncoming,
       callIncoming: acc.callIncoming + item.communication.callIncoming,
       callOutgoing: acc.callOutgoing + item.communication.callOutgoing,
@@ -167,8 +183,30 @@ const CommunicationReport = () => {
       activeUsers: 0
     });
 
+    // Dönem bazlı toplam istatistikler
+    const periodTotals = processedPeriodData.reduce((acc, item) => ({
+      whatsappIncoming: acc.whatsappIncoming + (item.communication.whatsappIncoming || 0),
+      callIncoming: acc.callIncoming + (item.communication.callIncoming || 0),
+      callOutgoing: acc.callOutgoing + (item.communication.callOutgoing || 0),
+      meetingNewCustomer: acc.meetingNewCustomer + (item.communication.meetingNewCustomer || 0),
+      meetingAfterSale: acc.meetingAfterSale + (item.communication.meetingAfterSale || 0),
+      total: acc.total + (item.communication.totalCommunication || 0),
+      activeUsers: new Set(processedPeriodData.map(p => p.salesperson?._id).filter(Boolean)).size
+    }), {
+      whatsappIncoming: 0,
+      callIncoming: 0,
+      callOutgoing: 0,
+      meetingNewCustomer: 0,
+      meetingAfterSale: 0,
+      total: 0,
+      activeUsers: 0
+    });
+
     // Dönem bazlı veri işleme
     const processedPeriodData = processPeriodData(periodData, filters.periodType);
+
+    // Dönem türüne göre hangi totali kullanacağımızı belirle
+    const totals = processedPeriodData.length > 0 ? periodTotals : summaryTotals;
 
     // En aktif kullanıcılar
     const topUsers = [...userBasedData]
@@ -258,6 +296,116 @@ const CommunicationReport = () => {
     });
   };
 
+  // Grafik verileri hazırlama fonksiyonları
+  const prepareBarChartData = () => {
+    if (!reportData || !reportData.users) return [];
+    
+    return reportData.users
+      .filter(item => item.communication.total > 0)
+      .sort((a, b) => b.communication.total - a.communication.total)
+      .slice(0, 10)
+      .map(item => ({
+        name: item.user.name.split(' ')[0], // Sadece ilk isim
+        WhatsApp: item.communication.whatsappIncoming,
+        'Gelen Arama': item.communication.callIncoming,
+        'Giden Arama': item.communication.callOutgoing,
+        'Yeni Müşteri': item.communication.meetingNewCustomer,
+        'Satış Sonrası': item.communication.meetingAfterSale,
+        Toplam: item.communication.total
+      }));
+  };
+
+  const preparePieChartData = () => {
+    if (!reportData || !reportData.totals) return [];
+    
+    return [
+      { name: 'WhatsApp', value: reportData.totals.whatsappIncoming, color: '#28a745' },
+      { name: 'Gelen Arama', value: reportData.totals.callIncoming, color: '#007bff' },
+      { name: 'Giden Arama', value: reportData.totals.callOutgoing, color: '#ffc107' },
+      { name: 'Yeni Müşteri', value: reportData.totals.meetingNewCustomer, color: '#17a2b8' },
+      { name: 'Satış Sonrası', value: reportData.totals.meetingAfterSale, color: '#6c757d' }
+    ].filter(item => item.value > 0);
+  };
+
+  const prepareTrendData = () => {
+    if (!reportData || !reportData.periods) return [];
+    
+    // Dönem bazlı trend verisi
+    const trendMap = new Map();
+    
+    reportData.periods.forEach(item => {
+      const period = item.periodLabel;
+      if (!trendMap.has(period)) {
+        trendMap.set(period, {
+          period,
+          WhatsApp: 0,
+          'Gelen Arama': 0,
+          'Giden Arama': 0,
+          'Yeni Müşteri': 0,
+          'Satış Sonrası': 0,
+          Toplam: 0
+        });
+      }
+      
+      const data = trendMap.get(period);
+      data.WhatsApp += item.communication.whatsappIncoming || 0;
+      data['Gelen Arama'] += item.communication.callIncoming || 0;
+      data['Giden Arama'] += item.communication.callOutgoing || 0;
+      data['Yeni Müşteri'] += item.communication.meetingNewCustomer || 0;
+      data['Satış Sonrası'] += item.communication.meetingAfterSale || 0;
+      data.Toplam += item.communication.totalCommunication || 0;
+    });
+    
+    return Array.from(trendMap.values()).slice(0, 20); // Son 20 dönem
+  };
+
+  const COLORS = ['#28a745', '#007bff', '#ffc107', '#17a2b8', '#6c757d'];
+
+  // Excel export fonksiyonu
+  const exportToExcel = () => {
+    if (!reportData) {
+      toast.error('Export edilecek veri bulunamadı');
+      return;
+    }
+
+    try {
+      // Basit CSV formatında export
+      const csvData = [
+        ['Temsilci', 'WhatsApp', 'Gelen Arama', 'Giden Arama', 'Yeni Müşteri', 'Satış Sonrası', 'Toplam', 'Kayıt Günü'],
+        ...reportData.users
+          .filter(item => item.communication.total > 0)
+          .map(item => [
+            item.user.name,
+            item.communication.whatsappIncoming,
+            item.communication.callIncoming,
+            item.communication.callOutgoing,
+            item.communication.meetingNewCustomer,
+            item.communication.meetingAfterSale,
+            item.communication.total,
+            item.recordCount
+          ])
+      ];
+
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `iletisim_raporu_${formatDate(new Date())}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Rapor başarıyla indirildi');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Rapor indirme sırasında hata oluştu');
+    }
+  };
+
   if (loading && !reportData) {
     return <Loading variant="dots" size="large" />;
   }
@@ -276,6 +424,15 @@ const CommunicationReport = () => {
           </p>
         </div>
         <div>
+          <Button 
+            variant="outline-success" 
+            onClick={() => exportToExcel()} 
+            disabled={!reportData || loading}
+            className="me-2"
+          >
+            <FiDownload className="me-1" />
+            Excel İndir
+          </Button>
           <Button variant="primary" onClick={fetchCommunicationData} disabled={loading}>
             <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
             Yenile
@@ -653,23 +810,353 @@ const CommunicationReport = () => {
               </Card>
             </Tab>
 
+            <Tab eventKey="breakdown" title={
+              <span>
+                <FiPhone className="me-1" />
+                İletişim Türü Detayı
+              </span>
+            }>
+              <Card>
+                <Card.Body>
+                  <Row>
+                    {/* WhatsApp Detayı */}
+                    <Col md={4} className="mb-4">
+                      <Card className="h-100">
+                        <Card.Header className="bg-success text-white">
+                          <h6 className="mb-0">
+                            <FiMessageSquare className="me-2" />
+                            WhatsApp İletişimi
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="text-center mb-3">
+                            <h3 className="text-success">{formatNumber(reportData.totals.whatsappIncoming)}</h3>
+                            <p className="text-muted mb-0">Toplam Mesaj</p>
+                          </div>
+                          <Table size="sm" className="mb-0">
+                            <tbody>
+                              {reportData.users
+                                .filter(item => item.communication.whatsappIncoming > 0)
+                                .sort((a, b) => b.communication.whatsappIncoming - a.communication.whatsappIncoming)
+                                .slice(0, 5)
+                                .map((item, index) => (
+                                <tr key={item.user._id}>
+                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
+                                  <td className="text-end">
+                                    <Badge bg="success">{item.communication.whatsappIncoming}</Badge>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* Arama Detayı */}
+                    <Col md={4} className="mb-4">
+                      <Card className="h-100">
+                        <Card.Header className="bg-primary text-white">
+                          <h6 className="mb-0">
+                            <FiPhone className="me-2" />
+                            Telefon Aramaları
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="text-center mb-3">
+                            <h3 className="text-primary">
+                              {formatNumber(reportData.totals.callIncoming + reportData.totals.callOutgoing)}
+                            </h3>
+                            <p className="text-muted mb-0">Toplam Arama</p>
+                            <small className="text-muted">
+                              Gelen: {formatNumber(reportData.totals.callIncoming)} | 
+                              Giden: {formatNumber(reportData.totals.callOutgoing)}
+                            </small>
+                          </div>
+                          <Table size="sm" className="mb-0">
+                            <tbody>
+                              {reportData.users
+                                .filter(item => (item.communication.callIncoming + item.communication.callOutgoing) > 0)
+                                .sort((a, b) => (b.communication.callIncoming + b.communication.callOutgoing) - (a.communication.callIncoming + a.communication.callOutgoing))
+                                .slice(0, 5)
+                                .map((item, index) => (
+                                <tr key={item.user._id}>
+                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
+                                  <td className="text-end">
+                                    <Badge bg="primary">
+                                      {item.communication.callIncoming + item.communication.callOutgoing}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* Görüşme Detayı */}
+                    <Col md={4} className="mb-4">
+                      <Card className="h-100">
+                        <Card.Header className="bg-warning text-dark">
+                          <h6 className="mb-0">
+                            <FiUsers className="me-2" />
+                            Birebir Görüşmeler
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="text-center mb-3">
+                            <h3 className="text-warning">
+                              {formatNumber(reportData.totals.meetingNewCustomer + reportData.totals.meetingAfterSale)}
+                            </h3>
+                            <p className="text-muted mb-0">Toplam Görüşme</p>
+                            <small className="text-muted">
+                              Yeni: {formatNumber(reportData.totals.meetingNewCustomer)} | 
+                              Eski: {formatNumber(reportData.totals.meetingAfterSale)}
+                            </small>
+                          </div>
+                          <Table size="sm" className="mb-0">
+                            <tbody>
+                              {reportData.users
+                                .filter(item => (item.communication.meetingNewCustomer + item.communication.meetingAfterSale) > 0)
+                                .sort((a, b) => (b.communication.meetingNewCustomer + b.communication.meetingAfterSale) - (a.communication.meetingNewCustomer + a.communication.meetingAfterSale))
+                                .slice(0, 5)
+                                .map((item, index) => (
+                                <tr key={item.user._id}>
+                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
+                                  <td className="text-end">
+                                    <Badge bg="warning" text="dark">
+                                      {item.communication.meetingNewCustomer + item.communication.meetingAfterSale}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+
+                  {/* Dönemlik Karşılaştırma */}
+                  <Row>
+                    <Col md={12}>
+                      <Card>
+                        <Card.Header>
+                          <h6 className="mb-0">
+                            <FiBarChart className="me-2" />
+                            İletişim Türü Karşılaştırması ({filters.periodType === 'daily' ? 'Günlük' : 
+                            filters.periodType === 'weekly' ? 'Haftalık' : 
+                            filters.periodType === 'monthly' ? 'Aylık' : 'Yıllık'} Ortalama)
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          <Row>
+                            <Col md={3} className="text-center">
+                              <div className="p-3 border rounded">
+                                <FiMessageSquare className="h2 text-success mb-2" />
+                                <h4 className="text-success">
+                                  {reportData.metadata.dateRange.days > 0 
+                                    ? Math.round(reportData.totals.whatsappIncoming / reportData.metadata.dateRange.days)
+                                    : 0}
+                                </h4>
+                                <p className="text-muted mb-0">WhatsApp/Gün</p>
+                              </div>
+                            </Col>
+                            <Col md={3} className="text-center">
+                              <div className="p-3 border rounded">
+                                <FiPhone className="h2 text-primary mb-2" />
+                                <h4 className="text-primary">
+                                  {reportData.metadata.dateRange.days > 0 
+                                    ? Math.round((reportData.totals.callIncoming + reportData.totals.callOutgoing) / reportData.metadata.dateRange.days)
+                                    : 0}
+                                </h4>
+                                <p className="text-muted mb-0">Arama/Gün</p>
+                              </div>
+                            </Col>
+                            <Col md={3} className="text-center">
+                              <div className="p-3 border rounded">
+                                <FiUsers className="h2 text-warning mb-2" />
+                                <h4 className="text-warning">
+                                  {reportData.metadata.dateRange.days > 0 
+                                    ? Math.round((reportData.totals.meetingNewCustomer + reportData.totals.meetingAfterSale) / reportData.metadata.dateRange.days)
+                                    : 0}
+                                </h4>
+                                <p className="text-muted mb-0">Görüşme/Gün</p>
+                              </div>
+                            </Col>
+                            <Col md={3} className="text-center">
+                              <div className="p-3 border rounded">
+                                <FiTrendingUp className="h2 text-info mb-2" />
+                                <h4 className="text-info">
+                                  {reportData.metadata.dateRange.days > 0 
+                                    ? Math.round(reportData.totals.total / reportData.metadata.dateRange.days)
+                                    : 0}
+                                </h4>
+                                <p className="text-muted mb-0">Toplam/Gün</p>
+                              </div>
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Tab>
+
             <Tab eventKey="charts" title={
               <span>
                 <FiPieChart className="me-1" />
                 Grafikler
               </span>
             }>
-              <Card>
-                <Card.Body>
-                  <div className="text-center py-5">
-                    <FiPieChart className="h1 text-muted mb-3" />
-                    <h5 className="text-muted">Grafiksel raporlar geliştiriliyor...</h5>
-                    <p className="text-muted">
-                      İletişim türlerine göre dağılım grafikleri ve trend analizleri yakında eklenecek.
-                    </p>
-                  </div>
-                </Card.Body>
-              </Card>
+              <Row>
+                {/* Temsilci Performans Grafiği */}
+                <Col md={12} className="mb-4">
+                  <Card>
+                    <Card.Header>
+                      <h5 className="mb-0">
+                        <FiBarChart className="me-2" />
+                        Temsilci İletişim Performansı (En İyi 10)
+                      </h5>
+                    </Card.Header>
+                    <Card.Body>
+                      <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={prepareBarChartData()}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="WhatsApp" fill="#28a745" />
+                          <Bar dataKey="Gelen Arama" fill="#007bff" />
+                          <Bar dataKey="Giden Arama" fill="#ffc107" />
+                          <Bar dataKey="Yeni Müşteri" fill="#17a2b8" />
+                          <Bar dataKey="Satış Sonrası" fill="#6c757d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* İletişim Türü Dağılımı */}
+                <Col md={6} className="mb-4">
+                  <Card>
+                    <Card.Header>
+                      <h5 className="mb-0">
+                        <FiPieChart className="me-2" />
+                        İletişim Türü Dağılımı
+                      </h5>
+                    </Card.Header>
+                    <Card.Body>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={preparePieChartData()}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {preparePieChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* İletişim Trend Analizi */}
+                <Col md={6} className="mb-4">
+                  <Card>
+                    <Card.Header>
+                      <h5 className="mb-0">
+                        <FiTrendingUp className="me-2" />
+                        İletişim Trend Analizi ({filters.periodType === 'daily' ? 'Günlük' : 
+                        filters.periodType === 'weekly' ? 'Haftalık' : 
+                        filters.periodType === 'monthly' ? 'Aylık' : 'Yıllık'})
+                      </h5>
+                    </Card.Header>
+                    <Card.Body>
+                      {prepareTrendData().length > 0 ? (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={prepareTrendData()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="period" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="Toplam" stroke="#dc3545" strokeWidth={3} />
+                            <Line type="monotone" dataKey="WhatsApp" stroke="#28a745" />
+                            <Line type="monotone" dataKey="Gelen Arama" stroke="#007bff" />
+                            <Line type="monotone" dataKey="Giden Arama" stroke="#ffc107" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="text-center py-4">
+                          <FiTrendingUp className="h2 text-muted mb-2" />
+                          <p className="text-muted">Trend analizi için dönem bazlı veri bulunamadı</p>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* İstatistiksel Özet */}
+                <Col md={12}>
+                  <Card>
+                    <Card.Header>
+                      <h5 className="mb-0">
+                        <FiActivity className="me-2" />
+                        İstatistiksel Özet
+                      </h5>
+                    </Card.Header>
+                    <Card.Body>
+                      <Row>
+                        <Col md={3}>
+                          <div className="text-center p-3 border rounded">
+                            <h4 className="text-primary">{reportData?.totals?.total || 0}</h4>
+                            <p className="text-muted mb-0">Toplam İletişim</p>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 border rounded">
+                            <h4 className="text-success">
+                              {reportData?.totals?.activeUsers || 0}
+                            </h4>
+                            <p className="text-muted mb-0">Aktif Temsilci</p>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 border rounded">
+                            <h4 className="text-info">
+                              {reportData?.totals?.total && reportData?.totals?.activeUsers 
+                                ? Math.round(reportData.totals.total / reportData.totals.activeUsers)
+                                : 0}
+                            </h4>
+                            <p className="text-muted mb-0">Ortalama/Temsilci</p>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <div className="text-center p-3 border rounded">
+                            <h4 className="text-warning">
+                              {reportData?.metadata?.dateRange?.days || 0}
+                            </h4>
+                            <p className="text-muted mb-0">Rapor Günü</p>
+                          </div>
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
             </Tab>
           </Tabs>
 
