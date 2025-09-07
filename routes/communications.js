@@ -265,6 +265,10 @@ router.get('/report', auth, async (req, res) => {
       isApproved: true 
     }).select('_id name email');
 
+    console.log('All users found:', allUsers.length);
+    console.log('Historical years found:', historicalYears.length);
+    console.log('Daily records found:', dailyRecords.length);
+
     // Kullanıcı bazlı veri birleştirme
     const userBasedData = allUsers.map(user => {
       // Günlük kayıtlardan veri
@@ -337,9 +341,13 @@ router.get('/report', auth, async (req, res) => {
       };
     });
 
+    console.log('User based data length:', userBasedData.length);
+    console.log('User based data sample:', userBasedData.slice(0, 2));
+
     // Eğer hiç veri yoksa, en azından tüm kullanıcıları sıfır değerlerle göster
     if (userBasedData.length === 0) {
-      return allUsers.map(user => ({
+      console.log('No data found, returning all users with zero values');
+      const zeroData = allUsers.map(user => ({
         salesperson: {
           _id: user._id,
           name: user.name,
@@ -355,6 +363,8 @@ router.get('/report', auth, async (req, res) => {
         },
         recordCount: 0
       }));
+      console.log('Zero data sample:', zeroData.slice(0, 2));
+      return res.json(zeroData);
     }
 
     res.json(userBasedData);

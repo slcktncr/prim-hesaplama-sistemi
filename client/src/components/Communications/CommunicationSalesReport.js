@@ -92,9 +92,11 @@ const CommunicationSalesReport = () => {
       ]);
 
       console.log('Communication response:', communicationResponse);
+      console.log('Communication data length:', communicationResponse?.data?.length);
       console.log('Sales response:', salesResponse);
       console.log('Daily response:', dailyResponse);
       console.log('Users array:', users);
+      console.log('Users length:', users.length);
 
       // Günlük rapor verisini set et
       setDailyReportData(Array.isArray(dailyResponse.data) ? dailyResponse.data : []);
@@ -149,10 +151,13 @@ const CommunicationSalesReport = () => {
         };
       });
 
-      // Sadece veri olan kullanıcıları filtrele
-      const filteredData = combinedData.filter(item => 
-        item.communication.totalCommunication > 0 || item.sales.totalSales > 0
-      );
+      // Tüm kullanıcıları göster (filtreleme kaldırıldı)
+      const filteredData = combinedData;
+
+      console.log('Combined data length:', combinedData.length);
+      console.log('Filtered data length:', filteredData.length);
+      console.log('Combined data sample:', combinedData.slice(0, 2));
+      console.log('Filtered data sample:', filteredData.slice(0, 2));
 
       // Toplam istatistikleri hesapla
       const totals = filteredData.reduce((acc, item) => ({
