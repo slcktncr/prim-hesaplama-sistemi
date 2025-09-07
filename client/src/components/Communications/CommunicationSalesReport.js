@@ -69,6 +69,8 @@ const CommunicationSalesReport = () => {
     try {
       setLoading(true);
       
+      console.log('Fetching report data with filters:', filters);
+      
       // Paralel olarak hem iletişim hem de satış verilerini getir
       const [communicationResponse, salesResponse] = await Promise.all([
         communicationsAPI.getReport({
@@ -82,6 +84,9 @@ const CommunicationSalesReport = () => {
           salespersons: filters.salesperson !== 'all' ? [filters.salesperson] : undefined
         })
       ]);
+
+      console.log('Communication response:', communicationResponse);
+      console.log('Sales response:', salesResponse);
 
       // Verileri birleştir
       const communicationData = communicationResponse.data || [];
@@ -172,7 +177,8 @@ const CommunicationSalesReport = () => {
 
     } catch (error) {
       console.error('Report data fetch error:', error);
-      toast.error('Rapor verileri yüklenirken hata oluştu');
+      console.error('Error details:', error.response?.data || error.message);
+      toast.error(`Rapor verileri yüklenirken hata oluştu: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
