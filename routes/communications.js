@@ -232,8 +232,8 @@ router.get('/report', auth, async (req, res) => {
       };
     }
 
-    // Kullanıcı bazlı aggregation
-    const userBasedData = await CommunicationRecord.aggregate([
+    // Önce günlük kayıtlardan veri al
+    const dailyRecords = await CommunicationRecord.aggregate([
       { $match: query },
       {
         $group: {
@@ -246,37 +246,116 @@ router.get('/report', auth, async (req, res) => {
           totalCommunication: { $sum: '$totalCommunication' },
           recordCount: { $sum: 1 }
         }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'salesperson'
-        }
-      },
-      {
-        $unwind: '$salesperson'
-      },
-      {
-        $project: {
-          salesperson: {
-            _id: '$salesperson._id',
-            name: '$salesperson.name',
-            email: '$salesperson.email'
-          },
-          communication: {
-            whatsappIncoming: '$whatsappIncoming',
-            callIncoming: '$callIncoming',
-            callOutgoing: '$callOutgoing',
-            meetingNewCustomer: '$meetingNewCustomer',
-            meetingAfterSale: '$meetingAfterSale',
-            totalCommunication: '$totalCommunication'
-          },
-          recordCount: '$recordCount'
-        }
       }
     ]);
+
+    // Geçmiş yıl verilerini de al (eğer tarih aralığı geçmiş yılları kapsıyorsa)
+    const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
+    const endYear = endDate ? new Date(endDate).getFullYear() : new Date().getFullYear();
+    
+    const historicalYears = await CommunicationYear.find({
+      year: { $gte: startYear, $lte: endYear }
+    });
+
+    // Tüm aktif kullanıcıları al
+    const User = require('../models/User');
+    const allUsers = await User.find({ 
+      role: 'salesperson', 
+      isActive: true, 
+      isApproved: true 
+    }).select('_id name email');
+
+    // Kullanıcı bazlı veri birleştirme
+    const userBasedData = allUsers.map(user => {
+      // Günlük kayıtlardan veri
+      const dailyData = dailyRecords.find(d => d._id.toString() === user._id.toString()) || {
+        whatsappIncoming: 0,
+        callIncoming: 0,
+        callOutgoing: 0,
+        meetingNewCustomer: 0,
+        meetingAfterSale: 0,
+        totalCommunication: 0,
+        recordCount: 0
+      };
+
+      // Geçmiş yıl verilerinden veri
+      let historicalData = {
+        whatsappIncoming: 0,
+        callIncoming: 0,
+        callOutgoing: 0,
+        meetingNewCustomer: 0,
+        meetingAfterSale: 0,
+        totalCommunication: 0
+      };
+
+      historicalYears.forEach(yearData => {
+        // Aylık verilerden topla (2025+ için)
+        if (yearData.monthlyData && yearData.monthlyData.size > 0) {
+          for (let [month, monthData] of yearData.monthlyData) {
+            if (monthData && monthData.get && monthData.get(user._id.toString())) {
+              const userData = monthData.get(user._id.toString());
+              historicalData.whatsappIncoming += userData.whatsappIncoming || 0;
+              historicalData.callIncoming += userData.callIncoming || 0;
+              historicalData.callOutgoing += userData.callOutgoing || 0;
+              historicalData.meetingNewCustomer += userData.meetingNewCustomer || 0;
+              historicalData.meetingAfterSale += userData.meetingAfterSale || 0;
+              historicalData.totalCommunication += userData.totalCommunication || 0;
+            }
+          }
+        }
+
+        // Yıllık verilerden al (geçmiş yıllar için)
+        if (yearData.yearlyCommunicationData && yearData.yearlyCommunicationData.get(user._id.toString())) {
+          const userData = yearData.yearlyCommunicationData.get(user._id.toString());
+          historicalData.whatsappIncoming += userData.whatsappIncoming || 0;
+          historicalData.callIncoming += userData.callIncoming || 0;
+          historicalData.callOutgoing += userData.callOutgoing || 0;
+          historicalData.meetingNewCustomer += userData.meetingNewCustomer || 0;
+          historicalData.meetingAfterSale += userData.meetingAfterSale || 0;
+          historicalData.totalCommunication += userData.totalCommunication || 0;
+        }
+      });
+
+      // Toplam veri
+      const totalData = {
+        whatsappIncoming: dailyData.whatsappIncoming + historicalData.whatsappIncoming,
+        callIncoming: dailyData.callIncoming + historicalData.callIncoming,
+        callOutgoing: dailyData.callOutgoing + historicalData.callOutgoing,
+        meetingNewCustomer: dailyData.meetingNewCustomer + historicalData.meetingNewCustomer,
+        meetingAfterSale: dailyData.meetingAfterSale + historicalData.meetingAfterSale,
+        totalCommunication: dailyData.totalCommunication + historicalData.totalCommunication
+      };
+
+      return {
+        salesperson: {
+          _id: user._id,
+          name: user.name,
+          email: user.email
+        },
+        communication: totalData,
+        recordCount: dailyData.recordCount
+      };
+    });
+
+    // Eğer hiç veri yoksa, en azından tüm kullanıcıları sıfır değerlerle göster
+    if (userBasedData.length === 0) {
+      return allUsers.map(user => ({
+        salesperson: {
+          _id: user._id,
+          name: user.name,
+          email: user.email
+        },
+        communication: {
+          whatsappIncoming: 0,
+          callIncoming: 0,
+          callOutgoing: 0,
+          meetingNewCustomer: 0,
+          meetingAfterSale: 0,
+          totalCommunication: 0
+        },
+        recordCount: 0
+      }));
+    }
 
     res.json(userBasedData);
 
@@ -331,6 +410,21 @@ router.get('/daily-report', auth, async (req, res) => {
       .populate('salesperson', 'name email')
       .populate('saleType', 'name color')
       .sort({ saleDate: -1 });
+
+    // Geçmiş yıl verilerini de dahil et
+    const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
+    const endYear = endDate ? new Date(endDate).getFullYear() : new Date().getFullYear();
+    
+    const historicalYears = await CommunicationYear.find({
+      year: { $gte: startYear, $lte: endYear }
+    });
+
+    // Tüm aktif kullanıcıları al
+    const allUsers = await User.find({ 
+      role: 'salesperson', 
+      isActive: true, 
+      isApproved: true 
+    }).select('_id name email');
 
     // Günlük bazda gruplama
     const dailyData = {};
