@@ -133,6 +133,7 @@ export const communicationsAPI = {
   saveDaily: (data) => API.post('/communications/daily', data),
   getRecords: (params) => API.get('/communications/records', { params }),
   getReport: (params) => API.get('/communications/report', { params }),
+  getPeriodReport: (params) => API.get('/communications/period-report', { params }),
   getDailyReport: (params) => API.get('/communications/daily-report', { params }),
   createYear: (data) => API.post('/communications/years', data),
   updateYear: (id, data) => API.put(`/communications/years/${id}`, data),

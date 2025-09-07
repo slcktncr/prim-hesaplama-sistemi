@@ -20,7 +20,7 @@ import UserPermissions from './components/Admin/UserPermissions';
 import SystemSettings from './components/SystemSettings/SystemSettings';
 import Profile from './components/Profile/Profile';
 import DailyCommunicationEntry from './components/Communications/DailyCommunicationEntry';
-import AdvancedCommunicationReport from './components/Communications/AdvancedCommunicationReport';
+import CommunicationReport from './components/Communications/CommunicationReport';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -104,7 +104,7 @@ function AppContent() {
                     
                     {/* İletişim Routes */}
                     <Route path="/communications/daily" element={<DailyCommunicationEntry />} />
-                    <Route path="/communications/reports" element={<AdvancedCommunicationReport />} />
+                    <Route path="/communications/reports" element={<CommunicationReport />} />
                     
                     {/* Prim Routes */}
                     <Route path="/prims/transactions" element={<PrimTransactions />} />

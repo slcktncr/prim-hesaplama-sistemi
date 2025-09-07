@@ -848,4 +848,141 @@ router.delete('/years/:id', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   GET /api/communications/period-report
+// @desc    Dönem bazlı iletişim raporu
+// @access  Private
+router.get('/period-report', auth, async (req, res) => {
+  try {
+    const { 
+      startDate, 
+      endDate, 
+      salesperson,
+      periodType = 'daily' // daily, weekly, monthly, yearly
+    } = req.query;
+
+    let query = {};
+
+    // Admin değilse sadece kendi verilerini görebilir
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user.id;
+    } else if (salesperson && salesperson !== 'all') {
+      query.salesperson = salesperson;
+    }
+
+    if (startDate && endDate) {
+      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    // Dönem bazlı gruplama için aggregation pipeline
+    let groupStage = {};
+    let sortStage = {};
+
+    switch (periodType) {
+      case 'daily':
+        groupStage = {
+          _id: {
+            year: { $year: '$date' },
+            month: { $month: '$date' },
+            day: { $dayOfMonth: '$date' },
+            salesperson: '$salesperson'
+          },
+          date: { $first: '$date' }
+        };
+        sortStage = { '_id.year': 1, '_id.month': 1, '_id.day': 1 };
+        break;
+      case 'weekly':
+        groupStage = {
+          _id: {
+            year: { $year: '$date' },
+            week: { $week: '$date' },
+            salesperson: '$salesperson'
+          },
+          date: { $first: '$date' }
+        };
+        sortStage = { '_id.year': 1, '_id.week': 1 };
+        break;
+      case 'monthly':
+        groupStage = {
+          _id: {
+            year: { $year: '$date' },
+            month: { $month: '$date' },
+            salesperson: '$salesperson'
+          },
+          date: { $first: '$date' }
+        };
+        sortStage = { '_id.year': 1, '_id.month': 1 };
+        break;
+      case 'yearly':
+        groupStage = {
+          _id: {
+            year: { $year: '$date' },
+            salesperson: '$salesperson'
+          },
+          date: { $first: '$date' }
+        };
+        sortStage = { '_id.year': 1 };
+        break;
+    }
+
+    // İletişim verilerini grupla
+    const periodData = await CommunicationRecord.aggregate([
+      { $match: query },
+      {
+        $group: {
+          ...groupStage,
+          whatsappIncoming: { $sum: '$whatsappIncoming' },
+          callIncoming: { $sum: '$callIncoming' },
+          callOutgoing: { $sum: '$callOutgoing' },
+          meetingNewCustomer: { $sum: '$meetingNewCustomer' },
+          meetingAfterSale: { $sum: '$meetingAfterSale' },
+          totalCommunication: { $sum: '$totalCommunication' },
+          recordCount: { $sum: 1 }
+        }
+      },
+      { $sort: sortStage },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id.salesperson',
+          foreignField: '_id',
+          as: 'salesperson'
+        }
+      },
+      {
+        $unwind: {
+          path: '$salesperson',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          date: 1,
+          salesperson: {
+            _id: '$salesperson._id',
+            name: '$salesperson.name',
+            email: '$salesperson.email'
+          },
+          communication: {
+            whatsappIncoming: '$whatsappIncoming',
+            callIncoming: '$callIncoming',
+            callOutgoing: '$callOutgoing',
+            meetingNewCustomer: '$meetingNewCustomer',
+            meetingAfterSale: '$meetingAfterSale',
+            totalCommunication: '$totalCommunication'
+          },
+          recordCount: '$recordCount'
+        }
+      }
+    ]);
+
+    console.log(`Period report (${periodType}):`, periodData.length, 'records');
+
+    res.json(periodData);
+  } catch (error) {
+    console.error('Period report error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;
