@@ -183,6 +183,9 @@ const CommunicationReport = () => {
       activeUsers: 0
     });
 
+    // Dönem bazlı veri işleme
+    const processedPeriodData = processPeriodData(periodData, filters.periodType);
+
     // Dönem bazlı toplam istatistikler
     const periodTotals = processedPeriodData.reduce((acc, item) => ({
       whatsappIncoming: acc.whatsappIncoming + (item.communication.whatsappIncoming || 0),
@@ -201,9 +204,6 @@ const CommunicationReport = () => {
       total: 0,
       activeUsers: 0
     });
-
-    // Dönem bazlı veri işleme
-    const processedPeriodData = processPeriodData(periodData, filters.periodType);
 
     // Dönem türüne göre hangi totali kullanacağımızı belirle
     const totals = processedPeriodData.length > 0 ? periodTotals : summaryTotals;
