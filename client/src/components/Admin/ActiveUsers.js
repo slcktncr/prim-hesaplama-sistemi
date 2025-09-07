@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Dropdown, Modal, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { FiUsers, FiUser, FiShield, FiMoreVertical, FiEdit, FiCheck, FiX } from 'react-icons/fi';
+import { FiUsers, FiUser, FiShield, FiMoreVertical, FiEdit, FiCheck, FiX, FiEye } from 'react-icons/fi';
 import { usersAPI } from '../../utils/api';
 
 const ActiveUsers = () => {
@@ -154,8 +154,12 @@ const ActiveUsers = () => {
                           </td>
                           <td>{user.email}</td>
                           <td>
-                            <Badge bg={user.role === 'admin' ? 'danger' : 'primary'}>
-                              {user.role === 'admin' ? 'Admin' : 'Satış Temsilcisi'}
+                            <Badge bg={
+                              user.role === 'admin' ? 'danger' : 
+                              user.role === 'visitor' ? 'secondary' : 'primary'
+                            }>
+                              {user.role === 'admin' ? 'Admin' : 
+                               user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
                             </Badge>
                           </td>
                           <td>{formatDate(user.createdAt)}</td>
@@ -199,6 +203,15 @@ const ActiveUsers = () => {
                                   >
                                     <FiUser className="me-2" />
                                     Satış Temsilcisi Yap
+                                  </Dropdown.Item>
+                                )}
+                                
+                                {user.role !== 'visitor' && (
+                                  <Dropdown.Item 
+                                    onClick={() => handleRoleChange(user._id, 'visitor')}
+                                  >
+                                    <FiEye className="me-2" />
+                                    Ziyaretçi Yap
                                   </Dropdown.Item>
                                 )}
                               </Dropdown.Menu>
