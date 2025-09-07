@@ -29,7 +29,7 @@ router.get('/salespeople', auth, async (req, res) => {
     const salespeople = await User.find({ 
       isActive: true,
       isApproved: true,
-      role: 'salesperson'
+      role: 'salesperson' // Sadece satış temsilcileri, ziyaretçiler dahil değil
     })
       .select('name email firstName lastName')
       .sort({ name: 1 });
@@ -215,7 +215,7 @@ router.put('/:id', [
   body('firstName').notEmpty().withMessage('Ad gereklidir'),
   body('lastName').notEmpty().withMessage('Soyad gereklidir'),
   body('email').isEmail().withMessage('Geçerli bir email adresi gereklidir'),
-  body('role').isIn(['admin', 'salesperson']).withMessage('Geçerli bir rol seçilmelidir')
+  body('role').isIn(['admin', 'salesperson', 'visitor']).withMessage('Geçerli bir rol seçilmelidir')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -327,7 +327,7 @@ router.put('/:id/communication-requirement', [auth, adminAuth], async (req, res)
 router.get('/communication-settings', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ 
-      role: 'salesperson',
+      role: 'salesperson', // Sadece satış temsilcileri, ziyaretçiler dahil değil
       isApproved: true 
     })
     .select('name email isActive requiresCommunicationEntry communicationExemptReason communicationExemptBy communicationExemptAt')

@@ -49,7 +49,7 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       .populate('salesperson', 'name email isActive')
       .sort({ totalPenaltyPoints: -1 });
 
-    // Tüm aktif kullanıcıları getir
+    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
     const allUsers = await User.find({ 
       role: 'salesperson',
       isApproved: true 
@@ -143,7 +143,7 @@ router.post('/check-daily', [auth, adminAuth], async (req, res) => {
       return res.json({ message: 'Bu yıl için ceza sistemi aktif değil' });
     }
 
-    // İletişim kaydı zorunlu olan aktif temsilcileri getir
+    // İletişim kaydı zorunlu olan aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
     const activeUsers = await User.find({
       role: 'salesperson',
       isActive: true,

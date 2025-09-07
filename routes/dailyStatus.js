@@ -143,7 +143,7 @@ router.get('/team-status', auth, async (req, res) => {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-    // Tüm aktif temsilcileri getir
+    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
     const allSalespeople = await User.find({
       role: 'salesperson',
       isActive: true,
@@ -348,7 +348,7 @@ router.get('/admin/all-statuses', [auth, adminAuth], async (req, res) => {
     
     const stats = await DailyStatus.getStatusStats(targetDate);
     
-    // Tüm aktif temsilcileri getir
+    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
     const allSalespeople = await User.find({
       role: 'salesperson',
       isActive: true,

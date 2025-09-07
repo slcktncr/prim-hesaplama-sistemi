@@ -33,9 +33,9 @@ const UserPermissions = () => {
     try {
       setLoading(true);
       const response = await usersAPI.getAllUsers();
-      // Sadece salesperson rolündeki kullanıcıları göster
-      const salespersonUsers = response.data.filter(user => user.role === 'salesperson');
-      setUsers(salespersonUsers);
+      // Salesperson ve visitor rolündeki kullanıcıları göster (admin hariç)
+      const nonAdminUsers = response.data.filter(user => user.role !== 'admin');
+      setUsers(nonAdminUsers);
       setError(null);
     } catch (error) {
       console.error('Users fetch error:', error);
@@ -109,7 +109,7 @@ const UserPermissions = () => {
         <div>
           <h1>Kullanıcı Yetkileri</h1>
           <p className="text-muted mb-0">
-            Satış temsilcilerinin sistem yetkilerini yönetin
+            Kullanıcıların sistem yetkilerini yönetin
           </p>
         </div>
       </div>
@@ -125,13 +125,13 @@ const UserPermissions = () => {
         <Card.Header>
           <div className="d-flex align-items-center">
             <FiUser className="me-2" />
-            <span>Satış Temsilcileri ({users.length})</span>
+            <span>Kullanıcılar ({users.length})</span>
           </div>
         </Card.Header>
         <Card.Body>
           {users.length === 0 ? (
             <Alert variant="info" className="mb-0">
-              Henüz aktif satış temsilcisi bulunmamaktadır.
+              Henüz aktif kullanıcı bulunmamaktadır.
             </Alert>
           ) : (
             <Table responsive striped hover>
@@ -139,6 +139,7 @@ const UserPermissions = () => {
                 <tr>
                   <th>Kullanıcı</th>
                   <th>E-posta</th>
+                  <th>Rol</th>
                   <th>Tüm Satışlar</th>
                   <th>Tüm Raporlar</th>
                   <th>Tüm Primler</th>
@@ -152,22 +153,53 @@ const UserPermissions = () => {
                       <div>
                         <strong>{user.name}</strong>
                         <br />
-                        <small className="text-muted">Satış Temsilcisi</small>
+                        <small className="text-muted">
+                          {user.role === 'salesperson' ? 'Satış Temsilcisi' : 
+                           user.role === 'visitor' ? 'Ziyaretçi' : 'Kullanıcı'}
+                        </small>
                       </div>
                     </td>
                     <td>{user.email}</td>
-                    <td>{getPermissionBadge(user.permissions?.canViewAllSales)}</td>
-                    <td>{getPermissionBadge(user.permissions?.canViewAllReports)}</td>
-                    <td>{getPermissionBadge(user.permissions?.canViewAllPrims)}</td>
                     <td>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => handleEditPermissions(user)}
-                      >
-                        <FiSettings className="me-1" />
-                        Yetkileri Düzenle
-                      </Button>
+                      <Badge bg={
+                        user.role === 'salesperson' ? 'primary' : 
+                        user.role === 'visitor' ? 'secondary' : 'info'
+                      }>
+                        {user.role === 'salesperson' ? 'Temsilci' : 
+                         user.role === 'visitor' ? 'Ziyaretçi' : user.role}
+                      </Badge>
+                    </td>
+                    <td>
+                      {user.role === 'visitor' ? 
+                        <Badge bg="success">✓</Badge> : 
+                        getPermissionBadge(user.permissions?.canViewAllSales)
+                      }
+                    </td>
+                    <td>
+                      {user.role === 'visitor' ? 
+                        <Badge bg="success">✓</Badge> : 
+                        getPermissionBadge(user.permissions?.canViewAllReports)
+                      }
+                    </td>
+                    <td>
+                      {user.role === 'visitor' ? 
+                        <Badge bg="success">✓</Badge> : 
+                        getPermissionBadge(user.permissions?.canViewAllPrims)
+                      }
+                    </td>
+                    <td>
+                      {user.role === 'visitor' ? (
+                        <Badge bg="info">Sadece Görüntüleme</Badge>
+                      ) : (
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => handleEditPermissions(user)}
+                        >
+                          <FiSettings className="me-1" />
+                          Yetkileri Düzenle
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'salesperson'],
+    enum: ['admin', 'salesperson', 'visitor'],
     default: 'salesperson'
   },
   // Yetkilendirme sistemi
@@ -98,12 +98,28 @@ userSchema.pre('save', function(next) {
   next();
 });
 
-// Şifre hashleme
+// Şifre hashleme ve rol bazlı izin ayarlama
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  // Şifre hashleme
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
   
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  // Ziyaretçi rolü için özel ayarlar
+  if (this.role === 'visitor') {
+    this.requiresCommunicationEntry = false; // İletişim kaydı girme zorunluluğu yok
+    this.permissions = {
+      canViewAllSales: true,        // Tüm satışları görüntüleyebilir
+      canViewAllReports: true,      // Tüm raporları görüntüleyebilir
+      canViewAllPrims: true,        // Tüm primleri görüntüleyebilir
+      canViewDashboard: true,       // Dashboard'u görüntüleyebilir
+      canManageOwnSales: false,     // Kendi satışlarını yönetemez
+      canViewOwnReports: false,     // Kendi raporları yok
+      canViewOwnPrims: false        // Kendi primleri yok
+    };
+  }
+  
   next();
 });
 
