@@ -101,6 +101,8 @@ const CommunicationSalesReport = () => {
       console.log('Communication data length:', communicationResponse?.data?.length);
       console.log('Communication data sample:', communicationResponse?.data?.slice(0, 2));
       console.log('Sales response:', salesResponse);
+      console.log('Sales response data:', salesResponse.data);
+      console.log('Sales response sample:', salesResponse.data?.slice(0, 2));
       console.log('Daily response:', dailyResponse);
       console.log('Users array:', users);
       console.log('Users length:', users.length);
@@ -120,6 +122,11 @@ const CommunicationSalesReport = () => {
       const combinedData = users.map(user => {
         const commData = communicationData.find(c => c.salesperson && c.salesperson._id === user._id) || {};
         const salesInfo = salesData.find(s => s.salesperson && s.salesperson._id === user._id) || {};
+        
+        console.log(`=== USER ${user.name} DATA ===`);
+        console.log('Communication data:', commData);
+        console.log('Sales data:', salesInfo);
+        console.log('=== END USER DATA ===');
 
         return {
           user: {
@@ -133,18 +140,23 @@ const CommunicationSalesReport = () => {
             callOutgoing: (commData.communication && commData.communication.callOutgoing) || 0,
             meetingNewCustomer: (commData.communication && commData.communication.meetingNewCustomer) || 0,
             meetingAfterSale: (commData.communication && commData.communication.meetingAfterSale) || 0,
-            totalCommunication: (commData.communication && commData.communication.totalCommunication) || 0,
+            totalCommunication: (commData.communication && commData.communication.totalCommunication) || 
+              ((commData.communication?.whatsappIncoming || 0) + 
+               (commData.communication?.callIncoming || 0) + 
+               (commData.communication?.callOutgoing || 0) + 
+               (commData.communication?.meetingNewCustomer || 0) + 
+               (commData.communication?.meetingAfterSale || 0)),
             daysEntered: commData.recordCount || 0,
             totalDays: commData.totalDays || 0,
             entryRate: commData.entryRate || 0
           },
           sales: {
-            totalSales: salesInfo.totalSales || 0,
-            totalAmount: salesInfo.totalAmount || 0,
-            totalPrimAmount: salesInfo.totalPrimAmount || 0,
-            netPrimAmount: salesInfo.netPrimAmount || 0,
-            cancelledSales: salesInfo.cancelledSales || 0,
-            modifiedSales: salesInfo.modifiedSales || 0,
+            totalSales: salesInfo.totalSales || salesInfo.sales?.length || 0,
+            totalAmount: salesInfo.totalAmount || salesInfo.totalCiro || 0,
+            totalPrimAmount: salesInfo.totalPrimAmount || salesInfo.totalPrim || 0,
+            netPrimAmount: salesInfo.netPrimAmount || salesInfo.netPrim || 0,
+            cancelledSales: salesInfo.cancelledSales || salesInfo.cancellations || 0,
+            modifiedSales: salesInfo.modifiedSales || salesInfo.modifications || 0,
             avgSaleAmount: salesInfo.avgSaleAmount || 0,
             salesByType: salesInfo.salesByType || {}
           },
