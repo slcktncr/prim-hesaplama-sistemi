@@ -340,6 +340,15 @@ router.get('/report', auth, async (req, res) => {
             historicalData.totalCommunication += userData.totalCommunication || 0;
           }
         }
+
+        // Geçmiş yıl satış verilerini de dahil et
+        if (yearData.yearlySalesData) {
+          const salesData = yearData.yearlySalesData.get(user._id.toString());
+          if (salesData) {
+            console.log(`Historical sales data for ${user.name}:`, salesData);
+            // Bu veriler frontend'te kullanılmak üzere ayrı bir field'da tutulacak
+          }
+        }
       });
 
       // Toplam veri

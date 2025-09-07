@@ -52,7 +52,12 @@ const CommunicationSalesReport = () => {
 
   useEffect(() => {
     if (users.length > 0) {
-      fetchReportData();
+      // Debounce: 500ms bekle, sonra veri getir
+      const timeoutId = setTimeout(() => {
+        fetchReportData();
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [filters, users]);
 
@@ -164,16 +169,16 @@ const CommunicationSalesReport = () => {
 
       // Toplam istatistikleri hesapla
       const totals = filteredData.reduce((acc, item) => ({
-        totalCommunication: acc.totalCommunication + item.communication.totalCommunication,
-        totalSales: acc.totalSales + item.sales.totalSales,
-        totalAmount: acc.totalAmount + item.sales.totalAmount,
-        totalPrimAmount: acc.totalPrimAmount + item.sales.totalPrimAmount,
-        netPrimAmount: acc.netPrimAmount + item.sales.netPrimAmount,
-        whatsappIncoming: acc.whatsappIncoming + item.communication.whatsappIncoming,
-        callIncoming: acc.callIncoming + item.communication.callIncoming,
-        callOutgoing: acc.callOutgoing + item.communication.callOutgoing,
-        meetingNewCustomer: acc.meetingNewCustomer + item.communication.meetingNewCustomer,
-        meetingAfterSale: acc.meetingAfterSale + item.communication.meetingAfterSale
+        totalCommunication: acc.totalCommunication + (item.communication?.totalCommunication || 0),
+        totalSales: acc.totalSales + (item.sales?.totalSales || 0),
+        totalAmount: acc.totalAmount + (item.sales?.totalAmount || 0),
+        totalPrimAmount: acc.totalPrimAmount + (item.sales?.totalPrimAmount || 0),
+        netPrimAmount: acc.netPrimAmount + (item.sales?.netPrimAmount || 0),
+        whatsappIncoming: acc.whatsappIncoming + (item.communication?.whatsappIncoming || 0),
+        callIncoming: acc.callIncoming + (item.communication?.callIncoming || 0),
+        callOutgoing: acc.callOutgoing + (item.communication?.callOutgoing || 0),
+        meetingNewCustomer: acc.meetingNewCustomer + (item.communication?.meetingNewCustomer || 0),
+        meetingAfterSale: acc.meetingAfterSale + (item.communication?.meetingAfterSale || 0)
       }), {
         totalCommunication: 0,
         totalSales: 0,
@@ -186,6 +191,9 @@ const CommunicationSalesReport = () => {
         meetingNewCustomer: 0,
         meetingAfterSale: 0
       });
+
+      console.log('Final totals calculated:', totals);
+      console.log('Sample item for totals debug:', filteredData[0]);
 
       setReportData({
         data: filteredData.sort((a, b) => b.sales.totalAmount - a.sales.totalAmount),
