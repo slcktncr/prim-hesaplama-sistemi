@@ -285,13 +285,31 @@ const HistoricalDataManagement = () => {
                     </Badge>
                   </td>
                   <td>
-                    {Object.keys(year.statistics || {}).length} temsilci
+                    {(() => {
+                      const monthlyData = year.monthlyData || {};
+                      const allUsers = new Set();
+                      Object.values(monthlyData).forEach(monthData => {
+                        Object.keys(monthData || {}).forEach(userId => allUsers.add(userId));
+                      });
+                      return allUsers.size + (year.historicalUsers?.length || 0);
+                    })()} temsilci
                   </td>
                   <td>
                     {formatNumber(
-                      Object.values(year.statistics || {}).reduce((total, stats) => 
-                        total + (stats.totalCommunication || 0), 0
-                      )
+                      (() => {
+                        const monthlyData = year.monthlyData || {};
+                        let total = 0;
+                        Object.values(monthlyData).forEach(monthData => {
+                          Object.values(monthData || {}).forEach(userStats => {
+                            total += (userStats.whatsappIncoming || 0) +
+                                   (userStats.callIncoming || 0) +
+                                   (userStats.callOutgoing || 0) +
+                                   (userStats.meetingNewCustomer || 0) +
+                                   (userStats.meetingAfterSale || 0);
+                          });
+                        });
+                        return total;
+                      })()
                     )}
                   </td>
                   <td>
@@ -307,13 +325,16 @@ const HistoricalDataManagement = () => {
                         variant="outline-primary"
                         size="sm"
                         onClick={() => handleEditYear(year)}
+                        title={`${year.year} yılını düzenle`}
                       >
-                        <FiEdit />
+                        <FiEdit className="me-1" />
+                        Düzenle
                       </Button>
                       <Button
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDeleteYear(year._id)}
+                        title={`${year.year} yılını sil`}
                       >
                         <FiTrash2 />
                       </Button>
@@ -364,9 +385,18 @@ const HistoricalDataManagement = () => {
               </Col>
             </Row>
 
-            <Alert variant="warning" className="mb-4">
-              <strong>Not:</strong> Her temsilci için yıllık toplam değerleri girin. 
-              Günlük detay gerekmez, sadece o yıl boyunca gerçekleştirdiği toplam iletişim sayıları.
+            <Alert variant={editingYear ? "info" : "warning"} className="mb-4">
+              {editingYear ? (
+                <>
+                  <strong>Düzenleme Modu:</strong> {formData.year} yılının verilerini düzenliyorsunuz. 
+                  Mevcut veriler yüklendi, istediğiniz değişiklikleri yapabilirsiniz.
+                </>
+              ) : (
+                <>
+                  <strong>Not:</strong> Her temsilci için aylık bazda değerleri girin. 
+                  Ay seçerek her ay için ayrı ayrı veri girebilirsiniz.
+                </>
+              )}
             </Alert>
 
             <div className="d-flex justify-content-between align-items-center mb-3">
