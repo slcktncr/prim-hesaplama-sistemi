@@ -17,7 +17,8 @@ import {
   FiShield,
   FiMessageSquare,
   FiDatabase,
-  FiBell
+  FiBell,
+  FiRefreshCw
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
@@ -30,6 +31,7 @@ import UserPermissions from '../Admin/UserPermissions';
 import CommunicationRequirements from './CommunicationRequirements';
 import HistoricalDataManagement from '../Communications/HistoricalDataManagement';
 import AnnouncementManagement from '../Announcements/AnnouncementManagement';
+import HistoricalDataMigration from './HistoricalDataMigration';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -114,6 +116,12 @@ const SystemSettings = () => {
                   Duyuru Yönetimi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="data-migration">
+                  <FiRefreshCw className="me-2" />
+                  Veri Geçişi
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -147,6 +155,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="announcements">
                   <AnnouncementManagement />
+                </Tab.Pane>
+                <Tab.Pane eventKey="data-migration">
+                  <HistoricalDataMigration />
                 </Tab.Pane>
               </Tab.Content>
             </div>

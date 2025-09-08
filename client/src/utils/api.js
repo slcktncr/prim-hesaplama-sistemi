@@ -185,4 +185,10 @@ export const activitiesAPI = {
   getStats: (days = 7) => API.get(`/activities/stats?days=${days}`)
 };
 
+// Migration API
+export const migrationAPI = {
+  getHistoricalYears: () => API.get('/migration/historical-years'),
+  migrateHistoricalToDaily: (data) => API.post('/migration/historical-to-daily', data)
+};
+
 export default API;
