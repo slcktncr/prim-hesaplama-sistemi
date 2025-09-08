@@ -191,4 +191,14 @@ export const migrationAPI = {
   migrateHistoricalToDaily: (data) => API.post('/migration/historical-to-daily', data)
 };
 
+// Sales Import API
+export const salesImportAPI = {
+  uploadFile: (formData) => API.post('/sales-import/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  downloadTemplate: () => API.get('/sales-import/template', { responseType: 'blob' })
+};
+
 export default API;

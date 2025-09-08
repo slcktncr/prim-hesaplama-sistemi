@@ -32,6 +32,7 @@ import CommunicationRequirements from './CommunicationRequirements';
 import HistoricalDataManagement from '../Communications/HistoricalDataManagement';
 import AnnouncementManagement from '../Announcements/AnnouncementManagement';
 import HistoricalDataMigration from './HistoricalDataMigration';
+import SalesImport from './SalesImport';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -122,6 +123,12 @@ const SystemSettings = () => {
                   Veri Geçişi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="sales-import">
+                  <FiDatabase className="me-2" />
+                  Satış Import
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -158,6 +165,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="data-migration">
                   <HistoricalDataMigration />
+                </Tab.Pane>
+                <Tab.Pane eventKey="sales-import">
+                  <SalesImport />
                 </Tab.Pane>
               </Tab.Content>
             </div>

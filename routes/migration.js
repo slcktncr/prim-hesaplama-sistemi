@@ -37,6 +37,12 @@ async function createCommunicationRecords(userId, userName, year, communicationD
   
   console.log(`Creating communication records for ${userName} (${userId}) - Year ${year}`);
   
+  // İletişim verisi yoksa boş array döndür
+  if (!communicationData || Object.values(communicationData).every(val => !val || val === 0)) {
+    console.log(`No communication data for ${userName}, skipping`);
+    return records;
+  }
+  
   // Her iletişim türü için rastgele tarihler oluştur
   const whatsappDates = generateRandomDatesForYear(year, communicationData.whatsappIncoming || 0);
   const callIncomingDates = generateRandomDatesForYear(year, communicationData.callIncoming || 0);
@@ -270,13 +276,47 @@ router.post('/historical-to-daily', [auth, adminAuth], async (req, res) => {
           }
         }
         
-        // Her kullanıcı için kayıt oluştur
-        for (let [userId, userData] of yearData.yearlySalesData) {
+        // İletişim verilerini işle - hem yearlySalesData hem yearlyCommunicationData'dan kullanıcıları al
+        const allUserIds = new Set();
+        
+        // Satış verisi olan kullanıcıları ekle
+        if (yearData.yearlySalesData) {
+          for (let userId of yearData.yearlySalesData.keys()) {
+            allUserIds.add(userId);
+          }
+        }
+        
+        // İletişim verisi olan kullanıcıları ekle
+        if (yearData.yearlyCommunicationData) {
+          for (let userId of yearData.yearlyCommunicationData.keys()) {
+            allUserIds.add(userId);
+          }
+        }
+        
+        console.log(`Found ${allUserIds.size} unique users for year ${year}`);
+        
+        // Her kullanıcı için sadece iletişim kayıtları oluştur
+        for (let userId of allUserIds) {
           console.log(`👤 Processing user ${userId}...`);
           
-          // Kullanıcı bilgilerini al
-          const user = await User.findById(userId);
-          const userName = user ? user.name : `Eski Temsilci ${userId}`;
+          // Kullanıcı bilgilerini al - ObjectId hatasını önlemek için try-catch kullan
+          let user = null;
+          let userName = `Eski Temsilci ${userId}`;
+          
+          try {
+            // Eğer userId ObjectId formatında ise User'dan al
+            if (mongoose.Types.ObjectId.isValid(userId)) {
+              user = await User.findById(userId);
+              if (user) {
+                userName = user.name;
+              }
+            } else {
+              // String ise direkt kullan (historical user)
+              userName = `Eski Temsilci ${userId}`;
+            }
+          } catch (error) {
+            console.log(`Could not fetch user ${userId}, using default name`);
+          }
           
           // İletişim verileri varsa kayıt oluştur
           const communicationData = yearData.yearlyCommunicationData?.get(userId) || {};
@@ -287,17 +327,6 @@ router.post('/historical-to-daily', [auth, adminAuth], async (req, res) => {
             if (!dryRun && commRecords.length > 0) {
               await CommunicationRecord.insertMany(commRecords);
               console.log(`✅ Inserted ${commRecords.length} communication records for ${userName}`);
-            }
-          }
-          
-          // Satış verileri varsa kayıt oluştur
-          if (userData && Object.values(userData).some(val => val > 0)) {
-            const salesRecords = await createSalesRecords(userId, userName, year, userData);
-            yearResults.salesRecords += salesRecords.length;
-            
-            if (!dryRun && salesRecords.length > 0) {
-              await Sale.insertMany(salesRecords);
-              console.log(`✅ Inserted ${salesRecords.length} sales records for ${userName}`);
             }
           }
           

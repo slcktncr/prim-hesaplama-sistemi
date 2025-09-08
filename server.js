@@ -29,6 +29,7 @@ app.use('/api/daily-status', require('./routes/dailyStatus'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/migration', require('./routes/migration'));
+app.use('/api/sales-import', require('./routes/salesImport'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

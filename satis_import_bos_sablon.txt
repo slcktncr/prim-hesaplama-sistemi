@@ -1,0 +1,1623 @@
+customerName	blockNo	apartmentNo	periodNo	saleType	contractNo	saleDate	entryDate	exitDate	listPrice	discountRate	activitySalePrice	primStatus	paymentType	status	salesperson	notes
+YUSUF DEMÝRTAÞ	D1	6	36. DÖNEM	kapora	445105	2025-09-06	08/09	14/09	486800	0	486800	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATMA AYDIN	D12	14	7. DÖNEM	satis	123456	2025-08-26	24/02	02/03	211000	0	211000	ödenmedi	Nakit	aktif	Selçuk	
+RAHÝME ÜRÜN	D1	1	22. DÖNEM	satis	654321	2025-08-24	03/06	10/06	514000	0	514000	ödenmedi	Nakit	aktif	Selçuk	
+GÖZDE SARIKAYA	D2	7	20. DÖNEM	satis	542504	2025-08-31	14/05	20/05	289000	0	346800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+RESUL AYDIN	D1	10	28. DÖNEM	satis	706039	2025-08-31	16/07	22/07	745021	0	692869,53	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMET YILMAZ	D11	14	27. DÖNEM	satis	484377	2025-08-30	21/07	27/07	522800	0	522800	ödenmedi	Nakit	aktif	Selçuk	
+NERGÝZ SÖNMEZ	F8	1	17. DÖNEM	satis	367239	2025-08-31	23/04	29/04	415800	0	415800	ödenmedi	Nakit	aktif	Selçuk	
+MERVE GÜNDÜZ	D1	2	29. DÖNEM	satis	283428	2025-08-30	22/07	28/07	674740	0	641003	ödenmedi	Nakit	aktif	Selçuk	
+KEVSER SEVER	D13	7	26. DÖNEM	satis	252463	2025-09-04	18/07	24/07	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+ERGÜN KAYNAK	D2	14	8. DÖNEM	satis	489218	2025-12-22	19/02	25/02	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+RANA BÜÞRA ÖZPUYLAT	D11	14	29. DÖNEM	satis	246797	2025-08-30	04/08	10/08	469000	0	445550	ödenmedi	Nakit	aktif	Selçuk	
+BERNA EMANET	D1	9	20. DÖNEM	satis	445576	2025-08-16	19/05	25/05	369000	0	405900	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NÝMET ÞEYDA GÜRPINAR	D6	4	34. DÖNEM	satis	116308	2025-09-01	02/09	08/09	673168	0	639509,6	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF ERDOÐAN	D1	1	32. DÖNEM	satis	579721	2025-08-25	18/08	24/08	659000	0	691950	ödenmedi	Kredi Kartý	aktif	Selçuk	
+RUKÝYE ÖZKAN	D15	14	15. DÖNEM	satis	201519	2025-08-30	18/04	24/04	225000	0	202500	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÞAH GÜÇLÜ	D6	6	34. DÖNEM	satis	193235	2025-08-21	26/08	01/09	728825	0	677807,25	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÞAH GÜÇLÜ	F6	2	20. DÖNEM	satis	554051	2025-08-21	19/05	25/05	583000	0	641300	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FUNDA AVCI	D6	7	34. DÖNEM	satis	849898	2025-08-21	26/08	01/09	728825	0	677807,25	ödenmedi	Nakit	aktif	Selçuk	
+FUNDA AVCI	F8	2	20. DÖNEM	satis	314079	2025-06-08	19/05	25/05	583000	0	641300	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BERNA DÝNÇER	D11	14	26. DÖNEM	satis	203185	2025-08-30	14/07	20/07	510800	0	510800	ödenmedi	Nakit	aktif	Selçuk	
+BEYZA ODABAÞ	D1	6	35. DÖNEM	satis	910779	2025-08-30	01/09	07/09	703445	0	633100,5	ödenmedi	Nakit	aktif	Selçuk	
+NECATÝ AKÇAY	D2	2	40. DÖNEM	satis	637679	2025-08-23	01/10	07/10	235000	0	235000	ödenmedi	Nakit	aktif	Selçuk	
+DAMLA UZUN	F6	2	29. DÖNEM	satis	552941	2025-08-15	21/07	27/07	1235000	0	1235000	ödenmedi	Nakit	aktif	Selçuk	
+MUAMMER  ÇAKIR	D2	10	52. DÖNEM	kapora	884533	2025-08-31	31/12	07/01	244000	0	244000	ödenmedi	Nakit	aktif	Selçuk	
+MUAMMER  ÇAKIR	D2	3	52. DÖNEM	kapora	833066	2025-08-31	31/12	07/01	244000	0	244000	ödenmedi	Nakit	aktif	Selçuk	
+DENÝZ ÖNER	D1	10	26. DÖNEM	kapora	147846	2025-08-31	02/07	08/07	659000	0	659000	ödenmedi	Nakit	aktif	Selçuk	
+SÜHEYL ERDEM TOKSOY	D12	7	16. DÖNEM	satis	176550	2025-08-30	19/04	25/04	225000	0	235125	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NEVZAT KAÇAR	D1	6	18. DÖNEM	satis	951576	2025-08-24	05/05	11/05	388000	0	423890	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYLÝN AZÝME DOÐAN	D11	14/5	2. DÖNEM/41. DÖNEM	satis	375963	2025-07-18	09/01	19/10	420900	0	399855	ödenmedi	Nakit	aktif	Selçuk	
+ZAKÝRE ÖZDOÐDU	F9	4	32. DÖNEM	satis	210321	2025-08-12	07/08	13/08	853000	0	767700	ödenmedi	Nakit	aktif	Selçuk	
+KADÝR YAKUP KARAMAN	F9	3	32. DÖNEM	satis	976466	2025-08-12	07/08	13/08	853000	0	767700	ödenmedi	Nakit	aktif	Selçuk	
+FATMA KARTAL KOÇ	D27	1	50. DÖNEM	satis	748748	2025-07-17	21/12	27/12	351700	0	457210	ödenmedi	Mola Taksit	aktif	Selçuk	
+Zehra CODUROÐLU	F6	2	16. DÖNEM	satis	887399	2025-08-26	21/04	27/04	535000	0	535000	ödenmedi	Nakit	aktif	Selçuk	
+RAHÝME ÞAHÝN	D11	14	25. DÖNEM	satis	777872	2025-08-19	07/07	13/07	498000	0	498000	ödenmedi	Nakit	aktif	Selçuk	
+EMRAH OKAN	D6	2	33. DÖNEM	satis	659862	2025-08-02	01/09	07/09	659000	0	796731	ödenmedi	Mola Taksit	aktif	Selçuk	
+EMRAH OKAN	D1	4	35. DÖNEM	satis	950294	2025-06-01	08/09	14/09	468000	0	608400	ödenmedi	Mola Taksit	aktif	Selçuk	
+RANA BÜÞRA ÖZPUYLUT	D15	14	33. DÖNEM	satis	991139	2024-01-06	23/08	30/08	268300	0	268300	ödenmedi	Nakit	aktif	Selçuk	
+NURULLAH PÝLTAN	D1	5/5	19. DÖNEM/44. DÖNEM	satis	252399	2025-01-17	10/05	29/11	559284	0	559284	ödenmedi	Nakit	aktif	Selçuk	
+NURULLAH PÝLTAN	D2	14	9. DÖNEM	satis	385709	2025-01-18	26/02	04/03	169290	0	169290	ödenmedi	Nakit	aktif	Selçuk	
+NURULLAH PÝLTAN	D2	8	7. DÖNEM	satis	942034	2025-01-18	12/02	18/02	160512	0	160512	ödenmedi	Nakit	aktif	Selçuk	
+NURULLAH PÝLTAN	D14	7	16. DÖNEM	satis	349874	2025-04-26	24/04	30/04	259200	0	241056	ödenmedi	Nakit	aktif	Selçuk	
+CELAL GÜNDOÐDU	D6	1	31. DÖNEM	satis	344776	2025-08-27	28/08	03/09	659000	0	735444	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SEVÝM ALBAYRAK	D11	14	15. DÖNEM	satis	287211	2025-08-21	28/04	04/05	241000	0	204850	ödenmedi	Nakit	aktif	Selçuk	
+ÝLHAMÝ YAVUZ	D6	5/1	32. DÖNEM/35. DÖNEM	satis	131813	2025-08-03	28/08	07/09	1128000	0	1128000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Ali  Ýlgün 	F8	3	34. DÖNEM	satis	964262	2025-08-26	20/08	26/08	853000	0	853000	ödenmedi	Nakit	aktif	Selçuk	
+MURAT DAÞDEMÝR	D2	8	26. DÖNEM	satis	248992	2025-02-02	25/06	01/07	555630	0	555630	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH AYDIN	D15	3	43. DÖNEM	satis	354803	2025-08-23	27/10	02/11	281000	0	272570	ödenmedi	Nakit	aktif	Selçuk	
+SÝNAN ÞAPULU	D15	10/3	31. DÖNEM/31. DÖNEM	satis	711102	2025-08-23	04/08	10/08	825818	0	825818	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM ÇALIÞGAN	D1	6	47. DÖNEM	satis	980329	2025-08-23	24/11	30/11	291100	0	291100	ödenmedi	Nakit	aktif	Selçuk	
+ERCAN AKAT	D13	7	37. DÖNEM	satis	286681	2025-08-21	04/10	10/10	235000	0	259440	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SUNA BADEM	D12	7	36. DÖNEM	satis	522631	2025-08-21	02/10	08/10	235000	0	235000	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA DERELÝ ÖZER	F9	3	28. DÖNEM	satis	991444	2025-07-30	10/07	16/07	820000	0	738000	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMAÝL ÇINAR	D1	4	32. DÖNEM	satis	237531	2025-08-15	15/08	22/08	761000	0	920049	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAKAN ACAR	D15	14	16. DÖNEM	satis	948575	2025-08-19	25/04	01/05	211000	0	223238	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YAKUP SAÐ	D12	7	27. DÖNEM	satis	775812	2025-08-12	17/07	25/07	603000	0	603000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA AMMOURÝ	F8	2	9. DÖNEM	satis	710913	2025-08-16	03/03	09/03	490000	0	490000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED TUNÇ	D15	7	21. DÖNEM	satis	214827	2025-05-24	31/05	06/06	285000	0	344565	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVÝLAY GÜNDOÐDU	D4	9	27. DÖNEM	satis	622807	2025-08-09	04/07	10/07	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+SARANUR AHMETOÐLU	D6	2	27. DÖNEM	satis	872584	2025-08-06	08/07	14/07	578870	0	578870	ödenmedi	Nakit	aktif	Selçuk	
+BURCU YEMEN	D1	7	32. DÖNEM	satis	326705	2025-08-08	29/08	04/09	747800	0	747800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Nihat Bakýnç	D1	9	5. DÖNEM	satis	427451	2025-08-17	03/02	09/02	329000	0	329000	ödenmedi	Nakit	aktif	Selçuk	
+Nihat Bakýnç	D1	4	22. DÖNEM	satis	677681	2025-08-17	01/06	07/06	435000	0	435000	ödenmedi	Nakit	aktif	Selçuk	
+Vedat Ün	D12	14	29. DÖNEM	satis	485571	2025-08-17	27/08	02/09	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+OKAN YÜKSEL	D13	7	9. DÖNEM	satis	826553	2025-08-16	04/03	10/03	218000	0	261600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+GAITH AMMOURI	F9	4	51. DÖNEM	satis	785375	2025-08-16	19/12	25/12	324000	0	324000	ödenmedi	Nakit	aktif	Selçuk	
+GÖKNÝL YÜKSEL BODUR	D12	14	8. DÖNEM	satis	272173	2025-08-16	03/03	09/03	211000	0	253200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ALÝYE MIZRAK	D12	7	22. DÖNEM	satis	777450	2025-08-14	01/06	07/06	238816,13	0	222099	ödenmedi	Nakit	aktif	Selçuk	
+fatih ekmekçi	D1	5	17. DÖNEM	satis	208597	2025-08-15	26/04	02/05	282000	0	282000	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH ERDOÐAN	D6	1	29. DÖNEM	satis	295689	2025-04-16	14/08	20/08	659000	0	796731	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝSMAÝL BARAN KURGA	D3	7	30. DÖNEM	satis	526873	2025-08-11	18/08	24/08	469000	0	609700	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞERÝF TOSUN	D12	7	17. DÖNEM	satis	839859	2025-08-14	26/04	02/05	211000	0	211000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA SÖYLEMEZ	D11	14	32. DÖNEM	satis	648049	2025-08-08	26/08	01/09	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+ÞERÝF TOSUN	D15	7	27. DÖNEM	satis	674428	2025-04-05	20/07	26/07	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+SÝBEL KILIÇASLAN	D1	7	30. DÖNEM	satis	458074	2025-08-12	15/08	21/08	659000	0	659000	ödenmedi	Nakit	aktif	Selçuk	
+ÞÜHEDA ZENGÝN	D2	6	37. DÖNEM	satis	3649	2024-10-24	17/09	23/09	166000	0	166000	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÝT EROL	D12	14	27. DÖNEM	satis	766489	2025-08-11	12/08	18/08	469000	0	469000	ödenmedi	Nakit	aktif	Selçuk	
+HAKAN ACAR	D12	14	31. DÖNEM	satis	784650	2025-08-10	10/09	16/09	310000	0	356500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÝLYAS BÝNGÖL	F8	3	52. DÖNEM	satis	352966	2025-08-06	24/12	31/12	358000	0	358000	ödenmedi	Nakit	aktif	Selçuk	
+EMRAH BÝNGÖL	F8	1	52. DÖNEM	satis	851056	2025-08-06	24/12	31/12	358000	0	358000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP KURAL	F1	7	18. DÖNEM	satis	349484	2025-07-02	05/05	11/05	603400	0	659214,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BAHAR SEYDA	D2	7	29. DÖNEM	satis	487954	2025-07-31	16/07	22/07	451000	0	586300	ödenmedi	Mola Taksit	aktif	Selçuk	
+Mohammed Jamal Hussien	D1	1	28. DÖNEM	satis	505541	2025-08-02	21/07	27/07	634000	0	634000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MERVE MURTEZA	D15	1	34. DÖNEM	satis	259340	2025-08-07	25/08	31/08	469000	0	562800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HANÝFE KARADAÞ	D11	14	34. DÖNEM	satis	922055	2025-08-05	09/09	15/09	316000	0	316000	ödenmedi	Nakit	aktif	Selçuk	
+SELÝM ÞÜKRÜ KURNAZ	D3	7	26. DÖNEM	satis	838002	2025-07-31	09/07	15/07	467189,47	0	443830	ödenmedi	Nakit	aktif	Selçuk	
+UÐUR KESKÝN	D1	4	51. DÖNEM	satis	564526	2024-12-31	29/12	04/01	261000	0	261000	ödenmedi	Nakit	aktif	Selçuk	
+MÝNE UÐURLU	D12	7	18. DÖNEM	satis	813395	2025-05-23	03/05	10/05	231000	0	231000	ödenmedi	Nakit	aktif	Selçuk	
+HALÝL NURULLAH ULUSOY	D15	7	34. DÖNEM	satis	934103	2025-07-25	08/09	14/09	310000	0	374790	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUSUF DEMÝRTAÞ	D6	5	4. DÖNEM	satis	185956	2025-08-05	26/01	01/02	635000	0	635000	ödenmedi	Nakit	aktif	Selçuk	
+ERCAN TÜRKMEN	D6	4	28. DÖNEM	satis	749937	2025-08-02	21/07	27/07	634000	0	634000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YUSUF ARABACI	D14	13	6. DÖNEM	satis	882447	2025-08-04	09/02	15/02	211000	0	200450	ödenmedi	Nakit	aktif	Selçuk	
+BAHRÝ ARSLAN	D12	14	6. DÖNEM	satis	911965	2025-07-26	17/02	23/02	185000	0	212750	ödenmedi	Kredi Kartý	aktif	Selçuk	
+VÝLDAN FIÇICI	D15	7	16. DÖNEM	satis	713691	2025-08-05	26/04	02/05	211000	0	211000	ödenmedi	Nakit	aktif	Selçuk	
+NURULLAH ÞENGÜL	D15	14	22. DÖNEM	satis	156119	2025-07-28	06/06	12/06	340000	0	379440	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÞERBANÝYE ZEHRA ÇAKIR	D15	7	28. DÖNEM	satis	230854	2025-07-26	27/07	02/08	451000	0	451000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA COÞKUN	D2	14	31. DÖNEM	satis	842820	2025-07-25	30/07	05/08	451000	0	451000	ödenmedi	Nakit	aktif	Selçuk	
+ABDUSSAMET PEHLÝVAN	D15	5/6	31. DÖNEM/31. DÖNEM	satis	986248	2025-07-25	04/08	10/08	901947,5	0	901947,5	ödenmedi	Nakit	aktif	Selçuk	
+MURAT KÜÇÜKÝNSEL	D14	3	35. DÖNEM	satis	255256	2025-08-03	31/08	06/09	494000	0	494000	ödenmedi	Nakit	aktif	Selçuk	
+ VEGAMOY CAR OTOMOTÝV TURÝZM SEYAHAT SANAYÝ VE TÝCARET LÝMÝTED ÞÝRKETÝ 	D6	5	23. DÖNEM	satis	441350	2025-07-17	08/06	14/06	529636,36	0	582600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AHMET KEMAL ÞAHÝN	D2	7	28. DÖNEM	satis	218413	2025-07-31	09/07	15/07	467189,47	0	443830	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ALÝ SEYDA	D2	1	29. DÖNEM	satis	921653	2025-07-31	16/07	22/07	451000	0	586300	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATMA AYDIN	D6	1	30. DÖNEM	satis	207310	2025-07-19	21/08	27/08	694000	0	694000	ödenmedi	Nakit	aktif	Selçuk	
+KEMALETTÝN ERDEM	D6	1	28. DÖNEM	satis	899880	2025-07-19	07/08	13/08	634000	0	697400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BEBRÝK ÝNÞAAT LÝMÝTED ÞÝRKETÝ 	D6	1/4	22. DÖNEM/23. DÖNEM	satis	278324	2025-07-17	08/06	14/06	1062000	0	1062000	ödenmedi	Nakit	aktif	Selçuk	
+TAHA KANLI	D6	9	30. DÖNEM	satis	787029	2025-07-31	04/08	10/08	634000	0	766506	ödenmedi	Mola Taksit	aktif	Selçuk	
+EMEL KILIÇ	D15	1	28. DÖNEM	satis	714957	2025-07-31	14/07	20/07	416909	0	500290,8	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EZGÝ AYDEMÝR	D2	7	23. DÖNEM	satis	527548	2025-07-31	04/06	10/06	310000	0	310000	ödenmedi	Nakit	aktif	Selçuk	
+ZUHAL DENÝZ YURDAKUL	D11	14	37. DÖNEM	satis	248994	2025-07-31	30/09	06/10	248000	0	260400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NAGÝHAN KARAKOLLU	D11	14	16. DÖNEM	satis	386787	2025-07-31	05/05	11/05	229700	0	229700	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE FUNDA KABA	D11	14	46. DÖNEM	satis	275776	2024-10-24	02/12	08/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+HALÝT GÜVERCÝN	D6	4	30. DÖNEM	satis	824799	2025-07-27	04/08	10/08	634000	0	634000	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN ÖZSARI	D13	7	36. DÖNEM	satis	858937	2025-07-30	27/09	03/10	252200	0	281455,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUHAMMET YASÝR BAYRAMOÐLU	D12	7	35. DÖNEM	satis	227667	2025-07-30	25/09	01/10	253700	0	283129,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+TAHA CEVHER BEYDÝLLÝ	D2	1	32. DÖNEM	satis	868153	2025-07-21	06/08	12/08	486100	0	486100	ödenmedi	Nakit	aktif	Selçuk	
+Halil ibrahim  Demir	D13	7	41. DÖNEM	satis	403479	2025-07-30	01/11	07/11	201800	0	242160	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YURDANUR ARICI	D12	14	44. DÖNEM	satis	587958	2025-07-30	11/12	17/12	180000	0	162000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HALÝL NURULLAH ULUSOY	D2	3	22. DÖNEM	satis	830710	2025-07-20	04/06	10/06	310000	0	403000	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER FARUK AÐILLI	D6	6	31. DÖNEM	satis	145753	2025-07-26	05/08	11/08	530000	0	530000	ödenmedi	Nakit	aktif	Selçuk	
+BARBAROS ERTÜZÜN	D15	7	25. DÖNEM	satis	854392	2025-07-22	28/06	04/07	394909	0	394909	ödenmedi	Nakit	aktif	Selçuk	
+ÞULE MERYEM KANTAR	D1	5	23. DÖNEM	satis	503035	2025-07-20	07/06	13/06	531000	0	515070	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET KOÇ	F6	2	30. DÖNEM	satis	195712	2025-07-23	28/07	03/08	1104000	0	1104000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA ECÝR	D13	7	20. DÖNEM	satis	435356	2025-03-03	29/05	04/06	217700	0	217700	ödenmedi	Nakit	aktif	Selçuk	
+KAMÝL BAYRAK	D13	7	35. DÖNEM	satis	539441	2025-07-24	20/09	26/09	255000	0	255000	ödenmedi	Nakit	aktif	Selçuk	
+YÜKSEL AYDEMÝR	E3	4	30. DÖNEM	satis	935172	2025-07-17	28/07	03/08	866250	0	866250	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ DURMUÞ	D12	14	2. DÖNEM	satis	870387	2025-07-18	18/01	24/01	475020	0	441768,6	ödenmedi	Nakit	aktif	Selçuk	
+SÜHEYLA GENÇ	D12	14	32. DÖNEM	satis	824222	2025-07-17	17/09	23/09	255000	0	255000	ödenmedi	Nakit	aktif	Selçuk	
+RAMAZAN GÜNSÝLÝ	D6	4	29. DÖNEM	satis	778917	2025-07-19	28/07	03/08	671800	0	671800	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYYE ÖZDEMÝR	F9	3	12. DÖNEM	satis	390981	2025-07-13	20/03	26/03	380600	0	380600	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÝT HAYDAROÐLU	D11	14	9. DÖNEM	satis	302031	2025-07-19	17/03	23/03	201800	0	201800	ödenmedi	Nakit	aktif	Selçuk	
+GÜLSEREN KESER	D2	1	33. DÖNEM	satis	810768	2025-07-20	13/08	19/08	451000	0	451000	ödenmedi	Nakit	aktif	Selçuk	
+OSMAN CEMÝL AKDEMÝR	D2	7	33. DÖNEM	satis	434335	2025-07-19	13/08	19/08	451000	0	541200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AHMET YÜCEL	D15	14	30. DÖNEM	satis	877452	2025-07-12	02/08	08/08	451000	0	419430	ödenmedi	Nakit	aktif	Selçuk	
+ARZUHAN YALÇIN	D15	14	26. DÖNEM	satis	732812	2025-07-20	04/07	10/07	472505,38	0	439430	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ÖZTÜRK	D1	2	9. DÖNEM	satis	482065	2025-07-13	03/03	09/03	281500	0	261795	ödenmedi	Nakit	aktif	Selçuk	
+ÞULE SÖNMEZ	D12	7	33. DÖNEM	satis	354127	2025-07-07	11/09	17/09	291400	0	349680	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Zeynep Þentürk	D14	7	22. DÖNEM	satis	991188	2025-07-19	05/06	11/06	316000	0	347600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUHAMMED TUNÇ	D3	7	29. DÖNEM	satis	141977	2025-07-18	11/08	17/08	451000	0	541200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Sinan Çiftçi	D6	2	30. DÖNEM	satis	150630	2025-07-19	31/07	06/08	634000	0	760800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SANÝYE BEKAR	D3	7	33. DÖNEM	satis	669321	2025-07-19	08/09	14/09	310000	0	372000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YASEMÝN ÝÞLER	D12	7	21. DÖNEM	satis	711064	2025-07-14	25/05	31/05	246600	0	295920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MERVE ÇARIKÇIOÐLU	F9	3	21. DÖNEM	satis	319638	2025-04-20	22/05	28/05	414135	0	414135	ödenmedi	Nakit	aktif	Selçuk	
+MESUDE KAPLICA	F9	7	37. DÖNEM	satis	243773	2025-07-09	19/09	25/09	460700	0	428451	ödenmedi	Nakit	aktif	Selçuk	
+ÝKRAMÝYE EKMEN	D13	7	34. DÖNEM	satis	638304	2025-07-13	13/09	19/09	255000	0	242250	ödenmedi	Nakit	aktif	Selçuk	
+HANÝFE KARADAÞ	D13	7	44. DÖNEM	satis	199426	2025-07-13	22/11	28/11	193400	0	215834,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÜNZÜLE ERDEMCÝ	D13	7	45. DÖNEM	satis	344830	2025-07-13	29/11	05/12	180800	0	216960	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ RAMI MARWAN J M AL-QATAMI	D28	14	48. DÖNEM	satis	426528	2025-07-09	23/12	29/12	351700	0	316530	ödenmedi	Nakit	aktif	Selçuk	
+ RAMI MARWAN J M AL-QATAMI	D27	10	51. DÖNEM	satis	720163	2025-07-09	22/12	28/12	351700	0	316530	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH  SABRÝOÐLU	D13	7	2. DÖNEM	satis	753254	2025-07-13	11/01	17/01	180000	0	200880	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HAKAN ÇELÝK	F2	2	28. DÖNEM	satis	970856	2024-06-27	10/07	16/07	500000	0	500000	ödenmedi	Nakit	aktif	Selçuk	
+RUKÝYE KAVALCI YALÇIN	D1	9	40. DÖNEM	satis	941705	2025-07-03	06/10	12/10	323000	0	387600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ESRA TOKTAÞ	D1	4	9. DÖNEM	satis	863943	2025-06-28	02/03	08/03	255900	0	230310	ödenmedi	Nakit	aktif	Selçuk	
+CAHÝT ÖZEL	D2	1	10. DÖNEM	satis	816984	2025-07-02	05/03	11/03	184590	0	184590	ödenmedi	Nakit	aktif	Selçuk	
+RUKÝYE AKKÖSE	D1	1	48. DÖNEM	satis	316783	2025-07-08	08/12	14/12	255000	0	255000	ödenmedi	Nakit	aktif	Selçuk	
+KEMAL YAVUZ	D1	10	39. DÖNEM	satis	391160	2025-07-06	01/10	07/10	357200	0	357200	ödenmedi	Nakit	aktif	Selçuk	
+FATMA BAÞAK	F9	3	41. DÖNEM	satis	198699	2025-07-06	10/10	16/10	442700	0	416138	ödenmedi	Nakit	aktif	Selçuk	
+TANER KAYMAN	D2	7	4. DÖNEM	satis	255371	2025-06-30	22/01	28/01	478600	0	557090,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Selim Genç	E3	4	18. DÖNEM	satis	785922	2025-07-02	05/05	11/05	557864,73	0	529971,49	ödenmedi	Nakit	aktif	Selçuk	
+ESRA ALTUN	D6	9	5. DÖNEM	satis	435624	2025-06-22	03/02	09/02	398500	0	398500	ödenmedi	Nakit	aktif	Selçuk	
+ÖZGE YAÞAR	D15	13	10. DÖNEM	satis	203579	2025-07-01	10/03	16/03	177100	0	201894	ödenmedi	Kredi Kartý	aktif	Selçuk	
+TARIK DEMÝRTAÞ	D14	7	38. DÖNEM	satis	966807	2025-05-12	11/10	17/10	215000	0	236500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÜMMÜGÜLSÜM KILIÇ	F2	2/2	25. DÖNEM/31. DÖNEM	satis	574196	2025-06-18	19/06	06/08	4085200	0	3268160	ödenmedi	Nakit	aktif	Selçuk	
+ESRA TOKTAÞ	D15	2	8. DÖNEM	satis	920317	2025-06-28	24/02	02/03	170600	0	153540	ödenmedi	Nakit	aktif	Selçuk	
+HASAN ULAÞTI	D15	12	8. DÖNEM	satis	626597	2025-06-24	24/02	02/03	170600	0	206255,4	ödenmedi	Mola Taksit	aktif	Selçuk	
+Buses nur Turkoglu	D15	1	40. DÖNEM	satis	710028	2025-07-01	06/10	12/10	224100	0	268920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MÝNE UÐURLU	D15	7	40. DÖNEM	satis	452527	2025-06-30	20/10	26/10	216500	0	261748,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÇÝÇEK SANDALCI	D1	9	39. DÖNEM	satis	636523	2025-06-29	29/09	05/10	328500	0	328500	ödenmedi	Nakit	aktif	Selçuk	
+AHMET ÞEKER	D6	9	38. DÖNEM	satis	524887	2025-06-29	29/09	05/10	328500	0	328500	ödenmedi	Nakit	aktif	Selçuk	
+ÞÜKRAN GÜL	D15	7	47. DÖNEM	satis	319739	2025-06-27	08/12	14/12	175000	0	175000	ödenmedi	Nakit	aktif	Selçuk	
+ONUR UYSAL	D2	7	27. DÖNEM	satis	446319	2025-06-22	02/07	08/07	718000	0	667740	ödenmedi	Nakit	aktif	Selçuk	
+AYNUR BUDAK	D1	1	38. DÖNEM	satis	813146	2025-06-29	29/09	05/10	328500	0	384345	ödenmedi	Mola Taksit	aktif	Selçuk	
+ZEHRA TUNÇ GÜNDÜZ	D15	8	39. DÖNEM	satis	247055	2025-06-28	29/09	05/10	226600	0	203940	ödenmedi	Nakit	aktif	Selçuk	
+AHMET BURAK OCAKÇI	F9	8	15. DÖNEM	satis	411331	2025-04-28	10/04	16/04	230000	0	230000	ödenmedi	Nakit	aktif	Selçuk	
+MURAT OCAKÇI	F9	8	48. DÖNEM	satis	542364	2025-04-28	27/11	03/12	286100	0	286100	ödenmedi	Nakit	aktif	Selçuk	
+ÝGBAL ÇELÝK	D15	13	9. DÖNEM	satis	950928	2025-06-27	03/03	09/03	175800	0	175800	ödenmedi	Nakit	aktif	Selçuk	
+ZÜMRÜT GENÇ	F9	1	14. DÖNEM	satis	143793	2024-10-31	03/04	09/04	421200	0	421200	ödenmedi	Nakit	aktif	Selçuk	
+RESUL AYDIN	D2	14	26. DÖNEM	satis	561981	2025-02-14	25/06	01/07	120900	0	120900	ödenmedi	Nakit	aktif	Selçuk	
+RESUL AYDIN	D2	11	4. DÖNEM	satis	593562	2025-05-31	29/01	04/02	390420	0	468504	ödenmedi	Kredi Kartý	aktif	Selçuk	
+RESUL AYDIN	E1	6	4. DÖNEM	satis	664049	2022-10-04	24/01	31/01	94300	0	94300	ödenmedi	Nakit	aktif	Selçuk	
+BÜLENT ÖZER	D12	7	46. DÖNEM	satis	184029	2022-08-16	25/12	01/01	50026,84	0	56030,06	ödenmedi	Mola Taksit	aktif	Selçuk	
+MAZEN SARHAN	D15	5/5	8. DÖNEM/9. DÖNEM	satis	981536	2025-06-27	24/02	09/03	346400	0	329080	ödenmedi	Nakit	aktif	Selçuk	
+HALÝS ARSLANKAYA	D15	14	29. DÖNEM	satis	814180	2025-06-22	26/07	01/08	816336,84	0	775520	ödenmedi	Nakit	aktif	Selçuk	
+ÞERÝFE DUYAN	D15	6	8. DÖNEM	satis	213475	2025-06-22	24/02	02/03	170600	0	170600	ödenmedi	Nakit	aktif	Selçuk	
+HASAN ULAÞTI	D1	9	9. DÖNEM	satis	855605	2025-06-21	03/03	09/03	255900	0	309383,1	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÇAÐRI ÞÝMÞEK AÇAR	D15	9	39. DÖNEM	satis	380665	2025-06-16	29/09	05/10	226600	0	226600	ödenmedi	Nakit	aktif	Selçuk	
+Hüseyin  Döðücü	D4	8	35. DÖNEM	satis	219022	2025-06-24	12/10	18/10	220400	0	220400	ödenmedi	Nakit	aktif	Selçuk	
+ZAHÝDE KARAMAN	D6	10	37. DÖNEM	satis	971292	2025-06-12	30/09	06/10	383760	0	383760	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL BAÞEL	F1	4	38. DÖNEM	satis	657642	2022-03-22	24/10	31/10	81300	0	91056	ödenmedi	Mola Taksit	aktif	Selçuk	
+MELÝKE TOPRAK	F6	2	38. DÖNEM	satis	299699	2025-06-15	22/09	28/09	559040	0	559040	ödenmedi	Nakit	aktif	Selçuk	
+sedef kurt	D2	1	41. DÖNEM	satis	256425	2025-06-22	08/10	14/10	224100	0	268920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYKUT AYYILDIZ	D6	2	37. DÖNEM	satis	497216	2025-06-21	29/09	05/10	328500	0	328500	ödenmedi	Nakit	aktif	Selçuk	
+YETER ASLANBOÐA	D4	9	20. DÖNEM	satis	953255	2025-06-16	16/05	22/05	341200	0	317316	ödenmedi	Nakit	aktif	Selçuk	
+EMRULLAH YAMAN	D15	9	38. DÖNEM	satis	397415	2025-06-15	22/09	28/09	231800	0	231800	ödenmedi	Nakit	aktif	Selçuk	
+MAZEN SARHAN	F8	7	3. DÖNEM	satis	754436	2025-06-19	17/01	23/01	659400	0	659400	ödenmedi	Nakit	aktif	Selçuk	
+Nevriste Fazlýoðlu	D6	7	49. DÖNEM	satis	381444	2025-06-19	09/12	15/12	231800	0	220210	ödenmedi	Nakit	aktif	Selçuk	
+KADRÝYE SEZEK	D6	9	26. DÖNEM	satis	413824	2025-06-15	06/07	12/07	1043600	0	1356680	ödenmedi	Mola Taksit	aktif	Selçuk	
+Zeynep seda Ünlü	D15	6	11. DÖNEM	satis	622235	2025-06-19	17/03	23/03	183400	0	201740	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SELÇUK ÇETÝNKAYA	D15	5	52. DÖNEM	satis	170895	2025-06-19	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+ESRA  AYDIN	D15	11	52. DÖNEM	satis	416175	2025-06-19	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+SEBÝHA ÞEN	D15	6	44. DÖNEM	satis	595539	2025-06-14	03/11	09/11	183400	0	165060	ödenmedi	Nakit	aktif	Selçuk	
+Osman Uçar	F8	7	8. DÖNEM	satis	440376	2025-06-18	22/02	28/02	303100	0	345534	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUHAMMET YASÝR BAYRAMOÐLU	D15	12	39. DÖNEM	satis	197732	2025-06-17	29/09	05/10	246600	0	246600	ödenmedi	Nakit	aktif	Selçuk	
+FATMA AYDIN	D1	4	23. DÖNEM	satis	826046	2025-06-15	08/06	14/06	746128	0	746128	ödenmedi	Nakit	aktif	Selçuk	
+FATMA AYDIN	D6	10	45. DÖNEM	satis	112128	2025-06-15	28/11	05/12	315672	0	315672	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	13	11. DÖNEM	satis	363686	2025-06-17	17/03	23/03	183400	0	170562	ödenmedi	Nakit	aktif	Selçuk	
+Ulaþ seyahat ve turizm org. Aþ Ulaþ seyahat ve turizm org. Aþ 	D6	2	9. DÖNEM	satis	727879	2025-06-17	04/03	10/03	255900	0	332670	ödenmedi	Mola Taksit	aktif	Selçuk	
+ENGÝN YAVUZ	D15	13	52. DÖNEM	satis	113421	2025-06-15	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+FÝLÝZ YAVUZ	D15	12	52. DÖNEM	satis	202538	2025-06-15	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+MERYEM YAVUZ	D15	9	52. DÖNEM	satis	842978	2025-06-15	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+SELÝM YAVUZ	D15	1	52. DÖNEM	satis	356512	2025-06-15	29/12	05/01	252200	0	234546	ödenmedi	Nakit	aktif	Selçuk	
+Ýmran Gül	F9	3	37. DÖNEM	satis	622835	2025-06-15	12/09	18/09	418800	0	517218	ödenmedi	Mola Taksit	aktif	Selçuk	
+NERGÝZ  TOSUN	D15	11	8. DÖNEM	satis	415837	2025-06-15	24/02	02/03	170600	0	170600	ödenmedi	Nakit	aktif	Selçuk	
+SERKAN  ÞÝMÞEK	D2	13	36. DÖNEM	satis	949381	2025-06-15	10/09	16/09	331000	0	314450	ödenmedi	Nakit	aktif	Selçuk	
+Vesile Asan	D1	5	36. DÖNEM	satis	549200	2025-06-14	28/09	04/10	331000	0	314450	ödenmedi	Nakit	aktif	Selçuk	
+GÜLNÝHAL DAYI	D15	5	7. DÖNEM	satis	207101	2025-05-25	17/02	23/02	163200	0	179520	ödenmedi	Kredi Kartý	aktif	Selçuk	
+OZAN AVCI	D15	11	39. DÖNEM	satis	222163	2025-06-14	29/09	05/10	226600	0	294580	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAVVA DEMÝR	D15	12	38. DÖNEM	satis	450770	2025-05-31	22/09	28/09	225000	0	209250	ödenmedi	Nakit	aktif	Selçuk	
+RECEP ACAR	D6	7	38. DÖNEM	satis	208035	2025-06-12	23/09	29/09	364710	0	364710	ödenmedi	Nakit	aktif	Selçuk	
+MELÝKE TOPALOÐLU	F6	5	26. DÖNEM	satis	132753	2025-06-12	02/07	08/07	1571700	0	1461681	ödenmedi	Nakit	aktif	Selçuk	
+AYÞE CENGÝZ	D1	4	38. DÖNEM	satis	343181	2025-06-10	29/09	05/10	388500	0	388500	ödenmedi	Nakit	aktif	Selçuk	
+ESRA KORAL	D15	11	38. DÖNEM	satis	614015	2025-06-08	22/09	28/09	231800	0	254980	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	9	11. DÖNEM	satis	339619	2025-06-11	17/03	23/03	183400	0	170562	ödenmedi	Nakit	aktif	Selçuk	
+ERSÝN ATEÞ	D6	5	10. DÖNEM	satis	818827	2025-06-07	09/03	15/03	255900	0	255900	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKER BALÇIK	D15	12	49. DÖNEM	satis	451918	2025-06-10	08/12	14/12	160400	0	149172	ödenmedi	Nakit	aktif	Selçuk	
+Elmas Ýnci	D1	7	49. DÖNEM	satis	790106	2025-06-09	30/12	06/01	365400	0	365400	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA ÇÝMEN	D15	6/6	48. DÖNEM/49. DÖNEM	satis	892729	2025-04-28	01/12	14/12	299400	0	278442	ödenmedi	Nakit	aktif	Selçuk	
+RIDVAN ÇELÝKEL	D15	9	44. DÖNEM	satis	227691	2025-06-08	03/11	09/11	183400	0	170562	ödenmedi	Nakit	aktif	Selçuk	
+DUYGU MATARACI	D15	6	39. DÖNEM	satis	468156	2025-06-02	29/09	05/10	226600	0	294580	ödenmedi	Mola Taksit	aktif	Selçuk	
+Ömer Faruk Sevim	D15	5	11. DÖNEM	satis	775507	2025-06-07	17/03	23/03	183400	0	170562	ödenmedi	Nakit	aktif	Selçuk	
+Meltem Kalkan	D15	1	8. DÖNEM	satis	687686	2025-06-07	24/02	02/03	170600	0	170600	ödenmedi	Nakit	aktif	Selçuk	
+Emine Karadeniz	D15	9	8. DÖNEM	satis	652343	2025-06-05	24/02	02/03	170600	0	158658	ödenmedi	Nakit	aktif	Selçuk	
+DERYA SÖNMEZIÞIK	D15	11	44. DÖNEM	satis	744330	2025-06-03	03/11	09/11	183400	0	170562	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM CÝÐER	D15	8	38. DÖNEM	satis	690543	2025-05-31	22/09	28/09	225000	0	230175	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MERYEM ANDAN	D15	6	1. DÖNEM	satis	786878	2025-05-31	06/01	12/01	155700	0	173761,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZEYNEP ERTÜRK	F9	8	38. DÖNEM	satis	637910	2025-05-31	18/09	24/09	478600	0	478600	ödenmedi	Nakit	aktif	Selçuk	
+HAKAN EKÝZ	D15	2	50. DÖNEM	satis	145728	2025-05-30	15/12	21/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+YÜKSEL SÝBEL ÇELÝK	F8	2	36. DÖNEM	satis	470981	2025-05-30	17/09	24/09	562300	0	522939	ödenmedi	Nakit	aktif	Selçuk	
+Seval  Þahin varýcý	D15	4	39. DÖNEM	satis	332208	2025-06-01	29/09	05/10	226600	0	215270	ödenmedi	Nakit	aktif	Selçuk	
+Gözde  Açýk þimþek 	D15	9	50. DÖNEM	satis	458248	2025-06-02	15/12	21/12	160400	0	160400	ödenmedi	Nakit	aktif	Selçuk	
+NUR TUÐÇE TUNÇ	F6	2	19. DÖNEM	satis	251843	2025-05-30	12/05	18/05	522800	0	486204	ödenmedi	Nakit	aktif	Selçuk	
+VÝLDAN TABAK	D1	5	9. DÖNEM	satis	551879	2025-05-30	01/03	07/03	248400	0	235980	ödenmedi	Nakit	aktif	Selçuk	
+ZÜHTÜ MUTLU	D15	2	7. DÖNEM	satis	741781	2025-05-31	17/02	23/02	163200	0	212160	ödenmedi	Mola Taksit	aktif	Selçuk	
+MURAT ÇETÝN	D15	6	7. DÖNEM	satis	267312	2025-05-31	17/02	23/02	163200	0	163200	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL MICIK	D15	10	38. DÖNEM	satis	266782	2025-06-02	22/09	28/09	231800	0	242231	ödenmedi	Kredi Kartý	aktif	Selçuk	
+korkmaz yýlmaz	D2	1	42. DÖNEM	satis	189547	2025-06-01	15/10	21/10	211400	0	211400	ödenmedi	Nakit	aktif	Selçuk	
+Semiral Gülenç	D15	3	38. DÖNEM	satis	136094	2025-05-31	22/09	28/09	225000	0	225000	ödenmedi	Nakit	aktif	Selçuk	
+Anýl Alba	D15	4	38. DÖNEM	satis	516327	2025-05-31	22/09	28/09	225000	0	292500	ödenmedi	Mola Taksit	aktif	Selçuk	
+YETER HÝLAL Þenoba	D15	5	44. DÖNEM	satis	672268	2025-05-31	03/11	09/11	178000	0	213600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SÜHEYLA HACINEBÝOÐLU	D15	7	38. DÖNEM	satis	149636	2025-05-31	06/10	12/10	217500	0	217500	ödenmedi	Nakit	aktif	Selçuk	
+Özlem Ayþe  Aksoy	D6	4	37. DÖNEM	satis	207301	2025-05-31	23/09	29/09	326300	0	402980,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYNUR ERTÜRK ALAN	D1	7	46. DÖNEM	satis	480092	2025-05-31	06/12	13/12	257100	0	282810	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YILDIZ KAYA	D1	7	47. DÖNEM	satis	860667	2025-05-31	14/12	21/12	257100	0	257100	ödenmedi	Nakit	aktif	Selçuk	
+EMRAH ACAR	D15	9	7. DÖNEM	satis	842990	2025-05-31	17/02	23/02	163200	0	179520	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZÜHTÜ MUTLU	D15	11	7. DÖNEM	satis	171719	2025-05-31	17/02	23/02	163200	0	163200	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA  ARSLAN GÝZLENCÝ	D15	9	49. DÖNEM	satis	335164	2025-05-31	08/12	14/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+SEFER PERÇÝN	F9	7	36. DÖNEM	satis	730420	2025-05-30	12/09	18/09	406600	0	386270	ödenmedi	Nakit	aktif	Selçuk	
+FERDANE ÇALKIÇ	D15	6	38. DÖNEM	satis	190096	2025-05-23	22/09	28/09	225000	0	256500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Oðuzhan EFE	D15	13	50. DÖNEM	satis	244908	2025-05-29	15/12	21/12	155700	0	159281,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SUDENAZ SÜRÜCÜ	D15	13	49. DÖNEM	satis	569344	2025-05-25	08/12	14/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+OKTAY KARAKURT	D2	7	37. DÖNEM	satis	840991	2025-05-27	10/09	16/09	321300	0	321300	ödenmedi	Nakit	aktif	Selçuk	
+GÝZEM KURT	D14	7	19. DÖNEM	satis	740853	2025-05-19	15/05	21/05	229900	0	229900	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKNUR  YILMAZ ENÇ	D15	9	1. DÖNEM	satis	320043	2025-05-25	06/01	12/01	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+Ýbrahim  Ertaþ	D1	9	11. DÖNEM	satis	729399	2025-05-25	17/03	23/03	259500	0	259500	ödenmedi	Nakit	aktif	Selçuk	
+Fidan Ulaç	D15	2	1. DÖNEM	satis	410968	2025-05-25	06/01	12/01	155700	0	186840	ödenmedi	Kredi Kartý	aktif	Selçuk	
+CEMÝLE ÇIPLAK	D2	14	42. DÖNEM	satis	110608	2025-05-24	15/10	21/10	211400	0	196602	ödenmedi	Nakit	aktif	Selçuk	
+HÜSNÝYE GÖZTEPE	F6	5	38. DÖNEM	satis	120256	2025-05-24	13/10	19/10	465900	0	605670	ödenmedi	Mola Taksit	aktif	Selçuk	
+MESUT ÜNAL	F6	6	5. DÖNEM	satis	966267	2025-02-01	03/02	09/02	518100	0	673530	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖZLEM YILDIZ ÖRS	F9	3	47. DÖNEM	satis	276375	2025-05-18	21/11	27/11	308900	0	308900	ödenmedi	Nakit	aktif	Selçuk	
+Nuray Vurgun	F8	7	21. DÖNEM	satis	491932	2025-05-18	26/05	01/06	396700	0	405824,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Nuray Vurgun	F9	4	48. DÖNEM	satis	824866	2025-05-18	28/11	04/12	292900	0	322190	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ALÝ DOÐUÞ GÜNGÖRDÜ	D15	9	51. DÖNEM	satis	298800	2025-05-17	22/12	28/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+BAÞAK ÇETÝNKAYA	D15	6	50. DÖNEM	satis	656735	2025-05-20	15/12	21/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+BAÞAK ÇETÝNKAYA	D15	11	1. DÖNEM	satis	201623	2025-05-19	06/01	12/01	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	11	49. DÖNEM	satis	712112	2025-05-18	08/12	14/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+Tuba  Çaðman	F8	7	35. DÖNEM	satis	212584	2025-05-18	19/09	25/09	406600	0	406600	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	12	50. DÖNEM	satis	656181	2025-05-18	15/12	21/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	11	51. DÖNEM	satis	613007	2025-05-18	22/12	28/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYHMUS MURAT AKÇAN	D15	12	1. DÖNEM	satis	577728	2025-05-18	06/01	12/01	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+ Yýlmaz Ambalaj Malz.san.tic.ltd.þti 	D6	4	38. DÖNEM	satis	834081	2025-05-18	30/09	06/10	317700	0	317700	ödenmedi	Nakit	aktif	Selçuk	
+SERCAN KABA	D15	5	50. DÖNEM	satis	811892	2025-05-17	15/12	21/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+DAMLA GÜLDÜ	D15	6	37. DÖNEM	satis	347405	2025-05-11	15/09	21/09	225000	0	209250	ödenmedi	Nakit	aktif	Selçuk	
+Melek Tuzluca	D15	2	11. DÖNEM	satis	895482	2025-05-16	17/03	23/03	178000	0	165540	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA ÇEVÝK	D15	13	8. DÖNEM	satis	525277	2025-05-07	24/02	02/03	165600	0	154008	ödenmedi	Nakit	aktif	Selçuk	
+Melek Tuzluca	D15	6	51. DÖNEM	satis	205583	2025-05-14	22/12	28/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+NADÝM DURAN	D2	7	41. DÖNEM	satis	172566	2025-05-10	08/10	14/10	217500	0	202275	ödenmedi	Nakit	aktif	Selçuk	
+ERCAN ACAR	D15	2	38. DÖNEM	satis	338466	2025-05-12	22/09	28/09	225000	0	225000	ödenmedi	Nakit	aktif	Selçuk	
+ABDULLAH KENDEROÐLU	D1	7	9. DÖNEM	satis	380137	2025-05-07	05/03	11/03	248400	0	248400	ödenmedi	Nakit	aktif	Selçuk	
+YASEMÝN EPÇAÇAN	D15	5	1. DÖNEM	satis	463593	2025-05-10	06/01	12/01	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+SELMAN KILIÇ	D15	13	39. DÖNEM	satis	492794	2025-05-11	29/09	05/10	220000	0	220000	ödenmedi	Nakit	aktif	Selçuk	
+ARZU  ÇATI	D6	4	49. DÖNEM	satis	336635	2025-05-11	20/12	27/12	257100	0	263013,3	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYÞE DENGÝZ	D2	6	51. DÖNEM	satis	124337	2025-05-10	24/12	30/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA KÖSEOÐLU	D15	12	11. DÖNEM	satis	146019	2025-05-10	17/03	23/03	178000	0	198648	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ÞAKARCAN	D15	11	11. DÖNEM	satis	346587	2025-05-10	17/03	23/03	178000	0	198648	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Meryem Bayrak Kocaoðlu	F6	2	39. DÖNEM	satis	972695	2025-05-10	29/09	05/10	479500	0	623350	ödenmedi	Mola Taksit	aktif	Selçuk	
+EMRÝYE ÜNYILDIZ	D15	2	51. DÖNEM	satis	560932	2025-05-07	22/12	28/12	155700	0	155700	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYYE ÇELÝK	D15	11	5. DÖNEM	satis	105778	2025-05-03	03/02	09/02	267000	0	267000	ödenmedi	Nakit	aktif	Selçuk	
+EMRÝYE ÇELEBÝ	D15	11	50. DÖNEM	satis	223893	2025-05-07	15/12	21/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+GÜLAY BODUR	D15	2	44. DÖNEM	satis	959408	2025-04-30	03/11	09/11	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+HASAN TANIK	D15	2	48. DÖNEM	satis	616184	2025-05-03	01/12	07/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+SENAY AYKUT	D6	10	36. DÖNEM	satis	773622	2025-05-05	23/09	29/09	326300	0	407222,4	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝSMAÝL MANAV	D15	10	23. DÖNEM	satis	855613	2025-05-04	09/06	15/06	432600	0	519120	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MURAT BÝLÝR	D6	7	39. DÖNEM	satis	538329	2025-05-03	30/09	06/10	317700	0	317700	ödenmedi	Nakit	aktif	Selçuk	
+KEREM  ÖZTÜRK	D15	9	48. DÖNEM	satis	645612	2025-05-03	01/12	07/12	155700	0	144801	ödenmedi	Nakit	aktif	Selçuk	
+ÝSA KOBAK	D15	12	47. DÖNEM	satis	577254	2025-04-27	24/11	30/11	164000	0	183024	ödenmedi	Kredi Kartý	aktif	Selçuk	
+mustafa taþdemir	D15	13	37. DÖNEM	satis	587471	2025-05-02	15/09	21/09	225000	0	270000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZEYNEP ÞÝRÝN	D15	8	44. DÖNEM	satis	605652	2025-05-02	03/11	09/11	178000	0	165540	ödenmedi	Nakit	aktif	Selçuk	
+RAMAZAN DEMÝRBAÞ	F1	7	2. DÖNEM	satis	644935	2025-05-01	13/01	19/01	615400	0	615400	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH  KAVAL	D15	14	35. DÖNEM	satis	675446	2025-05-01	07/09	13/09	512900	0	666770	ödenmedi	Mola Taksit	aktif	Selçuk	
+GÖKÇE CAN KOZAN	D15	12	7. DÖNEM	satis	798034	2025-05-01	17/02	23/02	163200	0	182131,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ASLI DÝNER	D15	13	7. DÖNEM	satis	664339	2025-05-01	17/02	23/02	163200	0	195840	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SERHAT  GÖKALP	D15	1	42. DÖNEM	satis	931342	2025-05-01	20/10	26/10	210100	0	210100	ödenmedi	Nakit	aktif	Selçuk	
+GÜRKAN KAYA	D1	10	38. DÖNEM	satis	624360	2025-04-30	24/09	30/09	313700	0	407810	ödenmedi	Mola Taksit	aktif	Selçuk	
+can Özpay	D15	12	44. DÖNEM	satis	935267	2025-04-30	03/11	09/11	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+GÜLDÝKEN AYDIN	D15	5	51. DÖNEM	satis	745586	2025-04-30	22/12	28/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ AKKAYA	D1	2	23. DÖNEM	satis	662073	2025-04-20	09/06	15/06	603600	0	729752,4	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAYRÝ TOPLU	D15	12	6. DÖNEM	satis	916588	2025-04-14	10/02	16/02	149700	0	167065,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÖZER KARAER	D1	10	36. DÖNEM	satis	369196	2025-04-12	10/09	16/09	449100	0	542961,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+ALPTEKÝN KABADAYI	D15	4	9. DÖNEM	satis	543956	2025-04-04	03/03	09/03	164000	0	180400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATÝH KILIÇ	D1	1	9. DÖNEM	satis	954365	2025-04-04	03/03	09/03	238800	0	262680	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ARÝF HÝKMET BODUR	E4	4	34. DÖNEM	satis	610286	2025-04-21	12/09	18/09	502600	0	514159,8	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HÜSEYÝN ERGÜN	D15	1	43. DÖNEM	satis	614058	2025-04-27	27/10	02/11	307700	0	307700	ödenmedi	Nakit	aktif	Selçuk	
+KAMER  DEBRELÝ	D15	2	6. DÖNEM	satis	959044	2025-04-13	10/02	16/02	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+YUSUF SEVÝNÇ	D1	7	11. DÖNEM	satis	995100	2025-04-28	19/03	25/03	249500	0	232035	ödenmedi	Nakit	aktif	Selçuk	
+HAKKI BOÐAZPINAR	D15	2	39. DÖNEM	satis	467689	2025-04-28	29/09	05/10	211500	0	232650	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BEYZ ELEKTRONÝK MAK. OTOM. SAN. TÝC. LTD. ÞTÝ  	D15	5	39. DÖNEM	satis	878273	2025-04-25	29/09	05/10	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+HACI AHMET SEVÝNÇ	D15	11	48. DÖNEM	satis	841196	2025-04-27	01/12	07/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+GÜLNUR  ÞAHÝN	D15	8	19. DÖNEM	satis	557852	2025-04-23	12/05	18/05	230500	0	253550	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUTÝYE  KARATAÞ	D15	11	47. DÖNEM	satis	111727	2025-04-27	24/11	30/11	164000	0	152520	ödenmedi	Nakit	aktif	Selçuk	
+ESRA ÇELÝK	D15	5	47. DÖNEM	satis	453413	2025-04-27	24/11	30/11	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+bayram gündüz	D1	5	35. DÖNEM	satis	483222	2025-04-27	21/09	27/09	313700	0	345070	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÜMÝT EROL	D15	13	1. DÖNEM	satis	518905	2025-04-27	06/01	12/01	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+metin kurt	D15	12	21. DÖNEM	satis	279128	2025-04-26	26/05	01/06	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN ÇINAR	D15	5	49. DÖNEM	satis	697785	2025-04-26	08/12	14/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+SAÝT KARMÝL	D15	8	37. DÖNEM	satis	973691	2025-04-26	15/09	21/09	216300	0	201159	ödenmedi	Nakit	aktif	Selçuk	
+MELEK  YALÇINKAYA	D15	6	47. DÖNEM	satis	491819	2025-04-26	24/11	30/11	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+HADÝYE  NÝZAM	D1	9	47. DÖNEM	satis	640295	2025-04-19	24/11	30/11	238800	0	222084	ödenmedi	Nakit	aktif	Selçuk	
+SEMA  AKIN	D6	9	46. DÖNEM	satis	398065	2025-04-19	24/11	30/11	238800	0	262680	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Büþra Baþkan	D15	7	41. DÖNEM	satis	205372	2025-04-26	27/10	02/11	307700	0	307700	ödenmedi	Nakit	aktif	Selçuk	
+MERVE BEÇÝT	D15	2	47. DÖNEM	satis	248080	2025-04-25	24/11	30/11	164000	0	167772	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BEYTULLAH ÇÝÇEK	F6	6	52. DÖNEM	satis	694726	2025-04-20	29/12	04/01	466900	0	560280	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYHAN UZUNKAYA	D15	1	47. DÖNEM	satis	704729	2025-04-25	24/11	30/11	164000	0	183024	ödenmedi	Kredi Kartý	aktif	Selçuk	
+LEVENT  ESE	D15	9	15. DÖNEM	satis	886973	2025-04-11	14/04	20/04	184200	0	222697,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+TAHA KANLI	F6	2	52. DÖNEM	satis	464942	2025-04-17	29/12	04/01	466900	0	466900	ödenmedi	Nakit	aktif	Selçuk	
+AYSEL ÞAHÝN	D6	5	15. DÖNEM	satis	855957	2025-04-18	13/04	19/04	303000	0	303000	ödenmedi	Nakit	aktif	Selçuk	
+MUSA DEMÝR	D15	9	18. DÖNEM	satis	539197	2025-04-20	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+CEVDET CEREYAN	D15	2	21. DÖNEM	satis	472113	2025-04-12	26/05	01/06	211500	0	255703,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖZKAN SEKTÝOÐLU	D15	9	47. DÖNEM	satis	358984	2025-04-24	24/11	30/11	164000	0	180400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FURKAN TOPLU	D15	5	37. DÖNEM	satis	720553	2025-04-24	15/09	21/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+SERAP  DÝLGÝN	D1	10	16. DÖNEM	satis	448760	2025-04-23	23/04	29/04	386100	0	359073	ödenmedi	Nakit	aktif	Selçuk	
+Burcu Korkmaz Meriç	D15	1	5. DÖNEM	satis	172113	2025-04-23	03/02	09/02	256700	0	256700	ödenmedi	Nakit	aktif	Selçuk	
+KENAN GÖKSU	D15	5	2. DÖNEM	satis	114748	2025-04-20	13/01	19/01	171100	0	190947,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BETÜL  KOÇ	D15	2	2. DÖNEM	satis	513305	2025-04-20	13/01	19/01	171100	0	190947,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NÝLAY ÖZDAL	F9	8	21. DÖNEM	satis	870249	2025-04-22	22/05	28/05	376600	0	376600	ödenmedi	Nakit	aktif	Selçuk	
+SELDA GÜNDOÐDU	D1	2	32. DÖNEM	satis	490459	2025-04-21	15/08	22/08	1113200	0	1242331,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MELÝH AKÇAY	D15	13	44. DÖNEM	satis	307309	2025-04-21	03/11	09/11	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+ABDULLAH ÞAHÝNKAYA	D6	10	47. DÖNEM	satis	765523	2025-04-20	14/12	21/12	247200	0	229896	ödenmedi	Nakit	aktif	Selçuk	
+ABDULKADÝR EKÝN	D15	6	21. DÖNEM	satis	700922	2025-04-20	26/05	01/06	211500	0	196695	ödenmedi	Nakit	aktif	Selçuk	
+ABDULKADÝR EKÝN	D15	13	38. DÖNEM	satis	768050	2025-04-20	22/09	28/09	216300	0	201159	ödenmedi	Nakit	aktif	Selçuk	
+AYBÜKE  DAÝMAGÜLER ÞAHÝN	D15	4	37. DÖNEM	satis	213418	2025-04-20	15/09	21/09	216300	0	261506,7	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝSMAÝL YUSUF DURNA	D15	3	37. DÖNEM	satis	222177	2025-04-20	15/09	21/09	216300	0	241390,8	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FURKAN GÜLER	D15	9	6. DÖNEM	satis	286446	2025-04-20	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+CELAL  GÜL	D15	9	37. DÖNEM	satis	228634	2025-04-20	15/09	21/09	216300	0	259560	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FUAT GENÇOÐLU	D15	12	48. DÖNEM	satis	898495	2025-04-20	01/12	07/12	149700	0	167065,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FUAT GENÇOÐLU	D15	5	48. DÖNEM	satis	944509	2025-04-20	01/12	07/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+GÖZDE SEHER YILDIRIM	D15	12	37. DÖNEM	satis	906912	2025-04-19	15/09	21/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+ÖZGÜL KILIÇLI	D15	9	21. DÖNEM	satis	629345	2025-04-19	26/05	01/06	211500	0	236034	ödenmedi	Kredi Kartý	aktif	Selçuk	
+DERYA YILMAZ	D6	9	37. DÖNEM	satis	592635	2025-04-19	22/09	28/09	313700	0	313700	ödenmedi	Nakit	aktif	Selçuk	
+YASEMÝN  ÞAHÝN	D15	9	2. DÖNEM	satis	490621	2025-04-19	13/01	19/01	171100	0	222430	ödenmedi	Mola Taksit	aktif	Selçuk	
+TUÐBA ANDAN	D15	13	6. DÖNEM	satis	572014	2025-04-18	10/02	16/02	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+MERT ESE	D15	6	15. DÖNEM	satis	486360	2025-04-18	14/04	20/04	184200	0	222697,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞEYMA TOPRAKÇI	D15	2	18. DÖNEM	satis	487425	2025-04-18	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF SÜMEYYE VURGUN	D15	12	18. DÖNEM	satis	791879	2025-04-18	05/05	11/05	194900	0	181257	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER KOÇAK	D15	11	40. DÖNEM	satis	572238	2025-04-18	06/10	12/10	209100	0	252801,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+SÜREYYA BALKAÇ	D28	4	51. DÖNEM	satis	365762	2025-04-17	23/12	29/12	222300	0	222300	ödenmedi	Nakit	aktif	Selçuk	
+MELEK ARPACI SAN	D15	2	49. DÖNEM	satis	786150	2025-04-16	08/12	14/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+ahmet ersöz	F9	8	19. DÖNEM	satis	408906	2025-04-16	08/05	14/05	357600	0	464880	ödenmedi	Mola Taksit	aktif	Selçuk	
+CENNET GEZER	D1	1	46. DÖNEM	satis	535833	2025-04-12	24/11	30/11	238800	0	244292,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET EMÝN ÞEN	D15	12	15. DÖNEM	satis	697967	2025-04-16	14/04	20/04	184200	0	171306	ödenmedi	Nakit	aktif	Selçuk	
+RUMEYSA ÞENGÜL	D15	11	37. DÖNEM	satis	812238	2025-04-13	15/09	21/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+HAVVA  ALKAN ASLAN	D15	10	37. DÖNEM	satis	486709	2025-04-13	15/09	21/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+CANKUT  DEMÝR	D15	11	15. DÖNEM	satis	161705	2025-04-15	14/04	20/04	184200	0	171306	ödenmedi	Nakit	aktif	Selçuk	
+BÝRÝKÝM OKULLARI EÐÝTÝM ÖÐRETÝM VE SAÐLIK HÝZMETLERÝ 	D15	5	15. DÖNEM	satis	329209	2025-04-11	14/04	20/04	184200	0	171306	ödenmedi	Nakit	aktif	Selçuk	
+BÝRÝKÝM OKULLARI EÐÝTÝM ÖÐRETÝM VE SAÐLIK HÝZMETLERÝ 	D15	2	15. DÖNEM	satis	628431	2025-04-11	14/04	20/04	184200	0	171306	ödenmedi	Nakit	aktif	Selçuk	
+FATMA DENÝZ	D15	13	2. DÖNEM	satis	402567	2025-04-13	13/01	19/01	171100	0	190947,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATMA DENÝZ	D15	11	2. DÖNEM	satis	727494	2025-04-13	13/01	19/01	171100	0	190947,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ahmet ipek	D15	13	47. DÖNEM	satis	677583	2025-04-16	24/11	30/11	164000	0	152520	ödenmedi	Nakit	aktif	Selçuk	
+NEDÝME KOCA	D15	5	10. DÖNEM	satis	555432	2025-04-16	10/03	16/03	165200	0	165200	ödenmedi	Nakit	aktif	Selçuk	
+PINAR  ASLAN AYDEMÝR	D15	6	18. DÖNEM	satis	396283	2025-04-15	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+kerem eren yaðan	D15	12	51. DÖNEM	satis	462794	2025-04-15	22/12	28/12	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+TUÐBA ANDAN	D15	6	6. DÖNEM	satis	615457	2025-04-15	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+arif cesur	D15	13	51. DÖNEM	satis	869565	2025-04-15	22/12	28/12	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝREM YILMAZ	D15	8	50. DÖNEM	satis	574144	2025-04-04	15/12	21/12	149700	0	153143,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MERVE ÝLKNUR BALABAN	D2	1	37. DÖNEM	satis	431676	2025-04-09	10/09	16/09	308900	0	401570	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET AKTAÞ	D15	5	18. DÖNEM	satis	825427	2025-04-15	05/05	11/05	194900	0	253370	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATMA FÝGEN ÇEKÝÇ	D15	5	38. DÖNEM	satis	559166	2025-04-15	22/09	28/09	216300	0	241390,8	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUHAMMED DOÐAN VURGUN	D15	12	2. DÖNEM	satis	529269	2025-04-12	13/01	19/01	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+ÝSA GÜVENDÝ	D15	3	9. DÖNEM	satis	652771	2025-04-09	03/03	09/03	164000	0	152520	ödenmedi	Nakit	aktif	Selçuk	
+ÝSA GÜVENDÝ	F9	3	48. DÖNEM	satis	500695	2025-04-09	28/11	04/12	281600	0	261888	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET EMÝN TOK	D15	1	19. DÖNEM	satis	735963	2025-04-09	12/05	18/05	230500	0	235801,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÖMER FARUK KANLI	D15	3	19. DÖNEM	satis	937316	2025-04-09	12/05	18/05	230500	0	235801,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÖMER FARUK KANLI	D15	3	50. DÖNEM	satis	553004	2025-04-09	15/12	21/12	149700	0	153143,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SERKAN BAÞLIK	D6	5	48. DÖNEM	satis	227398	2025-04-13	20/12	27/12	247200	0	229896	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA YAZ	D1	10	19. DÖNEM	satis	863383	2025-04-14	14/05	20/05	459800	0	597740	ödenmedi	Mola Taksit	aktif	Selçuk	
+Hicran Erdem	D6	2	45. DÖNEM	satis	411971	2025-04-13	24/11	30/11	238800	0	310440	ödenmedi	Mola Taksit	aktif	Selçuk	
+Tuðba nur açan	D15	13	18. DÖNEM	satis	522001	2025-04-13	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP AKAN	D15	5	6. DÖNEM	satis	528478	2025-04-13	10/02	16/02	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+GÜL ÇEKÝÇ	D15	1	38. DÖNEM	satis	648177	2025-04-13	22/09	28/09	216300	0	241390,8	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Aytekin alpullu	D1	2	37. DÖNEM	satis	917343	2025-04-13	21/09	27/09	313700	0	313700	ödenmedi	Nakit	aktif	Selçuk	
+ZUHAL ÞÝÞMANOÐLU	D15	13	21. DÖNEM	satis	735045	2025-04-13	26/05	01/06	211500	0	232650	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HAKAN ÞAR	D1	10	46. DÖNEM	satis	455462	2025-04-13	19/11	25/11	341000	0	443300	ödenmedi	Mola Taksit	aktif	Selçuk	
+NERMÝN SERAP ÇEKÝÇ	F6	5	49. DÖNEM	satis	278140	2025-04-08	29/12	04/01	466900	0	560280	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Aygül  Demirbaþ	D15	5	21. DÖNEM	satis	490330	2025-04-13	26/05	01/06	211500	0	232650	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BERKAN  CEREYAN	D15	11	6. DÖNEM	satis	519922	2025-04-12	10/02	16/02	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+SERAP KESÝM	D15	11	18. DÖNEM	satis	686536	2025-04-12	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+SEÇKÝN SINMAZ	D15	8	52. DÖNEM	satis	242148	2025-04-12	29/12	05/01	235300	0	235300	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA GÜRSOY	E3	7	47. DÖNEM	satis	833109	2025-04-12	26/11	02/12	371900	0	483470	ödenmedi	Mola Taksit	aktif	Selçuk	
+NESLÝHAN TOPALÖMER	D15	4	49. DÖNEM	satis	984005	2025-04-12	08/12	14/12	149700	0	167065,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÜNAL KURT	D15	13	15. DÖNEM	satis	426066	2025-04-12	14/04	20/04	184200	0	222697,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+YÝÐÝT HAYDAR AYDIN	D2	1	40. DÖNEM	satis	822966	2025-04-12	01/10	07/10	209100	0	209100	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYMA  SAYIN	D15	6	2. DÖNEM	satis	716111	2025-04-12	13/01	19/01	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+özden  görür	D6	7	47. DÖNEM	satis	906365	2025-04-12	25/11	01/12	235300	0	235300	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA BUKET TELLÝ	D15	10	49. DÖNEM	satis	423058	2025-04-03	08/12	14/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET YALÇINDAÐ	D28	14	17. DÖNEM	satis	260547	2025-04-11	04/05	10/05	310200	0	372240	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ERCAN ALTINEL	D1	5	41. DÖNEM	satis	313632	2025-04-08	02/11	08/11	249500	0	232035	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF  CEBECÝ	D15	11	21. DÖNEM	satis	731293	2025-04-11	26/05	01/06	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+Sibel Çekmez	D1	5	22. DÖNEM	satis	883834	2025-04-11	31/05	06/06	461000	0	461000	ödenmedi	Nakit	aktif	Selçuk	
+Onur Tural	D15	13	48. DÖNEM	satis	429395	2025-04-10	01/12	07/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+BELGÝN ÞULE EROÐLU	D15	10	2. DÖNEM	satis	801076	2025-04-10	13/01	19/01	171100	0	162545	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE YEÞÝLBAÞ	D2	7	48. DÖNEM	satis	734478	2025-04-04	26/11	02/12	160400	0	149172	ödenmedi	Nakit	aktif	Selçuk	
+HACER ÇORUHLU	D15	4	8. DÖNEM	satis	885692	2025-04-07	24/02	02/03	159200	0	148056	ödenmedi	Nakit	aktif	Selçuk	
+Vika makina imalat ve oto. San tic Ltd. Sti 	F9	4	47. DÖNEM	satis	788710	2025-04-05	21/11	27/11	297000	0	356400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ESRA ÇAKMAKOÐLU	D2	2	19. DÖNEM	satis	859002	2025-03-28	07/05	13/05	197300	0	256490	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖZCAN YUCA	D1	10	47. DÖNEM	satis	466275	2025-04-04	26/11	02/12	232900	0	256190	ödenmedi	Kredi Kartý	aktif	Selçuk	
+TUNCAY DEMÝRCÝ	D15	3	44. DÖNEM	satis	323329	2025-04-08	03/11	09/11	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+ARZU YILDIRIM	D4	9	5. DÖNEM	satis	979706	2025-04-05	31/01	06/02	383800	0	498940	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÜMÝT KURT	F9	4	38. DÖNEM	satis	276967	2025-04-06	19/09	25/09	390900	0	472598,1	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÜMÝT KURT	D2	10	16. DÖNEM	satis	376572	2025-04-06	23/04	29/04	266200	0	321835,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+ERDAL KAYHAN	D15	8	40. DÖNEM	satis	799049	2025-04-07	06/10	12/10	209100	0	252801,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER KESÝCÝ	D1	4	43. DÖNEM	satis	291768	2025-04-07	03/11	09/11	249500	0	249500	ödenmedi	Nakit	aktif	Selçuk	
+HÝLAL YAZGAN	D1	4	46. DÖNEM	satis	604631	2025-04-09	24/11	30/11	238800	0	222084	ödenmedi	Nakit	aktif	Selçuk	
+Yeþim Odabaþý	D4	9	41. DÖNEM	satis	392973	2025-04-09	10/10	16/10	208000	0	232128	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ESRA  ÞÝMÞEK	D15	3	40. DÖNEM	satis	851194	2025-04-08	06/10	12/10	209100	0	252801,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+KÜRÞAT GÜLRENK	D2	1	39. DÖNEM	satis	199540	2025-04-05	24/09	30/09	216300	0	259560	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BÝRKAN DIRAGAT	F9	4	50. DÖNEM	satis	327594	2025-04-08	12/12	18/12	269700	0	275903,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+pýnar  özleyen	D6	1	11. DÖNEM	satis	216271	2025-04-08	23/03	29/03	285200	0	370760	ödenmedi	Mola Taksit	aktif	Selçuk	
+Deniz Ünal	D15	4	44. DÖNEM	satis	943066	2025-04-08	03/11	09/11	171100	0	206859,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+Ünal SARIKAYA	D15	3	8. DÖNEM	satis	807572	2025-04-07	24/02	02/03	159200	0	159200	ödenmedi	Nakit	aktif	Selçuk	
+Mustafa Ýlhan	D15	8	8. DÖNEM	satis	987491	2025-04-07	24/02	02/03	159200	0	159200	ödenmedi	Nakit	aktif	Selçuk	
+Gülay Kaya	D15	4	47. DÖNEM	satis	713022	2025-04-07	24/11	30/11	164000	0	213200	ödenmedi	Mola Taksit	aktif	Selçuk	
+NÝLÜFER  ÇORUHLU	D1	1	37. DÖNEM	satis	169372	2025-04-07	22/09	28/09	313700	0	313700	ödenmedi	Nakit	aktif	Selçuk	
+Tuncay Çanakkale	D1	1	43. DÖNEM	satis	871851	2025-04-07	03/11	09/11	249500	0	255238,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Cüneyt Dillitaþ	D6	2	42. DÖNEM	satis	599025	2025-04-07	03/11	09/11	249500	0	255238,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AHMET  DENER	D15	10	40. DÖNEM	satis	870800	2025-04-07	06/10	12/10	209100	0	194463	ödenmedi	Nakit	aktif	Selçuk	
+YAKUP KALAYCI	D15	10	47. DÖNEM	satis	669033	2025-04-06	24/11	30/11	164000	0	198276	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYKUT  YÜKSEL	D15	1	44. DÖNEM	satis	445703	2025-04-06	03/11	09/11	171100	0	222430	ödenmedi	Mola Taksit	aktif	Selçuk	
+sinan arslan	D15	4	7. DÖNEM	satis	532407	2025-04-06	17/02	23/02	156900	0	203970	ödenmedi	Mola Taksit	aktif	Selçuk	
+FURKAN VANLI	D15	7	24. DÖNEM	satis	651303	2025-04-06	21/06	27/06	670100	0	670100	ödenmedi	Nakit	aktif	Selçuk	
+PINAR VANLI	D15	7	31. DÖNEM	satis	960742	2025-04-06	17/08	23/08	670100	0	670100	ödenmedi	Nakit	aktif	Selçuk	
+Esra  Bakal	D15	3	47. DÖNEM	satis	618008	2025-04-06	24/11	30/11	164000	0	152520	ödenmedi	Nakit	aktif	Selçuk	
+DERYA DEMÝRAYAK	D15	3	11. DÖNEM	satis	179892	2025-04-06	17/03	23/03	171100	0	222430	ödenmedi	Mola Taksit	aktif	Selçuk	
+birnaz aydoðan	D15	1	9. DÖNEM	satis	624435	2025-04-06	03/03	09/03	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+Cem  Karaaslan	D6	10	46. DÖNEM	satis	331892	2025-04-06	06/12	13/12	247200	0	229896	ödenmedi	Nakit	aktif	Selçuk	
+SEMÝH ÖZCAN	D15	1	4. DÖNEM	satis	781496	2025-04-04	27/01	02/02	446700	0	415431	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÝT KURT	D15	1	37. DÖNEM	satis	810288	2025-04-06	15/09	21/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+Zeliha Yuca	D15	10	8. DÖNEM	satis	632070	2025-04-06	24/02	02/03	159200	0	175120	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Halim Özöktem	D2	1	9. DÖNEM	satis	242737	2025-04-05	26/02	04/03	160400	0	208520	ödenmedi	Mola Taksit	aktif	Selçuk	
+ERDOÐAN SARA	D15	10	44. DÖNEM	satis	959458	2025-04-05	03/11	09/11	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+Nilüfer Þen	D2	10	36. DÖNEM	satis	752956	2025-04-05	10/09	16/09	308900	0	401570	ödenmedi	Mola Taksit	aktif	Selçuk	
+ESRA KAZÇI	F8	7	6. DÖNEM	satis	965257	2025-04-05	08/02	14/02	269700	0	269700	ödenmedi	Nakit	aktif	Selçuk	
+ÇETÝN ÖZGÜL	D15	10	50. DÖNEM	satis	868957	2025-04-05	15/12	21/12	149700	0	153143,1	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZEKERÝYA ÇALIK	D6	4	47. DÖNEM	satis	410540	2025-04-05	04/12	11/12	247200	0	247200	ödenmedi	Nakit	aktif	Selçuk	
+BAHATTÝN PINARCI	D6	5	45. DÖNEM	satis	126624	2025-04-05	28/11	04/12	225800	0	293540	ödenmedi	Mola Taksit	aktif	Selçuk	
+Nurdan Kýrca	D1	5	45. DÖNEM	satis	416754	2025-04-05	30/11	06/12	219800	0	219800	ödenmedi	Nakit	aktif	Selçuk	
+DORUK GÜNSEL	D15	3	7. DÖNEM	satis	964480	2025-04-05	17/02	23/02	156900	0	189692,1	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATMA YENÝAY	D2	10	23. DÖNEM	satis	339799	2025-04-02	11/06	17/06	446700	0	415431	ödenmedi	Nakit	aktif	Selçuk	
+ÞÝFA ERDOGAN ÇITAK	D2	1	51. DÖNEM	satis	994574	2025-04-03	17/12	23/12	149700	0	179640	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FIRAT  BEYSÜLEN	D6	7	23. DÖNEM	satis	754758	2025-04-04	10/06	16/06	603600	0	603600	ödenmedi	Nakit	aktif	Selçuk	
+FIRAT  BEYSÜLEN	D1	5	49. DÖNEM	satis	258095	2025-04-04	28/12	03/01	310100	0	310100	ödenmedi	Nakit	aktif	Selçuk	
+NURAY YÜCEL KANDEMÝR	D15	10	1. DÖNEM	satis	834293	2025-03-31	06/01	12/01	149700	0	179640	ödenmedi	Kredi Kartý	aktif	Selçuk	
+mustafa rüþtü demirtaþ	D6	4	48. DÖNEM	satis	745755	2025-04-04	12/12	19/12	247200	0	271920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ALPER DEMÝRTAÞ	D6	5	47. DÖNEM	satis	543482	2025-04-04	12/12	19/12	247200	0	271920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Yavuz Gözen	D15	10	7. DÖNEM	satis	767322	2025-04-04	17/02	23/02	156900	0	188280	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET ER	D2	9	48. DÖNEM	satis	135624	2025-04-04	26/11	02/12	160400	0	192480	ödenmedi	Kredi Kartý	aktif	Selçuk	
+recep  umay	D4	8	4. DÖNEM	satis	194995	2025-04-04	02/02	08/02	298200	0	298200	ödenmedi	Nakit	aktif	Selçuk	
+ÞULE KARAGÜL	D15	3	18. DÖNEM	satis	912496	2025-03-24	05/05	11/05	194900	0	181257	ödenmedi	Nakit	aktif	Selçuk	
+NADÝRE KARAGÜL	D15	4	18. DÖNEM	satis	350832	2025-03-24	05/05	11/05	194900	0	181257	ödenmedi	Nakit	aktif	Selçuk	
+Halil Ýlhan  Ýlhan	D15	4	11. DÖNEM	satis	605255	2025-04-04	17/03	23/03	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+burcu  oðuz	F8	7	18. DÖNEM	satis	674799	2025-04-04	05/05	11/05	352900	0	328197	ödenmedi	Nakit	aktif	Selçuk	
+zeynep  hakverdi  özcan	F9	7	6. DÖNEM	satis	740544	2025-04-04	07/02	13/02	269100	0	269100	ödenmedi	Nakit	aktif	Selçuk	
+Burçin Genç Çil	D2	1	49. DÖNEM	satis	283767	2025-04-04	03/12	09/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+Burçin Genç Çil	D15	8	9. DÖNEM	satis	498499	2025-04-04	03/03	09/03	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+Seval Aygün	D15	8	18. DÖNEM	satis	689699	2025-04-04	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP ÞÝRÝN	D6	6	20. DÖNEM	satis	121490	2025-04-03	20/05	26/05	343400	0	343400	ödenmedi	Nakit	aktif	Selçuk	
+Sena GÜRCÜOÐLU	D15	3	21. DÖNEM	satis	844601	2025-04-03	26/05	01/06	211500	0	196695	ödenmedi	Nakit	aktif	Selçuk	
+Sena GÜRCÜOÐLU	D15	4	21. DÖNEM	satis	307237	2025-04-03	26/05	01/06	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+EDANUR ADACI	D15	1	7. DÖNEM	satis	254378	2025-04-02	17/02	23/02	156900	0	145917	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ÞABAN SAVAÞ	D1	1	49. DÖNEM	satis	796573	2025-04-01	15/12	21/12	216300	0	201159	ödenmedi	Nakit	aktif	Selçuk	
+Sezon tekstil Eren mertcan 	D15	8	47. DÖNEM	satis	318717	2025-04-02	24/11	30/11	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+Tuðçe YILMAZ	D1	4	12. DÖNEM	satis	769982	2025-04-02	23/03	29/03	285200	0	285200	ödenmedi	Nakit	aktif	Selçuk	
+PERÝHAN BANU SAVAÞ	F9	4	21. DÖNEM	satis	999484	2025-03-31	22/05	28/05	333900	0	333900	ödenmedi	Nakit	aktif	Selçuk	
+Seda Kesici	D15	7	14. DÖNEM	satis	567072	2025-04-02	12/04	18/04	259000	0	259000	ödenmedi	Nakit	aktif	Selçuk	
+RABÝA BERK	D2	1	19. DÖNEM	satis	690501	2025-03-22	07/05	13/05	197300	0	217030	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ADEM KARAYEL	D1	9	52. DÖNEM	satis	665730	2025-04-02	29/12	04/01	310100	0	317232,3	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÝMAHAN ÇAY	D2	2	7. DÖNEM	satis	481599	2025-04-02	12/02	18/02	152100	0	141453	ödenmedi	Nakit	aktif	Selçuk	
+ADEM ALTUÐ	D15	10	52. DÖNEM	satis	969276	2025-04-02	29/12	05/01	235300	0	218829	ödenmedi	Nakit	aktif	Selçuk	
+ADEM KARAYEL	D15	3	52. DÖNEM	satis	304754	2025-04-02	29/12	05/01	235300	0	240711,9	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ADEM KARAYEL	D15	10	51. DÖNEM	satis	514987	2025-04-02	22/12	28/12	149700	0	164670	ödenmedi	Kredi Kartý	aktif	Selçuk	
+emrah geyik	D15	10	19. DÖNEM	satis	262882	2025-04-02	12/05	18/05	230500	0	230500	ödenmedi	Nakit	aktif	Selçuk	
+Can Akduman	D1	10	52. DÖNEM	satis	815372	2025-04-02	31/12	06/01	310100	0	310100	ödenmedi	Nakit	aktif	Selçuk	
+VELÝ ÇETÝN	D15	3	49. DÖNEM	satis	500603	2025-04-01	08/12	14/12	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+Ceyhun Aslandað	D15	1	39. DÖNEM	satis	601807	2025-04-02	29/09	05/10	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+SÝMGE SÜREN	D2	1	38. DÖNEM	satis	702761	2025-04-01	17/09	23/09	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+ÞERMÝN GÖNEY	D2	5	40. DÖNEM	satis	288758	2025-03-28	08/10	14/10	209100	0	252801,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÇÝÐDEM ÜKÝS	D2	1	52. DÖNEM	satis	385513	2025-03-24	24/12	31/12	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+FÝLÝZ DEDECAN	D1	7	10. DÖNEM	satis	425020	2025-04-01	12/03	18/03	243600	0	226548	ödenmedi	Nakit	aktif	Selçuk	
+Deniz Ünal	F9	4	6. DÖNEM	satis	821272	2025-04-01	06/02	12/02	269700	0	343597,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+Kübra  Ýlçin	D15	1	50. DÖNEM	satis	604120	2025-04-01	15/12	21/12	149700	0	167065,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Zekine Soydemir	D6	7	9. DÖNEM	satis	396753	2025-04-01	04/03	10/03	238800	0	238800	ödenmedi	Nakit	aktif	Selçuk	
+Serdar  Arsan 	D15	4	2. DÖNEM	satis	664776	2025-04-01	13/01	19/01	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+doðal acar	F8	2	29. DÖNEM	satis	707839	2025-04-01	21/07	27/07	1467200	0	1467200	ödenmedi	Nakit	aktif	Selçuk	
+SEMA  KANDEMÝROÐLU	D1	1	19. DÖNEM	satis	612427	2025-04-01	12/05	18/05	333900	0	333900	ödenmedi	Nakit	aktif	Selçuk	
+2G TEKNOLOJÝ VE MÜHENDÝSLÝK SAN.TÝC.LTD.ÞTÝ. 2G TEKNOLOJÝ VE MÜHENDÝSLÝK SAN.TÝC.LTD.ÞTÝ. 	D15	3	39. DÖNEM	satis	479516	2025-04-01	29/09	05/10	211500	0	274950	ödenmedi	Mola Taksit	aktif	Selçuk	
+EMRE  KARAARSLAN	D15	10	39. DÖNEM	satis	798971	2025-04-01	29/09	05/10	211500	0	274950	ödenmedi	Mola Taksit	aktif	Selçuk	
+nuray ertem	D6	9	18. DÖNEM	satis	748507	2025-03-31	11/05	17/05	292300	0	292300	ödenmedi	Nakit	aktif	Selçuk	
+LEZGÝN  AYTEK	D15	4	1. DÖNEM	satis	793206	2025-03-31	06/01	12/01	149700	0	179640	ödenmedi	Kredi Kartý	aktif	Selçuk	
+LEZGÝN  AYTEK	D15	3	1. DÖNEM	satis	476215	2025-03-31	06/01	12/01	149700	0	179640	ödenmedi	Kredi Kartý	aktif	Selçuk	
+VUSAL ALLAHVERDÝ	E3	4	1. DÖNEM	satis	697676	2025-03-30	05/01	11/01	433700	0	403341	ödenmedi	Nakit	aktif	Selçuk	
+Betül   Bilen  Zengin	D15	1	49. DÖNEM	satis	358054	2025-03-30	08/12	14/12	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+KADÝR  ÇAY	D6	2	48. DÖNEM	satis	156234	2025-03-30	15/12	21/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+Yeþim Odabaþý	D15	3	2. DÖNEM	satis	960897	2025-03-28	13/01	19/01	171100	0	205320	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ahmet uzun	D15	1	21. DÖNEM	satis	527036	2025-03-28	26/05	01/06	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+Özlem  Albayrak	D15	4	6. DÖNEM	satis	855569	2025-03-27	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+Özlem  Albayrak	D15	1	6. DÖNEM	satis	912671	2025-03-27	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+MELTEM ARSLAN	D16	7	12. DÖNEM	satis	514983	2024-12-20	12/04	18/04	218000	0	218000	ödenmedi	Nakit	aktif	Selçuk	
+NÝKET ÇELÝK	D2	7	2. DÖNEM	satis	207797	2024-12-11	08/01	14/01	130000	0	130000	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM  BENZER	D15	4	50. DÖNEM	satis	800431	2025-03-26	15/12	21/12	149700	0	194610	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET REFÝK KORKUSUZ	D15	10	15. DÖNEM	satis	712081	2025-02-26	14/04	20/04	184200	0	227487	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUSUF ÖZAÞAN	D15	8	15. DÖNEM	satis	515370	2025-02-26	14/04	20/04	184200	0	227487	ödenmedi	Mola Taksit	aktif	Selçuk	
+HÜSEYÝN ÞAHÝN	D15	4	15. DÖNEM	satis	961782	2025-02-26	14/04	20/04	184200	0	227487	ödenmedi	Mola Taksit	aktif	Selçuk	
+FERHAT HASAN KARAGÖZ	D15	3	15. DÖNEM	satis	836837	2025-02-26	14/04	20/04	184200	0	227487	ödenmedi	Mola Taksit	aktif	Selçuk	
+CÝHAN KORAY ÖZAÞAN	D15	1	15. DÖNEM	satis	277886	2025-02-26	14/04	20/04	184200	0	227487	ödenmedi	Mola Taksit	aktif	Selçuk	
+BÝRÝKÝM OKULLARI EÐÝTÝM ÖÐRETÝM VE SAÐLIK HÝZMETLERÝ 	D15	4/3/10/8/1	48. DÖNEM/48. DÖNEM/48. DÖNEM/48. DÖNEM/48. DÖNEM	satis	467674	2025-02-26	01/12	07/12	748500	0	711075	ödenmedi	Nakit	aktif	Selçuk	
+YAÐMUR  ALPASLAN	D2	1	12. DÖNEM	satis	345367	2025-03-25	19/03	25/03	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+FATMA AYAN	F6	6	20. DÖNEM	satis	541663	2025-03-22	19/05	25/05	641600	0	769920	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEVLÜDE AYAN	F6	6	19. DÖNEM	satis	130106	2025-03-22	12/05	18/05	502600	0	603120	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MERVE ATLI SARIHAN	D15	10	6. DÖNEM	satis	618406	2025-03-24	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+UÐUR AYAÞ	D15	1	2. DÖNEM	satis	553325	2025-03-23	13/01	19/01	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+MEVLÜT KARADAÐ	D15	8	2. DÖNEM	satis	468015	2025-03-23	13/01	19/01	171100	0	171100	ödenmedi	Nakit	aktif	Selçuk	
+ZAHÝDE HAKVERDÝ	D2	1	11. DÖNEM	satis	236090	2025-03-23	12/03	18/03	167600	0	155868	ödenmedi	Nakit	aktif	Selçuk	
+Zehra Saatçýoðlu	D1	9	10. DÖNEM	satis	895788	2025-03-22	10/03	16/03	240000	0	223200	ödenmedi	Nakit	aktif	Selçuk	
+SEMA DURAN	D2	7	19. DÖNEM	satis	952045	2025-03-22	07/05	13/05	197300	0	197300	ödenmedi	Nakit	aktif	Selçuk	
+Ajda Çokran	D15	1	41. DÖNEM	satis	603724	2025-03-21	13/10	19/10	204400	0	190092	ödenmedi	Nakit	aktif	Selçuk	
+SUDE  AKSOY	D3	7	38. DÖNEM	satis	513008	2025-03-20	13/10	19/10	204400	0	190092	ödenmedi	Nakit	aktif	Selçuk	
+FATMA NUR GENÇ	D15	8	21. DÖNEM	satis	803242	2025-03-20	26/05	01/06	211500	0	196695	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKNUR TEZEL	D2	8	40. DÖNEM	satis	254151	2025-03-19	01/10	07/10	209100	0	198645	ödenmedi	Nakit	aktif	Selçuk	
+ZUHAL KÖK	D1	9	3. DÖNEM	satis	400095	2025-03-09	19/01	25/01	619000	0	742800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Erol Molho	D2	1	21. DÖNEM	satis	944792	2025-03-18	21/05	27/05	209100	0	271830	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET USTA	D12	7	31. DÖNEM	satis	193065	2023-05-10	27/08	03/09	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+NEFKEM KÝMYEVÝ MADDELER SANAYÝ VE DIÞ TÝCARET  LÝMÝTED ÞÝRKETÝ 	D4	9	17. DÖNEM	satis	579992	2025-03-18	25/04	01/05	268500	0	255075	ödenmedi	Nakit	aktif	Selçuk	
+KADER COÞKUN	D27	10	48. DÖNEM	satis	3376	2024-09-23	01/12	07/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+NESLÝHAN ÜLKER	D2	4	6. DÖNEM	satis	3612	2024-11-01	05/02	11/02	150000	0	150000	ödenmedi	Nakit	aktif	Selçuk	
+NAGÝHAN ÖZDENÝZ	D16	7	5. DÖNEM	satis	175164	2022-02-19	13/02	20/02	35100	0	35100	ödenmedi	Nakit	aktif	Selçuk	
+ABDULLAH ALTINTEN	F1	7	28. DÖNEM	satis	578639	2023-11-21	15/07	23/07	516800	0	516800	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH YILMAZ	F1	7	27. DÖNEM	satis	536495	2023-11-21	07/07	14/07	451600	0	451600	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYYE ARSLAN	F9	3	34. DÖNEM	satis	772655	2021-12-15	21/08	28/08	32300	0	36176	ödenmedi	Mola Taksit	aktif	Selçuk	
+SÜMEYYE ARSLAN	D11	14	4. DÖNEM	satis	459210	2021-12-15	24/01	31/01	114700	0	128464	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞEYDANUR TANI	F9	7	33. DÖNEM	satis	213121	2021-12-15	21/08	28/08	114700	0	128464	ödenmedi	Mola Taksit	aktif	Selçuk	
+SELÝME AKSU	D6	1	35. DÖNEM	satis	605040	2022-02-21	25/09	02/10	61800	0	61800	ödenmedi	Nakit	aktif	Selçuk	
+SELÇUK TUNÇER	D15	7	6. DÖNEM	satis	837601	2022-06-06	12/02	19/02	39000	0	43680	ödenmedi	Mola Taksit	aktif	Selçuk	
+mehmet dinçer	D15	3	51. DÖNEM	satis	731924	2025-03-17	22/12	28/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+RAÝF GÜNDÜZ	D28	14/6	26. DÖNEM/28. DÖNEM	satis	961521	2021-11-18	13/07	20/07	137200	0	153664	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUNUS NADÝ AKSOYLAR	D16	14/14	1. DÖNEM/1. DÖNEM	satis	859977	2021-12-14	07/01	21/01	40200	0	40200	ödenmedi	Nakit	aktif	Selçuk	
+YUNUS NADÝ AKSOYLAR	D11	14	6. DÖNEM	satis	529506	2022-04-01	23/02	02/03	27100	0	30352	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUNUS NADÝ AKSOYLAR	D11	14/14	5. DÖNEM/6. DÖNEM	satis	701134	2021-12-11	08/02	23/02	42200	0	42200	ödenmedi	Nakit	aktif	Selçuk	
+YUNUS NADÝ AKSOYLAR	D14	7	48. DÖNEM	satis	809127	2021-12-28	27/12	03/01	23100	0	23100	ödenmedi	Nakit	aktif	Selçuk	
+YAÞAR PAMUK	D6	4	33. DÖNEM	satis	222613	2021-11-18	25/08	01/09	88100	0	88100	ödenmedi	Nakit	aktif	Selçuk	
+SÝBEL GÖK	D16	14	45. DÖNEM	satis	454257	2021-11-11	30/12	06/01	20100	0	20100	ödenmedi	Nakit	aktif	Selçuk	
+SEMA GÖL ELÇÝN	D1	4	29. DÖNEM	satis	612524	2021-12-02	20/07	28/07	112800	0	112800	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM BULUT	D16	7	44. DÖNEM	satis	978601	2021-11-11	30/12	06/01	20600	0	20600	ödenmedi	Nakit	aktif	Selçuk	
+METEHAN MERT	D13	7	6. DÖNEM	satis	821729	2022-02-08	10/02	17/02	24300	0	24300	ödenmedi	Nakit	aktif	Selçuk	
+EMEL OKUMUÞ	D4	8	6. DÖNEM	satis	430112	2021-11-27	24/02	03/03	22100	0	22100	ödenmedi	Nakit	aktif	Selçuk	
+özge  dinçer	D15	10	21. DÖNEM	satis	427511	2025-03-15	26/05	01/06	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+SÝBEL TOZAN KOCA	D6	2	47. DÖNEM	satis	915196	2025-03-09	08/12	14/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN YAÞAR	D4	9	52. DÖNEM	satis	641018	2022-11-21	26/12	01/01	51100	0	57232	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞADÝYE LALE	D2	3	49. DÖNEM	satis	4062	2024-10-20	10/12	16/12	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+GAMZE YAYCI	D2	3	48. DÖNEM	satis	4213	2024-09-20	03/12	09/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+SEVDA ULUÐ	D1	2	43. DÖNEM	satis	192128	2025-03-14	02/11	08/11	249500	0	249500	ödenmedi	Nakit	aktif	Selçuk	
+HALÝT BAÞ	F6	5	4. DÖNEM	satis	226235	2021-12-30	27/01	02/02	75000	0	84000	ödenmedi	Mola Taksit	aktif	Selçuk	
+HALÝT BAÞ	D28	4	52. DÖNEM	satis	277010	2021-12-29	30/12	05/01	26400	0	29568	ödenmedi	Mola Taksit	aktif	Selçuk	
+FURKAN ÜNAL	D4	8	3. DÖNEM	satis	670575	2021-11-07	25/01	01/02	26100	0	29232	ödenmedi	Mola Taksit	aktif	Selçuk	
+FADÝME BEZGÝN	D4	8	45. DÖNEM	satis	269172	2021-12-02	25/12	01/01	22100	0	24752	ödenmedi	Mola Taksit	aktif	Selçuk	
+EYÜP AKA	D1	5	27. DÖNEM	satis	268649	2022-07-10	05/07	12/07	168200	0	188384	ödenmedi	Mola Taksit	aktif	Selçuk	
+DUYGU HOROZAL	D6	4	27. DÖNEM	satis	984174	2022-01-24	06/07	13/07	57064	0	57064	ödenmedi	Nakit	aktif	Selçuk	
+DÝDEM SEZGÝN ÖZCAN	F1	4	30. DÖNEM	satis	623429	2022-02-17	25/08	01/09	135000	0	151200	ödenmedi	Mola Taksit	aktif	Selçuk	
+CEMAL SERTDEMÝR	D12	14	24. DÖNEM	satis	269214	2021-12-10	02/07	09/07	65200	0	73024	ödenmedi	Mola Taksit	aktif	Selçuk	
+CEMAL SERTDEMÝR	D12	7	26. DÖNEM	satis	805487	2021-11-30	02/07	09/07	65900	0	73808	ödenmedi	Mola Taksit	aktif	Selçuk	
+BURCU AZAK	D4	8	3. DÖNEM	satis	918066	2021-11-14	18/01	25/01	33800	0	37856	ödenmedi	Mola Taksit	aktif	Selçuk	
+BÝLAL ARMAÐAN	D12	14	1. DÖNEM	satis	301272	2022-02-19	10/01	17/01	25800	0	28896	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAMZA YILDIZ	D14	7	26. DÖNEM	satis	851110	2022-06-10	04/07	11/07	105000	0	117600	ödenmedi	Mola Taksit	aktif	Selçuk	
+HARÝKA GÜMÜÞAY	D11	8	46. DÖNEM	satis	113064	2021-12-30	09/12	16/12	21700	0	24304	ödenmedi	Mola Taksit	aktif	Selçuk	
+HARUN BAÞ	F6	5	3. DÖNEM	satis	262904	2021-12-31	20/01	26/01	75000	0	84000	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	D16	14	2. DÖNEM	satis	692109	2021-11-27	29/01	05/02	58300	0	65296	ödenmedi	Mola Taksit	aktif	Selçuk	
+IÞIL EKEN	D12	7	44. DÖNEM	satis	627454	2022-01-17	03/12	10/12	25000	0	28000	ödenmedi	Mola Taksit	aktif	Selçuk	
+BANU YILDIZ	D12	7	6. DÖNEM	satis	148772	2022-02-11	07/02	14/02	25000	0	28000	ödenmedi	Mola Taksit	aktif	Selçuk	
+BURAK BATUR	D11	14	31. DÖNEM	satis	221726	2022-06-15	18/08	25/08	118000	0	132160	ödenmedi	Mola Taksit	aktif	Selçuk	
+BURAK BATUR	E3	8	27. DÖNEM	satis	751495	2022-06-13	06/07	13/07	120100	0	134512	ödenmedi	Mola Taksit	aktif	Selçuk	
+BURCU KARTAL	D6	5	36. DÖNEM	satis	114335	2022-02-19	25/09	02/10	61800	0	69216	ödenmedi	Mola Taksit	aktif	Selçuk	
+CANAN AYDÝLEK BAÞ	D27	1	24. DÖNEM	satis	225181	2021-12-29	21/06	28/06	76500	0	85680	ödenmedi	Mola Taksit	aktif	Selçuk	
+DERYA ÞENTÜRK	F2	5	6. DÖNEM	satis	708721	2022-06-19	08/02	15/02	86200	0	96544	ödenmedi	Mola Taksit	aktif	Selçuk	
+DÖNDÜ KÜSEN	D26	1	52. DÖNEM	satis	219507	2021-12-27	27/12	03/01	24200	0	27104	ödenmedi	Mola Taksit	aktif	Selçuk	
+ERKAN GÜNDOÐDU	D4	8	2. DÖNEM	satis	539609	2022-02-19	10/01	17/01	27000	0	30240	ödenmedi	Mola Taksit	aktif	Selçuk	
+EYÜP AKA	D26	14	4. DÖNEM	satis	476783	2022-07-01	26/01	02/02	57800	0	64736	ödenmedi	Mola Taksit	aktif	Selçuk	
+FADÝME BEZGÝN	D12	14	45. DÖNEM	satis	996877	2021-12-02	25/12	01/01	21100	0	23632	ödenmedi	Mola Taksit	aktif	Selçuk	
+FURKAN ÜNAL	D12	14	11. DÖNEM	satis	506810	2021-11-07	26/03	02/04	33800	0	37856	ödenmedi	Mola Taksit	aktif	Selçuk	
+GAMZE NAR GÜRSOY	D3	7	28. DÖNEM	satis	611684	2022-02-21	02/08	10/08	93100	0	104272	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	D1	7/7	28. DÖNEM/28. DÖNEM	satis	314644	2021-11-30	20/07	05/08	228600	0	256032	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERT ENGÝN	D28	1	52. DÖNEM	satis	533098	2021-12-30	30/12	06/01	23500	0	26320	ödenmedi	Mola Taksit	aktif	Selçuk	
+MÝKAÝL NAZLIGÜL	D15	7	26. DÖNEM	satis	340768	2022-06-01	05/07	12/07	105900	0	118608	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERT CEYHAN	F1	1/1	26. DÖNEM/26. DÖNEM	satis	769032	2021-12-02	30/06	14/07	232800	0	260736	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMED GÜLBANÝ	F8	2/2	35. DÖNEM/35. DÖNEM	satis	507584	2021-12-31	02/09	16/09	249000	0	278880	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMET NURÝ ARSLAN	D16	14/14	33. DÖNEM/33. DÖNEM	satis	658529	2021-12-31	23/09	07/10	78200	0	87584	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUZAFFER TANI	D4	9	49. DÖNEM	satis	762875	2021-12-15	05/12	11/12	22100	0	24752	ödenmedi	Mola Taksit	aktif	Selçuk	
+NERÝMAN KAYA	D4	8	6. DÖNEM	satis	892084	2022-01-02	17/02	24/02	25700	0	28784	ödenmedi	Mola Taksit	aktif	Selçuk	
+NESLÝHAN CÝNOÐLU	D6	10	3. DÖNEM	satis	210623	2022-04-04	22/01	29/01	56100	0	62832	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURAN AYGÜN	D12	14	1. DÖNEM	satis	955639	2022-04-26	03/01	10/01	100100	0	112112	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖNDER KALOÐLU	E1	1	10. DÖNEM	satis	866751	2021-12-29	06/03	12/03	40300	0	45136	ödenmedi	Mola Taksit	aktif	Selçuk	
+GÖNÜL AVCI	D6	10	25. DÖNEM	satis	559716	2022-06-03	06/07	13/07	148200	0	165984	ödenmedi	Mola Taksit	aktif	Selçuk	
+HACI YUSUF KARADAÐ	F1	8	34. DÖNEM	satis	970563	2021-12-15	25/08	01/09	123100	0	137872	ödenmedi	Mola Taksit	aktif	Selçuk	
+HALÝME DÖNMEZ	F1	8	48. DÖNEM	satis	860324	2021-11-27	03/12	10/12	36200	0	40544	ödenmedi	Mola Taksit	aktif	Selçuk	
+HANÝFE HANDE KAÞ	D11	8	6. DÖNEM	satis	404990	2022-06-06	08/02	15/02	35500	0	39760	ödenmedi	Mola Taksit	aktif	Selçuk	
+RESUL AYDIN	D1	1	26. DÖNEM	satis	889382	2022-03-29	05/07	12/07	120200	0	134624	ödenmedi	Mola Taksit	aktif	Selçuk	
+RESUL AYDIN	D15	7	4. DÖNEM	satis	979721	2022-03-29	28/01	04/02	41500	0	46480	ödenmedi	Mola Taksit	aktif	Selçuk	
+HARUN BEZCÝ	D1	5	31. DÖNEM	satis	546678	2021-12-29	23/08	30/08	103700	0	116144	ödenmedi	Mola Taksit	aktif	Selçuk	
+HARUN BAÞ	D26	14	46. DÖNEM	satis	327606	2021-12-30	19/11	26/11	35500	0	39760	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	D15	14	4. DÖNEM	satis	754687	2021-11-27	28/01	04/02	39000	0	43680	ödenmedi	Mola Taksit	aktif	Selçuk	
+SALÝH TOPRAK	D14	7	26. DÖNEM	satis	235202	2022-03-30	11/07	18/07	82500	0	92400	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	D4	8	12. DÖNEM	satis	134301	2021-11-27	10/04	17/04	30800	0	34496	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	D4	8	39. DÖNEM	satis	497751	2021-11-27	10/11	17/11	39000	0	43680	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEMÝHA TÜRK	D12	14	5. DÖNEM	satis	818260	2021-12-31	09/02	16/02	24500	0	27440	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE EREN	F8	7	5. DÖNEM	satis	729608	2021-11-27	31/01	07/02	32300	0	36176	ödenmedi	Mola Taksit	aktif	Selçuk	
+IÞIL EKEN	D12	14	43. DÖNEM	satis	136996	2022-01-17	03/12	10/12	24500	0	27440	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVGÝ YILDIZELÝ	F6	2	35. DÖNEM	satis	759348	2021-12-08	01/09	07/09	152800	0	171136	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝLKNUR AYDIN	D15	7	2. DÖNEM	satis	468268	2022-02-14	13/01	20/01	26300	0	29456	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVGÝ YILDIZELÝ	F6	6	35. DÖNEM	satis	871907	2021-12-08	01/09	07/09	153000	0	171360	ödenmedi	Mola Taksit	aktif	Selçuk	
+KÜBRA TANI	D28	14	43. DÖNEM	satis	690010	2021-12-15	14/11	21/11	116700	0	130704	ödenmedi	Mola Taksit	aktif	Selçuk	
+KÜBRA TANI	F9	4	34. DÖNEM	satis	418169	2021-12-15	21/08	28/08	38700	0	43344	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVÝNÇ AKCAN	D12	14	45. DÖNEM	satis	157614	2022-04-05	18/12	25/12	31400	0	35168	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET BAÞ	F2	5	14. DÖNEM	satis	797057	2021-12-30	09/04	16/04	91500	0	102480	ödenmedi	Mola Taksit	aktif	Selçuk	
+MELTEM BOZÇAL	D14	7	43. DÖNEM	satis	109422	2022-03-07	15/11	22/11	47000	0	52640	ödenmedi	Mola Taksit	aktif	Selçuk	
+MELTEM BOZÇAL	D14	7	14. DÖNEM	satis	946720	2022-03-07	09/04	16/04	47000	0	52640	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERT ENGÝN	D12	7	44. DÖNEM	satis	762389	2021-12-30	10/12	17/12	23800	0	26656	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUNUS SUDAL	D12	7	26. DÖNEM	satis	863445	2022-03-01	09/07	16/07	79200	0	88704	ödenmedi	Mola Taksit	aktif	Selçuk	
+METÝN AKSU	D26	4	51. DÖNEM	satis	882877	2022-02-21	28/12	04/01	126300	0	141456	ödenmedi	Mola Taksit	aktif	Selçuk	
+YILMAZ YAZICI	D1	4	33. DÖNEM	satis	511282	2021-12-28	23/08	30/08	108700	0	121744	ödenmedi	Mola Taksit	aktif	Selçuk	
+METÝN SERTEL	F3	2	14. DÖNEM	satis	371114	2021-11-26	08/04	15/04	83400	0	93408	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMET NURÝ ARSLAN	D16	14	17. DÖNEM	satis	931847	2021-12-31	17/05	24/05	39100	0	43792	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUSTAFA SERDAR ÞENTÜRK	D16	14	24. DÖNEM	satis	411731	2021-11-26	07/07	14/07	62700	0	70224	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYTEN UZUN	D16	7	30. DÖNEM	satis	578539	2021-01-04	22/09	29/09	41200	0	46144	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYNUR KARAKUÞ	D16	7	18. DÖNEM	satis	690879	2022-03-19	29/05	05/06	51600	0	57792	ödenmedi	Mola Taksit	aktif	Selçuk	
+AHMET SÜHA KÜTÜKÇÜ	D14	7	4. DÖNEM	satis	958001	2022-01-21	27/01	03/02	36900	0	41328	ödenmedi	Mola Taksit	aktif	Selçuk	
+AHMAD ABDULHADI	F6	5/5/5/5	31. DÖNEM/31. DÖNEM/32. DÖNEM/32. DÖNEM	satis	564296	2023-11-20	06/08	06/09	2373000	0	2373000	ödenmedi	Nakit	aktif	Selçuk	
+NAZAN SERTEL	D13	7	14. DÖNEM	satis	538760	2021-11-27	11/04	18/04	36700	0	41104	ödenmedi	Mola Taksit	aktif	Selçuk	
+NECÝP KILIÇ	D27	1	51. DÖNEM	satis	680922	2021-12-08	28/12	04/01	23000	0	25760	ödenmedi	Mola Taksit	aktif	Selçuk	
+NECÝP KILIÇ	D6	10	32. DÖNEM	satis	143176	2021-12-06	25/08	01/09	91300	0	102256	ödenmedi	Mola Taksit	aktif	Selçuk	
+NERMÝN ELÝF GÖKER	D4	8	42. DÖNEM	satis	717299	2021-11-21	03/12	10/12	22100	0	24752	ödenmedi	Mola Taksit	aktif	Selçuk	
+NEZÝR BATUR	E3	7	26. DÖNEM	satis	995810	2022-06-13	01/07	08/07	177500	0	198800	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURAN AYGÜN	D3	7	25. DÖNEM	satis	288648	2022-04-26	01/07	08/07	31400	0	35168	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURÞAH ÇAÐIRICI	D15	14	2. DÖNEM	satis	633877	2022-02-14	13/01	20/01	25800	0	28896	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURTEN ÇUKURÇAYIR	F1	8	5. DÖNEM	satis	388694	2022-02-06	31/01	07/02	62800	0	70336	ödenmedi	Mola Taksit	aktif	Selçuk	
+OSMAN BATUR	D1	2	27. DÖNEM	satis	529699	2022-06-28	07/07	14/07	176300	0	197456	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER YAÐCI	D26	4	27. DÖNEM	satis	627476	2022-07-01	07/07	14/07	126300	0	141456	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER ALTUNKAYA	D28	5	21. DÖNEM	satis	611077	2022-06-07	29/05	05/06	80300	0	89936	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER SAÐLAM	D6	2	32. DÖNEM	satis	973389	2021-11-30	24/08	31/08	88100	0	98672	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER FARUK BAÞER	F1	8	4. DÖNEM	satis	373323	2021-11-30	23/01	30/01	54300	0	60816	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER FARUK BAÞER	D28	14	49. DÖNEM	satis	528850	2021-11-30	30/12	06/01	22000	0	24640	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÖMER FARUK BAÞER	D6	2	28. DÖNEM	satis	135444	2021-11-30	15/07	22/07	88100	0	98672	ödenmedi	Mola Taksit	aktif	Selçuk	
+SERKAN KISA	D16	7	26. DÖNEM	satis	459839	2022-01-10	24/08	31/08	71900	0	80528	ödenmedi	Mola Taksit	aktif	Selçuk	
+SERKAN KISA	D16	14	5. DÖNEM	satis	704247	2022-01-10	21/02	28/02	23400	0	26208	ödenmedi	Mola Taksit	aktif	Selçuk	
+SERPÝL KIRIM	E4	4	49. DÖNEM	satis	513972	2022-06-01	27/12	03/01	53400	0	59808	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVÝNÇ ÖZDÝL	D12	14	9. DÖNEM	satis	718481	2021-11-27	10/03	17/03	23600	0	26432	ödenmedi	Mola Taksit	aktif	Selçuk	
+TOLGA ÖZDÝL	D15	7	50. DÖNEM	satis	893543	2021-11-27	29/12	05/01	21600	0	24192	ödenmedi	Mola Taksit	aktif	Selçuk	
+YAÐMUR KORKMAZ	D4	8	15. DÖNEM	satis	553889	2022-04-10	02/05	09/05	57600	0	64512	ödenmedi	Mola Taksit	aktif	Selçuk	
+YAÐMUR KORKMAZ	F1	8	23. DÖNEM	satis	138690	2022-04-11	08/06	15/06	93400	0	104608	ödenmedi	Mola Taksit	aktif	Selçuk	
+YAÐMUR KORKMAZ	F1	8	41. DÖNEM	satis	581138	2022-04-11	14/10	21/10	164800	0	184576	ödenmedi	Mola Taksit	aktif	Selçuk	
+YAKUP BAYIR	D28	5	27. DÖNEM	satis	193216	2022-04-25	13/07	20/07	102600	0	114912	ödenmedi	Mola Taksit	aktif	Selçuk	
+YASEMÝN ÖZCANLI	D16	7	22. DÖNEM	satis	993797	2022-04-05	28/06	05/07	79300	0	88816	ödenmedi	Mola Taksit	aktif	Selçuk	
+YILDIZ YILMAZ	D16	14	4. DÖNEM	satis	394760	2022-05-14	13/02	20/02	33000	0	36960	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYNUR KARAKUÞ	D16	14	19. DÖNEM	satis	866572	2022-02-05	01/06	08/06	46600	0	52192	ödenmedi	Mola Taksit	aktif	Selçuk	
+ABDULAZÝZ GOLCA	D26	7	51. DÖNEM	satis	142582	2021-11-30	27/12	03/01	21500	0	24080	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAKÝME AKGÜN	D11	8	47. DÖNEM	satis	392258	2022-07-28	17/12	24/12	37300	0	37300	ödenmedi	Nakit	aktif	Selçuk	
+KÖPRÜ MERMER DEKORASYON SANAYÝ TÝC. LTD. ÞTÝ. 	F8	7/7/7/7	26. DÖNEM/26. DÖNEM/27. DÖNEM/27. DÖNEM	satis	592349	2024-06-27	30/06	31/07	1881000	0	1881000	ödenmedi	Nakit	aktif	Selçuk	
+AÝÞE MODA 	D13	7	31. DÖNEM	satis	896833	2022-12-18	22/08	29/08	155000	0	155000	ödenmedi	Nakit	aktif	Selçuk	
+HÝLAL ARIDORU	D15	14	51. DÖNEM	satis	858794	2021-11-30	28/12	04/01	21100	0	21100	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA KILIÇASLAN	F2	2	4. DÖNEM	satis	907049	2023-07-06	23/01	29/01	228500	0	228500	ödenmedi	Nakit	aktif	Selçuk	
+AYFER BOSTANOÐLU	D4	9	4. DÖNEM	satis	352941	2022-03-22	24/01	30/01	43200	0	43200	ödenmedi	Nakit	aktif	Selçuk	
+SÝNAN ÇALKAYA	D27	10	2. DÖNEM	satis	959297	2023-01-31	13/01	19/01	56100	0	56100	ödenmedi	Nakit	aktif	Selçuk	
+SEMÝH SÝNAN	D11	14	5. DÖNEM	satis	970234	2024-07-03	01/02	08/02	81800	0	81800	ödenmedi	Nakit	aktif	Selçuk	
+SEMÝHA EROL ÖZTOK	D6	10	49. DÖNEM	satis	290996	2024-07-03	29/12	05/01	75200	0	75200	ödenmedi	Nakit	aktif	Selçuk	
+RAMI MARWAN J M AL-QATAMI	F3	2/2/2/2	26. DÖNEM/26. DÖNEM/27. DÖNEM/27. DÖNEM	satis	215917	2024-02-15	02/07	02/08	2562815,29	0	2562815,29	ödenmedi	Nakit	aktif	Selçuk	
+CAFER ÇETÝNKAYA	D1	5/5/5/5	27. DÖNEM/28. DÖNEM/28. DÖNEM/29. DÖNEM	satis	874513	2024-07-01	12/07	14/08	1513500	0	1513500	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN DERDÝYOK	D16	7/7/7/7	24. DÖNEM/24. DÖNEM/25. DÖNEM/25. DÖNEM	satis	816201	2024-07-03	21/07	23/08	1029600	0	1029600	ödenmedi	Nakit	aktif	Selçuk	
+SÜLEYMAN BEKTAÞ	D6	1/1/1/1	26. DÖNEM/26. DÖNEM/27. DÖNEM/27. DÖNEM	satis	331123	2024-06-26	06/07	06/08	1405800	0	1405800	ödenmedi	Nakit	aktif	Selçuk	
+AYÞE ÇAKIR	D6	5/5/5/5	27. DÖNEM/27. DÖNEM/28. DÖNEM/28. DÖNEM	satis	261066	2024-06-27	06/07	06/08	1405800	0	1405800	ödenmedi	Nakit	aktif	Selçuk	
+UMUT ENES BAKIRCI	E4	4/4/4/4	22. DÖNEM/22. DÖNEM/23. DÖNEM/23. DÖNEM	satis	568381	2024-06-26	04/06	03/07	1518000	0	1518000	ödenmedi	Nakit	aktif	Selçuk	
+HASAN BASRÝ KAHRAMAN	F1	6/6/6/6	26. DÖNEM/26. DÖNEM/27. DÖNEM/27. DÖNEM	satis	793845	2024-06-26	30/06	31/07	2365000	0	2365000	ödenmedi	Nakit	aktif	Selçuk	
+TUNCAY BAYRAK	F1	4/4/4/4	23. DÖNEM/24. DÖNEM/24. DÖNEM/25. DÖNEM	satis	947743	2024-07-03	07/06	07/07	1625400	0	1625400	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM TUNÇER	D1	2	31. DÖNEM	satis	399203	2022-06-20	06/08	14/08	201300	0	201300	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ VERANYURT	D11	8	46. DÖNEM	satis	342090	2021-11-27	02/12	09/12	19700	0	19700	ödenmedi	Nakit	aktif	Selçuk	
+NÝLGÜN ÞEYMA ARI	D11	8	4. DÖNEM	satis	803686	2022-01-11	24/01	31/01	71900	0	71900	ödenmedi	Nakit	aktif	Selçuk	
+GÜRSOY YILDIZ	D12	7	31. DÖNEM	satis	807298	2021-11-27	20/08	27/08	65200	0	65200	ödenmedi	Nakit	aktif	Selçuk	
+CEMAL METE	D13	7	25. DÖNEM	satis	866813	2022-08-01	10/07	17/07	121300	0	121300	ödenmedi	Nakit	aktif	Selçuk	
+BANU ABUÞ	D13	7	25. DÖNEM	satis	776468	2022-07-08	03/07	10/07	121300	0	121300	ödenmedi	Nakit	aktif	Selçuk	
+EMEL BOYALI	D15	7	26. DÖNEM	satis	734625	2022-07-01	12/07	19/07	166500	0	166500	ödenmedi	Nakit	aktif	Selçuk	
+NÝLGÜN KARACABEY	D16	7	10. DÖNEM	satis	787775	2022-07-29	28/03	04/04	47700	0	47700	ödenmedi	Nakit	aktif	Selçuk	
+RESUL AYDIN	E3	4	4. DÖNEM	satis	466507	2022-10-04	26/01	02/02	93300	0	93300	ödenmedi	Nakit	aktif	Selçuk	
+NÝLGÜN ÞEYMA ARI	D16	7/7	23. DÖNEM/23. DÖNEM	satis	583011	2022-01-11	06/07	20/07	106800	0	106800	ödenmedi	Nakit	aktif	Selçuk	
+BÜNYAMÝN SARIKAYA	D1	7	29. DÖNEM	satis	338052	2022-03-25	06/08	14/08	145800	0	145800	ödenmedi	Nakit	aktif	Selçuk	
+BÜNYAMÝN SARIKAYA	D1	7	3. DÖNEM	satis	793291	2022-03-25	21/01	28/01	61500	0	61500	ödenmedi	Nakit	aktif	Selçuk	
+DUYGU HOROZAL	D12	7	4. DÖNEM	satis	774548	2022-01-24	23/01	30/01	37600	0	37600	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL AK	D6	10	3. DÖNEM	satis	124184	2022-03-18	29/01	05/02	56100	0	56100	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA ÇELÝK	D1	2	33. DÖNEM	satis	242103	2021-12-27	23/08	30/08	108700	0	108700	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL SARIKAYA	D1	9	4. DÖNEM	satis	685295	2022-03-28	26/01	02/02	61500	0	61500	ödenmedi	Nakit	aktif	Selçuk	
+HÝKMET ÝLKÝNÖNÜ	D11	14	49. DÖNEM	satis	833708	2022-08-03	24/12	31/12	40100	0	40100	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL SARIKAYA	D12	14	13. DÖNEM	satis	546548	2022-03-28	10/04	17/04	47700	0	47700	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL AK	D12	14	28. DÖNEM	satis	844683	2022-03-30	19/08	26/08	84200	0	84200	ödenmedi	Nakit	aktif	Selçuk	
+EDANUR ARIDORU	D12	14	3. DÖNEM	satis	853584	2021-11-30	25/01	01/02	32300	0	32300	ödenmedi	Nakit	aktif	Selçuk	
+DUYGU HOROZAL	D6	4	27. DÖNEM	satis	346223	2023-03-02	13/07	20/07	221600	0	221600	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK ÞENTÜRK	F1	4	25. DÖNEM	satis	535617	2021-12-06	07/07	14/07	99990	0	99990	ödenmedi	Nakit	aktif	Selçuk	
+NECAT AYRANCI	F1	4	30. DÖNEM	satis	437744	2023-05-03	18/08	25/08	279500	0	279500	ödenmedi	Nakit	aktif	Selçuk	
+NERMÝN TATAR	D16	7	3. DÖNEM	satis	743626	2021-11-11	22/01	29/01	31000	0	31000	ödenmedi	Nakit	aktif	Selçuk	
+GONCA YAZICI	D16	7	3. DÖNEM	satis	763401	2022-11-13	29/01	05/02	64400	0	64400	ödenmedi	Nakit	aktif	Selçuk	
+AYHAN EKEN	D13	7	4. DÖNEM	satis	938882	2022-01-11	25/01	01/02	36900	0	36900	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH ÇETÝNDERE	D13	7	49. DÖNEM	satis	963544	2023-01-11	27/12	03/01	50800	0	50800	ödenmedi	Nakit	aktif	Selçuk	
+SÝNAN ÇALKAYA	D14	7	3. DÖNEM	satis	585621	2023-01-31	19/01	26/01	73200	0	73200	ödenmedi	Nakit	aktif	Selçuk	
+ENES KÖKÇÜ	D14	7	6. DÖNEM	satis	108621	2022-07-18	11/02	18/02	36000	0	36000	ödenmedi	Nakit	aktif	Selçuk	
+EMEL BOYALI	D15	14	27. DÖNEM	satis	432199	2022-07-01	11/07	18/07	118000	0	118000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED EYMENOÐLU	D16	14/14/14/14	27. DÖNEM/28. DÖNEM/28. DÖNEM/29. DÖNEM	satis	192373	2023-12-15	29/07	31/08	950400	0	950400	ödenmedi	Nakit	aktif	Selçuk	
+OZAN ÇETÝNER	D15	7	32. DÖNEM	satis	799195	2022-01-12	24/08	31/08	75400	0	75400	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED EYMENOÐLU	D4	8/8/8/8	23. DÖNEM/23. DÖNEM/24. DÖNEM/24. DÖNEM	satis	911095	2023-12-15	02/07	02/08	889600	0	889600	ödenmedi	Nakit	aktif	Selçuk	
+FÜSUN ZUHAL GÜDEKLÝ	D11	8	47. DÖNEM	satis	501929	2022-07-26	24/12	31/12	37300	0	37300	ödenmedi	Nakit	aktif	Selçuk	
+FATMA TEZCAN	D11	8	37. DÖNEM	satis	560036	2023-05-03	18/09	25/09	82200	0	82200	ödenmedi	Nakit	aktif	Selçuk	
+FATMA TEZCAN	D11	8	37. DÖNEM	satis	549286	2023-05-04	25/09	02/10	105900	0	105900	ödenmedi	Nakit	aktif	Selçuk	
+SERHAT ÖZTÜRK	D26	7	25. DÖNEM	satis	398308	2022-08-03	24/06	01/07	109700	0	109700	ödenmedi	Nakit	aktif	Selçuk	
+SÝNAN ÇALKAYA	D26	4	3. DÖNEM	satis	256474	2023-01-31	19/01	26/01	80100	0	80100	ödenmedi	Nakit	aktif	Selçuk	
+NURAY GÜNAYDINOÐLU	D26	7	33. DÖNEM	satis	685188	2021-11-27	20/08	27/08	65000	0	65000	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF KAHRAMAN	D26	14	33. DÖNEM	satis	906075	2021-11-27	19/08	26/08	65600	0	65600	ödenmedi	Nakit	aktif	Selçuk	
+RESUL AYDIN	D26	7	4. DÖNEM	satis	828970	2022-10-04	27/01	03/02	63900	0	63900	ödenmedi	Nakit	aktif	Selçuk	
+MAHMUT GÜNGÖR	D26	14	51. DÖNEM	satis	631612	2021-12-06	27/12	03/01	21000	0	21000	ödenmedi	Nakit	aktif	Selçuk	
+YALÇIN GÜZELLER	F1	1	4. DÖNEM	satis	576420	2022-02-28	22/01	29/01	69800	0	69800	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH KAYLAK	D27	1	4. DÖNEM	satis	968528	2022-06-13	27/01	03/02	62300	0	62300	ödenmedi	Nakit	aktif	Selçuk	
+HALÝL SARIKAYA	D12	14/14	15. DÖNEM/16. DÖNEM	satis	752343	2022-03-25	25/04	10/05	95400	0	95400	ödenmedi	Nakit	aktif	Selçuk	
+SEVGÝ TÜRKOÐLU	D27	4	52. DÖNEM	satis	987856	2022-03-28	29/12	05/01	30700	0	30700	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE KÖSTEKÇÝ	D28	14	24. DÖNEM	satis	324162	2022-06-28	22/06	29/06	60200	0	60200	ödenmedi	Nakit	aktif	Selçuk	
+SERDAR ÇOÞKUN	E3	7/7	4. DÖNEM/5. DÖNEM	satis	470291	2021-11-11	26/01	10/02	95600	0	95600	ödenmedi	Nakit	aktif	Selçuk	
+MÜNÜRE HACIGÜL	D28	14	32. DÖNEM	satis	694245	2021-11-29	25/08	01/09	68400	0	68400	ödenmedi	Nakit	aktif	Selçuk	
+CENK DERDÝYOK	F1	7/7	28. DÖNEM/29. DÖNEM	satis	927334	2025-02-06	23/07	09/08	1033600	0	1033600	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL TÜRKOÐLU	D28	5	51. DÖNEM	satis	375839	2022-03-28	29/12	05/01	29400	0	29400	ödenmedi	Nakit	aktif	Selçuk	
+AYÞENUR ÖZDOÐAN TAÞ	D6	9	27. DÖNEM	satis	767253	2022-09-29	13/07	20/07	184500	0	184500	ödenmedi	Nakit	aktif	Selçuk	
+SEYMA ÞAFAK DEMÝREL	D6	1	4. DÖNEM	satis	843202	2021-11-11	28/01	04/02	44000	0	44000	ödenmedi	Nakit	aktif	Selçuk	
+FUNDA KAYAK	D6	7	52. DÖNEM	satis	347012	2022-09-02	30/12	06/01	57300	0	57300	ödenmedi	Nakit	aktif	Selçuk	
+RESUL AYDIN	D16	14	2. DÖNEM	satis	885806	2022-10-04	22/01	29/01	60800	0	60800	ödenmedi	Nakit	aktif	Selçuk	
+MAHMUT GÜNGÖR	E3	8	51. DÖNEM	satis	701519	2021-12-02	27/12	03/01	21800	0	21800	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL SARIKAYA	E4	9	27. DÖNEM	satis	484023	2022-03-25	06/07	13/07	126900	0	126900	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ÝSMAÝL ELÇÝ	F1	4	28. DÖNEM	satis	166601	2022-02-28	01/08	09/08	153600	0	153600	ödenmedi	Nakit	aktif	Selçuk	
+MÜRÞÝT KOÇTÜRK	F1	7	32. DÖNEM	satis	440138	2021-12-15	25/08	01/09	123100	0	123100	ödenmedi	Nakit	aktif	Selçuk	
+ERKAN EVRENKAYA	D6	2/2	31. DÖNEM/31. DÖNEM	satis	964473	2023-01-24	07/08	23/08	482400	0	482400	ödenmedi	Nakit	aktif	Selçuk	
+YALÇIN GÜZELLER	F1	1	29. DÖNEM	satis	756936	2022-03-01	29/07	06/08	160900	0	160900	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ÝSMAÝL ELÇÝ	F1	4	4. DÖNEM	satis	139693	2022-02-28	24/01	31/01	66600	0	66600	ödenmedi	Nakit	aktif	Selçuk	
+SEVÝNÇ ÝMER	D3	7/7	27. DÖNEM/27. DÖNEM	satis	105045	2022-09-26	16/07	01/08	317000	0	317000	ödenmedi	Nakit	aktif	Selçuk	
+NERGÝZ AYRANCI	F1	6	45. DÖNEM	satis	954064	2022-11-14	01/12	08/12	95600	0	95600	ödenmedi	Nakit	aktif	Selçuk	
+FESÝH TUAÇ	F1	8	8. DÖNEM	satis	597853	2021-11-11	22/02	01/03	36200	0	36200	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN SAVCI	F2	5	4. DÖNEM	satis	602703	2023-07-05	24/01	31/01	227200	0	227200	ödenmedi	Nakit	aktif	Selçuk	
+GÜRKAY AYRANCI	D14	7/7	30. DÖNEM/31. DÖNEM	satis	362946	2023-01-02	13/08	29/08	314100	0	314100	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET ÝSMAÝL MORGÜL	F8	2	34. DÖNEM	satis	870220	2021-12-08	25/08	01/09	139300	0	139300	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMED ALLOUSH	D12	14/14/14/14	24. DÖNEM/25. DÖNEM/25. DÖNEM/26. DÖNEM	satis	103180	2023-12-09	09/07	11/08	1177000	0	1177000	ödenmedi	Nakit	aktif	Selçuk	
+NEVZAT YILDIZ	D1	7	25. DÖNEM	satis	309281	2022-01-04	27/06	04/07	100000	0	100000	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN ÇOLAK	D26	14	6. DÖNEM	satis	293416	2023-06-24	10/02	17/02	67400	0	67400	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE KÖSTEKÇÝ	D28	14	4. DÖNEM	satis	481060	2022-06-28	28/01	04/02	122300	0	122300	ödenmedi	Nakit	aktif	Selçuk	
+CAFER SADIK KARABUBER	E3	8	4. DÖNEM	satis	478555	2022-08-31	25/01	01/02	66000	0	66000	ödenmedi	Nakit	aktif	Selçuk	
+GONCA YAZICI	D6	9	51. DÖNEM	satis	939435	2022-08-28	29/12	05/01	57300	0	57300	ödenmedi	Nakit	aktif	Selçuk	
+KADER ÖZTÜRK	F9	1	38. DÖNEM	satis	4066	2024-09-30	18/09	24/09	310000	0	310000	ödenmedi	Nakit	aktif	Selçuk	
+MELTEM GÜRBÜZ	D2	12	47. DÖNEM	satis	4197	2024-10-11	26/11	02/12	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+NEDAT ÝNCEGÜL	F6	6	15. DÖNEM	satis	4383	2024-11-25	14/04	20/04	330000	0	330000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLTEN ÖZHAN	D2	3	6. DÖNEM	satis	3625	2024-08-26	12/02	18/02	110000	0	110000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÞEN BÝLÝKCÝ	D2	13	21. DÖNEM	satis	3826	2024-10-29	28/05	03/06	164700	0	164700	ödenmedi	Nakit	aktif	Selçuk	
+GÜLSEREN KAYAR	F1	3	21. DÖNEM	satis	3834	2024-08-28	21/05	27/05	300000	0	300000	ödenmedi	Nakit	aktif	Selçuk	
+HALÝL ÖZALP	D2	12	18. DÖNEM	satis	3791	2024-10-29	07/05	13/05	149400	0	149400	ödenmedi	Nakit	aktif	Selçuk	
+HALÝME DUMAN	E1	1	6. DÖNEM	satis	3438	2024-09-05	06/02	12/02	157000	0	157000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLMELEK YILMAZ	D2	5	51. DÖNEM	satis	4257	2024-10-14	24/12	30/12	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE FUNDA KABA	D6	6	10. DÖNEM	satis	3676	2024-10-24	11/03	17/03	184000	0	184000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLER ÜNEÞ	F6	5	21. DÖNEM	satis	4337	2024-11-01	26/05	01/06	374400	0	374400	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE TABAK	D2	5	49. DÖNEM	satis	4229	2024-10-21	10/12	16/12	111760	0	111760	ödenmedi	Nakit	aktif	Selçuk	
+GÜLBEN BALKAÇ	D28	4	50. DÖNEM	satis	4258	2024-11-17	16/12	22/12	228600	0	228600	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE TÜFEKÇÝ	D6	6	21. DÖNEM	satis	3830	2024-10-13	27/05	02/06	263000	0	263000	ödenmedi	Nakit	aktif	Selçuk	
+HAVVA ÇEMENYEMEZ	D4	9	19. DÖNEM	satis	4439	2024-12-06	09/05	15/05	170000	0	170000	ödenmedi	Nakit	aktif	Selçuk	
+HAVVA KABASAKAL	D2	5	37. DÖNEM	satis	4061	2024-10-17	17/09	23/09	166000	0	166000	ödenmedi	Nakit	aktif	Selçuk	
+GÖZDE NUR BULDUK	F6	6	37. DÖNEM	satis	4405	2024-10-27	15/09	21/09	360000	0	360000	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE ARVAS	D2	3	40. DÖNEM	satis	3751	2024-11-24	08/10	14/10	189000	0	189000	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE ARVAS	D2	3	15. DÖNEM	satis	4101	2024-11-25	16/04	22/04	193000	0	193000	ödenmedi	Nakit	aktif	Selçuk	
+GÖKÇE ALTUN	D2	4	51. DÖNEM	satis	4242	2024-10-13	17/12	23/12	120000	0	120000	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE NUR AKBAÞOÐLU	D4	9	40. DÖNEM	satis	4187	2024-11-23	03/10	09/10	171000	0	171000	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝYE NUR AKBAÞOÐLU	D2	5	46. DÖNEM	satis	4460	2024-11-15	19/11	25/11	184500	0	184500	ödenmedi	Nakit	aktif	Selçuk	
+HÝCRET KURNAZ	F6	2	44. DÖNEM	satis	4308	2024-10-13	03/11	09/11	318000	0	318000	ödenmedi	Nakit	aktif	Selçuk	
+HÝKMET FURKAN ÖZER	D2	11	32. DÖNEM	satis	3986	2024-10-06	13/08	19/08	480000	0	480000	ödenmedi	Nakit	aktif	Selçuk	
+HÜLYA ERDEM	F9	8	39. DÖNEM	satis	4081	2024-10-29	25/09	01/10	312000	0	312000	ödenmedi	Nakit	aktif	Selçuk	
+FURKAN YÝÐÝT	D4	9	50. DÖNEM	satis	4470	2024-11-24	12/12	18/12	136000	0	136000	ödenmedi	Nakit	aktif	Selçuk	
+FURKAN ÇETÝNKAYA	E1	1	8. DÖNEM	satis	3440	2024-08-27	20/02	26/02	167000	0	167000	ödenmedi	Nakit	aktif	Selçuk	
+FÝLÝZ UZUN	D2	3	39. DÖNEM	satis	4087	2024-10-20	01/10	07/10	159300	0	159300	ödenmedi	Nakit	aktif	Selçuk	
+FÝLÝZ TALAK	D2	4	10. DÖNEM	satis	3668	2024-11-14	05/03	11/03	130500	0	130500	ödenmedi	Nakit	aktif	Selçuk	
+FEYZA ÇOBAN TELLÝ	D2	11	40. DÖNEM	satis	4098	2024-12-05	08/10	14/10	189000	0	189000	ödenmedi	Nakit	aktif	Selçuk	
+FEYZA CEYLAN	F9	1	12. DÖNEM	satis	3702	2024-12-01	20/03	26/03	289000	0	289000	ödenmedi	Nakit	aktif	Selçuk	
+FERAY SOYTÜRK	F6	2	3. DÖNEM	satis	4267	2024-10-24	20/01	26/01	746100	0	746100	ödenmedi	Nakit	aktif	Selçuk	
+FEHMÝ ÖZHAN	D27	10	6. DÖNEM	satis	3334	2024-08-25	10/02	16/02	110000	0	110000	ödenmedi	Nakit	aktif	Selçuk	
+ALÝYE MIZRAK	D15	1	11. DÖNEM	satis	272457	2025-03-11	17/03	23/03	171100	0	188210	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATMA ÜNEÞ	F6	2	21. DÖNEM	satis	4285	2024-12-01	26/05	01/06	374400	0	374400	ödenmedi	Nakit	aktif	Selçuk	
+FATMA TANRIÖVER	D2	5	8. DÖNEM	satis	3655	2024-10-26	26/02	04/03	123300	0	123300	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH TORUN	D2	12	2. DÖNEM	satis	3665	2024-11-08	15/01	21/01	201600	0	201600	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH TORUN	D2	12	9. DÖNEM	satis	3567	2024-11-14	05/03	11/03	130500	0	130500	ödenmedi	Nakit	aktif	Selçuk	
+FADÝME GEDÝK	D6	6	22. DÖNEM	satis	3858	2024-10-07	03/06	09/06	550000	0	550000	ödenmedi	Nakit	aktif	Selçuk	
+FADÝME GEDÝK	D6	6	23. DÖNEM	satis	3844	2024-09-07	10/06	16/06	450000	0	450000	ödenmedi	Nakit	aktif	Selçuk	
+EZÝNE CEBECÝ	D2	12	5. DÖNEM	satis	3609	2024-11-04	05/02	11/02	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+ESRANUR ÝPEK ÞAHÝN	D2	3	8. DÖNEM	satis	3653	2024-11-08	26/02	04/03	127800	0	127800	ödenmedi	Nakit	aktif	Selçuk	
+ESRA KEMER	D28	4	31. DÖNEM	satis	4226	2024-09-04	05/08	11/08	495000	0	495000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA KEMER	D2	13	49. DÖNEM	satis	4210	2024-10-06	10/12	16/12	114300	0	114300	ödenmedi	Nakit	aktif	Selçuk	
+ESRA KEMER	D2	11	48. DÖNEM	satis	3411	2024-10-01	03/12	09/12	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+HÜMEYRA SANCAR KAYA	D2	11	6. DÖNEM	satis	3622	2024-10-27	12/02	18/02	129000	0	129000	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN BULUT	D2	4	4. DÖNEM	satis	3584	2024-10-27	22/01	28/01	350000	0	350000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA GÜNDÜZ KAFARCI	D6	6	47. DÖNEM	satis	4194	2024-11-09	25/11	01/12	200000	0	200000	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN SUDÝ ÝZGÝ	D2	3	21. DÖNEM	satis	3835	2024-09-24	28/05	03/06	160000	0	160000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA BAYRAKTAR	D2	4	49. DÖNEM	satis	4214	2024-10-06	03/12	09/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+ESRA AY	D2	5	47. DÖNEM	satis	4201	2024-10-27	26/11	02/12	125000	0	125000	ödenmedi	Nakit	aktif	Selçuk	
+ERSAY DÝZMAN	D4	9	11. DÖNEM	satis	4431	2024-12-01	14/03	20/03	143100	0	143100	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM KURNAZ	F6	6	44. DÖNEM	satis	4412	2024-10-13	03/11	09/11	318000	0	318000	ödenmedi	Nakit	aktif	Selçuk	
+ÝHSAN DÜBEKOÐLU	D4	9	2. DÖNEM	satis	4422	2024-11-22	10/01	16/01	122400	0	122400	ödenmedi	Nakit	aktif	Selçuk	
+ERKAN ÝNDÝBAY	D6	6	2. DÖNEM	satis	3564	2024-12-01	14/01	20/01	260100	0	260100	ödenmedi	Nakit	aktif	Selçuk	
+ERHAN SAÐLAM	F6	6	51. DÖNEM	satis	4419	2024-11-25	22/12	28/12	266000	0	266000	ödenmedi	Nakit	aktif	Selçuk	
+EREN MERT	E1	1	49. DÖNEM	satis	3481	2024-08-27	04/12	10/12	160000	0	160000	ödenmedi	Nakit	aktif	Selçuk	
+ÞERÝFE ORAL	D1	5	47. DÖNEM	satis	824991	2025-03-11	14/12	20/12	216300	0	221274,9	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EREN MERÝÇ	D2	12	49. DÖNEM	satis	4225	2024-10-01	10/12	16/12	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM KÖSE	D15	10	18. DÖNEM	satis	826926	2025-03-11	05/05	11/05	194900	0	199382,7	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SATI SÜMEYRA AKÇÝN	D2	6	18. DÖNEM	satis	3656	2024-12-09	07/05	13/05	164700	0	164700	ödenmedi	Nakit	aktif	Selçuk	
+SATI SÜMEYRA AKÇÝN	D2	11	41. DÖNEM	satis	4206	2024-12-09	15/10	21/10	170100	0	170100	ödenmedi	Nakit	aktif	Selçuk	
+EREN ÝÞLER	D2	11	7. DÖNEM	satis	3636	2024-10-27	19/02	25/02	133000	0	133000	ödenmedi	Nakit	aktif	Selçuk	
+SATI SÜMEYRA AKÇÝN	D2	12	41. DÖNEM	satis	3796	2024-12-09	15/10	21/10	170100	0	170100	ödenmedi	Nakit	aktif	Selçuk	
+ERCAN TABAK	D2	6	49. DÖNEM	satis	4230	2024-10-21	10/12	16/12	111760	0	111760	ödenmedi	Nakit	aktif	Selçuk	
+ERCAN KALAN	F6	2	18. DÖNEM	satis	4282	2024-11-09	05/05	11/05	334800	0	334800	ödenmedi	Nakit	aktif	Selçuk	
+TURGAY ARSLANOÐLU	D2	3	38. DÖNEM	satis	4073	2024-10-13	24/09	30/09	165600	0	165600	ödenmedi	Nakit	aktif	Selçuk	
+ERAY TOKAN	D28	4	7. DÖNEM	satis	3387	2024-08-25	18/02	24/02	110000	0	110000	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKAY ÇAKMAKÇI	D2	4	11. DÖNEM	satis	3682	2024-11-14	12/03	18/03	147000	0	147000	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKAY ÇAKMAKÇI	D2	4	12. DÖNEM	satis	3696	2024-11-15	19/03	25/03	135900	0	135900	ödenmedi	Nakit	aktif	Selçuk	
+ÝLKNUR TUNA	F6	5	15. DÖNEM	satis	4331	2024-11-11	14/04	20/04	318000	0	318000	ödenmedi	Nakit	aktif	Selçuk	
+ÝSKENDER GÜMAN	D2	3	10. DÖNEM	satis	3681	2024-11-08	12/03	18/03	127890	0	127890	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMAÝL ÇALIÞ	D2	10	13. DÖNEM	satis	3719	2024-11-18	02/04	08/04	227700	0	227700	ödenmedi	Nakit	aktif	Selçuk	
+ENSAR ALÇEP	D2	5	18. DÖNEM	satis	3795	2024-10-29	07/05	13/05	149400	0	149400	ödenmedi	Nakit	aktif	Selçuk	
+ENSAR ALÇEP	D2	4	19. DÖNEM	satis	3794	2024-10-29	07/05	13/05	149400	0	149400	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMAÝL ÇALIÞ	D2	11	13. DÖNEM	satis	3720	2024-11-15	02/04	08/04	227700	0	227700	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMAÝL SAFA YILDIZ	D2	12	51. DÖNEM	satis	4253	2024-10-05	24/12	30/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+EMRE TURÐUT	D6	6	6. DÖNEM	satis	3620	2024-10-02	11/02	17/02	172000	0	172000	ödenmedi	Nakit	aktif	Selçuk	
+EMRE TURÐUT	D6	6	7. DÖNEM	satis	3634	2024-10-04	18/02	24/02	178000	0	178000	ödenmedi	Nakit	aktif	Selçuk	
+ÝZZET MERT ESÝN	D2	13	6. DÖNEM	satis	3624	2024-12-03	12/02	18/02	112230	0	112230	ödenmedi	Nakit	aktif	Selçuk	
+EMÝNE YÜKSEL	F9	8	51. DÖNEM	satis	4249	2024-11-14	18/12	24/12	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+KADÝR SAK	D2	11	50. DÖNEM	satis	4068	2024-10-06	17/12	23/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+KADÝR SAK	D6	6	38. DÖNEM	satis	4238	2024-10-06	23/09	29/09	240000	0	240000	ödenmedi	Nakit	aktif	Selçuk	
+KANDEMÝR ATBAKAN	D2	12	6. DÖNEM	satis	3623	2024-10-20	12/02	18/02	117000	0	117000	ödenmedi	Nakit	aktif	Selçuk	
+EMÝNE EKE	D2	6	11. DÖNEM	satis	3698	2024-12-02	19/03	25/03	161000	0	161000	ödenmedi	Nakit	aktif	Selçuk	
+KERÝM CÝHAN KABA	D6	6	1. DÖNEM	satis	3550	2024-10-02	07/01	13/01	165600	0	165600	ödenmedi	Nakit	aktif	Selçuk	
+EMÝNE ÇETÝN	D2	6	6. DÖNEM	satis	3628	2024-10-27	12/02	18/02	129000	0	129000	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA GÖZEL	D2	10	6. DÖNEM	satis	3621	2024-10-24	12/02	18/02	105000	0	105000	ödenmedi	Nakit	aktif	Selçuk	
+ELVAN KILIÇ	D2	10	48. DÖNEM	satis	4209	2024-09-28	03/12	09/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA YILDIRIM ÜNEÞ	F6	6	21. DÖNEM	satis	4389	2024-12-01	26/05	01/06	374400	0	374400	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF HACER ERDEM	F6	5	34. DÖNEM	satis	4353	2024-10-27	15/09	21/09	360000	0	360000	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF HACER ERDEM	D6	6	13. DÖNEM	satis	3718	2024-10-27	01/04	07/04	312300	0	312300	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	3	20. DÖNEM	satis	3817	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	4	21. DÖNEM	satis	3819	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF GÜR AKPINAR	D2	5	7. DÖNEM	satis	3641	2024-10-28	19/02	25/02	119700	0	119700	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	5	20. DÖNEM	satis	3820	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF ÇELÝK	F9	8	49. DÖNEM	satis	4221	2024-10-31	04/12	10/12	205200	0	205200	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	6	20. DÖNEM	satis	3821	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	10	20. DÖNEM	satis	3822	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+EFTAL KOÇ	D2	12	50. DÖNEM	satis	4239	2024-12-13	17/12	23/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+EFKAN ÝÞLER	D2	10	7. DÖNEM	satis	3635	2024-10-27	19/02	25/02	133000	0	133000	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	12	20. DÖNEM	satis	3823	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+"LAST NÝNE OTOMATÝV	LÝMÝTED ÞÝRKETÝ "	D2	13	20. DÖNEM	satis	3824	2024-10-26	21/05	27/05	169700	0	169700	ödenmedi	Nakit	aktif	Selçuk	
+EBRU YILDIZ	D2	12	48. DÖNEM	satis	4211	2024-10-24	03/12	09/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+LÜTFÝYE SEVDE YÝÐÝT	F9	1	50. DÖNEM	satis	4234	2024-11-21	11/12	17/12	218700	0	218700	ödenmedi	Nakit	aktif	Selçuk	
+DOÐAN ÖZTÜRK	D4	9	42. DÖNEM	satis	4462	2024-11-27	17/10	23/10	165600	0	165600	ödenmedi	Nakit	aktif	Selçuk	
+MAHÝR DUMAN	F9	8	2. DÖNEM	satis	3563	2024-09-08	09/01	15/01	200000	0	200000	ödenmedi	Nakit	aktif	Selçuk	
+DENÝZ KOÇAK	D2	13	2. DÖNEM	satis	3568	2024-11-09	15/01	21/01	201600	0	201600	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ERDOÐAN	D2	12	38. DÖNEM	satis	4071	2024-11-07	24/09	30/09	184300	0	184300	ödenmedi	Nakit	aktif	Selçuk	
+DENÝZ ÇALIÞ	F9	8	3. DÖNEM	satis	3577	2024-11-10	16/01	22/01	423000	0	423000	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET HANEFÝ ÇAMUR	E1	1	25. DÖNEM	satis	3457	2024-08-19	19/06	25/06	636750	0	636750	ödenmedi	Nakit	aktif	Selçuk	
+ÇOÞKUN YILDIRIM	D2	12	3. DÖNEM	satis	3581	2024-12-09	22/01	28/01	340170	0	340170	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET VEZÝR AKIÞ	F9	1	4. DÖNEM	satis	3590	2024-11-23	23/01	29/01	653400	0	653400	ödenmedi	Nakit	aktif	Selçuk	
+MELEK DEMÝRTAÞ	D2	10	40. DÖNEM	satis	4097	2024-12-05	08/10	14/10	189000	0	189000	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝLER ALTINEL	D2	4	9. DÖNEM	satis	3654	2024-11-05	26/02	04/03	127800	0	127800	ödenmedi	Nakit	aktif	Selçuk	
+MELEK KANTAR	D2	12	1. DÖNEM	satis	3553	2024-10-11	08/01	14/01	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝÐDEM GÜNEY	F9	1	39. DÖNEM	satis	3905	2024-10-17	25/09	01/10	296100	0	296100	ödenmedi	Nakit	aktif	Selçuk	
+MELEK ÜNVER	D6	6	39. DÖNEM	satis	4082	2024-10-31	30/09	06/10	245000	0	245000	ödenmedi	Nakit	aktif	Selçuk	
+MELÝKE KALYONCU	F9	1	2. DÖNEM	satis	3562	2024-11-18	09/01	15/01	218700	0	218700	ödenmedi	Nakit	aktif	Selçuk	
+CÝHAN SELAHATTÝN ESÝN	D2	3	26. DÖNEM	satis	3618	2024-10-18	02/07	08/07	510000	0	510000	ödenmedi	Nakit	aktif	Selçuk	
+MERVE DÝNÇ OT	D2	6	48. DÖNEM	satis	4216	2024-09-22	03/12	09/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+CÝHAN GÜNEY	F9	1	6. DÖNEM	satis	4080	2024-09-08	06/02	12/02	199000	0	199000	ödenmedi	Nakit	aktif	Selçuk	
+MERVE NUR SANCAK	D4	9	47. DÖNEM	satis	4467	2024-12-06	21/11	27/11	140000	0	140000	ödenmedi	Nakit	aktif	Selçuk	
+METÝN SARAL	D2	6	5. DÖNEM	satis	3614	2024-10-08	05/02	11/02	140000	0	140000	ödenmedi	Nakit	aktif	Selçuk	
+METÝN SARAL	F9	8	37. DÖNEM	satis	4053	2024-10-08	11/09	17/09	360000	0	360000	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ YUVAKGÝL	D2	12	11. DÖNEM	satis	3693	2024-11-15	19/03	25/03	135900	0	135900	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ YUVAKGÝL	D2	13	10. DÖNEM	satis	3680	2024-11-15	12/03	18/03	132300	0	132300	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ YUVAKGÝL	D2	12	10. DÖNEM	satis	3679	2024-11-15	12/03	18/03	132300	0	132300	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ ÜNER	F6	5	39. DÖNEM	satis	4358	2024-10-02	20/10	26/10	335700	0	335700	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ KENANOÐLU	D4	9	51. DÖNEM	satis	4471	2024-11-24	19/12	25/12	122400	0	122400	ödenmedi	Nakit	aktif	Selçuk	
+CELAL DOÐAN	D2	5	1. DÖNEM	satis	3557	2024-10-16	08/01	14/01	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+CANSU TÜRKELÝ GÜLSOY	F9	8	7. DÖNEM	satis	3633	2024-12-06	13/02	19/02	233100	0	233100	ödenmedi	Nakit	aktif	Selçuk	
+METSAN MAKÝNA YED. PAR. SAN. VE TÝC. AÞ. 	F6	2	47. DÖNEM	satis	4311	2024-10-13	24/11	30/11	304000	0	304000	ödenmedi	Nakit	aktif	Selçuk	
+METSAN MAKÝNA YED. PAR. SAN. VE TÝC. AÞ. 	F6	5	44. DÖNEM	satis	4363	2024-10-13	24/11	30/11	304000	0	304000	ödenmedi	Nakit	aktif	Selçuk	
+MÝDAD MOBÝLYA TURÝZM SAN. LTD. ÞTÝ. 	D2	13	8. DÖNEM	satis	3652	2024-11-03	26/02	04/03	137500	0	137500	ödenmedi	Nakit	aktif	Selçuk	
+MÝDAD MOBÝLYA TURÝZM SAN. LTD. ÞTÝ. 	F6	2	51. DÖNEM	satis	4315	2024-11-03	22/12	28/12	285000	0	285000	ödenmedi	Nakit	aktif	Selçuk	
+MÝHRÝBAN ESMA BOZ	E1	1	7. DÖNEM	satis	3439	2024-08-27	13/02	19/02	162000	0	162000	ödenmedi	Nakit	aktif	Selçuk	
+MÝRAY YÜCE	D2	11	38. DÖNEM	satis	4070	2024-10-29	24/09	30/09	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+MÝRAY YÜCE	D2	13	38. DÖNEM	satis	4072	2024-10-29	24/09	30/09	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+MÝTHAT KURT	D6	6	42. DÖNEM	satis	4124	2024-10-29	21/10	27/10	223200	0	223200	ödenmedi	Nakit	aktif	Selçuk	
+BÜNYAMÝN SARIKAYA	D2	10	10. DÖNEM	satis	4262	2024-09-12	12/03	18/03	122500	0	122500	ödenmedi	Nakit	aktif	Selçuk	
+BÜÞRA KAYAK	D6	6	52. DÖNEM	satis	4264	2024-11-20	30/12	05/01	252000	0	252000	ödenmedi	Nakit	aktif	Selçuk	
+BY MEDÝCUS MEDÝCAL ORTO SAÐLIK HÝZMET AÞ. 	D4	9	44. DÖNEM	satis	4441	2024-12-17	31/10	06/11	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET ÇELÝK	D2	4	48. DÖNEM	satis	4252	2024-10-13	26/11	02/12	128500	0	128500	ödenmedi	Nakit	aktif	Selçuk	
+BÜÞRA UYSAL	F1	3	19. DÖNEM	satis	3798	2024-09-06	07/05	13/05	260000	0	260000	ödenmedi	Nakit	aktif	Selçuk	
+BY MEDÝCUS MEDÝCAL ORTO SAÐLIK HÝZMET AÞ. 	D4	9	21. DÖNEM	satis	4464	2024-12-07	23/05	29/05	179500	0	179500	ödenmedi	Nakit	aktif	Selçuk	
+CANER YILDIZ	D6	6	8. DÖNEM	satis	3648	2024-09-30	25/02	03/03	185000	0	185000	ödenmedi	Nakit	aktif	Selçuk	
+CANSU DÝZMAN	D4	9	10. DÖNEM	satis	4430	2024-12-01	07/03	13/03	138600	0	138600	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET GENÇ	F6	2	15. DÖNEM	satis	4200	2024-11-11	14/04	20/04	318000	0	318000	ödenmedi	Nakit	aktif	Selçuk	
+MUHARREM TARLAK	D2	3	9. DÖNEM	satis	4279	2024-11-17	05/03	11/03	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+MUHARREM TARLAK	D2	3	2. DÖNEM	satis	3569	2024-11-17	15/01	21/01	207900	0	207900	ödenmedi	Nakit	aktif	Selçuk	
+MURAT AKPINAR	D4	9	6. DÖNEM	satis	3667	2024-11-23	07/02	13/02	122400	0	122400	ödenmedi	Nakit	aktif	Selçuk	
+MURAT DÜBEKOÐLU	D4	9	1. DÖNEM	satis	3551	2024-11-22	03/01	09/01	136000	0	136000	ödenmedi	Nakit	aktif	Selçuk	
+MURAT YAVUZ	D28	4	21. DÖNEM	satis	4426	2024-08-27	27/05	02/06	175000	0	175000	ödenmedi	Nakit	aktif	Selçuk	
+MUSAB PÝÞGÝN	D2	4	38. DÖNEM	satis	4421	2024-09-30	17/09	23/09	160200	0	160200	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA AKBABA	F9	8	52. DÖNEM	satis	3746	2024-10-06	25/12	31/12	228000	0	228000	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA KEMAL YILDIZ	F9	1	37. DÖNEM	satis	3401	2024-10-21	11/09	17/09	379000	0	379000	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA SEDEF	D2	10	41. DÖNEM	satis	4263	2024-11-10	15/10	21/10	159300	0	159300	ödenmedi	Nakit	aktif	Selçuk	
+MÜCAHÝT ÞEKER	D2	11	51. DÖNEM	satis	3488	2024-09-10	24/12	30/12	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+MÜHÝTTÝN DENÝZ	D2	10	1. DÖNEM	satis	4111	2024-09-30	08/01	14/01	112000	0	112000	ödenmedi	Nakit	aktif	Selçuk	
+MÜHÝTTÝN DENÝZ	D2	11	1. DÖNEM	satis	4469	2024-09-30	08/01	14/01	112000	0	112000	ödenmedi	Nakit	aktif	Selçuk	
+NESLÝHAN ÜLKER	D2	5	5. DÖNEM	satis	3613	2024-11-01	05/02	11/02	150000	0	150000	ödenmedi	Nakit	aktif	Selçuk	
+NEVZAT BAYDAR	D2	3	50. DÖNEM	satis	4241	2024-10-13	17/12	23/12	120000	0	120000	ödenmedi	Nakit	aktif	Selçuk	
+NÝHAL TUNÇ	F6	5	41. DÖNEM	satis	4360	2024-10-13	03/11	09/11	318000	0	318000	ödenmedi	Nakit	aktif	Selçuk	
+NÝLAY ÖZYAÐIZ	D6	6	3. DÖNEM	satis	3578	2024-11-16	21/01	27/01	524700	0	524700	ödenmedi	Nakit	aktif	Selçuk	
+NURDAN ÇETÝNKAYA	D2	4	50. DÖNEM	satis	4228	2024-10-20	10/12	16/12	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+NURDAN YERDELEN	D2	3	51. DÖNEM	satis	4254	2024-10-16	24/12	30/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+NURDAN YERDELEN	D2	13	51. DÖNEM	satis	4255	2024-10-04	24/12	30/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+OÐUZ DURAK	F1	3	6. DÖNEM	satis	3616	2024-09-02	05/02	11/02	220000	0	220000	ödenmedi	Nakit	aktif	Selçuk	
+ONUR MAYMEN	D2	11	47. DÖNEM	satis	3800	2024-10-14	26/11	02/12	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+ORÇUN EMRE SOLMAZ	D2	3	47. DÖNEM	satis	4192	2024-10-13	26/11	02/12	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+ORÇUN EMRE SOLMAZ	D2	4	22. DÖNEM	satis	3570	2024-10-13	28/05	03/06	183000	0	183000	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN ÇINAR	D2	6	3. DÖNEM	satis	3442	2024-11-14	22/01	28/01	351900	0	351900	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN KAFARCI	D2	11	21. DÖNEM	satis	4196	2024-10-26	28/05	03/06	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK GÜLBAÞ	F9	1	47. DÖNEM	satis	3836	2024-10-21	20/11	26/11	287000	0	287000	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK GÜLBAÞ	F9	1	19. DÖNEM	satis	4199	2024-10-21	08/05	14/05	303000	0	303000	ödenmedi	Nakit	aktif	Selçuk	
+ÖZKAN ÇELÝK	D2	13	7. DÖNEM	satis	3638	2024-10-31	19/02	25/02	119700	0	119700	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM CAFER	D2	3	37. DÖNEM	satis	4059	2024-09-27	17/09	23/09	178000	0	178000	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM ÇELÝK	D2	10	47. DÖNEM	satis	4195	2024-10-11	26/11	02/12	125000	0	125000	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM SERÇE YILMAZ	D4	9	7. DÖNEM	satis	4427	2024-11-24	14/02	20/02	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+ÖZNUR PARALI	D4	9	12. DÖNEM	satis	4432	2024-11-20	21/03	27/03	141300	0	141300	ödenmedi	Nakit	aktif	Selçuk	
+RAZÝYE SANCAR	D2	13	5. DÖNEM	satis	3610	2024-11-05	05/02	11/02	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+RECEP YAZICI	D2	10	49. DÖNEM	satis	4223	2024-10-01	10/12	16/12	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+RIDVAN AKIÞ	D2	13	3. DÖNEM	satis	3582	2024-11-23	22/01	28/01	362700	0	362700	ödenmedi	Nakit	aktif	Selçuk	
+RUNAÝ ELÇEOÐLU	D2	3	3. DÖNEM	satis	3611	2024-11-10	22/01	28/01	351900	0	351900	ödenmedi	Nakit	aktif	Selçuk	
+RÜMEYSA ULU	D2	3	5. DÖNEM	satis	3583	2024-11-06	05/02	11/02	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+SADIK KILIÇ	D2	10	51. DÖNEM	satis	3380	2024-10-04	24/12	30/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+SAFÝYE ÇEDÝKÇÝ	D2	4	8. DÖNEM	satis	4251	2024-11-03	19/02	25/02	123300	0	123300	ödenmedi	Nakit	aktif	Selçuk	
+SAFÝYE ÇEDÝKÇÝ	D2	6	8. DÖNEM	satis	4227	2024-11-13	26/02	04/03	127500	0	127500	ödenmedi	Nakit	aktif	Selçuk	
+SAMET GENÇ	F9	1	48. DÖNEM	satis	3640	2024-10-27	27/11	03/12	235000	0	235000	ödenmedi	Nakit	aktif	Selçuk	
+SEDA KÜÇÜK	D2	6	1. DÖNEM	satis	4112	2024-10-11	08/01	14/01	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+SELAMÝ DOÐAN	F9	1	21. DÖNEM	satis	4113	2024-10-31	22/05	28/05	288000	0	288000	ödenmedi	Nakit	aktif	Selçuk	
+SENAY ÝNAK	D2	5	21. DÖNEM	satis	3558	2024-10-27	28/05	03/06	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+SERCAN KESENOÐLU	D2	12	8. DÖNEM	satis	3828	2024-11-06	26/02	04/03	128000	0	128000	ödenmedi	Nakit	aktif	Selçuk	
+SERDAR KARATAÞ	D2	10	50. DÖNEM	satis	3837	2024-10-08	17/12	23/12	115000	0	115000	ödenmedi	Nakit	aktif	Selçuk	
+SERDAR KARATAÞ	D6	6	37. DÖNEM	satis	3789	2024-10-06	16/09	22/09	240000	0	240000	ödenmedi	Nakit	aktif	Selçuk	
+SERKAN DELÝKANLI	D27	10	29. DÖNEM	satis	3651	2024-08-25	21/07	27/07	467500	0	467500	ödenmedi	Nakit	aktif	Selçuk	
+SERKAN ELMAS	D2	13	9. DÖNEM	satis	4054	2024-11-14	05/03	11/03	130500	0	130500	ödenmedi	Nakit	aktif	Selçuk	
+SEVDE ÝNAK ESEN	D2	12	21. DÖNEM	satis	4237	2024-10-27	28/05	03/06	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+SEVDE SANCAR ALINCAK	D2	10	9. DÖNEM	satis	3357	2024-11-06	05/03	11/03	145000	0	145000	ödenmedi	Nakit	aktif	Selçuk	
+SEVGÝ ÇELÝK	D2	5	48. DÖNEM	satis	3666	2024-09-22	03/12	09/12	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+SEVÝM BURÇÝN AKSOYLAR	D2	11	20. DÖNEM	satis	4215	2024-10-26	21/05	27/05	159300	0	159300	ödenmedi	Nakit	aktif	Selçuk	
+SEVÝNÇ AKCAN	F2	2	6. DÖNEM	satis	4299	2024-09-01	06/02	12/02	249250	0	249250	ödenmedi	Nakit	aktif	Selçuk	
+SEVÝNÇ AKCAN	F2	2	51. DÖNEM	satis	4403	2024-09-04	18/12	24/12	249250	0	249250	ödenmedi	Nakit	aktif	Selçuk	
+SÝNEM BALABAN	D2	4	52. DÖNEM	satis	3490	2024-10-06	24/12	31/12	127000	0	127000	ödenmedi	Nakit	aktif	Selçuk	
+SÜHEYLA EKÝN	D2	10	11. DÖNEM	satis	3535	2024-12-07	19/03	25/03	161000	0	161000	ödenmedi	Nakit	aktif	Selçuk	
+SÜHEYLA EKÝN	D2	11	11. DÖNEM	satis	3585	2024-12-07	19/03	25/03	161000	0	161000	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL AK	D27	10	1. DÖNEM	satis	3329	2024-08-29	06/01	12/01	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+BÝRCAN AKSUY ÖZTÜRK	D4	9	8. DÖNEM	satis	4428	2024-11-27	21/02	27/02	127800	0	127800	ödenmedi	Nakit	aktif	Selçuk	
+BURAK SALÝH GÜLAÞTI	D2	6	7. DÖNEM	satis	3579	2024-11-02	19/02	25/02	126500	0	126500	ödenmedi	Nakit	aktif	Selçuk	
+BURCU YEÐÝNOÐLU	D6	6	49. DÖNEM	satis	3677	2024-09-27	09/12	15/12	178000	0	178000	ödenmedi	Nakit	aktif	Selçuk	
+BURÇÝN BOLGÖNÜL	D2	6	47. DÖNEM	satis	326940	2024-10-12	26/11	02/12	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+BURHAN BALABAN	F9	1	52. DÖNEM	satis	4202	2024-10-06	25/12	31/12	228000	0	228000	ödenmedi	Nakit	aktif	Selçuk	
+BÜLENT ECEVÝT YANAR	D2	10	3. DÖNEM	satis	4222	2024-11-23	22/01	28/01	362700	0	362700	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL YEÐÝNOÐLU	D6	6	9. DÖNEM	satis	4208	2024-09-27	04/03	10/03	196000	0	196000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL YEÐÝNOÐLU	D6	6	48. DÖNEM	satis	3662	2024-09-27	02/12	08/12	178000	0	178000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL YEÐÝNOÐLU	D2	4	2. DÖNEM	satis	3556	2024-09-27	08/01	14/01	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL YEÐÝNOÐLU	D2	3	1. DÖNEM	satis	3555	2024-09-27	08/01	14/01	110700	0	110700	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL KARASU	D2	11	5. DÖNEM	satis	3608	2024-10-28	05/02	11/02	145000	0	145000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL KABASAKAL	D2	11	37. DÖNEM	satis	4056	2024-10-14	17/09	23/09	175000	0	175000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL KABASAKAL	D2	10	37. DÖNEM	satis	4055	2024-10-17	17/09	23/09	166000	0	166000	ödenmedi	Nakit	aktif	Selçuk	
+BELGÝN EROL	D2	3	11. DÖNEM	satis	3695	2024-12-01	19/03	25/03	161000	0	161000	ödenmedi	Nakit	aktif	Selçuk	
+BEDRÝYE ZURNACI	D2	10	15. DÖNEM	satis	3747	2024-11-17	16/04	22/04	176400	0	176400	ödenmedi	Nakit	aktif	Selçuk	
+BAHATTÝN KURNAZ	F6	6	47. DÖNEM	satis	4415	2024-10-13	24/11	30/11	304000	0	304000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞEGÜL ZÝNCÝRKIRAN	F9	1	22. DÖNEM	satis	3650	2024-10-27	29/05	04/06	300000	0	300000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞEGÜL ERTÜRK	D2	13	18. DÖNEM	satis	3842	2024-11-02	07/05	13/05	150000	0	150000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞEGÜL EKE TUNAHAN	F9	8	12. DÖNEM	satis	3792	2024-11-02	20/03	26/03	289000	0	289000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞEGÜL AYDEMÝR	F9	1	17. DÖNEM	satis	3703	2024-10-29	24/04	30/04	368000	0	368000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞE FÝLÝZ AKTAN	D6	6	18. DÖNEM	satis	3772	2024-10-06	06/05	12/05	220000	0	220000	ödenmedi	Nakit	aktif	Selçuk	
+AYSEL YÜCEL ÇELÝKER	D2	11	8. DÖNEM	satis	3788	2024-11-06	26/02	04/03	142000	0	142000	ödenmedi	Nakit	aktif	Selçuk	
+SÜHEYLA EKÝN	D6	6	36. DÖNEM	satis	3684	2024-12-07	09/09	15/09	450000	0	450000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET NAÝM AKTAÞ	D2	10	39. DÖNEM	satis	4083	2024-10-06	01/10	07/10	159500	0	159500	ödenmedi	Nakit	aktif	Selçuk	
+AHMET NAÝM AKTAÞ	D2	11	39. DÖNEM	satis	4084	2024-10-08	01/10	07/10	159500	0	159500	ödenmedi	Nakit	aktif	Selçuk	
+SÜLEYMAN ACAR	D2	4	27. DÖNEM	satis	4152	2024-10-18	02/07	08/07	510000	0	510000	ödenmedi	Nakit	aktif	Selçuk	
+SÜLEYMAN GENÇ	D2	12	37. DÖNEM	satis	3843	2024-11-03	17/09	23/09	184300	0	184300	ödenmedi	Nakit	aktif	Selçuk	
+AYNUR ALTUN	D2	13	50. DÖNEM	satis	4240	2024-10-13	17/12	23/12	120000	0	120000	ödenmedi	Nakit	aktif	Selçuk	
+AYDAN ÜNER	D2	6	50. DÖNEM	satis	4244	2024-10-13	17/12	23/12	120000	0	120000	ödenmedi	Nakit	aktif	Selçuk	
+AYDAN AYAZ	F9	8	50. DÖNEM	satis	4235	2024-10-24	11/12	17/12	228000	0	228000	ödenmedi	Nakit	aktif	Selçuk	
+AÞKIN AYDEMÝR	F9	8	17. DÖNEM	satis	3773	2024-11-03	24/04	30/04	379000	0	379000	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYRA KAYA	D2	10	8. DÖNEM	satis	3330	2024-11-06	26/02	04/03	142000	0	142000	ödenmedi	Nakit	aktif	Selçuk	
+ÞABAN ABAY	D27	10	52. DÖNEM	satis	4256	2022-03-16	29/12	04/01	28200	0	28200	ödenmedi	Nakit	aktif	Selçuk	
+ÞERAFETTÝN ÖZCAN	D2	10	18. DÖNEM	satis	3691	2024-10-13	07/05	13/05	160000	0	160000	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYMA NUR ELÇEOÐLU	D2	5	3. DÖNEM	satis	3692	2024-11-03	22/01	28/01	351900	0	351900	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYMA PARLAK KÖSEDAÐ	D2	6	10. DÖNEM	satis	4040	2024-11-17	12/03	18/03	137000	0	137000	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYMA UÇAN	D6	6	44. DÖNEM	satis	3906	2024-10-15	04/11	10/11	217800	0	217800	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYMA YILDIZ	F9	8	22. DÖNEM	satis	4057	2024-10-06	29/05	04/06	310000	0	310000	ödenmedi	Nakit	aktif	Selçuk	
+TAHÝR TURAN	F6	2	2. DÖNEM	satis	4266	2024-11-19	13/01	19/01	336000	0	336000	ödenmedi	Nakit	aktif	Selçuk	
+TALÝP AKTEN	D2	4	39. DÖNEM	satis	4069	2024-11-02	24/09	30/09	171000	0	171000	ödenmedi	Nakit	aktif	Selçuk	
+TALÝP AKTEN	D2	5	38. DÖNEM	satis	4074	2024-11-02	24/09	30/09	171000	0	171000	ödenmedi	Nakit	aktif	Selçuk	
+ARÝF ÖZHAN	D28	4	6. DÖNEM	satis	3386	2024-08-26	11/02	17/02	110000	0	110000	ödenmedi	Nakit	aktif	Selçuk	
+ALPER KOÇAL	D2	4	16. DÖNEM	satis	4102	2024-11-25	16/04	22/04	180000	0	180000	ödenmedi	Nakit	aktif	Selçuk	
+ALPER KOÇAL	D2	4	41. DÖNEM	satis	3752	2024-11-17	08/10	14/10	189000	0	189000	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ ÞEN	D2	6	21. DÖNEM	satis	3838	2024-10-27	28/05	03/06	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ SARI	D2	12	15. DÖNEM	satis	3749	2024-11-20	16/04	22/04	193000	0	193000	ödenmedi	Nakit	aktif	Selçuk	
+TALÝP AKTEN	D2	10	38. DÖNEM	satis	4075	2024-11-02	24/09	30/09	171000	0	171000	ödenmedi	Nakit	aktif	Selçuk	
+TEVHÝDE ÝREM AZÝZOÐLU	D2	5	6. DÖNEM	satis	3627	2024-10-28	12/02	18/02	116500	0	116500	ödenmedi	Nakit	aktif	Selçuk	
+TUBA BÝLBAY KAYNAR	F9	1	40. DÖNEM	satis	4094	2024-10-31	02/10	08/10	306000	0	306000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA ÇEDÝKÇÝ GÜLTAÞ	D2	11	9. DÖNEM	satis	3565	2024-11-13	05/03	11/03	130000	0	130000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA ÇEDÝKÇÝ GÜLTAÞ	D2	10	2. DÖNEM	satis	3664	2024-11-03	15/01	21/01	201600	0	201600	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA KAFARCI	D2	13	47. DÖNEM	satis	3831	2024-10-11	26/11	02/12	125000	0	125000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA KAFARCI	D2	10	21. DÖNEM	satis	4198	2024-10-26	28/05	03/06	183000	0	183000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐÇE ÇEVÝK	D2	11	2. DÖNEM	satis	3566	2024-11-03	15/01	21/01	201600	0	201600	ödenmedi	Nakit	aktif	Selçuk	
+TUNA ÇEVÝK	D2	5	9. DÖNEM	satis	3669	2024-11-12	05/03	11/03	137750	0	137750	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ CEMAL EÐRETLÝ	D2	11	3. DÖNEM	satis	3580	2024-10-19	22/01	28/01	341100	0	341100	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ AKSOY	D2	5	10. DÖNEM	satis	3683	2024-11-14	12/03	18/03	135000	0	135000	ödenmedi	Nakit	aktif	Selçuk	
+UÐUR TUTAL	D2	13	37. DÖNEM	satis	4058	2024-10-06	17/09	23/09	165600	0	165600	ödenmedi	Nakit	aktif	Selçuk	
+AHMET ZÝYA YAZICI	D2	11	49. DÖNEM	satis	4224	2024-10-01	10/12	16/12	123000	0	123000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET HALÝT YILMAZ	D6	6	11. DÖNEM	satis	3690	2024-10-13	18/03	24/03	200000	0	200000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET ERTÜRK	D2	11	15. DÖNEM	satis	3748	2024-11-14	16/04	22/04	168300	0	168300	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÝT UZUN	F9	1	49. DÖNEM	satis	4220	2024-11-02	04/12	10/12	211500	0	211500	ödenmedi	Nakit	aktif	Selçuk	
+YAHYA AÞCI	D2	5	39. DÖNEM	satis	4089	2024-10-27	01/10	07/10	160000	0	160000	ödenmedi	Nakit	aktif	Selçuk	
+YAKUT ÖZBEY	D4	9	9. DÖNEM	satis	4429	2024-12-05	28/02	06/03	137000	0	137000	ödenmedi	Nakit	aktif	Selçuk	
+YASEMÝN DAÐAÞAN	D2	3	18. DÖNEM	satis	4457	2024-11-10	07/05	13/05	153900	0	153900	ödenmedi	Nakit	aktif	Selçuk	
+YASEMÝN UYANIK	F9	1	51. DÖNEM	satis	3793	2024-11-10	18/12	24/12	220000	0	220000	ödenmedi	Nakit	aktif	Selçuk	
+YAÞAR BÝRGÜL	D4	9	37. DÖNEM	satis	4248	2024-12-03	12/09	18/09	181800	0	181800	ödenmedi	Nakit	aktif	Selçuk	
+YAVUZ CAN BALABAN	D2	10	5. DÖNEM	satis	3607	2024-10-29	05/02	11/02	130500	0	130500	ödenmedi	Nakit	aktif	Selçuk	
+YELÝZ KARADEMÝR	D4	9	48. DÖNEM	satis	4468	2024-11-20	28/11	04/12	126900	0	126900	ödenmedi	Nakit	aktif	Selçuk	
+ADÝLE KANDEMÝR	D2	13	1. DÖNEM	satis	3554	2024-10-19	08/01	14/01	125000	0	125000	ödenmedi	Nakit	aktif	Selçuk	
+ADEM ERENCE	D6	6	51. DÖNEM	satis	4250	2024-10-04	23/12	29/12	166000	0	166000	ödenmedi	Nakit	aktif	Selçuk	
+ADEM BULUT	D2	12	7. DÖNEM	satis	3637	2024-10-27	19/02	25/02	133000	0	133000	ödenmedi	Nakit	aktif	Selçuk	
+ADEM AY	D2	11	18. DÖNEM	satis	3790	2024-10-12	07/05	13/05	160000	0	160000	ödenmedi	Nakit	aktif	Selçuk	
+ZAFER YILMAZ	F6	2	43. DÖNEM	satis	4307	2024-10-27	27/10	02/11	515000	0	515000	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA ÖZDÝL ARIKAN	F9	8	14. DÖNEM	satis	3731	2024-11-13	03/04	09/04	483000	0	483000	ödenmedi	Nakit	aktif	Selçuk	
+ZEKÝ EMECAN	D6	6	50. DÖNEM	satis	4236	2024-09-26	16/12	22/12	178000	0	178000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP ALKIR	D2	3	7. DÖNEM	satis	3639	2024-10-26	19/02	25/02	133000	0	133000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP NÝSA ÜNER	D2	5	50. DÖNEM	satis	4243	2024-10-13	17/12	23/12	120000	0	120000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP ORDU BAÞ	F6	2	37. DÖNEM	satis	4301	2024-10-27	15/09	21/09	360000	0	360000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP ÖZTÜRK	F9	1	8. DÖNEM	satis	3646	2024-11-21	20/02	26/02	229500	0	229500	ödenmedi	Nakit	aktif	Selçuk	
+GÖKHAN GÖKTAÞ	D15	1	18. DÖNEM	satis	329399	2025-03-06	05/05	11/05	194900	0	194900	ödenmedi	Nakit	aktif	Selçuk	
+ÞEFÝKA ÇAMUR	D1	4	49. DÖNEM	satis	746485	2025-03-09	15/12	21/12	183100	0	183100	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA SAATÇIOÐLU	D15	8	10. DÖNEM	satis	831560	2025-02-27	10/03	16/03	165200	0	168999,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ESRA GÜRSOY IÞIK	D6	9	48. DÖNEM	satis	451075	2025-03-01	08/12	14/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ FUAT TORUN	D15	8	11. DÖNEM	satis	445572	2025-03-01	17/03	23/03	171100	0	190947,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FAZIL AKGÜL	D15	10	11. DÖNEM	satis	478737	2025-03-01	17/03	23/03	171100	0	159123	ödenmedi	Nakit	aktif	Selçuk	
+Suat Aytaç	D6	9	43. DÖNEM	satis	828664	2025-02-28	03/11	09/11	249500	0	255238,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Medine Yeþim Aloðlu	D15	4	10. DÖNEM	satis	444100	2025-02-27	10/03	16/03	165200	0	153636	ödenmedi	Nakit	aktif	Selçuk	
+Fethiye iþsever	D15	3	10. DÖNEM	satis	445712	2025-02-27	10/03	16/03	165200	0	153636	ödenmedi	Nakit	aktif	Selçuk	
+SEMA BAYDAR	D15	1	10. DÖNEM	satis	487864	2025-02-27	10/03	16/03	165200	0	153636	ödenmedi	Nakit	aktif	Selçuk	
+GÜZÝDE NUR ERCAN	D15	10	10. DÖNEM	satis	712359	2025-02-26	10/03	16/03	165200	0	165200	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER AKYÜREK	D15	4	51. DÖNEM	satis	540023	2025-02-27	22/12	28/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÞEN KALKAN	D2	1	16. DÖNEM	satis	499262	2025-02-27	16/04	22/04	213900	0	198927	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER YÜKSEL	D2	4	3. DÖNEM	satis	785871	2024-11-21	15/01	21/01	238000	0	238000	ödenmedi	Nakit	aktif	Selçuk	
+SELMA POLAT EKÝCÝ	D15	1	51. DÖNEM	satis	780118	2025-02-26	22/12	28/12	149700	0	170658	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZAFER TAR	D6	5	9. DÖNEM	satis	808327	2025-02-26	02/03	08/03	238800	0	238800	ödenmedi	Nakit	aktif	Selçuk	
+MUHARREM TAR	D6	4	9. DÖNEM	satis	352394	2025-02-26	02/03	08/03	238800	0	238800	ödenmedi	Nakit	aktif	Selçuk	
+osman yýlmaz türk	D2	4	42. DÖNEM	satis	956386	2025-02-26	15/10	21/10	203200	0	245668,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+FAZÝLET YILDIRIM AKTOPRAK	D15	8	51. DÖNEM	satis	300463	2025-02-26	22/12	28/12	149700	0	170658	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EZGÝ ACAR	D2	1	7. DÖNEM	satis	103750	2025-02-26	12/02	18/02	152100	0	144495	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ KAÇAR	F6	6	6. DÖNEM	satis	442146	2025-02-15	10/02	16/02	329100	0	329100	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK ÖZTÜRK	D6	7	10. DÖNEM	satis	719773	2025-02-15	11/03	17/03	217800	0	217800	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA NUR GÜRKAN	D1	5	8. DÖNEM	satis	475653	2025-02-15	22/02	28/02	228100	0	275772,9	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE AKSU	D2	1	8. DÖNEM	satis	484502	2025-02-19	19/02	25/02	156900	0	149055	ödenmedi	Nakit	aktif	Selçuk	
+NÝDA ÇELÝK	D6	7	48. DÖNEM	satis	584397	2025-02-25	02/12	08/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+YUNUS EMRE ÇAMUR	D28	4	23. DÖNEM	satis	347827	2024-09-09	10/06	16/06	275400	0	275400	ödenmedi	Nakit	aktif	Selçuk	
+YUSUF ÝSLAM ÇAMUR	E3	4	37. DÖNEM	satis	832440	2024-08-09	15/09	21/09	208800	0	208800	ödenmedi	Nakit	aktif	Selçuk	
+MUHARREM ÝPEK	D2	1	22. DÖNEM	satis	824562	2025-02-24	28/05	03/06	215100	0	200043	ödenmedi	Nakit	aktif	Selçuk	
+MUHARREM ÝPEK	D2	1	3. DÖNEM	satis	945642	2025-02-24	15/01	21/01	256700	0	256700	ödenmedi	Nakit	aktif	Selçuk	
+SEDA ÖZ ERDOÐAN	D6	4	1. DÖNEM	satis	978310	2025-02-21	05/01	11/01	216300	0	205485	ödenmedi	Nakit	aktif	Selçuk	
+FATIMA SENA AKBAÞ	D6	5	1. DÖNEM	satis	599882	2025-02-19	05/01	11/01	216300	0	261506,7	ödenmedi	Mola Taksit	aktif	Selçuk	
+Buket Geylan	D15	8	1. DÖNEM	satis	539499	2025-02-24	06/01	12/01	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+RUKÝYE YENÝAYDIN ÇAKMAN	D2	9	7. DÖNEM	satis	385749	2025-02-24	12/02	18/02	152100	0	144495	ödenmedi	Nakit	aktif	Selçuk	
+Büþra Gökçe	D2	9	50. DÖNEM	satis	738883	2025-02-24	10/12	16/12	149700	0	139221	ödenmedi	Nakit	aktif	Selçuk	
+SAMÝ SAVRUM	D15	8	7. DÖNEM	satis	862509	2025-02-22	17/02	23/02	156900	0	156900	ödenmedi	Nakit	aktif	Selçuk	
+Ýrem Yýlmaz Kaya	D6	2	20. DÖNEM	satis	999834	2025-02-23	20/05	26/05	343400	0	343400	ödenmedi	Nakit	aktif	Selçuk	
+Raþit YURTSEVER	D15	8	6. DÖNEM	satis	934475	2025-02-22	10/02	16/02	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA YAVÝLÝOÐLU	D6	2	8. DÖNEM	satis	645618	2025-02-06	25/02	03/03	232900	0	221255	ödenmedi	Nakit	aktif	Selçuk	
+SEHER ÇELEBÝ	D2	1	6. DÖNEM	satis	812193	2025-02-18	05/02	11/02	171100	0	169389	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL ÖZGENÇ	D1	7	45. DÖNEM	satis	159954	2025-02-16	28/11	05/12	256700	0	256700	ödenmedi	Nakit	aktif	Selçuk	
+Adem ismail Uzun	D6	1	44. DÖNEM	satis	146698	2025-02-17	28/11	04/12	225800	0	225800	ödenmedi	Nakit	aktif	Selçuk	
+Mehmet Can Güçlü	D6	6	15. DÖNEM	satis	924401	2025-02-17	15/04	21/04	269700	0	250821	ödenmedi	Nakit	aktif	Selçuk	
+RECEP DENÝZ	D1	9	49. DÖNEM	satis	198128	2025-02-17	08/12	14/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+BURCU HAVACI	D2	2	2. DÖNEM	satis	770349	2025-02-16	08/01	14/01	149700	0	149700	ödenmedi	Nakit	aktif	Selçuk	
+Hülya korkmaz	D6	2	49. DÖNEM	satis	183819	2025-02-16	22/12	29/12	247200	0	298864,8	ödenmedi	Mola Taksit	aktif	Selçuk	
+YASÝN KABACAOÐLU	D2	1	48. DÖNEM	satis	481354	2025-02-16	26/11	02/12	160400	0	149172	ödenmedi	Nakit	aktif	Selçuk	
+AYSUN ERTEMEL	D15	14	10. DÖNEM	satis	244967	2025-02-16	14/03	20/03	169900	0	169900	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYDA HAMAMCI	D1	10	50. DÖNEM	satis	279492	2025-02-16	17/12	23/12	216300	0	221274,9	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ÇATALKAYA	D1	9	7. DÖNEM	satis	832968	2025-02-16	17/02	23/02	228100	0	254559,6	ödenmedi	Kredi Kartý	aktif	Selçuk	
+GÜLÞEN KALKAN	D3	7	46. DÖNEM	satis	982725	2025-02-16	08/12	14/12	149700	0	167065,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+REMZÝYE BOLGÖNÜL	D2	7	22. DÖNEM	satis	757581	2024-12-25	28/05	03/06	181000	0	181000	ödenmedi	Nakit	aktif	Selçuk	
+HÜSREV ÖZBEY	D1	9	48. DÖNEM	satis	645979	2024-12-11	01/12	07/12	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+DENÝZ ALTUN	D2	2	51. DÖNEM	satis	924494	2024-12-13	17/12	23/12	140000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+Esra KELEÞ BÝLGÝN	D2	1	17. DÖNEM	satis	549710	2025-02-15	23/04	29/04	266200	0	266200	ödenmedi	Nakit	aktif	Selçuk	
+YILDIZ ÇETÝN KABACAOÐLU	D2	4	7. DÖNEM	satis	565455	2024-09-28	12/02	18/02	125000	0	112500	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF YILDIRIM	D2	1	2. DÖNEM	satis	443420	2025-02-15	08/01	14/01	149700	0	179640	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ÇATALKAYA	F8	2/5	18. DÖNEM/18. DÖNEM	satis	758495	2025-02-15	05/05	11/05	855400	0	875074,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FURKAN SEZGÝN	D2	2	21. DÖNEM	satis	559265	2025-01-09	21/05	27/05	161335	0	193602	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Esma Erdoðan	D2	14	40. DÖNEM	satis	108555	2025-02-15	01/10	07/10	209100	0	194463	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH ÖZGÜVEN	D6	1	33. DÖNEM	satis	652951	2025-01-16	11/09	17/09	276835	0	332202	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EFEHAN EFE	D6	9	1. DÖNEM	satis	689575	2024-12-28	06/01	12/01	182000	0	236600	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERYEM ÞENGÜR AKKUÞ	D6	10	7. DÖNEM	satis	801395	2025-01-29	27/02	05/03	217800	0	217800	ödenmedi	Nakit	aktif	Selçuk	
+ZELÝHA ÞAHÝN	D2	8	21. DÖNEM	satis	827578	2025-01-03	21/05	27/05	177467	0	212960,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+GÜLMELEK YILMAZ	D2	7	52. DÖNEM	satis	370157	2024-12-25	24/12	31/12	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+CAN AHMET AKTEN	D1	1	1. DÖNEM	satis	166563	2024-12-29	06/01	12/01	182000	0	218400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATMA AYATA	D1	5	12. DÖNEM	satis	255019	2025-02-07	22/03	28/03	249500	0	249500	ödenmedi	Nakit	aktif	Selçuk	
+GÖNÜL ACAR	D6	5	46. DÖNEM	satis	202066	2025-01-08	05/12	11/12	165585	0	198702	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATÝH ÖZGÜVEN	D1	2	15. DÖNEM	satis	819395	2025-01-24	14/04	20/04	206250	0	247500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATÝH ÖZGÜVEN	D2	9	2. DÖNEM	satis	552239	2025-01-22	08/01	14/01	115500	0	138600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATÝH ÖZGÜVEN	D15	14	11. DÖNEM	satis	769985	2025-01-25	21/03	27/03	132000	0	158400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ADÝL YÜCEL GENÇ	D1	4	18. DÖNEM	satis	599712	2024-12-31	04/05	10/05	217250	0	260700	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EMÝNE BOZ	D6	7	18. DÖNEM	satis	861011	2024-12-31	06/05	12/05	220000	0	264000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYNUR AKSÜT	D6	2	18. DÖNEM	satis	290653	2024-12-31	06/05	12/05	220000	0	264000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ZEYNEP ALTUÐ	D1	5	18. DÖNEM	satis	641171	2024-12-31	03/05	09/05	217250	0	260700	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET SEVBAN YAPRAK	D6	10	13. DÖNEM	satis	293903	2024-12-30	13/04	19/04	233750	0	280500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+RECEP ÜNALAN	D1	9	15. DÖNEM	satis	700518	2024-12-31	14/04	20/04	206250	0	247500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ERDÝ AKBULUT	D6	9	17. DÖNEM	satis	128703	2024-12-31	04/05	10/05	217250	0	260700	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AHMET KARA	D1	1	15. DÖNEM	satis	134778	2024-12-30	14/04	20/04	206250	0	247500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HÜSEYÝN SEFA DAÐ	D6	5	18. DÖNEM	satis	254263	2024-12-31	04/05	10/05	217250	0	260700	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ÇATALKAYA	D1	9	6. DÖNEM	satis	575434	2024-12-30	10/02	16/02	168666,7	0	202400,04	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NECMÝ RENÇBER	D6	9	6. DÖNEM	satis	702455	2024-12-30	10/02	16/02	168660	0	202392	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EMREN HOLDÝNG APS 	F6	5	48. DÖNEM	satis	153455	2025-01-31	22/12	28/12	302500	0	302500	ödenmedi	Nakit	aktif	Selçuk	
+MUAMMER GÜR	D1	7	2. DÖNEM	satis	866587	2025-02-13	14/01	20/01	310100	0	310100	ödenmedi	Nakit	aktif	Selçuk	
+ADEM YAVUZ YILMAZ	D6	1	36. DÖNEM	satis	286365	2025-01-20	03/10	09/10	280500	0	319770	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Nur Muhammed 	D6	2	11. DÖNEM	satis	851968	2025-02-12	18/03	24/03	249500	0	249500	ödenmedi	Nakit	aktif	Selçuk	
+DERYA DÖNMEZ	D15	7	45. DÖNEM	satis	876950	2025-01-05	24/11	30/11	151800	0	144210	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED MUSTAFA KAYA	D6	4	19. DÖNEM	satis	422037	2025-01-17	11/05	17/05	270600	0	308484	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ADVÝYE AYDIN	D14	7	11. DÖNEM	satis	596481	2025-01-14	19/03	25/03	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+SÝBEL BURUN GÜNAY	D2	7	7. DÖNEM	satis	370689	2024-12-24	12/02	18/02	128000	0	128000	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA BATUHAN ÇEVÝK	D14	7	34. DÖNEM	satis	132550	2024-12-27	13/09	19/09	182000	0	200200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ELÝF GÜRSOY	D15	7	39. DÖNEM	satis	659736	2025-02-09	13/10	19/10	204400	0	265720	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞEYDA GÝRER	F8	2	21. DÖNEM	satis	408297	2025-01-05	26/05	01/06	426800	0	426800	ödenmedi	Nakit	aktif	Selçuk	
+AHMET S. KARAMAN	F6	2/2	6. DÖNEM/7. DÖNEM	satis	655824	2025-01-12	10/02	23/02	621500	0	745800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+REMZÝYE AKTAÞ	D6	9	8. DÖNEM	satis	580637	2025-01-28	24/02	02/03	213400	0	213400	ödenmedi	Nakit	aktif	Selçuk	
+SERPÝL DOÐAN	F1	8	6. DÖNEM	satis	659180	2025-01-11	08/02	14/02	498300	0	498300	ödenmedi	Nakit	aktif	Selçuk	
+AHMET HAKYEMEZ	D15	14	43. DÖNEM	satis	215658	2025-01-15	02/11	08/11	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+FEHÝM ARVAS	D2	9	19. DÖNEM	satis	359634	2025-01-18	07/05	13/05	182600	0	167992	ödenmedi	Nakit	aktif	Selçuk	
+HAYRÝ ÖZTÜRK	D3	7	3. DÖNEM	satis	605360	2025-01-19	22/01	28/01	413600	0	413600	ödenmedi	Nakit	aktif	Selçuk	
+SEMA ALKAN	D6	10	17. DÖNEM	satis	143921	2025-01-17	11/05	17/05	270600	0	308484	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FUNDA KAYA	F6	6	4. DÖNEM	satis	161644	2025-01-28	27/01	02/02	906400	0	1119404	ödenmedi	Mola Taksit	aktif	Selçuk	
+SÝNEM KÜÇÜKMUSLU	D15	7	48. DÖNEM	satis	171411	2025-01-09	15/12	21/12	138600	0	171171	ödenmedi	Mola Taksit	aktif	Selçuk	
+Sevda Özdemir	E4	9	2. DÖNEM	satis	256191	2025-02-09	12/01	18/01	433700	0	433700	ödenmedi	Nakit	aktif	Selçuk	
+SERKAN ÖZDEMÝR	F1	5	6. DÖNEM	satis	371639	2025-02-06	05/02	11/02	746100	0	746100	ödenmedi	Nakit	aktif	Selçuk	
+FURKAN CESUR	D1	2	19. DÖNEM	satis	881144	2025-02-08	12/05	18/05	333900	0	333900	ödenmedi	Nakit	aktif	Selçuk	
+Hayriye Mollaibrahimoðlu	D6	1	46. DÖNEM	satis	454654	2025-02-06	12/12	18/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH KALYONCU	F6	5	5. DÖNEM	satis	732035	2025-02-05	03/02	09/02	559600	0	559600	ödenmedi	Nakit	aktif	Selçuk	
+FARUK KALYONCU	F6	2	5. DÖNEM	satis	597582	2025-02-05	03/02	09/02	559600	0	559600	ödenmedi	Nakit	aktif	Selçuk	
+HARUN DOÐAN	F6	2	4. DÖNEM	satis	948058	2025-01-28	27/01	02/02	906400	0	861080	ödenmedi	Nakit	aktif	Selçuk	
+BAYRAM KARÞÝT	D1	9	19. DÖNEM	satis	132664	2025-02-03	12/05	18/05	333900	0	333900	ödenmedi	Nakit	aktif	Selçuk	
+OÐUZ ARDAHAN	F6	6	10. DÖNEM	satis	180568	2025-02-05	10/03	16/03	362400	0	362400	ödenmedi	Nakit	aktif	Selçuk	
+korhan çalýþkan	D2	5	41. DÖNEM	satis	824002	2025-02-05	15/10	21/10	203200	0	264160	ödenmedi	Mola Taksit	aktif	Selçuk	
+Nihal Bayraktar	D1	4	48. DÖNEM	satis	965197	2025-02-04	08/12	14/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+aysun deniz	D1	2	49. DÖNEM	satis	693369	2025-02-04	14/12	20/12	216300	0	216300	ödenmedi	Nakit	aktif	Selçuk	
+Handan þener	D6	1	9. DÖNEM	satis	612608	2025-02-03	09/03	15/03	238800	0	238800	ödenmedi	Nakit	aktif	Selçuk	
+FATMANUR GÖKÇE	D14	7	37. DÖNEM	satis	814454	2025-02-03	04/10	10/10	209100	0	209100	ödenmedi	Nakit	aktif	Selçuk	
+ZÜMRÜTNUR KARAKAFA	D4	8	34. DÖNEM	satis	796162	2024-12-31	05/10	11/10	193600	0	183920	ödenmedi	Nakit	aktif	Selçuk	
+Hatice  Girginol	F9	3	9. DÖNEM	satis	942679	2025-02-03	27/02	05/03	292300	0	292300	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ALÝ ÇAMUR	E3	7	9. DÖNEM	satis	520870	2025-02-03	04/03	10/03	322900	0	322900	ödenmedi	Nakit	aktif	Selçuk	
+Mehmet öteleþ	F8	7	45. DÖNEM	satis	403259	2025-02-02	28/11	04/12	281600	0	281600	ödenmedi	Nakit	aktif	Selçuk	
+HACER ERSOY	D6	4	15. DÖNEM	satis	139432	2025-01-15	13/04	19/04	280500	0	293122,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AHMET HAMDÝ ALKAN	D2	9	1. DÖNEM	satis	252612	2025-01-31	01/01	07/01	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+AHMET HAMDÝ ALKAN	D2	8	1. DÖNEM	satis	280017	2025-01-31	01/01	07/01	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+YUNUS ÇENGELLÝ	D3	7	19. DÖNEM	satis	509827	2025-02-02	20/05	26/05	236500	0	307450	ödenmedi	Mola Taksit	aktif	Selçuk	
+Muhammet hanifi ezici 	F8	7	34. DÖNEM	satis	643484	2025-02-02	12/09	18/09	390900	0	390900	ödenmedi	Nakit	aktif	Selçuk	
+Gökhan BAÞ	D2	2	39. DÖNEM	satis	448061	2025-02-01	24/09	30/09	216300	0	281190	ödenmedi	Mola Taksit	aktif	Selçuk	
+EROL KAYAK	D2	7	10. DÖNEM	satis	175057	2025-02-01	05/03	11/03	164000	0	164000	ödenmedi	Nakit	aktif	Selçuk	
+Miray Kendirci	D1	7	7. DÖNEM	satis	414696	2025-02-01	19/02	25/02	228100	0	250910	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SALÝHA GÜLSÜM UYANIK	D15	14	46. DÖNEM	satis	238071	2024-12-23	23/11	29/11	138000	0	179400	ödenmedi	Mola Taksit	aktif	Selçuk	
+BURAK UYANIK	D6	2	35. DÖNEM	satis	116658	2024-12-22	15/09	21/09	264000	0	343200	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMED BAYKAL	D2	1	50. DÖNEM	satis	998620	2024-12-31	10/12	16/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+HANÝFE BAYKAL	D2	2	49. DÖNEM	satis	204110	2024-12-30	03/12	09/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET HAMDÝ ALKAN	D1	1	47. DÖNEM	satis	563633	2025-01-31	01/12	07/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+yasin yilmaz	F9	7	7. DÖNEM	satis	607056	2025-01-31	14/02	20/02	258500	0	245575	ödenmedi	Nakit	aktif	Selçuk	
+Þerife Karabulut	F9	3	19. DÖNEM	satis	527303	2025-01-31	08/05	14/05	331100	0	314545	ödenmedi	Nakit	aktif	Selçuk	
+Fadime birsen kýlýç	F9	7	2. DÖNEM	satis	495484	2025-01-31	10/01	16/01	249700	0	237215	ödenmedi	Nakit	aktif	Selçuk	
+Nihal Bayraktar	D1	1	8. DÖNEM	satis	985262	2025-01-31	24/02	02/03	213400	0	202730	ödenmedi	Nakit	aktif	Selçuk	
+CEMÝL BEÞÝROÐLU	D1	4	4. DÖNEM	satis	359001	2025-01-31	26/01	01/02	601700	0	571615	ödenmedi	Nakit	aktif	Selçuk	
+FATMA YENÝBAYRAK	D28	14	37. DÖNEM	satis	352554	2025-01-31	30/09	06/10	310200	0	310200	ödenmedi	Nakit	aktif	Selçuk	
+ÝRFAN RASÝH KOÇ	D14	7	13. DÖNEM	satis	175015	2025-01-31	02/04	08/04	259600	0	259600	ödenmedi	Nakit	aktif	Selçuk	
+SEVGÝ TOKSÖZ	D15	14	20. DÖNEM	satis	707878	2024-12-24	23/05	29/05	176000	0	170720	ödenmedi	Nakit	aktif	Selçuk	
+Filiz Kapkiner	D1	4	47. DÖNEM	satis	139218	2025-01-31	01/12	07/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+HABÝBE ARSLANTAÞ	D1	10	48. DÖNEM	satis	582162	2025-01-26	03/12	09/12	200200	0	260260	ödenmedi	Mola Taksit	aktif	Selçuk	
+aysun deniz	D1	4	8. DÖNEM	satis	671323	2025-01-28	23/02	01/03	212300	0	201685	ödenmedi	Nakit	aktif	Selçuk	
+MESUT ÞENER	F9	4	8. DÖNEM	satis	387155	2025-01-06	20/02	26/02	261800	0	261800	ödenmedi	Nakit	aktif	Selçuk	
+ÖZGE KARAKURT	F6	6	48. DÖNEM	satis	442586	2025-01-31	01/12	07/12	302500	0	287375	ödenmedi	Nakit	aktif	Selçuk	
+ALÝÞAN BERÇÝN	D1	5	48. DÖNEM	satis	718920	2024-12-22	21/12	27/12	182000	0	236600	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERVE AKAL KOCABAÞ	D6	5	6. DÖNEM	satis	547156	2025-01-04	09/02	15/02	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÞEN TÜRKELÝ	D6	2	1. DÖNEM	satis	117641	2025-01-05	07/01	13/01	200200	0	228228	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SUNA ÇÝFÇÝ	D2	8	52. DÖNEM	satis	126774	2024-12-27	24/12	31/12	129600	0	129600	ödenmedi	Nakit	aktif	Selçuk	
+FATMA ZEHRA KARA	D15	14	3. DÖNEM	satis	126637	2024-12-17	21/01	27/01	376000	0	376000	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝÐDEM KEZBAN KAYA	D16	7	40. DÖNEM	satis	345611	2024-12-29	02/12	08/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA CANBAY	D1	10	21. DÖNEM	satis	420648	2024-12-19	28/05	03/06	263000	0	263000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞENUR KÜÇÜKBOYACI	D2	2	22. DÖNEM	satis	561953	2024-12-19	28/05	03/06	181000	0	181000	ödenmedi	Nakit	aktif	Selçuk	
+KAHRAMAN KIYAN	D15	7	20. DÖNEM	satis	691805	2024-12-31	24/05	30/05	176000	0	176000	ödenmedi	Nakit	aktif	Selçuk	
+GÖNÜL USTABAÞI	D2	14	6. DÖNEM	satis	201688	2025-01-04	05/02	11/02	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+Sýdýka Aktaþ	D2	2	4. DÖNEM	satis	352191	2025-01-30	22/01	28/01	413600	0	392920	ödenmedi	Nakit	aktif	Selçuk	
+EBRU AKKUÞ	D1	6	1. DÖNEM	satis	673808	2025-01-30	06/01	12/01	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+SAMED BOZKURT	F9	4	7. DÖNEM	satis	554771	2025-01-30	13/02	19/02	257400	0	257400	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL BEDÝR	F9	3	7. DÖNEM	satis	955214	2025-01-30	13/02	19/02	257400	0	257400	ödenmedi	Nakit	aktif	Selçuk	
+MURAT EMRULLAH TURCAN	F9	1	7. DÖNEM	satis	383477	2025-01-30	13/02	19/02	257400	0	257400	ödenmedi	Nakit	aktif	Selçuk	
+SÝBEL GÖK	D14	7	21. DÖNEM	satis	674820	2024-12-31	29/05	04/06	183000	0	237900	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞAHDÝYE NARÝN	D2	9	6. DÖNEM	satis	937387	2024-12-30	05/02	11/02	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL GÜLTEKÝN	D1	5	6. DÖNEM	satis	785246	2024-12-28	08/02	14/02	182000	0	200200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MUSTAFA ÇELÝK	D1	7	35. DÖNEM	satis	131665	2024-12-23	19/09	25/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+NÝKET ÇELÝK	D1	2	47. DÖNEM	satis	497715	2025-01-15	30/11	06/12	203500	0	203500	ödenmedi	Nakit	aktif	Selçuk	
+EMÝRHAN KURTULUÞ	D6	1	17. DÖNEM	satis	249906	2025-01-20	04/05	10/05	260700	0	321964,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAMDÝYE YAVUZ	D3	7	1. DÖNEM	satis	850930	2024-12-17	08/01	14/01	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+SONGÜL ÖNAL	D2	3	36. DÖNEM	satis	530924	2024-12-22	10/09	16/09	260000	0	260000	ödenmedi	Nakit	aktif	Selçuk	
+MURAT ÇALIÞKAN	D2	4	37. DÖNEM	satis	583614	2024-12-15	10/09	16/09	260000	0	260000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET KESKÝN	D2	8	38. DÖNEM	satis	283912	2024-12-17	17/09	23/09	182000	0	200200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BEHLÝ BAHÇIVAN	D2	9	11. DÖNEM	satis	767537	2025-01-11	12/03	18/03	155100	0	124080	ödenmedi	Nakit	aktif	Selçuk	
+ muhsine	D6	7	8. DÖNEM	satis	666777	2025-01-29	25/02	03/03	215600	0	245784	ödenmedi	Kredi Kartý	aktif	Selçuk	
+DEMET IÞIK	D1	7	37. DÖNEM	satis	824624	2025-01-29	03/10	09/10	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+HANDAN GÖKOÐLU	D4	9	38. DÖNEM	satis	429561	2024-12-31	19/09	25/09	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+DELAL SÜMEYRA KILINÇ KÜÇÜKAYDIN	D2	8	22. DÖNEM	satis	473371	2024-12-22	28/05	03/06	181000	0	217200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+TUÐÇE ORCAN 	F8	7/8	2. DÖNEM/31. DÖNEM	satis	700433	2024-12-20	10/01	20/09	409000	0	531700	ödenmedi	Mola Taksit	aktif	Selçuk	
+MERYEM BAÞKESER	D2	10/12/9	31. DÖNEM/31. DÖNEM/32. DÖNEM	satis	426474	2024-12-29	06/08	12/08	1692000	0	1692000	ödenmedi	Nakit	aktif	Selçuk	
+OLÝMPÝK DANIÞMANLIK MÜH. ÝTH. ÝHR. PAZ. TÝC. LTD. ÞTÝ. 	D6	7	15. DÖNEM	satis	913466	2024-12-17	15/04	21/04	227000	0	295100	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYÇA ÇELÝK	D6	4	36. DÖNEM	satis	283521	2024-12-30	16/09	22/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+Aygül  Demirbaþ	D2	7	21. DÖNEM	satis	404077	2025-01-10	21/05	27/05	193600	0	212960	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SATI SÜMEYRA AKÇÝN	D2	8/14/14/9	2. DÖNEM/2. DÖNEM/49. DÖNEM/49. DÖNEM	satis	995304	2024-12-13	08/01	09/12	504000	0	504000	ödenmedi	Nakit	aktif	Selçuk	
+YILDIZ ARSLAN	D16	7	4. DÖNEM	satis	562543	2024-12-23	06/02	12/02	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+YILDIZ ARSLAN	D3	7	22. DÖNEM	satis	237912	2024-12-17	10/06	16/06	350000	0	350000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLBÝN GÜZ ÖZER	D6	1	3. DÖNEM	satis	880035	2025-01-11	21/01	27/01	601700	0	601700	ödenmedi	Nakit	aktif	Selçuk	
+KAAN YAVUZ	D15	14	47. DÖNEM	satis	767313	2025-01-19	30/11	06/12	139700	0	139700	ödenmedi	Nakit	aktif	Selçuk	
+BÝRSEN SARAÇ	D4	8	14. DÖNEM	satis	761215	2024-12-18	25/04	01/05	226000	0	226000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLSÜM SELAMET	D1	4	37. DÖNEM	satis	185706	2024-12-31	22/09	28/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLSÜM SELAMET	D1	4	1. DÖNEM	satis	369480	2024-12-31	05/01	11/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+HACI BAYRAM KEKLÝK	F9	4	4. DÖNEM	satis	594031	2024-12-31	23/01	29/01	680000	0	680000	ödenmedi	Nakit	aktif	Selçuk	
+YAÞAR KEKLÝK	F9	4	3. DÖNEM	satis	196834	2024-12-31	16/01	22/01	453000	0	453000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET TUNÇAY	D3	7	2. DÖNEM	satis	645144	2024-12-31	15/01	21/01	216000	0	216000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET TUNÇAY	F9	1	3. DÖNEM	satis	438419	2024-12-31	16/01	22/01	453000	0	453000	ödenmedi	Nakit	aktif	Selçuk	
+AHMET NÝYAZÝ ÜLKÜ	D6	7	21. DÖNEM	satis	244225	2024-12-30	27/05	02/06	261000	0	261000	ödenmedi	Nakit	aktif	Selçuk	
+ÞERÝFE ERDEM	D16	14	43. DÖNEM	satis	818077	2024-12-22	14/12	21/12	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA ÞAHÝN	F8	2	1. DÖNEM	satis	375282	2024-12-20	06/01	12/01	275000	0	330000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ELÝF BADILLI	D16	14	12. DÖNEM	satis	314771	2024-12-18	12/04	18/04	218000	0	218000	ödenmedi	Nakit	aktif	Selçuk	
+SEVTAP BÝHTER SEHLÝKOÐLU	D14	7	20. DÖNEM	satis	912180	2024-12-23	22/05	28/05	176000	0	176000	ödenmedi	Nakit	aktif	Selçuk	
+SEVTAP BÝHTER SEHLÝKOÐLU	D15	7	35. DÖNEM	satis	504089	2025-01-03	15/09	21/09	200200	0	240240	ödenmedi	Kredi Kartý	aktif	Selçuk	
+GÝZEM AKGÖR	D6	2	21. DÖNEM	satis	517743	2025-01-05	27/05	02/06	287100	0	287100	ödenmedi	Nakit	aktif	Selçuk	
+Ali Osman Muslu	D6	2	13. DÖNEM	satis	314873	2025-01-28	01/04	07/04	378400	0	467324	ödenmedi	Mola Taksit	aktif	Selçuk	
+Orkun Kýlýç	D6	7	13. DÖNEM	satis	245053	2025-01-28	01/04	07/04	378400	0	467324	ödenmedi	Mola Taksit	aktif	Selçuk	
+Hamit Kocagöz	D1	7	13. DÖNEM	satis	788884	2025-01-28	02/04	08/04	378400	0	467324	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYÞE YONAR	D1	10	6. DÖNEM	satis	461266	2024-12-24	12/02	18/02	187000	0	187000	ödenmedi	Nakit	aktif	Selçuk	
+HAKAN BIYIK	D6	7	3. DÖNEM	satis	256521	2024-12-30	21/01	27/01	547000	0	636708	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ALÝ ÇELÝKBAÞ	D14	7	2. DÖNEM	satis	853862	2024-12-12	12/01	18/01	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+YASEMÝN ÖNDER	D1	4	7. DÖNEM	satis	412644	2025-01-28	16/02	22/02	211200	0	240768	ödenmedi	Kredi Kartý	aktif	Selçuk	
+FATMA DOÐAN	D2	8	51. DÖNEM	satis	440375	2025-01-28	17/12	23/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+EMÝR BÝLÝCÝ	D2	7	40. DÖNEM	satis	379729	2025-01-28	01/10	07/10	176000	0	211200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET FATÝH YILDIRIM	D6	2	23. DÖNEM	satis	456427	2025-01-28	10/06	16/06	558800	0	616915,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET FATÝH YILDIRIM	D2	3	41. DÖNEM	satis	168082	2025-01-28	15/10	21/10	188100	0	207662,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET FATÝH YILDIRIM	D3	7	10. DÖNEM	satis	786876	2025-01-28	14/03	21/03	179300	0	197947,2	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET FATÝH YILDIRIM	F9	4	19. DÖNEM	satis	146735	2025-01-28	08/05	14/05	331100	0	365534,4	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET FATÝH YILDIRIM	F6	2	50. DÖNEM	satis	716569	2025-01-28	15/12	21/12	302500	0	278300	ödenmedi	Nakit	aktif	Selçuk	
+FAHRÝ BEYAZ	D1	7	8. DÖNEM	satis	358992	2025-01-28	26/02	04/03	216700	0	216700	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH ATA	D1	2	2. DÖNEM	satis	477013	2025-01-28	13/01	19/01	228800	0	251680	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ARÝF ULUSKAN	D2	6	38. DÖNEM	satis	370368	2025-01-28	24/09	30/09	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+ASUDE BAÞARAN	D3	7	6. DÖNEM	satis	616401	2025-01-28	12/02	18/02	124160	0	124160	ödenmedi	Nakit	aktif	Selçuk	
+ASUDE BAÞARAN	D1	9	1. DÖNEM	satis	750324	2025-01-28	05/01	11/01	176540	0	176540	ödenmedi	Nakit	aktif	Selçuk	
+HALÝL ÇOLAK	D16	7	41. DÖNEM	satis	579499	2025-01-28	09/12	15/12	119700	0	119700	ödenmedi	Nakit	aktif	Selçuk	
+MERYEM ÖZYILMAZ	D1	1	18. DÖNEM	satis	721989	2025-01-28	05/05	11/05	262900	0	241868	ödenmedi	Nakit	aktif	Selçuk	
+AYSEL BAÞKÖK	D2	14	10. DÖNEM	satis	196283	2025-01-28	05/03	11/03	151800	0	144210	ödenmedi	Nakit	aktif	Selçuk	
+ERSÝN KÖMÜRLÜ	D6	2	36. DÖNEM	satis	357142	2025-01-27	22/09	28/09	290400	0	303468	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ERSÝN KÖMÜRLÜ	D1	9	50. DÖNEM	satis	483605	2025-01-27	15/12	21/12	200200	0	209209	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MEHMET NAÝM ÖZYEÞÝL	D6	5	21. DÖNEM	satis	746409	2025-01-27	25/05	31/05	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+HÜLYA ÇUKURYURT	D14	7	7. DÖNEM	satis	905334	2025-01-27	19/02	25/02	145200	0	188760	ödenmedi	Mola Taksit	aktif	Selçuk	
+NÝL ÖZGE ÇALIÞKAN	D1	10	3. DÖNEM	satis	496276	2025-01-27	21/01	27/01	601700	0	571615	ödenmedi	Nakit	aktif	Selçuk	
+VEDAT YEÞÝLDAÐ	D1	5	7. DÖNEM	satis	163140	2025-01-27	15/02	21/02	209000	0	198550	ödenmedi	Nakit	aktif	Selçuk	
+SALÝH KOSÝF	D1	1	3. DÖNEM	satis	349386	2025-01-27	20/01	26/01	601700	0	685938	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SAMÝYE ZAHTER	D6	7	37. DÖNEM	satis	490250	2025-01-27	16/09	22/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+SEMA BAYDAR	D6	10	35. DÖNEM	satis	948513	2025-01-27	16/09	22/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA KENAR	D2	13	15. DÖNEM	satis	464696	2025-01-27	16/04	22/04	188100	0	178695	ödenmedi	Nakit	aktif	Selçuk	
+NAZLI KASAPOÐLU	D16	7	6. DÖNEM	satis	713071	2025-01-27	21/02	27/02	132000	0	132000	ödenmedi	Nakit	aktif	Selçuk	
+SÝNEM KASAPOÐLU	D15	14	8. DÖNEM	satis	469666	2025-01-27	28/02	06/03	137000	0	137000	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ YILDIZ	D1	9	2. DÖNEM	satis	408773	2025-01-27	12/01	18/01	182000	0	200200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+PINAR KIRTAY KURT	D3	7	8. DÖNEM	satis	678195	2025-01-27	26/02	05/03	155000	0	155000	ödenmedi	Nakit	aktif	Selçuk	
+ÝREM UYANIK	D15	14	48. DÖNEM	satis	234910	2025-01-27	07/12	13/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+TUBA ÇELÝK	F8	2	15. DÖNEM	satis	699475	2025-01-27	14/04	20/04	340000	0	340000	ödenmedi	Nakit	aktif	Selçuk	
+KAMER ÖZKAN DEMÝR	D2	9	4. DÖNEM	satis	166648	2025-01-27	22/01	28/01	413600	0	413600	ödenmedi	Nakit	aktif	Selçuk	
+TUBA ÇELÝK	D3	7	41. DÖNEM	satis	145796	2025-01-27	03/11	09/11	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+RABÝA TURHAN	D3	7	7. DÖNEM	satis	441242	2025-01-27	19/02	25/02	132000	0	132000	ödenmedi	Nakit	aktif	Selçuk	
+FATMA KABADAYI	D14	7	10. DÖNEM	satis	349552	2025-01-27	12/03	18/03	155100	0	186120	ödenmedi	Kredi Kartý	aktif	Selçuk	
+YILDIZ ÖCAL	D6	9	50. DÖNEM	satis	129220	2025-01-27	22/12	28/12	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+Birgül Özkan	D6	5	35. DÖNEM	satis	894782	2025-01-27	18/09	24/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+Birgül Özkan	D1	9	51. DÖNEM	satis	252445	2025-01-27	22/12	28/12	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA AYDIN	D1	7	15. DÖNEM	satis	368905	2025-01-27	16/04	22/04	287100	0	272745	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ TOPRAK	D2	9	21. DÖNEM	satis	973480	2025-01-27	21/05	27/05	193600	0	239096	ödenmedi	Mola Taksit	aktif	Selçuk	
+KÜBRA AYDIN	D2	2	8. DÖNEM	satis	458237	2025-01-27	19/02	25/02	132000	0	171600	ödenmedi	Mola Taksit	aktif	Selçuk	
+SÝBEL ÇAÐLAYAN	D1	1	36. DÖNEM	satis	731261	2025-01-27	15/09	21/09	264000	0	343200	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞEYDA YILMAZ	D2	9	10. DÖNEM	satis	472822	2025-01-27	05/03	11/03	151800	0	151800	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝLEM PALO	D1	10	49. DÖNEM	satis	544197	2025-01-27	10/12	16/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+Ercan polat	D4	8	5. DÖNEM	satis	339880	2025-01-26	09/02	16/02	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+Yavuz ümit	D1	7	41. DÖNEM	satis	296511	2025-01-26	31/10	06/11	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+Esra ýþýk sarýca 	D6	1	40. DÖNEM	satis	611714	2025-01-26	31/10	06/11	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+Pýnar kaya	D6	1	45. DÖNEM	satis	701238	2025-01-26	05/12	11/12	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+ömer kýlýç	F9	4	37. DÖNEM	satis	967872	2025-01-26	12/09	18/09	361900	0	434280	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Ayþe Akdeniz Lafcý	D2	7	42. DÖNEM	satis	865080	2025-01-26	15/10	21/10	188100	0	178695	ödenmedi	Nakit	aktif	Selçuk	
+Alaattin kýlýç	F9	3	38. DÖNEM	satis	420645	2025-01-26	19/09	25/09	361900	0	434280	ödenmedi	Kredi Kartý	aktif	Selçuk	
+Yaren aydoðan	D1	9	44. DÖNEM	satis	647681	2025-01-26	03/11	09/11	231000	0	285285	ödenmedi	Mola Taksit	aktif	Selçuk	
+Zeynep pehlivanoðlu	F6	5	35. DÖNEM	satis	728072	2025-01-26	22/09	28/09	437800	0	437800	ödenmedi	Nakit	aktif	Selçuk	
+Haþim Erdem 	F8	7	15. DÖNEM	satis	531394	2025-01-26	14/04	20/04	308000	0	308000	ödenmedi	Nakit	aktif	Selçuk	
+Zehra Betül Demir	D6	1	7. DÖNEM	satis	839946	2025-01-25	21/02	28/02	240900	0	228855	ödenmedi	Nakit	aktif	Selçuk	
+Tuba Birgili	D1	10	13. DÖNEM	satis	925102	2025-01-25	02/04	08/04	378400	0	467324	ödenmedi	Mola Taksit	aktif	Selçuk	
+ERDAL NACAK	D6	5	12. DÖNEM	satis	638201	2025-01-25	23/03	29/03	264000	0	250800	ödenmedi	Nakit	aktif	Selçuk	
+Fatih Taþdoðan	D3	7	11. DÖNEM	satis	243665	2025-01-25	22/03	29/03	204600	0	252681	ödenmedi	Mola Taksit	aktif	Selçuk	
+ALÝYE KAZANCI	D2	14	38. DÖNEM	satis	617451	2025-01-25	17/09	23/09	200200	0	260260	ödenmedi	Mola Taksit	aktif	Selçuk	
+ALÝYE KAZANCI	D2	2	38. DÖNEM	satis	483957	2025-01-25	17/09	23/09	200200	0	260260	ödenmedi	Mola Taksit	aktif	Selçuk	
+Serdar Çepni	D3	7	39. DÖNEM	satis	611135	2025-01-25	20/10	26/10	187000	0	177650	ödenmedi	Nakit	aktif	Selçuk	
+Serdar Çepni	D15	7	7. DÖNEM	satis	579378	2025-01-25	20/02	27/02	166100	0	157795	ödenmedi	Nakit	aktif	Selçuk	
+CENGÝZ KAÇAR	F9	4	41. DÖNEM	satis	784860	2025-01-24	10/10	16/10	347600	0	330220	ödenmedi	Nakit	aktif	Selçuk	
+Kübra güler	D3	7	34. DÖNEM	satis	358027	2025-01-24	15/09	21/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+Osman Kayak	D2	8	12. DÖNEM	satis	193557	2025-01-24	19/03	25/03	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+Elena Ay	F8	2	4. DÖNEM	satis	838523	2025-01-23	27/01	02/02	906400	0	906400	ödenmedi	Nakit	aktif	Selçuk	
+FATMA MATARACI	D1	1	21. DÖNEM	satis	147128	2025-01-23	26/05	02/06	326700	0	310365	ödenmedi	Nakit	aktif	Selçuk	
+Harun Altunayva 	D14	7	18. DÖNEM	satis	689227	2025-01-22	08/05	14/05	183700	0	183700	ödenmedi	Nakit	aktif	Selçuk	
+Ayþegül turan	D1	5	46. DÖNEM	satis	478484	2025-01-22	07/12	13/12	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+Esra dað	D6	2	46. DÖNEM	satis	330977	2025-01-22	01/12	07/12	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+SERCAN KESENOÐLU	D15	14	50. DÖNEM	satis	368175	2025-01-22	21/12	27/12	138600	0	138600	ödenmedi	Nakit	aktif	Selçuk	
+HAVVA BEDER 	D1	2	8. DÖNEM	satis	813405	2025-01-22	24/02	02/03	213400	0	202730	ödenmedi	Nakit	aktif	Selçuk	
+MURAT TÜRKMEN	D1	2	7. DÖNEM	satis	274666	2025-01-21	17/02	23/02	211200	0	260832	ödenmedi	Mola Taksit	aktif	Selçuk	
+mustafa aktaþ	F8	2	6. DÖNEM	satis	458009	2025-01-21	10/02	16/02	304700	0	376304,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+elif yýlmaz	F6	5	6. DÖNEM	satis	108478	2025-01-21	10/02	16/02	304700	0	376304,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYÞE BAÞ	D2	6	39. DÖNEM	satis	860396	2025-01-20	01/10	07/10	193600	0	183920	ödenmedi	Nakit	aktif	Selçuk	
+ERKAM DURMAZ	D2	7	39. DÖNEM	satis	242379	2025-01-20	24/09	30/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+AYSEN OKUR	D2	2	37. DÖNEM	satis	975404	2025-01-20	10/09	16/09	286000	0	271700	ödenmedi	Nakit	aktif	Selçuk	
+RAMAZAN SÜRÜN	D1	5	10. DÖNEM	satis	442966	2025-01-20	08/03	14/03	221100	0	221100	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÝT TAFRALI	D1	1	7. DÖNEM	satis	349207	2025-01-20	17/02	23/02	211200	0	211200	ödenmedi	Nakit	aktif	Selçuk	
+FARUK GÖKER	D2	9	39. DÖNEM	satis	191067	2025-01-20	24/09	30/09	200200	0	228285	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ALÝ SAÝT EKSÝOGLU	D2	5	2. DÖNEM	satis	241793	2025-01-20	15/01	21/01	237600	0	237600	ödenmedi	Nakit	aktif	Selçuk	
+OKKA ÝNÞAAT MÝMARLIK TÝCARET LÝMÝTED ÞÝRKETÝ	D1	10	5. DÖNEM	satis	990862	2025-01-19	05/02	11/02	228800	0	239115	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EDA HACIÝSMAÝLOÐLU	D4	9	39. DÖNEM	satis	274222	2025-01-19	26/09	02/10	198000	0	257400	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYLA KARAARSLAN	D6	4	18. DÖNEM	satis	342068	2025-01-19	04/05	10/05	260700	0	247665	ödenmedi	Nakit	aktif	Selçuk	
+HÝLAL AKTAÞ	D1	2	50. DÖNEM	satis	471586	2025-01-19	21/12	28/12	228800	0	217360	ödenmedi	Nakit	aktif	Selçuk	
+VURAL SANCAKTAR	D2	8	48. DÖNEM	satis	132042	2025-01-19	26/11	02/12	148500	0	193050	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMED TALHA SARIGÜL	F8	2	3. DÖNEM	satis	518674	2025-01-19	20/01	26/01	906400	0	861080	ödenmedi	Nakit	aktif	Selçuk	
+SEYHAN AÇIKSÖZ	D2	4	40. DÖNEM	satis	562456	2025-01-19	01/10	07/10	193600	0	239096	ödenmedi	Mola Taksit	aktif	Selçuk	
+HÜLYA BABUZ	D3	7	35. DÖNEM	satis	802454	2025-01-19	22/09	28/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE KÝREMÝTCÝ KAHVECÝ	D2	14	37. DÖNEM	satis	557217	2025-01-19	10/09	16/09	286000	0	353210	ödenmedi	Mola Taksit	aktif	Selçuk	
+MUHAMMED TALHA SARIGÜL	F1	6	2. DÖNEM	satis	322880	2025-01-19	13/01	19/01	690800	0	656260	ödenmedi	Nakit	aktif	Selçuk	
+HANIM KÜBRA OKUR	D15	7	36. DÖNEM	satis	321874	2025-01-19	22/09	28/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+EVREN ÇELEN	D15	14	9. DÖNEM	satis	682689	2025-01-19	07/03	13/03	151800	0	151800	ödenmedi	Nakit	aktif	Selçuk	
+ASLIHAN SARAÇOÐLU	D6	1	6. DÖNEM	satis	953109	2025-01-19	13/02	20/02	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+OSMAN GÜLLÜ	D1	1	6. DÖNEM	satis	922968	2025-01-19	10/02	16/02	202400	0	192280	ödenmedi	Nakit	aktif	Selçuk	
+SEÇÝL ÖÇMAZ	D14	7	36. DÖNEM	satis	519202	2025-01-19	27/09	03/10	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+NAZAN AKTAÞ	D1	2	6. DÖNEM	satis	996007	2025-01-19	10/02	16/02	202400	0	192280	ödenmedi	Nakit	aktif	Selçuk	
+ERKÝN SEVÝNÇ	F9	4	22. DÖNEM	satis	381476	2025-01-19	29/05	04/06	364100	0	364100	ödenmedi	Nakit	aktif	Selçuk	
+ALÝ FURKAN SEVÝNÇ	F9	3	22. DÖNEM	satis	878120	2025-01-19	29/05	04/06	364100	0	364100	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED TALHA SARIGÜL	D1	7	6. DÖNEM	satis	712557	2025-01-19	12/02	18/02	205700	0	195415	ödenmedi	Nakit	aktif	Selçuk	
+SEDA KALDIR	D2	8	9. DÖNEM	satis	614821	2025-01-18	26/02	04/03	148500	0	141075	ödenmedi	Nakit	aktif	Selçuk	
+SÜLEYMAN TOKGÖZ	D1	2	21. DÖNEM	satis	665448	2025-01-18	26/05	01/06	283800	0	269610	ödenmedi	Nakit	aktif	Selçuk	
+BARANEV ÝNÞAAT SANAYÝ VE TÝCARET LÝMÝTED ÞÝRKETÝ	D2	14	7. DÖNEM	satis	825957	2025-01-18	12/02	18/02	140800	0	140800	ödenmedi	Nakit	aktif	Selçuk	
+ARÝF ULUSKAN	D2	8	19. DÖNEM	satis	327595	2025-01-18	07/05	13/05	182600	0	182600	ödenmedi	Nakit	aktif	Selçuk	
+HÜLYA KOÇYÝÐÝT	D6	9	20. DÖNEM	satis	775064	2025-01-18	25/05	31/05	280500	0	280500	ödenmedi	Nakit	aktif	Selçuk	
+BURCU TÜZÜN	D6	10	19. DÖNEM	satis	981669	2025-01-18	25/05	31/05	280500	0	280500	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA DEMÝR	D6	4	21. DÖNEM	satis	295666	2025-01-18	25/05	31/05	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+YUNUS EMRE DALDA	D2	14	48. DÖNEM	satis	489878	2025-01-18	26/11	02/12	148500	0	141075	ödenmedi	Nakit	aktif	Selçuk	
+NURCAN GÜNEY	D2	9	52. DÖNEM	satis	184203	2025-01-18	24/12	31/12	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+NURCAN GÜNEY	D2	7	50. DÖNEM	satis	897882	2025-01-18	10/12	16/12	151200	0	151200	ödenmedi	Nakit	aktif	Selçuk	
+SERPÝL KALDIR	D4	8	36. DÖNEM	satis	538155	2025-01-18	19/10	25/10	187000	0	177650	ödenmedi	Nakit	aktif	Selçuk	
+ESRA KABATAÞ	D15	14	49. DÖNEM	satis	636967	2025-01-18	14/12	20/12	138600	0	131670	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP BAYRAM	D1	9	21. DÖNEM	satis	798221	2025-01-18	26/05	01/06	283800	0	269610	ödenmedi	Nakit	aktif	Selçuk	
+FATMA ALTUN	D1	9	38. DÖNEM	satis	432243	2025-01-18	22/09	28/09	290400	0	275880	ödenmedi	Nakit	aktif	Selçuk	
+SEDA GÜLER	D14	7	44. DÖNEM	satis	115664	2025-01-18	23/11	01/12	193600	0	183920	ödenmedi	Nakit	aktif	Selçuk	
+KEZBAN BAL	D1	5	21. DÖNEM	satis	650809	2025-01-17	24/05	30/05	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+MÜCAHÝT ÞAHÝN	D1	2	46. DÖNEM	satis	167827	2025-01-17	23/11	29/11	221100	0	210045	ödenmedi	Nakit	aktif	Selçuk	
+NUREDDÝN KAPLANER	D1	4	19. DÖNEM	satis	732797	2025-01-17	11/05	17/05	270600	0	308560	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SEVGÝ ÇÝL	D4	8	7. DÖNEM	satis	150936	2025-01-17	04/03	12/03	195800	0	241813	ödenmedi	Mola Taksit	aktif	Selçuk	
+SELÝN TOPAL ÇETÝNKAYA	D1	7	44. DÖNEM	satis	260445	2025-01-16	21/11	27/11	221100	0	210045	ödenmedi	Nakit	aktif	Selçuk	
+ESRA GÜNEÞ	D6	1	43. DÖNEM	satis	700739	2025-01-16	21/11	27/11	221100	0	210045	ödenmedi	Nakit	aktif	Selçuk	
+GÜLCAN ULUBAÞ	D6	5	44. DÖNEM	satis	325582	2025-01-16	21/11	27/11	221100	0	210045	ödenmedi	Nakit	aktif	Selçuk	
+NURCAN BAYDARMAN	D2	8	39. DÖNEM	satis	734293	2025-01-16	24/09	30/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+SEMRA VURAL	D2	14	39. DÖNEM	satis	924025	2025-01-16	24/09	30/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+LEYLA KARACAN	D2	8	3. DÖNEM	satis	631395	2025-01-16	15/01	21/01	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+ÝBRAHÝM KEKLÝK	D1	1	50. DÖNEM	satis	374030	2025-01-16	22/12	28/12	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+NURCAN ÞAFAK	D3	7	9. DÖNEM	satis	603265	2025-01-16	06/03	13/03	173800	0	165110	ödenmedi	Nakit	aktif	Selçuk	
+BELMA TÜMLER	D15	14	39. DÖNEM	satis	265305	2025-01-16	05/10	11/10	193600	0	183920	ödenmedi	Nakit	aktif	Selçuk	
+BELMA TÜMLER	D15	14	38. DÖNEM	satis	602101	2025-01-16	28/09	04/10	196900	0	187055	ödenmedi	Nakit	aktif	Selçuk	
+AYÞE NUR ÇALIÞKAN	D15	7	8. DÖNEM	satis	507166	2025-01-15	28/02	07/03	172700	0	213284,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+NESLÝHAN ER	D1	10	15. DÖNEM	satis	427737	2025-01-15	16/04	22/04	287100	0	354568,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+CEYHAN ÇELÝK	D1	4	50. DÖNEM	satis	381387	2025-01-15	22/12	28/12	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+NESLÝHAN ER	D6	7	50. DÖNEM	satis	610560	2025-01-15	16/12	22/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+KADÝR KUÞ	D4	8	38. DÖNEM	satis	907931	2025-01-15	02/11	09/11	181500	0	224152,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+KADÝR KUÞ	D14	7	45. DÖNEM	satis	874161	2025-01-15	02/12	10/12	178200	0	220077	ödenmedi	Mola Taksit	aktif	Selçuk	
+KADÝR KUÞ	D6	9	47. DÖNEM	satis	790991	2025-01-15	01/12	07/12	200200	0	247247	ödenmedi	Mola Taksit	aktif	Selçuk	
+MURAT ILGAZ	D15	7	10. DÖNEM	satis	881259	2025-01-15	15/03	21/03	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+GÜVEN TUNCA	D2	2	10. DÖNEM	satis	140332	2025-01-14	05/03	11/03	151800	0	187473	ödenmedi	Mola Taksit	aktif	Selçuk	
+AYKUT TAÞKOPARAN	D15	14	37. DÖNEM	satis	783315	2025-01-14	21/09	27/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+HÜSEYÝN ATAHAN ÝNAN	D1	10	20. DÖNEM	satis	160493	2025-01-14	21/05	27/05	280500	0	280500	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYRA DURMUÞ	D1	10	11. DÖNEM	satis	744674	2025-01-14	19/03	25/03	231000	0	219450	ödenmedi	Nakit	aktif	Selçuk	
+NÝMET ANDAÇ	D2	14	11. DÖNEM	satis	899778	2025-01-13	12/03	18/03	155100	0	191548,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+BÜÞRA KOÇAK	D1	10	18. DÖNEM	satis	417351	2025-01-13	07/05	13/05	265100	0	251845	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL AK	D4	8	1. DÖNEM	satis	731177	2025-01-13	02/01	09/01	178200	0	203205	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ELÝF ÖZTÜRK	D15	7	37. DÖNEM	satis	221822	2025-01-13	29/09	05/10	195800	0	186010	ödenmedi	Nakit	aktif	Selçuk	
+ÝDÝL ARTUK	F8	2	7. DÖNEM	satis	378687	2025-01-13	17/02	23/02	316800	0	300960	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP GÜLÞAH ÇALIÞKAN	D3	7	36. DÖNEM	satis	729998	2025-01-13	29/09	05/10	195800	0	241813	ödenmedi	Mola Taksit	aktif	Selçuk	
+ASLIHAN YILDIRIM	D2	8	16. DÖNEM	satis	938133	2025-01-13	16/04	22/04	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH OK	D6	5	41. DÖNEM	satis	559772	2025-01-13	31/10	06/11	237600	0	293436	ödenmedi	Mola Taksit	aktif	Selçuk	
+ELÝF ÞERÝFE NAS	D14	7	46. DÖNEM	satis	684003	2025-01-13	11/12	18/12	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH OK	D6	2	10. DÖNEM	satis	386092	2025-01-13	11/03	17/03	224400	0	277134	ödenmedi	Mola Taksit	aktif	Selçuk	
+ALÝ OÐUZ	D1	5	4. DÖNEM	satis	756271	2025-01-13	25/01	31/01	601700	0	601700	ödenmedi	Nakit	aktif	Selçuk	
+ABDÜLAZÝZ BALCI	D6	9	49. DÖNEM	satis	802993	2025-01-13	15/12	21/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+ABDÜLAZÝZ BALCI	D2	14	16. DÖNEM	satis	553518	2025-01-13	16/04	22/04	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+AYSEL ARAS	D2	14	12. DÖNEM	satis	698021	2025-01-13	19/03	25/03	158400	0	205920	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEVGÝ BAYRAMOÐLU	D4	8	32. DÖNEM	satis	805144	2025-01-13	21/09	27/09	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+ZÜLEYHA DAÞDELEN	D6	5	34. DÖNEM	satis	348270	2025-01-12	11/09	17/09	332200	0	315590	ödenmedi	Nakit	aktif	Selçuk	
+MERVE KONDAKÇI	D4	9	22. DÖNEM	satis	861650	2025-01-12	30/05	05/06	233200	0	221540	ödenmedi	Nakit	aktif	Selçuk	
+DERYA YILMAZ	D2	2	16. DÖNEM	satis	660144	2025-01-12	16/04	22/04	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+ESMA DÝNÇ	D2	9	16. DÖNEM	satis	255743	2025-01-12	16/04	22/04	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK GÜLEÇ	D6	5	8. DÖNEM	satis	582919	2025-01-12	23/02	01/03	212300	0	201685	ödenmedi	Nakit	aktif	Selçuk	
+SEHER AKDAÐ	D6	1	14. DÖNEM	satis	206390	2025-01-12	13/04	19/04	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+PINAR BAÞYÝÐÝT	F6	5	2. DÖNEM	satis	509426	2025-01-12	13/01	19/01	345400	0	393756	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BETÜL GÜDÜK ÝBRAHÝMOÐLU	D14	7	47. DÖNEM	satis	346871	2025-01-12	19/12	26/12	158400	0	195624	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURAY AÞÇI	D4	8	8. DÖNEM	satis	364328	2025-01-12	13/03	19/03	156200	0	148390	ödenmedi	Nakit	aktif	Selçuk	
+DOÐAN TEKBAÞ	D6	2/7	7. DÖNEM/7. DÖNEM	satis	452050	2025-01-12	18/02	24/02	422400	0	521664	ödenmedi	Mola Taksit	aktif	Selçuk	
+SAMÝ SAVRUM	D6	9	7. DÖNEM	satis	247046	2025-01-12	17/02	23/02	211200	0	200640	ödenmedi	Nakit	aktif	Selçuk	
+SUNA ÇELÝKKAYNAK	D1	2	38. DÖNEM	satis	493794	2025-01-12	28/09	04/10	286000	0	271700	ödenmedi	Nakit	aktif	Selçuk	
+GÜRKAN TAÞ	D15	7	11. DÖNEM	satis	947668	2025-01-12	22/03	28/03	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+ZAHÝDE OÐUZ	D6	10	2. DÖNEM	satis	585410	2025-01-12	14/01	21/01	372900	0	354255	ödenmedi	Nakit	aktif	Selçuk	
+MAHMUT GÜZEL	D1	4	21. DÖNEM	satis	876074	2025-01-12	25/05	31/05	280500	0	266475	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP DÝLARA YAVUZ	D1	7	36. DÖNEM	satis	849469	2025-01-12	26/09	02/10	288200	0	301169	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HÜSEYÝN SAYGILI	F9	3	39. DÖNEM	satis	722900	2025-01-12	26/09	02/10	357500	0	373587,5	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYHAN SARAÇ	D2	9	38. DÖNEM	satis	302202	2025-01-12	17/09	23/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+ARÝFE GÜR KARAGÖZ	D2	2	48. DÖNEM	satis	828639	2025-01-12	26/11	02/12	148500	0	183397,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+ARÝFE GÜR KARAGÖZ	F9	4	49. DÖNEM	satis	434918	2025-01-12	05/12	11/12	249700	0	324610	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝREM ÞEYMA ARSLAN	D1	4	15. DÖNEM	satis	548474	2025-01-12	13/04	19/04	280500	0	280500	ödenmedi	Nakit	aktif	Selçuk	
+ASÝYE GÜLSÜM KAKI	D14	7	5. DÖNEM	satis	397520	2025-01-12	04/02	10/02	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+GÜLAY DELÝKTAÞ	D2	8/8	10. DÖNEM/11. DÖNEM	satis	749335	2025-01-12	05/03	18/03	306900	0	379021,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+KÜBRA AKINCI	D14	7	41. DÖNEM	satis	846004	2025-01-12	01/11	07/11	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+BURCU KOYUNCU	D14	7	1. DÖNEM	satis	323011	2025-01-12	04/01	11/01	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+Serdar Bakýþ	D15	7	42. DÖNEM	satis	688214	2025-01-12	03/11	09/11	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+SÜMEYRA ÇINAR	D2	2	3. DÖNEM	satis	270551	2025-01-12	15/01	21/01	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+REÞÝT KEMAL AS	E3	4	52. DÖNEM	satis	312730	2025-01-12	29/12	04/01	573100	0	573100	ödenmedi	Nakit	aktif	Selçuk	
+REÞÝT KEMAL AS	D2	9	3. DÖNEM	satis	689449	2025-01-11	15/01	21/01	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA ALBAYRAK	D2	6	36. DÖNEM	satis	303414	2025-01-11	10/09	16/09	286000	0	271700	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP ÖNDER	D2	5	36. DÖNEM	satis	461601	2025-01-11	10/09	16/09	286000	0	271700	ödenmedi	Nakit	aktif	Selçuk	
+NÝHAT GENÇ	D15	14	21. DÖNEM	satis	281275	2025-01-11	30/05	05/06	233200	0	221540	ödenmedi	Nakit	aktif	Selçuk	
+UÐUR ÞEN	F8	2	45. DÖNEM	satis	251108	2025-01-11	25/11	01/12	327800	0	311410	ödenmedi	Nakit	aktif	Selçuk	
+AYSEL KENGÝRÞEK	D1	2	10. DÖNEM	satis	629492	2025-01-11	10/03	16/03	222200	0	177760	ödenmedi	Nakit	aktif	Selçuk	
+HÜLYA ÖZKAN	D15	7	9. DÖNEM	satis	703694	2025-01-11	08/03	14/03	151800	0	187473	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATMA ERDOÐAN	D1	7	5. DÖNEM	satis	856591	2025-01-11	05/02	11/02	228800	0	217360	ödenmedi	Nakit	aktif	Selçuk	
+ÖZGE ERKAYA	D1	4	10. DÖNEM	satis	712658	2025-01-11	09/03	15/03	221100	0	273058,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+BEYZA NUR ÖZTÜRK	D14	7	39. DÖNEM	satis	321232	2025-01-11	18/10	24/10	187000	0	177650	ödenmedi	Nakit	aktif	Selçuk	
+ÜMÜS ÖCAL	D6	7	51. DÖNEM	satis	801710	2025-01-11	23/12	29/12	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+AHMET HÝLMÝ AYDIN	D15	14	36. DÖNEM	satis	396856	2025-01-09	14/09	20/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+SUAT YAÞAR	D2	14	3. DÖNEM	satis	551956	2025-01-09	15/01	21/01	237600	0	308880	ödenmedi	Mola Taksit	aktif	Selçuk	
+REÞÝT KEMAL AS	D1	10	37. DÖNEM	satis	496360	2025-01-09	17/09	23/09	290400	0	275880	ödenmedi	Nakit	aktif	Selçuk	
+BÜÞRA YAYLAÇÝÇEÐÝ EVLÝ	D1	2	18. DÖNEM	satis	177482	2025-01-09	05/05	11/05	262900	0	299706	ödenmedi	Kredi Kartý	aktif	Selçuk	
+AYHAN AÞKIN	D15	14	17. DÖNEM	satis	116924	2025-01-08	02/05	08/05	205700	0	195415	ödenmedi	Nakit	aktif	Selçuk	
+Filiz Kapkiner	D15	7	46. DÖNEM	satis	381558	2025-01-08	01/12	07/12	138600	0	131670	ödenmedi	Nakit	aktif	Selçuk	
+ADNAN YÜKSEK	D16	14	32. DÖNEM	satis	991264	2025-01-08	15/09	22/09	228800	0	217360	ödenmedi	Nakit	aktif	Selçuk	
+ÖZCAN ÖZDEMÝR	D14	7	9. DÖNEM	satis	327390	2025-01-08	05/03	11/03	151800	0	144210	ödenmedi	Nakit	aktif	Selçuk	
+MESÝHA TURÐUT	D2	2	9. DÖNEM	satis	846888	2025-01-08	26/02	04/03	148500	0	141075	ödenmedi	Nakit	aktif	Selçuk	
+SÜLEYMAN KURUKAVAK	D4	8	41. DÖNEM	satis	399699	2025-01-07	25/11	02/12	169400	0	160930	ödenmedi	Nakit	aktif	Selçuk	
+Serdar Bakýþ	D2	7	3. DÖNEM	satis	385054	2025-01-07	15/01	21/01	237600	0	225720	ödenmedi	Nakit	aktif	Selçuk	
+RANA ÞAFAKLAR	D16	14	42. DÖNEM	satis	272748	2025-01-07	06/12	13/12	158400	0	150480	ödenmedi	Nakit	aktif	Selçuk	
+ORHAN KILIÇASLAN	D2	4	1. DÖNEM	satis	305030	2025-01-07	01/01	07/01	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+FERHAT ERENLER	D2	2	1. DÖNEM	satis	760775	2025-01-07	01/01	07/01	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+ÞEYDA TÝRYAKÝ	D2	14	1. DÖNEM	satis	438547	2025-01-07	01/01	07/01	198000	0	198000	ödenmedi	Nakit	aktif	Selçuk	
+MUSTAFA SEYFETTÝN TANRIYAR	D2	7	1. DÖNEM	satis	134578	2025-01-07	01/01	07/01	198000	0	206910	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HÜLYA ÇUKURYURT	D4	8	33. DÖNEM	satis	813491	2025-01-07	28/09	04/10	196900	0	187055	ödenmedi	Nakit	aktif	Selçuk	
+AHMET ERKUL	D15	14	18. DÖNEM	satis	564741	2025-01-06	09/05	15/05	184800	0	193116	ödenmedi	Kredi Kartý	aktif	Selçuk	
+HÜLYA GÜLER	D6	1	2. DÖNEM	satis	651415	2025-01-06	13/01	20/01	315700	0	299915	ödenmedi	Nakit	aktif	Selçuk	
+FARUK PARLAK	D6	4	7. DÖNEM	satis	586479	2025-01-06	16/02	22/02	211200	0	200640	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET BALÝ	D6	5	7. DÖNEM	satis	508241	2025-01-06	16/02	22/02	211200	0	200640	ödenmedi	Nakit	aktif	Selçuk	
+DÖNDÜ DÝKPINAR	D1	7	48. DÖNEM	satis	793412	2025-01-06	22/12	29/12	228800	0	282568	ödenmedi	Mola Taksit	aktif	Selçuk	
+TUÐBA CEYLAN	D2	2	50. DÖNEM	satis	961698	2025-01-06	10/12	16/12	138600	0	131670	ödenmedi	Nakit	aktif	Selçuk	
+RECEP YURTSEVEN	D4	8	9. DÖNEM	satis	332237	2025-01-06	20/03	26/03	158400	0	158400	ödenmedi	Nakit	aktif	Selçuk	
+ABDÝL ÝNCÝ	D16	7	39. DÖNEM	satis	405201	2025-01-05	25/11	01/12	149600	0	149600	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE ÞENSES	F9	4	2. DÖNEM	satis	201716	2025-01-05	09/01	15/01	249700	0	308379,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+HATÝCE ÞENSES	F9	3	2. DÖNEM	satis	441904	2025-01-05	09/01	15/01	249700	0	308379,5	ödenmedi	Mola Taksit	aktif	Selçuk	
+MESUT ÞENER	D6	10	6. DÖNEM	satis	481638	2025-01-05	20/02	26/02	211200	0	200640	ödenmedi	Nakit	aktif	Selçuk	
+HANDE GÜNDÜZ	D2	9	9. DÖNEM	satis	940943	2025-01-05	26/02	04/03	148500	0	141075	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF SONGUR	D1	10	8. DÖNEM	satis	818360	2025-01-05	26/02	04/03	216700	0	205865	ödenmedi	Nakit	aktif	Selçuk	
+ÖZLEM ÞEN	D1	2	48. DÖNEM	satis	971134	2025-01-05	07/12	13/12	200200	0	160160	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE SARIGÜL	F6	6	2. DÖNEM	satis	241472	2025-01-05	13/01	19/01	345400	0	328130	ödenmedi	Nakit	aktif	Selçuk	
+ÖMER FARUK GÖKÇE	D15	14	7. DÖNEM	satis	847498	2025-01-05	21/02	27/02	145200	0	137940	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP BERKE	D14	7	35. DÖNEM	satis	427162	2025-01-05	20/09	26/09	200200	0	190190	ödenmedi	Nakit	aktif	Selçuk	
+EMRE ÖZDAL	F9	1	10. DÖNEM	satis	206474	2025-01-04	06/03	12/03	275000	0	313500	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÝBRAHÝM KUK	D15	14	5. DÖNEM	satis	164715	2025-01-04	05/02	13/02	198000	0	188100	ödenmedi	Nakit	aktif	Selçuk	
+GÜLLÜ ELBÝRLER	D2	8	6. DÖNEM	satis	724484	2025-01-02	05/02	11/02	158400	0	205920	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET ALÝ ÞENTÜRK	D1	2	1. DÖNEM	satis	529723	2025-01-02	06/01	12/01	200200	0	200200	ödenmedi	Nakit	aktif	Selçuk	
+HARUN ÖZKAYA	D6	7	6. DÖNEM	satis	440060	2025-01-01	11/02	17/02	203500	0	203500	ödenmedi	Nakit	aktif	Selçuk	
+SEMÝH YILMAZ	D14	7	8. DÖNEM	satis	931747	2025-01-01	26/02	04/03	148500	0	193050	ödenmedi	Mola Taksit	aktif	Selçuk	
+SEYLA AKYILDIZ	D3	7	5. DÖNEM	satis	791925	2024-12-31	05/02	11/02	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+SERDAR GÜRSOY	D2	7	51. DÖNEM	satis	844676	2024-12-31	17/12	23/12	126000	0	138600	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SERDAR GÜRSOY	D6	7	2. DÖNEM	satis	348493	2024-12-31	14/01	20/01	261000	0	287100	ödenmedi	Kredi Kartý	aktif	Selçuk	
+EROL ÞENGÜL	D6	10	1. DÖNEM	satis	627630	2024-12-31	06/01	13/01	208000	0	208000	ödenmedi	Nakit	aktif	Selçuk	
+MEMNUNE ÞÝMDÝ	D2	9	12. DÖNEM	satis	968420	2024-12-31	19/03	25/03	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+CEYHUN ATAKAN	D6	1	1. DÖNEM	satis	273493	2024-12-31	04/01	12/01	234000	0	234000	ödenmedi	Nakit	aktif	Selçuk	
+MERVE EROL ÞÝMDÝ	D2	2	12. DÖNEM	satis	281489	2024-12-31	19/03	25/03	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÞULE VAROL	D2	7	12. DÖNEM	satis	376763	2024-12-31	19/03	25/03	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+HAKAN HANCIOÐLU	D4	9	18. DÖNEM	satis	489730	2024-12-31	02/05	08/05	187000	0	187000	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA USTABAÞI	D2	7	6. DÖNEM	satis	438451	2024-12-31	05/02	11/02	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+FATÝH TAYLAN	D2	5	15. DÖNEM	satis	620725	2024-12-31	16/04	22/04	180000	0	216000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+ÞAHDÝYE NARÝN	D2	2	6. DÖNEM	satis	828692	2024-12-30	05/02	11/02	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+AYÞE ESRA SARUHAN	D6	10	16. DÖNEM	satis	522951	2024-12-30	04/05	10/05	237000	0	237000	ödenmedi	Nakit	aktif	Selçuk	
+TACETTÝN BAÞOL	D2	9	8. DÖNEM	satis	669043	2024-12-30	19/02	25/02	132000	0	158400	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BAYRAM AKBIYIK	D2	8	50. DÖNEM	satis	685109	2024-12-30	10/12	16/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+AHMET NÝYAZÝ ÜLKÜ	D1	7	21. DÖNEM	satis	649048	2024-12-29	28/05	03/06	263000	0	263000	ödenmedi	Nakit	aktif	Selçuk	
+ATÝKE YILDIRIM	D2	5	31. DÖNEM	satis	553993	2024-12-29	06/08	12/08	564000	0	564000	ödenmedi	Nakit	aktif	Selçuk	
+EMÝNE YAZICI	D2	14	32. DÖNEM	satis	508786	2024-12-29	06/08	12/08	564000	0	564000	ödenmedi	Nakit	aktif	Selçuk	
+NAFÝYE OYA KORTEL	D4	8	43. DÖNEM	satis	941258	2024-12-29	11/12	17/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+KÜBRA YÝÐÝT ÇANDUR	D2	2	11. DÖNEM	satis	843406	2024-12-29	12/03	18/03	141000	0	183300	ödenmedi	Mola Taksit	aktif	Selçuk	
+ÝBRAHÝM ÇAVUÞ	D6	2	2. DÖNEM	satis	321361	2024-12-29	14/01	20/01	261000	0	261000	ödenmedi	Nakit	aktif	Selçuk	
+ATÝLLA BAYRAKTAR	D4	9	3. DÖNEM	satis	601176	2024-12-29	17/01	23/01	287000	0	287000	ödenmedi	Nakit	aktif	Selçuk	
+CUMHUR ALACALI	D15	14	1. DÖNEM	satis	946213	2024-12-29	05/01	12/01	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+HÜSEYÝN KILINÇ	D15	7	49. DÖNEM	satis	501655	2024-12-29	22/12	28/12	126000	0	151200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+SEMRA CÝMCÝK	D6	4	6. DÖNEM	satis	660574	2024-12-29	09/02	15/02	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ÝSMAÝL TÜRKMEN	D1	5	34. DÖNEM	satis	802484	2024-12-29	14/09	20/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED TUNÇ	D1	2	36. DÖNEM	satis	280189	2024-12-29	14/09	20/09	264000	0	343200	ödenmedi	Mola Taksit	aktif	Selçuk	
+NURAY SABANLI	D1	9	14. DÖNEM	satis	295000	2024-12-28	07/04	13/04	594000	0	594000	ödenmedi	Nakit	aktif	Selçuk	
+BURHAN BAYKAL	D2	8	49. DÖNEM	satis	971832	2024-12-28	03/12	09/12	126000	0	151200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NESLÝHAN SANDAL	D2	7	49. DÖNEM	satis	286254	2024-12-28	03/12	09/12	126000	0	151200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NURAY SABANLI	D1	9	35. DÖNEM	satis	285525	2024-12-28	01/09	07/09	792000	0	792000	ödenmedi	Nakit	aktif	Selçuk	
+NURAY SABANLI	D6	7/6	4. DÖNEM/4. DÖNEM	satis	333722	2024-12-28	28/01	03/02	1094000	0	1094000	ödenmedi	Nakit	aktif	Selçuk	
+NESLÝHAN EMÝNE ÇUHACIBAÞI	D6	1	34. DÖNEM	satis	605338	2024-12-28	18/09	24/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+ERSÝN CEYLAN	D3	7	17. DÖNEM	satis	977464	2024-12-28	06/05	12/05	165000	0	165000	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH BOZDOÐAN	F2	5	2. DÖNEM	satis	693017	2024-12-27	10/01	16/01	549000	0	713700	ödenmedi	Mola Taksit	aktif	Selçuk	
+EMÝNE KÖSE	D6	9	36. DÖNEM	satis	192366	2024-12-27	15/09	21/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+ALEYNA KESER	D3	7	20. DÖNEM	satis	949960	2024-12-27	27/05	02/06	180000	0	180000	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE ÇOLAK	D1	9	37. DÖNEM	satis	915185	2024-12-27	15/09	21/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLSEREN KESER	D1	4	36. DÖNEM	satis	474171	2024-12-27	15/09	21/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+SERAP ÝLASLAN SOYGENÇ	D16	7	1. DÖNEM	satis	757654	2024-12-27	07/01	14/01	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+TAMER ATA	D1	10	2. DÖNEM	satis	904417	2024-12-26	14/01	20/01	261000	0	339300	ödenmedi	Mola Taksit	aktif	Selçuk	
+BAYRAM AKBIYIK	D1	10	7. DÖNEM	satis	370697	2024-12-26	19/02	25/02	192000	0	249600	ödenmedi	Mola Taksit	aktif	Selçuk	
+MEHMET CEMALETTÝN ÇELÝKKOL	D6	1	18. DÖNEM	satis	680677	2024-12-26	11/05	17/05	246000	0	246000	ödenmedi	Nakit	aktif	Selçuk	
+AMÝNE ZEYNEP ÇAVUÞ	D6	5	19. DÖNEM	satis	696746	2024-12-26	11/05	17/05	246000	0	246000	ödenmedi	Nakit	aktif	Selçuk	
+FATÝH ÖZTÜRK	F8	7	1. DÖNEM	satis	713669	2024-12-26	03/01	09/01	227000	0	227000	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET ATICI	D1	9	18. DÖNEM	satis	820018	2024-12-26	05/05	11/05	239000	0	286800	ödenmedi	Kredi Kartý	aktif	Selçuk	
+NURETTÝN KATIRCI	D1	7	20. DÖNEM	satis	792011	2024-12-26	21/05	27/05	255000	0	306000	ödenmedi	Kredi Kartý	aktif	Selçuk	
+VOLKAN YILMAZ	D4	8	18. DÖNEM	satis	390383	2024-12-26	26/05	02/06	205000	0	205000	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE DEMÝR	D2	14	19. DÖNEM	satis	483225	2024-12-25	07/05	13/05	166000	0	166000	ödenmedi	Nakit	aktif	Selçuk	
+SEDA MERCAN	D6	4	8. DÖNEM	satis	324309	2024-12-25	23/02	01/03	193000	0	212300	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BAYRAM AKBIYIK	D2	8	8. DÖNEM	satis	498431	2024-12-25	19/02	25/02	132000	0	171600	ödenmedi	Mola Taksit	aktif	Selçuk	
+YUSUF DALÐIÇ	D3	7	47. DÖNEM	satis	691721	2024-12-25	15/12	21/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+GÜLÜZAR GÖL	D2	2	52. DÖNEM	satis	148249	2024-12-25	24/12	31/12	144000	0	187200	ödenmedi	Mola Taksit	aktif	Selçuk	
+ABDULLAH TUFAN	F9	7	3. DÖNEM	satis	165666	2024-12-25	17/01	23/01	518000	0	673400	ödenmedi	Mola Taksit	aktif	Selçuk	
+ENÝSCAN HAMAMCI	D1	4	6. DÖNEM	satis	127422	2024-12-24	09/02	15/02	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+NURHAN KARGIN	D2	9	51. DÖNEM	satis	440201	2024-12-24	17/12	23/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+DEDE BÜLBÜL	F8	2	49. DÖNEM	satis	884401	2024-12-24	23/12	29/12	275000	0	275000	ödenmedi	Nakit	aktif	Selçuk	
+BETÜL SERÇE	D2	7	38. DÖNEM	satis	407449	2024-12-24	17/09	23/09	182000	0	200200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+BURAK BELGÝ	D3	7	45. DÖNEM	satis	477014	2024-12-23	01/12	07/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+SAADETTÝN MERDAN	D1	7	18. DÖNEM	satis	736772	2024-12-23	07/05	13/05	241000	0	241000	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF DURMUÞ	D1	10	1. DÖNEM	satis	183066	2024-12-22	07/01	13/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+RABÝA AKYILDIZ	D1	7	1. DÖNEM	satis	280985	2024-12-22	07/01	13/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+BAHADIR AKTAÞ	D16	7	29. DÖNEM	satis	390223	2024-12-22	15/09	21/09	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ELÝF ARICAN	D6	9	2. DÖNEM	satis	213714	2024-12-22	13/01	19/01	208000	0	208000	ödenmedi	Nakit	aktif	Selçuk	
+SEMÝH KARAKAÞ	D1	1	2. DÖNEM	satis	348025	2024-12-22	13/01	19/01	208000	0	208000	ödenmedi	Nakit	aktif	Selçuk	
+NARÝN OCAK	D16	7	7. DÖNEM	satis	630145	2024-12-22	28/02	06/03	137000	0	137000	ödenmedi	Nakit	aktif	Selçuk	
+TUÐBA YILDIRIM	D1	5	1. DÖNEM	satis	963275	2024-12-22	04/01	10/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA KARÇÝÐA BAL	D2	7	11. DÖNEM	satis	282600	2024-12-22	12/03	18/03	141000	0	183300	ödenmedi	Mola Taksit	aktif	Selçuk	
+TUÐBA YILDIRIM	D16	14	6. DÖNEM	satis	750703	2024-12-22	01/03	07/03	138000	0	138000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLTEN KARAKAÞ	D6	4	2. DÖNEM	satis	649888	2024-12-22	12/01	18/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+GÖKHAN ULUOÐULLARI	D16	14	44. DÖNEM	satis	239338	2024-12-22	22/12	29/12	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+COÞKUN AHMET BAÞ	D15	7	5. DÖNEM	satis	515849	2024-12-22	05/02	11/02	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+SERKAN EÐNE	D2	7	8. DÖNEM	satis	633553	2024-12-22	19/02	25/02	132000	0	171600	ödenmedi	Mola Taksit	aktif	Selçuk	
+ERSÝN CEYLAN	D3	7	48. DÖNEM	satis	681013	2024-12-21	22/12	28/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+ÜLFET MAY	D15	14	6. DÖNEM	satis	479944	2024-12-21	14/02	20/02	130000	0	130000	ödenmedi	Nakit	aktif	Selçuk	
+SEDA ARSLAN	D3	7	37. DÖNEM	satis	597817	2024-12-21	06/10	12/10	176000	0	176000	ödenmedi	Nakit	aktif	Selçuk	
+SARE ÇUHACIBAÞI	D3	7	44. DÖNEM	satis	706422	2024-12-21	24/11	30/11	138000	0	138000	ödenmedi	Nakit	aktif	Selçuk	
+HÝLAL ÖZBAY	D6	10	5. DÖNEM	satis	929289	2024-12-21	13/02	19/02	188000	0	188000	ödenmedi	Nakit	aktif	Selçuk	
+YAHYA YURDUNKULU	D6	9	4. DÖNEM	satis	475163	2024-12-20	27/01	02/02	547000	0	547000	ödenmedi	Nakit	aktif	Selçuk	
+MERVE ÖZDEMÝR	D2	14	51. DÖNEM	satis	304490	2024-12-20	17/12	23/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+HÜLYA CÝCÝOÐLU	D6	7	1. DÖNEM	satis	420850	2024-12-20	07/01	13/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMET EMRE ÇELÝK	D2	14	52. DÖNEM	satis	288310	2024-12-19	24/12	31/12	144000	0	144000	ödenmedi	Nakit	aktif	Selçuk	
+HÜSREV ÖZBEY	D15	7	17. DÖNEM	satis	262057	2024-12-19	03/05	09/05	163000	0	163000	ödenmedi	Nakit	aktif	Selçuk	
+HÜSREV ÖZBEY	D16	14	15. DÖNEM	satis	460173	2024-12-19	03/05	09/05	163000	0	163000	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA ALTINDÝÞ	D16	14	16. DÖNEM	satis	614200	2024-12-19	10/05	16/05	169000	0	169000	ödenmedi	Nakit	aktif	Selçuk	
+ZEHRA ALTINDÝÞ	D15	7	18. DÖNEM	satis	575625	2024-12-19	10/05	16/05	169000	0	185900	ödenmedi	Kredi Kartý	aktif	Selçuk	
+TURGUT YAVAÞ	D16	14	18. DÖNEM	satis	976902	2024-12-19	25/05	31/05	176000	0	176000	ödenmedi	Nakit	aktif	Selçuk	
+YAÐMUR KURU	D6	10	48. DÖNEM	satis	680633	2024-12-19	22/12	28/12	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+MURAT YÜKSEK	D16	7	2. DÖNEM	satis	611085	2024-12-18	15/01	21/01	216000	0	259200	ödenmedi	Kredi Kartý	aktif	Selçuk	
+MURAT GÜLERYÜZ	F8	2	2. DÖNEM	satis	281927	2024-12-18	13/01	19/01	314000	0	314000	ödenmedi	Nakit	aktif	Selçuk	
+GÜLÜZAR GÖL	D1	10	51. DÖNEM	satis	495324	2024-12-18	24/12	30/12	182000	0	236600	ödenmedi	Mola Taksit	aktif	Selçuk	
+HÜSEYÝN EMRAH NAMAL	D2	7	9. DÖNEM	satis	145914	2024-12-17	26/02	04/03	135000	0	175500	ödenmedi	Mola Taksit	aktif	Selçuk	
+FEHMÝ ÇELÝKKOL	D16	14	7. DÖNEM	satis	243654	2024-12-17	08/03	14/03	138000	0	138000	ödenmedi	Nakit	aktif	Selçuk	
+HANÝFE ÇELÝKKOL	D6	10	4. DÖNEM	satis	793953	2024-12-17	06/02	12/02	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ADEM KARACA	D2	14	50. DÖNEM	satis	687939	2024-12-17	10/12	16/12	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+ALÝ KARACA	D15	7	1. DÖNEM	satis	870506	2024-12-17	06/01	12/01	126000	0	163800	ödenmedi	Mola Taksit	aktif	Selçuk	
+PINAR ALPAGO	D16	14	3. DÖNEM	satis	265206	2024-12-16	06/02	12/02	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+HAKAN HANCIOÐLU	D4	8	16. DÖNEM	satis	388056	2024-12-16	10/05	17/05	193000	0	193000	ödenmedi	Nakit	aktif	Selçuk	
+MEHMET FAHRETTÝN ÇEMENYEMEZ	D6	2	15. DÖNEM	satis	655638	2024-12-15	15/04	21/04	227000	0	227000	ödenmedi	Nakit	aktif	Selçuk	
+SERAP  DÝLGÝN	D6	2	6. DÖNEM	satis	817122	2024-12-15	11/02	17/02	185000	0	185000	ödenmedi	Nakit	aktif	Selçuk	
+BÝLAL KARAPINAR	D1	7	34. DÖNEM	satis	719858	2024-12-15	12/09	18/09	264000	0	264000	ödenmedi	Nakit	aktif	Selçuk	
+HATÝCE YILDIZ	D3	7	14. DÖNEM	satis	617559	2024-12-15	15/04	21/04	156000	0	156000	ödenmedi	Nakit	aktif	Selçuk	
+ESRA ÇELEBÝ	D1	5	2. DÖNEM	satis	438004	2024-12-14	11/01	17/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+FATIMA AZZAHRA GÜLTEKÝN	D1	4	2. DÖNEM	satis	530900	2024-12-14	12/01	18/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝÐDEM DOÐAN YEDÝEVLÝ	D6	1	47. DÖNEM	satis	899903	2024-12-14	19/12	25/12	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+SÝDAR ÇELEBÝ	D6	5	2. DÖNEM	satis	583447	2024-12-14	12/01	18/01	182000	0	182000	ödenmedi	Nakit	aktif	Selçuk	
+ÇÝÐDEM DOÐAN YEDÝEVLÝ	D6	1	20. DÖNEM	satis	716652	2024-12-14	25/05	31/05	255000	0	255000	ödenmedi	Nakit	aktif	Selçuk	
+MUHAMMED KEREM DEDE	D16	7	43. DÖNEM	satis	150651	2024-12-14	23/12	29/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+SENEM GÜLER ÇELÝK	D4	8	44. DÖNEM	satis	856106	2024-12-13	18/12	24/12	126000	0	126000	ödenmedi	Nakit	aktif	Selçuk	
+SENEM GÜLER ÇELÝK	D2	14	22. DÖNEM	satis	473113	2024-12-12	28/05	03/06	181000	0	181000	ödenmedi	Nakit	aktif	Selçuk	
+SENEM GÜLER ÇELÝK	D2	14	21. DÖNEM	satis	745893	2024-12-12	21/05	27/05	176000	0	176000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP GÜLSÜM ABACI	D2	7	16. DÖNEM	satis	251961	2024-12-12	16/04	22/04	180000	0	180000	ödenmedi	Nakit	aktif	Selçuk	
+ZEYNEP GÜLSÜM ABACI	D2	6	15. DÖNEM	satis	883115	2024-12-12	16/04	22/04	180000	0	180000	ödenmedi	Nakit	aktif	Selçuk	
