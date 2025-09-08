@@ -77,8 +77,7 @@ function validateSaleRecord(record, rowIndex) {
   const requiredFields = [
     'customerName', 'blockNo', 'apartmentNo', 'periodNo', 
     'saleType', 'saleDate', 'entryDate', 'exitDate',
-    'listPrice', 'activitySalePrice', 
-    'primStatus', 'status', 'salesperson'
+    'listPrice', 'activitySalePrice', 'primStatus', 'status', 'salesperson'
   ];
   
   // Zorunlu alanları kontrol et
@@ -140,9 +139,23 @@ async function convertToSaleRecord(record, adminUserId) {
   }
   
   // Tarih dönüşümleri
+  console.log('📅 Tarih dönüşüm debug:', {
+    entryDate: record.entryDate,
+    exitDate: record.exitDate,
+    entryDateType: typeof record.entryDate,
+    exitDateType: typeof record.exitDate
+  });
+  
   const saleDate = excelDateToJSDate(record.saleDate, 'saleDate');
   const entryDate = excelDateToJSDate(record.entryDate, 'entryDate');
   const exitDate = excelDateToJSDate(record.exitDate, 'exitDate');
+  
+  console.log('📅 Dönüştürülen tarihler:', {
+    entryDate,
+    exitDate,
+    entryDateValid: entryDate && !isNaN(entryDate),
+    exitDateValid: exitDate && !isNaN(exitDate)
+  });
   
   // İndirimli fiyat hesaplama
   const listPrice = parseFloat(record.listPrice) || 0;
@@ -152,13 +165,26 @@ async function convertToSaleRecord(record, adminUserId) {
   const activitySalePrice = parseFloat(record.activitySalePrice) || 0;
   const basePrimPrice = Math.min(discountedListPrice, activitySalePrice);
   
+  // Prim oranını ve dönemini belirle
+  const primRate = 1; // %1 prim oranı
+  let primPeriod = null;
+  
+  // Aktif prim dönemini bul
+  try {
+    const PrimPeriod = require('../models/PrimPeriod');
+    const activePeriod = await PrimPeriod.findOne({ isActive: true });
+    if (activePeriod) {
+      primPeriod = activePeriod._id;
+    }
+  } catch (error) {
+    console.error('Prim dönemi bulunamadı:', error);
+  }
+  
   // Prim tutarını otomatik hesapla
   let primAmount = 0;
   if (basePrimPrice > 0) {
-    // Prim hesaplama mantığı - fiyat üzerinden binde hesaplama
-    // Varsayılan prim oranı %1 (1000'de 10)
-    const primRate = 10; // Binde 10 = %1
-    primAmount = (basePrimPrice * primRate) / 1000;
+    // Prim hesaplama mantığı - fiyat üzerinden yüzde hesaplama
+    primAmount = (basePrimPrice * primRate) / 100;
   }
   
   return {
@@ -177,7 +203,9 @@ async function convertToSaleRecord(record, adminUserId) {
     activitySalePrice: activitySalePrice,
     basePrimPrice: basePrimPrice,
     primAmount: primAmount,
-    primStatus: record.primStatus,
+    primRate: primRate,
+    primPeriod: primPeriod,
+    primStatus: record.primStatus || 'ödendi',
     paymentType: record.paymentType || 'Nakit',
     status: record.status,
     salesperson: salesperson,
