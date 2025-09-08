@@ -36,7 +36,8 @@ const ActiveUsers = () => {
 
   const handleRoleChange = async (userId, newRole) => {
     const user = users.find(u => u._id === userId);
-    const roleText = newRole === 'admin' ? 'Admin' : 'Satış Temsilcisi';
+    const roleText = newRole === 'admin' ? 'Admin' : 
+                     newRole === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi';
     
     if (!window.confirm(`${user.name} kullanıcısının rolünü "${roleText}" olarak değiştirmek istediğinizden emin misiniz?`)) {
       return;
@@ -281,6 +282,7 @@ const ActiveUsers = () => {
                     required
                   >
                     <option value="salesperson">Satış Temsilcisi</option>
+                    <option value="visitor">Ziyaretçi</option>
                     <option value="admin">Admin</option>
                   </Form.Select>
                 </Form.Group>
