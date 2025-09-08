@@ -518,6 +518,8 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
       
       filterDescription = `${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')} tarihleri arasında`;
       console.log(`📅 Looking for records between ${start.toISOString()} and ${end.toISOString()}`);
+      console.log(`📅 User selected: ${startDate} - ${endDate}`);
+      console.log(`📅 Converted to UTC: ${start.toISOString()} - ${end.toISOString()}`);
       
     } else {
       // Saat modu (eski sistem)
@@ -557,6 +559,14 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
     const filteredSales = await Sale.find(dateFilter).sort({ createdAt: -1 });
     
     console.log(`📊 Filtered sales (${filterDescription}): ${filteredSales.length}`);
+    console.log(`🔍 Date filter used:`, JSON.stringify(dateFilter, null, 2));
+    
+    // Son birkaç kayıdın tarihlerini göster
+    const recentSamples = await Sale.find({}).sort({ createdAt: -1 }).limit(5);
+    console.log(`📋 Recent 5 sales timestamps:`);
+    recentSamples.forEach((sale, idx) => {
+      console.log(`  ${idx + 1}. ${sale.createdAt.toISOString()} (${sale.customerName})`);
+    });
     
     if (importedSales.length === 0 && filteredSales.length > 0) {
       // Import flag'i olmayan ama filtreye uyan kayıtları da dahil et
