@@ -220,7 +220,10 @@ const SalesImport = () => {
                       onClick={handleRollback}
                       disabled={isRollingBack}
                       className="flex-fill"
-                      title={`Son ${rollbackHours} saatteki kayıtları geri al`}
+                      title={rollbackMode === 'hours' 
+                        ? `Son ${rollbackHours} saatteki kayıtları geri al`
+                        : 'Seçilen tarih aralığındaki kayıtları geri al'
+                      }
                     >
                       {isRollingBack ? (
                         <>
@@ -230,7 +233,10 @@ const SalesImport = () => {
                       ) : (
                         <>
                           <FiRotateCcw className="me-2" />
-                          Son {rollbackHours}h Geri Al
+                          {rollbackMode === 'hours' 
+                            ? `Son ${rollbackHours}h Geri Al`
+                            : 'Seçilen Aralığı Geri Al'
+                          }
                         </>
                       )}
                     </Button>
