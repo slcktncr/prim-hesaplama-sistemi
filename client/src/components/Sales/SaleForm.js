@@ -427,8 +427,8 @@ const SaleForm = () => {
       }
     }
 
-    // İndirim oranı validasyonu (fiyat gerekli olan türlerde)
-    if (isFieldRequired('listPrice') && formData.discountRate) {
+    // İndirim oranı validasyonu (sadece fiyat gerekli olan türlerde ve değer girilmişse)
+    if (isFieldRequired('listPrice') && formData.discountRate && formData.discountRate.trim() !== '') {
       const discountRate = parseFloat(formData.discountRate);
       if (isNaN(discountRate) || discountRate < 0 || discountRate > 100) {
         newErrors.discountRate = 'İndirim oranı 0-100 arasında olmalıdır';

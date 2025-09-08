@@ -50,15 +50,29 @@ function excelDateToJSDate(excelDate, fieldName = '') {
     // GG/AA formatı (entryDate ve exitDate için) - örn: 21/08 = 21 Ağustos
     if (excelDate.match(/^\d{1,2}\/\d{1,2}$/)) {
       const [day, month] = excelDate.split('/');
-      const currentYear = new Date().getFullYear();
+      const dayNum = parseInt(day);
+      const monthNum = parseInt(month);
       
+      // Geçerli tarih kontrolü
+      if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) {
+        console.log(`❌ ${fieldName} geçersiz tarih:`, excelDate);
+        return null;
+      }
+      
+      const currentYear = new Date().getFullYear();
       let year = currentYear;
       if (fieldName === 'exitDate') {
         year = currentYear + 1; // Çıkış tarihi 1 yıl sonra
       }
       
-      const date = new Date(year, parseInt(month) - 1, parseInt(day));
-      console.log(`✅ ${fieldName} dönüştürüldü:`, date);
+      const date = new Date(year, monthNum - 1, dayNum);
+      console.log(`✅ ${fieldName} GG/AA formatından dönüştürüldü:`, {
+        input: excelDate,
+        day: dayNum,
+        month: monthNum,
+        year: year,
+        result: date
+      });
       return date;
     }
     
