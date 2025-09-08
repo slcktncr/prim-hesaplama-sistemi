@@ -159,4 +159,30 @@ export const dailyStatusAPI = {
   adminGetAllStatuses: (date) => API.get('/daily-status/admin/all-statuses', { params: { date } })
 };
 
+// Announcements API
+export const announcementsAPI = {
+  getAll: (includeRead = false) => API.get(`/announcements?includeRead=${includeRead}`),
+  getUnreadCount: () => API.get('/announcements/unread-count'),
+  markAsRead: (id) => API.post(`/announcements/${id}/read`),
+  getAdminAll: () => API.get('/announcements/admin'),
+  create: (data) => API.post('/announcements', data),
+  update: (id, data) => API.put(`/announcements/${id}`, data),
+  delete: (id) => API.delete(`/announcements/${id}`)
+};
+
+// Activities API
+export const activitiesAPI = {
+  getAll: (limit = 20, unreadOnly = false) => API.get(`/activities?limit=${limit}&unreadOnly=${unreadOnly}`),
+  getUnreadCount: () => API.get('/activities/unread-count'),
+  markAsRead: (id) => API.post(`/activities/${id}/read`),
+  markAllAsRead: () => API.post('/activities/mark-all-read'),
+  getSystemActivities: (limit = 50, severity, action) => {
+    let url = `/activities/system?limit=${limit}`;
+    if (severity) url += `&severity=${severity}`;
+    if (action) url += `&action=${action}`;
+    return API.get(url);
+  },
+  getStats: (days = 7) => API.get(`/activities/stats?days=${days}`)
+};
+
 export default API;

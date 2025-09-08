@@ -85,8 +85,15 @@
 
 .content-wrapper {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem; /* Reduced padding for better space utilization */
   overflow-x: auto;
+}
+
+/* Optimize content spacing for 90% zoom equivalent */
+@media screen and (min-width: 1200px) {
+  .content-wrapper {
+    padding: 1.25rem; /* Even more compact on large screens */
+  }
 }
 
 /* Fade-in Animation */

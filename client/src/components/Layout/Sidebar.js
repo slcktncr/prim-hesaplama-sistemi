@@ -17,7 +17,8 @@ import {
   FiUsers,
   FiCreditCard,
   FiShield,
-  FiMessageSquare
+  FiMessageSquare,
+  FiBell
 } from 'react-icons/fi';
 
 const Sidebar = ({ onLinkClick }) => {
@@ -142,6 +143,22 @@ const Sidebar = ({ onLinkClick }) => {
             Raporlar
           </Nav.Link>
         </LinkContainer>
+
+        <LinkContainer to="/announcements" onClick={handleLinkClick}>
+          <Nav.Link>
+            <FiBell className="me-2" />
+            Duyurular
+          </Nav.Link>
+        </LinkContainer>
+
+        {isAdmin && (
+          <LinkContainer to="/admin/announcements" onClick={handleLinkClick}>
+            <Nav.Link>
+              <FiBell className="me-2" />
+              Duyuru Yönetimi
+            </Nav.Link>
+          </LinkContainer>
+        )}
       </Nav>
     </div>
   );

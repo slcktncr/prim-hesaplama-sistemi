@@ -21,6 +21,8 @@ import SystemSettings from './components/SystemSettings/SystemSettings';
 import Profile from './components/Profile/Profile';
 import DailyCommunicationEntry from './components/Communications/DailyCommunicationEntry';
 import CommunicationReport from './components/Communications/CommunicationReport';
+import AnnouncementList from './components/Announcements/AnnouncementList';
+import AnnouncementManagement from './components/Announcements/AnnouncementManagement';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -105,6 +107,14 @@ function AppContent() {
                     {/* İletişim Routes */}
                     <Route path="/communications/daily" element={<DailyCommunicationEntry />} />
                     <Route path="/communications/reports" element={<CommunicationReport />} />
+                    
+                    {/* Duyuru Routes */}
+                    <Route path="/announcements" element={<AnnouncementList />} />
+                    <Route path="/admin/announcements" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <AnnouncementManagement />
+                      </ProtectedRoute>
+                    } />
                     
                     {/* Prim Routes */}
                     <Route path="/prims/transactions" element={<PrimTransactions />} />

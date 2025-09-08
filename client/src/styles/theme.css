@@ -99,7 +99,7 @@ body {
   margin: 0;
   background-color: var(--gray-50);
   color: var(--gray-900);
-  font-size: 0.875rem;
+  font-size: 0.8125rem; /* Optimized for better space usage */
 }
 
 /* Custom Bootstrap Overrides */
@@ -108,8 +108,8 @@ body {
   border-radius: var(--radius);
   transition: all 0.15s ease-in-out;
   border: 1px solid transparent;
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
+  font-size: 0.8125rem; /* Smaller font for better density */
+  padding: 0.4375rem 0.875rem; /* Reduced padding for compact design */
 }
 
 .btn-primary {
@@ -174,17 +174,17 @@ body {
 .card-header {
   background-color: white;
   border-bottom: 1px solid var(--gray-200);
-  padding: 1.5rem;
+  padding: 1.25rem; /* Reduced padding for better space usage */
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .card-body {
-  padding: 1.5rem;
+  padding: 1.25rem; /* Reduced padding for better space usage */
 }
 
-/* Table Styles */
+/* Table Styles - Optimized for 90% zoom equivalent */
 .table {
-  font-size: 0.875rem;
+  font-size: 0.8125rem; /* Smaller font for better density */
 }
 
 .table th {
@@ -192,11 +192,11 @@ body {
   color: var(--gray-700);
   background-color: var(--gray-50);
   border-bottom: 1px solid var(--gray-200);
-  padding: 0.75rem;
+  padding: 0.625rem; /* Reduced padding */
 }
 
 .table td {
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0.625rem; /* Reduced padding for compact view */
   border-bottom: 1px solid var(--gray-100);
   vertical-align: middle;
   position: relative;
@@ -220,8 +220,8 @@ body {
 .form-control {
   border: 1px solid var(--gray-300);
   border-radius: var(--radius);
-  font-size: 0.875rem;
-  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem; /* Smaller font for better density */
+  padding: 0.5625rem 0.6875rem; /* Reduced padding */
   transition: all 0.15s ease-in-out;
 }
 
@@ -521,19 +521,19 @@ body {
   opacity: 1;
 }
 
-/* Responsive Design */
+/* Responsive Design - Updated for optimized layout */
 @media (max-width: 768px) {
   .card-body {
-    padding: 1rem;
+    padding: 0.875rem; /* Slightly more compact on mobile */
   }
   
   .card-header {
-    padding: 1rem;
+    padding: 0.875rem; /* Slightly more compact on mobile */
   }
   
   .btn {
-    font-size: 0.8125rem;
-    padding: 0.4375rem 0.875rem;
+    font-size: 0.75rem; /* Even smaller on mobile for better fit */
+    padding: 0.375rem 0.75rem;
   }
   
   .developer-signature {

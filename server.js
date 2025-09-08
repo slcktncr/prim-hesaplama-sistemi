@@ -26,6 +26,8 @@ app.use('/api/system-settings', require('./routes/systemSettings'));
 app.use('/api/communications', require('./routes/communications'));
 app.use('/api/penalties', require('./routes/penalties'));
 app.use('/api/daily-status', require('./routes/dailyStatus'));
+app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/activities', require('./routes/activities'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

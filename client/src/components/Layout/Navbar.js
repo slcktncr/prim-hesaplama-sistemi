@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiUser, FiLogOut, FiSettings, FiShield } from 'react-icons/fi';
 import DailyStatusToggle from '../Common/DailyStatusToggle';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -40,6 +41,9 @@ const Navbar = () => {
         <div className="d-flex align-items-center gap-3">
           {/* Daily Status Toggle */}
           <DailyStatusToggle />
+          
+          {/* Notifications */}
+          <NotificationDropdown />
           
           <Dropdown align="end">
             <Dropdown.Toggle 
