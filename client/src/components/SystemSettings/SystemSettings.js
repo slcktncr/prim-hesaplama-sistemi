@@ -16,7 +16,8 @@ import {
   FiClock,
   FiShield,
   FiMessageSquare,
-  FiDatabase
+  FiDatabase,
+  FiBell
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
@@ -28,6 +29,7 @@ import PendingUsers from '../Admin/PendingUsers';
 import UserPermissions from '../Admin/UserPermissions';
 import CommunicationRequirements from './CommunicationRequirements';
 import HistoricalDataManagement from '../Communications/HistoricalDataManagement';
+import AnnouncementManagement from '../Announcements/AnnouncementManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -106,6 +108,12 @@ const SystemSettings = () => {
                   Geçmiş Yıl Verileri
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="announcements">
+                  <FiBell className="me-2" />
+                  Duyuru Yönetimi
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -136,6 +144,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="historical-data">
                   <HistoricalDataManagement />
+                </Tab.Pane>
+                <Tab.Pane eventKey="announcements">
+                  <AnnouncementManagement />
                 </Tab.Pane>
               </Tab.Content>
             </div>

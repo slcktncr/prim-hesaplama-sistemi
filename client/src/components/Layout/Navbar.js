@@ -95,6 +95,13 @@ const Navbar = () => {
                 Hesap Ayarları
               </Dropdown.Item>
               
+              {user?.role === 'admin' && (
+                <Dropdown.Item onClick={() => navigate('/admin/system-settings')}>
+                  <FiShield className="me-2" />
+                  Sistem Ayarları
+                </Dropdown.Item>
+              )}
+              
               <Dropdown.Divider />
               
               <Dropdown.Item onClick={handleLogout} className="text-danger">

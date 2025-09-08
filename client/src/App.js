@@ -110,11 +110,6 @@ function AppContent() {
                     
                     {/* Duyuru Routes */}
                     <Route path="/announcements" element={<AnnouncementList />} />
-                    <Route path="/admin/announcements" element={
-                      <ProtectedRoute adminOnly={true}>
-                        <AnnouncementManagement />
-                      </ProtectedRoute>
-                    } />
                     
                     {/* Prim Routes */}
                     <Route path="/prims/transactions" element={<PrimTransactions />} />

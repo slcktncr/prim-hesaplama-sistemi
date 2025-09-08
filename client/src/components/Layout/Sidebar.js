@@ -99,12 +99,6 @@ const Sidebar = ({ onLinkClick }) => {
           </Nav.Link>
         </LinkContainer>
 
-        <LinkContainer to="/communications/reports" onClick={handleLinkClick}>
-          <Nav.Link>
-            <FiBarChart2 className="me-2" />
-            İletişim & Satış Raporu
-          </Nav.Link>
-        </LinkContainer>
 
         <div className="px-3 py-2 text-muted small">PRİMLER</div>
 
@@ -122,18 +116,6 @@ const Sidebar = ({ onLinkClick }) => {
           </Nav.Link>
         </LinkContainer>
 
-        {isAdmin && (
-          <>
-            <div className="px-3 py-2 text-muted small mt-3">YÖNETİM</div>
-            
-            <LinkContainer to="/admin/system-settings" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiSettings className="me-2" />
-                Sistem Ayarları
-              </Nav.Link>
-            </LinkContainer>
-          </>
-        )}
 
         <div className="px-3 py-2 text-muted small">RAPORLAR</div>
 
@@ -144,21 +126,19 @@ const Sidebar = ({ onLinkClick }) => {
           </Nav.Link>
         </LinkContainer>
 
+        <LinkContainer to="/communications/reports" onClick={handleLinkClick}>
+          <Nav.Link>
+            <FiMessageSquare className="me-2" />
+            İletişim Raporu
+          </Nav.Link>
+        </LinkContainer>
+
         <LinkContainer to="/announcements" onClick={handleLinkClick}>
           <Nav.Link>
             <FiBell className="me-2" />
             Duyurular
           </Nav.Link>
         </LinkContainer>
-
-        {isAdmin && (
-          <LinkContainer to="/admin/announcements" onClick={handleLinkClick}>
-            <Nav.Link>
-              <FiBell className="me-2" />
-              Duyuru Yönetimi
-            </Nav.Link>
-          </LinkContainer>
-        )}
       </Nav>
     </div>
   );
