@@ -260,18 +260,31 @@ router.get('/report', auth, async (req, res) => {
     const endYear = endDate ? new Date(endDate).getFullYear() : new Date().getFullYear();
     const currentYear = new Date().getFullYear();
     
-    // Sadece geçmiş yılları dahil et (mevcut yıl hariç, çünkü günlük kayıtlar var)
+    // Geçmiş yılları dahil et (mevcut yıl hariç, çünkü günlük kayıtlar var)
+    // Ama mevcut yıla ait geçmiş yıl verileri varsa onları da dahil et
     let historicalYears = [];
     if (startYear < currentYear) {
+      // Sadece geçmiş yılları al
       historicalYears = await CommunicationYear.find({
         year: { $gte: startYear, $lt: currentYear }
       });
+    }
+    
+    // Mevcut yıl için de geçmiş yıl verisi varsa dahil et
+    const currentYearHistoricalData = await CommunicationYear.findOne({
+      year: currentYear
+    });
+    
+    if (currentYearHistoricalData) {
+      historicalYears.push(currentYearHistoricalData);
     }
     
     console.log('=== DATE FILTER DEBUG ===');
     console.log('Start date:', startDate, 'End date:', endDate);
     console.log('Start year:', startYear, 'End year:', endYear, 'Current year:', currentYear);
     console.log('Will fetch historical years:', startYear < currentYear ? 'YES' : 'NO');
+    console.log('Current year historical data:', currentYearHistoricalData ? 'EXISTS' : 'NOT EXISTS');
+    console.log('Total historical years to process:', historicalYears.length);
     console.log('=== DATE FILTER DEBUG END ===');
 
     // Tüm aktif kullanıcıları al
@@ -283,11 +296,12 @@ router.get('/report', auth, async (req, res) => {
     }).select('_id name email');
 
     console.log('=== BACKEND DEBUG START ===');
-    console.log('All users found:', allUsers.length);
-    console.log('User names:', allUsers.map(u => u.name));
+    console.log('All active users found:', allUsers.length);
+    console.log('Active user names:', allUsers.map(u => u.name));
     console.log('Historical years found:', historicalYears.length);
     console.log('Historical years:', historicalYears.map(y => ({ year: y.year, type: y.type })));
     console.log('Daily records found:', dailyRecords.length);
+    console.log('Daily records user IDs:', dailyRecords.map(r => r._id));
     console.log('=== BACKEND DEBUG END ===');
 
     // Geçmiş kullanıcıları sadece geçmiş yıl verileri varsa topla
@@ -319,6 +333,7 @@ router.get('/report', auth, async (req, res) => {
     ];
 
     console.log('Total users (active + historical):', allUsersIncludingHistorical.length);
+    console.log('Final user list:', allUsersIncludingHistorical.map(u => `${u.name} (${u.isHistorical ? 'historical' : 'active'})`));
 
     // Kullanıcı bazlı veri birleştirme
     const userBasedData = allUsersIncludingHistorical.map(user => {
