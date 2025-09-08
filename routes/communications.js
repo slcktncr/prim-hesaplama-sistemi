@@ -255,13 +255,24 @@ router.get('/report', auth, async (req, res) => {
       }
     ]);
 
-    // Geçmiş yıl verilerini de al (eğer tarih aralığı geçmiş yılları kapsıyorsa)
+    // Geçmiş yıl verilerini sadece gerekli durumlarda al
     const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
     const endYear = endDate ? new Date(endDate).getFullYear() : new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
     
-    const historicalYears = await CommunicationYear.find({
-      year: { $gte: startYear, $lte: endYear }
-    });
+    // Sadece geçmiş yılları dahil et (mevcut yıl hariç, çünkü günlük kayıtlar var)
+    let historicalYears = [];
+    if (startYear < currentYear) {
+      historicalYears = await CommunicationYear.find({
+        year: { $gte: startYear, $lt: currentYear }
+      });
+    }
+    
+    console.log('=== DATE FILTER DEBUG ===');
+    console.log('Start date:', startDate, 'End date:', endDate);
+    console.log('Start year:', startYear, 'End year:', endYear, 'Current year:', currentYear);
+    console.log('Will fetch historical years:', startYear < currentYear ? 'YES' : 'NO');
+    console.log('=== DATE FILTER DEBUG END ===');
 
     // Tüm aktif kullanıcıları al
     const User = require('../models/User');
@@ -279,22 +290,24 @@ router.get('/report', auth, async (req, res) => {
     console.log('Daily records found:', dailyRecords.length);
     console.log('=== BACKEND DEBUG END ===');
 
-    // Tüm geçmiş kullanıcıları topla (eski satış temsilcileri)
+    // Geçmiş kullanıcıları sadece geçmiş yıl verileri varsa topla
     const allHistoricalUsers = new Map();
-    historicalYears.forEach(yearData => {
-      if (yearData.historicalUsers && yearData.historicalUsers.length > 0) {
-        yearData.historicalUsers.forEach(histUser => {
-          if (!allHistoricalUsers.has(histUser._id)) {
-            allHistoricalUsers.set(histUser._id, {
-              _id: histUser._id,
-              name: histUser.name,
-              email: histUser.email || '',
-              isHistorical: true
-            });
-          }
-        });
-      }
-    });
+    if (historicalYears.length > 0) {
+      historicalYears.forEach(yearData => {
+        if (yearData.historicalUsers && yearData.historicalUsers.length > 0) {
+          yearData.historicalUsers.forEach(histUser => {
+            if (!allHistoricalUsers.has(histUser._id)) {
+              allHistoricalUsers.set(histUser._id, {
+                _id: histUser._id,
+                name: histUser.name,
+                email: histUser.email || '',
+                isHistorical: true
+              });
+            }
+          });
+        }
+      });
+    }
 
     console.log('Historical users found:', allHistoricalUsers.size);
     console.log('Historical user names:', Array.from(allHistoricalUsers.values()).map(u => u.name));
