@@ -718,15 +718,22 @@ const CommunicationReport = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {reportData.users
-                        .filter(item => item.communication.total > 0)
-                        .sort((a, b) => b.communication.total - a.communication.total)
-                        .map((item, index) => (
-                        <tr key={item.user._id || index}>
-                          <td>
-                            <div className="fw-bold">{item.user.name}</div>
-                            <small className="text-muted">{item.user.email}</small>
-                          </td>
+                        {reportData.users
+                          .filter(item => item.communication.total > 0)
+                          .sort((a, b) => b.communication.total - a.communication.total)
+                          .map((item, index) => (
+                          <tr key={item.user._id || index}>
+                            <td>
+                              <div className="fw-bold">
+                                {item.user.name}
+                                {item.user.isHistorical && (
+                                  <Badge bg="secondary" className="ms-2" size="sm">
+                                    Eski Temsilci
+                                  </Badge>
+                                )}
+                              </div>
+                              <small className="text-muted">{item.user.email}</small>
+                            </td>
                           <td>
                             <Badge bg="success">{formatNumber(item.communication.whatsappIncoming)}</Badge>
                           </td>
@@ -784,7 +791,14 @@ const CommunicationReport = () => {
                                 #{index + 1}
                               </Badge>
                             </div>
-                            <h5 className="mt-3">{item.user.name}</h5>
+                            <h5 className="mt-3">
+                              {item.user.name}
+                              {item.user.isHistorical && (
+                                <div>
+                                  <Badge bg="secondary" size="sm">Eski Temsilci</Badge>
+                                </div>
+                              )}
+                            </h5>
                             <h3 className="text-primary">{formatNumber(item.communication.total)}</h3>
                             <p className="text-muted mb-2">Toplam İletişim</p>
                             <div className="d-flex justify-content-around small">

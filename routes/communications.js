@@ -279,8 +279,36 @@ router.get('/report', auth, async (req, res) => {
     console.log('Daily records found:', dailyRecords.length);
     console.log('=== BACKEND DEBUG END ===');
 
+    // Tüm geçmiş kullanıcıları topla (eski satış temsilcileri)
+    const allHistoricalUsers = new Map();
+    historicalYears.forEach(yearData => {
+      if (yearData.historicalUsers && yearData.historicalUsers.length > 0) {
+        yearData.historicalUsers.forEach(histUser => {
+          if (!allHistoricalUsers.has(histUser._id)) {
+            allHistoricalUsers.set(histUser._id, {
+              _id: histUser._id,
+              name: histUser.name,
+              email: histUser.email || '',
+              isHistorical: true
+            });
+          }
+        });
+      }
+    });
+
+    console.log('Historical users found:', allHistoricalUsers.size);
+    console.log('Historical user names:', Array.from(allHistoricalUsers.values()).map(u => u.name));
+
+    // Aktif kullanıcıları ve geçmiş kullanıcıları birleştir
+    const allUsersIncludingHistorical = [
+      ...allUsers.map(u => ({ ...u.toObject(), isHistorical: false })),
+      ...Array.from(allHistoricalUsers.values())
+    ];
+
+    console.log('Total users (active + historical):', allUsersIncludingHistorical.length);
+
     // Kullanıcı bazlı veri birleştirme
-    const userBasedData = allUsers.map(user => {
+    const userBasedData = allUsersIncludingHistorical.map(user => {
       // Günlük kayıtlardan veri
       const dailyData = dailyRecords.find(d => d._id.toString() === user._id.toString()) || {
         whatsappIncoming: 0,
@@ -303,12 +331,12 @@ router.get('/report', auth, async (req, res) => {
       };
 
       historicalYears.forEach(yearData => {
-        console.log(`Processing year ${yearData.year} for user ${user.name}`);
+        console.log(`Processing year ${yearData.year} for user ${user.name} (historical: ${user.isHistorical})`);
         console.log('Year data keys:', Object.keys(yearData.toObject()));
         
-        // Aylık verilerden topla (2025+ için)
-        if (yearData.monthlyData && yearData.monthlyData.size > 0) {
-          console.log('Processing monthly data, size:', yearData.monthlyData.size);
+        // Aylık verilerden topla (sadece aktif kullanıcılar için, 2025+ için)
+        if (!user.isHistorical && yearData.monthlyData && yearData.monthlyData.size > 0) {
+          console.log('Processing monthly data for active user, size:', yearData.monthlyData.size);
           for (let [month, monthData] of yearData.monthlyData) {
             if (monthData && monthData.get && monthData.get(user._id.toString())) {
               const userData = monthData.get(user._id.toString());
