@@ -11,6 +11,81 @@ const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper function: Geçmiş yıl verilerini günlük simülasyon verilerine dönüştür
+function generateDailyHistoricalData(historicalYears, startDate, endDate, salesperson = null) {
+  const dailyData = [];
+  const startDateObj = new Date(startDate);
+  const endDateObj = new Date(endDate);
+  
+  console.log(`Generating daily historical data from ${startDate} to ${endDate}`);
+  
+  historicalYears.forEach(yearData => {
+    if (!yearData.yearlySalesData || yearData.yearlySalesData.size === 0) {
+      console.log(`Year ${yearData.year} has no sales data, skipping`);
+      return;
+    }
+    
+    console.log(`Processing year ${yearData.year} for daily distribution`);
+    
+    // Bu yıl için tarih aralığını hesapla
+    const yearStart = new Date(Math.max(new Date(yearData.year, 0, 1), startDateObj));
+    const yearEnd = new Date(Math.min(new Date(yearData.year, 11, 31), endDateObj));
+    
+    if (yearStart > yearEnd) {
+      console.log(`Year ${yearData.year} outside date range, skipping`);
+      return;
+    }
+    
+    // Bu yıl içindeki toplam gün sayısını hesapla
+    const totalDaysInRange = Math.ceil((yearEnd - yearStart) / (1000 * 60 * 60 * 24)) + 1;
+    console.log(`Year ${yearData.year} has ${totalDaysInRange} days in range`);
+    
+    // Her kullanıcı için günlük dağıtım yap
+    for (let [userId, salesData] of yearData.yearlySalesData) {
+      // Eğer belirli bir temsilci seçildiyse, sadece o temsilciyi dahil et
+      if (salesperson && userId !== salesperson) {
+        continue;
+      }
+      
+      console.log(`Distributing data for user ${userId}:`, salesData);
+      
+      // Günlük ortalama değerleri hesapla
+      const dailyActiveSales = (salesData.totalSales || 0) / totalDaysInRange;
+      const dailyAmount = (salesData.totalAmount || 0) / totalDaysInRange;
+      const dailyPrim = (salesData.totalPrim || 0) / totalDaysInRange;
+      const dailyCancellations = (salesData.cancellations || 0) / totalDaysInRange;
+      const dailyCancellationAmount = (salesData.cancellationAmount || 0) / totalDaysInRange;
+      
+      // Her gün için veri oluştur
+      for (let currentDate = new Date(yearStart); currentDate <= yearEnd; currentDate.setDate(currentDate.getDate() + 1)) {
+        const dateKey = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        dailyData.push({
+          date: new Date(currentDate),
+          dateKey: dateKey,
+          userId: userId,
+          year: currentDate.getFullYear(),
+          month: currentDate.getMonth() + 1,
+          day: currentDate.getDate(),
+          isHistorical: true,
+          sales: {
+            activeSales: dailyActiveSales,
+            totalAmount: dailyAmount,
+            totalPrim: dailyPrim,
+            cancellations: dailyCancellations,
+            cancellationAmount: dailyCancellationAmount
+          }
+        });
+      }
+      
+      console.log(`Generated ${totalDaysInRange} daily records for user ${userId}`);
+    }
+  });
+  
+  console.log(`Total daily historical records generated: ${dailyData.length}`);
+  return dailyData;
+}
+
 // @route   GET /api/reports/dashboard
 // @desc    Dashboard özet bilgileri
 // @access  Private
@@ -239,11 +314,12 @@ router.get('/sales-summary', auth, async (req, res) => {
       }
     ]);
 
-    // Geçmiş yıl verilerini de dahil et
+    // Geçmiş yıl verilerini günlük simülasyon olarak dahil et
     let historicalSalesData = {
       activeSales: { count: 0, totalAmount: 0, totalPrim: 0 },
       cancelledSales: { count: 0, totalAmount: 0 }
     };
+    let dailyHistoricalData = [];
 
     if (startDate && endDate) {
       const startYear = new Date(startDate).getFullYear();
@@ -257,27 +333,20 @@ router.get('/sales-summary', auth, async (req, res) => {
         });
 
         console.log(`Sales Summary: Found ${historicalYears.length} historical years for range ${startYear}-${endYear}`);
-
-        historicalYears.forEach(yearData => {
-          if (yearData.yearlySalesData && yearData.yearlySalesData.size > 0) {
-            console.log(`Processing year ${yearData.year} sales data, users: ${yearData.yearlySalesData.size}`);
-            
-            for (let [userId, salesData] of yearData.yearlySalesData) {
-              // Eğer belirli bir temsilci seçildiyse, sadece o temsilciyi dahil et
-              if (salesperson && userId !== salesperson) {
-                continue;
-              }
-              
-              historicalSalesData.activeSales.count += salesData.totalSales || 0;
-              historicalSalesData.activeSales.totalAmount += salesData.totalAmount || 0;
-              historicalSalesData.activeSales.totalPrim += salesData.totalPrim || 0;
-              historicalSalesData.cancelledSales.count += salesData.cancellations || 0;
-              historicalSalesData.cancelledSales.totalAmount += salesData.cancellationAmount || 0;
-            }
-          }
+        
+        // Günlük simülasyon verilerini oluştur
+        dailyHistoricalData = generateDailyHistoricalData(historicalYears, startDate, endDate, salesperson);
+        
+        // Günlük verilerden toplam hesapla
+        dailyHistoricalData.forEach(dayData => {
+          historicalSalesData.activeSales.count += dayData.sales.activeSales;
+          historicalSalesData.activeSales.totalAmount += dayData.sales.totalAmount;
+          historicalSalesData.activeSales.totalPrim += dayData.sales.totalPrim;
+          historicalSalesData.cancelledSales.count += dayData.sales.cancellations;
+          historicalSalesData.cancelledSales.totalAmount += dayData.sales.cancellationAmount;
         });
 
-        console.log('Historical sales data summary:', historicalSalesData);
+        console.log('Final historical sales data summary from daily simulation:', historicalSalesData);
       }
     }
 
@@ -295,7 +364,7 @@ router.get('/sales-summary', auth, async (req, res) => {
       { $sort: { count: -1 } }
     ]);
 
-    // Aylık satış trendi
+    // Aylık satış trendi (güncel veriler)
     const monthlySales = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
       {
@@ -311,6 +380,63 @@ router.get('/sales-summary', auth, async (req, res) => {
       },
       { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
+
+    // Günlük simülasyon verilerinden aylık satış trendi oluştur
+    const combinedMonthlySales = [...monthlySales];
+    
+    if (dailyHistoricalData.length > 0) {
+      console.log('Adding daily historical data to monthly sales...');
+      
+      // Günlük verileri aylık olarak grupla
+      const monthlyHistoricalMap = new Map();
+      
+      dailyHistoricalData.forEach(dayData => {
+        const monthKey = `${dayData.year}-${dayData.month}`;
+        
+        if (!monthlyHistoricalMap.has(monthKey)) {
+          monthlyHistoricalMap.set(monthKey, {
+            _id: { year: dayData.year, month: dayData.month },
+            count: 0,
+            totalAmount: 0,
+            totalPrim: 0
+          });
+        }
+        
+        const monthData = monthlyHistoricalMap.get(monthKey);
+        monthData.count += dayData.sales.activeSales;
+        monthData.totalAmount += dayData.sales.totalAmount;
+        monthData.totalPrim += dayData.sales.totalPrim;
+      });
+      
+      // Aylık geçmiş verileri ana listeye ekle
+      monthlyHistoricalMap.forEach(monthlyData => {
+        // Aynı ay/yıl kombinasyonu zaten var mı kontrol et
+        const existingIndex = combinedMonthlySales.findIndex(item => 
+          item._id.year === monthlyData._id.year && 
+          item._id.month === monthlyData._id.month
+        );
+        
+        if (existingIndex >= 0) {
+          // Mevcut veriye ekle
+          combinedMonthlySales[existingIndex].count += monthlyData.count;
+          combinedMonthlySales[existingIndex].totalAmount += monthlyData.totalAmount;
+          combinedMonthlySales[existingIndex].totalPrim += monthlyData.totalPrim;
+        } else {
+          // Yeni ay verisi olarak ekle
+          combinedMonthlySales.push(monthlyData);
+        }
+        
+        console.log(`Added historical monthly data for ${monthlyData._id.year}/${monthlyData._id.month}: ${monthlyData.count.toFixed(2)} sales, ${monthlyData.totalAmount.toFixed(2)} amount`);
+      });
+      
+      // Tarihe göre sırala
+      combinedMonthlySales.sort((a, b) => {
+        if (a._id.year !== b._id.year) return a._id.year - b._id.year;
+        return a._id.month - b._id.month;
+      });
+      
+      console.log('Combined monthly sales count:', combinedMonthlySales.length);
+    }
 
     // Başarı oranı hesaplama için toplam satış sayısı (kapora + normal + iptal)
     const totalSalesCount = await Sale.countDocuments(query);
@@ -359,7 +485,7 @@ router.get('/sales-summary', auth, async (req, res) => {
       activeSales: combinedActiveSales,
       cancelledSales: combinedCancelledSales,
       paymentTypeDistribution,
-      monthlySales,
+      monthlySales: combinedMonthlySales,
       successRateData: {
         totalSalesCount: combinedTotalSalesCount,
         realSalesCount: combinedRealSalesCount,

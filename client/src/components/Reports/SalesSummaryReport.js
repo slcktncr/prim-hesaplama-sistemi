@@ -71,6 +71,19 @@ const SalesSummaryReport = () => {
     try {
       setLoading(true);
       const response = await reportsAPI.getSalesSummary(filters);
+      
+      // Debug: Eski satış temsilcisi verilerinin dahil edilip edilmediğini kontrol et
+      console.log('=== SALES SUMMARY DEBUG ===');
+      console.log('Applied filters:', filters);
+      console.log('Response data:', response.data);
+      console.log('Historical data included:', response.data?.historicalDataIncluded);
+      console.log('Active sales count:', response.data?.activeSales?.count);
+      console.log('Cancelled sales count:', response.data?.cancelledSales?.count);
+      console.log('Total sales count:', response.data?.successRateData?.totalSalesCount);
+      console.log('Monthly sales count:', response.data?.monthlySales?.length);
+      console.log('Monthly sales sample:', response.data?.monthlySales?.slice(0, 3));
+      console.log('=== END DEBUG ===');
+      
       setReportData(response.data);
       setError(null);
     } catch (error) {
@@ -165,6 +178,14 @@ const SalesSummaryReport = () => {
 
   return (
     <div>
+      {/* Historical Data Info */}
+      {reportData?.historicalDataIncluded && (
+        <Alert variant="info" className="mb-4">
+          <strong>📊 Geçmiş Yıl Verileri Dahil:</strong> Bu rapor "Eski Satış Temsilcisi" verilerini günlük simülasyon olarak içermektedir. 
+          Geçmiş yıl verileri her günü eşit olarak dağıtılmıştır.
+        </Alert>
+      )}
+      
       {/* Filters */}
       <Card className="mb-4">
         <Card.Body>
