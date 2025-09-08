@@ -485,13 +485,99 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
   try {
     console.log('🔄 Rolling back imported sales...');
     
-    // Import edilen kayıtları bul
-    const importedSales = await Sale.find({ 
-      isImported: true,
-      importedBy: { $exists: true }
+    const { hours, startDate, endDate } = req.body;
+    
+    let dateFilter = {};
+    let filterDescription = '';
+    
+    if (startDate && endDate) {
+      // Tarih aralığı modu
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Geçersiz tarih formatı'
+        });
+      }
+      
+      if (start >= end) {
+        return res.status(400).json({
+          success: false,
+          message: 'Başlangıç tarihi bitiş tarihinden küçük olmalıdır'
+        });
+      }
+      
+      dateFilter = {
+        createdAt: {
+          $gte: start,
+          $lte: end
+        }
+      };
+      
+      filterDescription = `${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')} tarihleri arasında`;
+      console.log(`📅 Looking for records between ${start.toISOString()} and ${end.toISOString()}`);
+      
+    } else {
+      // Saat modu (eski sistem)
+      const hoursNum = parseInt(hours || 2);
+      
+      if (hoursNum < 1 || hoursNum > 48) {
+        return res.status(400).json({
+          success: false,
+          message: 'Saat değeri 1-48 arasında olmalıdır'
+        });
+      }
+      
+      dateFilter = {
+        createdAt: { $gte: new Date(Date.now() - hoursNum * 60 * 60 * 1000) }
+      };
+      
+      filterDescription = `son ${hoursNum} saatte`;
+      console.log(`⏰ Looking for records from last ${hoursNum} hours`);
+    }
+    
+    // Önce tüm satışları kontrol et
+    const allSales = await Sale.find({});
+    console.log(`📊 Total sales in database: ${allSales.length}`);
+    
+    // Import edilen kayıtları bul (birden fazla kritere göre)
+    const importedSales = await Sale.find({
+      $or: [
+        { isImported: true },
+        { importedBy: { $exists: true } },
+        { importedAt: { $exists: true } }
+      ]
     });
     
     console.log(`📊 Found ${importedSales.length} imported sales to delete`);
+    
+    // Tarih filtresi ile kayıtları bul
+    const filteredSales = await Sale.find(dateFilter).sort({ createdAt: -1 });
+    
+    console.log(`📊 Filtered sales (${filterDescription}): ${filteredSales.length}`);
+    
+    if (importedSales.length === 0 && filteredSales.length > 0) {
+      // Import flag'i olmayan ama filtreye uyan kayıtları da dahil et
+      console.log('⚠️ No isImported flag found, using filtered sales as fallback');
+      
+      const saleIds = filteredSales.map(sale => sale._id);
+      const deletedTransactions = await PrimTransaction.deleteMany({ 
+        sale: { $in: saleIds } 
+      });
+      
+      const deletedSales = await Sale.deleteMany({ 
+        _id: { $in: saleIds }
+      });
+      
+      return res.json({
+        success: true,
+        message: `${deletedSales.deletedCount} adet ${filterDescription} eklenen kayıt ve ${deletedTransactions.deletedCount} adet prim transaction'ı başarıyla silindi`,
+        deletedCount: deletedSales.deletedCount,
+        deletedTransactions: deletedTransactions.deletedCount
+      });
+    }
     
     if (importedSales.length === 0) {
       return res.json({
@@ -509,8 +595,11 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
     
     // Import edilen satışları sil
     const deletedSales = await Sale.deleteMany({ 
-      isImported: true,
-      importedBy: { $exists: true }
+      $or: [
+        { isImported: true },
+        { importedBy: { $exists: true } },
+        { importedAt: { $exists: true } }
+      ]
     });
     
     console.log(`✅ Rollback completed: ${deletedSales.deletedCount} sales deleted, ${deletedTransactions.deletedCount} transactions deleted`);

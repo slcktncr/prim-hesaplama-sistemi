@@ -199,7 +199,12 @@ export const salesImportAPI = {
     },
   }),
   downloadTemplate: () => API.get('/sales-import/template', { responseType: 'blob' }),
-  rollbackImports: () => API.delete('/sales-import/rollback')
+  rollbackImports: (options = {}) => {
+    const { hours, startDate, endDate } = options;
+    return API.delete('/sales-import/rollback', { 
+      data: { hours, startDate, endDate } 
+    });
+  }
 };
 
 export default API;

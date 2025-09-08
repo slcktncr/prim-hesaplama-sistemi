@@ -32,6 +32,10 @@ const SalesImport = () => {
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [importResults, setImportResults] = useState(null);
   const [isRollingBack, setIsRollingBack] = useState(false);
+  const [rollbackHours, setRollbackHours] = useState(2);
+  const [rollbackMode, setRollbackMode] = useState('hours'); // 'hours' or 'dateRange'
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [dryRun, setDryRun] = useState(true);
   const [overwriteExisting, setOverwriteExisting] = useState(false);
 
@@ -61,16 +65,34 @@ const SalesImport = () => {
   };
 
   const handleRollback = async () => {
-    if (!window.confirm('⚠️ TÜM import edilen kayıtları geri almak istediğinizden emin misiniz?\n\nBu işlem GERİ ALINAMAZ!')) {
+    let confirmMessage = '';
+    let options = {};
+    
+    if (rollbackMode === 'hours') {
+      confirmMessage = `⚠️ Son ${rollbackHours} saatte eklenen kayıtları geri almak istediğinizden emin misiniz?\n\nBu işlem GERİ ALINAMAZ!`;
+      options = { hours: rollbackHours };
+    } else {
+      if (!startDate || !endDate) {
+        toast.error('Başlangıç ve bitiş tarihlerini seçiniz');
+        return;
+      }
+      
+      const start = new Date(startDate).toLocaleDateString('tr-TR');
+      const end = new Date(endDate).toLocaleDateString('tr-TR');
+      confirmMessage = `⚠️ ${start} - ${end} tarihleri arasında eklenen kayıtları geri almak istediğinizden emin misiniz?\n\nBu işlem GERİ ALINAMAZ!`;
+      options = { startDate, endDate };
+    }
+    
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
     setIsRollingBack(true);
     try {
-      const response = await salesImportAPI.rollbackImports();
+      const response = await salesImportAPI.rollbackImports(options);
       
       if (response.data.success) {
-        toast.success(`✅ ${response.data.deletedCount} adet import kaydı başarıyla geri alındı!`);
+        toast.success(`✅ ${response.data.deletedCount} adet kayıt başarıyla geri alındı!`);
         setImportResults(null);
         setSelectedFile(null);
         
@@ -198,7 +220,7 @@ const SalesImport = () => {
                       onClick={handleRollback}
                       disabled={isRollingBack}
                       className="flex-fill"
-                      title="Tüm import edilen kayıtları geri al"
+                      title={`Son ${rollbackHours} saatteki kayıtları geri al`}
                     >
                       {isRollingBack ? (
                         <>
@@ -208,10 +230,77 @@ const SalesImport = () => {
                       ) : (
                         <>
                           <FiRotateCcw className="me-2" />
-                          Import Geri Al
+                          Son {rollbackHours}h Geri Al
                         </>
                       )}
                     </Button>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <Form.Label className="small">Geri Alma Türü</Form.Label>
+                    <div className="d-flex gap-3 mb-2">
+                      <Form.Check
+                        type="radio"
+                        id="rollback-hours"
+                        label="Saat Bazında"
+                        checked={rollbackMode === 'hours'}
+                        onChange={() => setRollbackMode('hours')}
+                      />
+                      <Form.Check
+                        type="radio"
+                        id="rollback-daterange"
+                        label="Tarih Aralığı"
+                        checked={rollbackMode === 'dateRange'}
+                        onChange={() => setRollbackMode('dateRange')}
+                      />
+                    </div>
+                    
+                    {rollbackMode === 'hours' ? (
+                      <>
+                        <Form.Select
+                          size="sm"
+                          value={rollbackHours}
+                          onChange={(e) => setRollbackHours(parseInt(e.target.value))}
+                          className="w-50"
+                        >
+                          <option value={1}>Son 1 saat</option>
+                          <option value={2}>Son 2 saat</option>
+                          <option value={6}>Son 6 saat</option>
+                          <option value={12}>Son 12 saat</option>
+                          <option value={24}>Son 24 saat</option>
+                          <option value={48}>Son 48 saat</option>
+                        </Form.Select>
+                        <Form.Text className="text-muted">
+                          Seçilen süre içinde eklenen kayıtlar silinecek
+                        </Form.Text>
+                      </>
+                    ) : (
+                      <>
+                        <Row>
+                          <Col md={6}>
+                            <Form.Label className="small">Başlangıç Tarihi</Form.Label>
+                            <Form.Control
+                              type="datetime-local"
+                              size="sm"
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                            />
+                          </Col>
+                          <Col md={6}>
+                            <Form.Label className="small">Bitiş Tarihi</Form.Label>
+                            <Form.Control
+                              type="datetime-local"
+                              size="sm"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                            />
+                          </Col>
+                        </Row>
+                        <Form.Text className="text-muted">
+                          Seçilen tarih aralığında eklenen kayıtlar silinecek
+                        </Form.Text>
+                      </>
+                    )}
                   </div>
                   
                   <div className="small">
