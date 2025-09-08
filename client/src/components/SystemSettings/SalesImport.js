@@ -92,7 +92,10 @@ const SalesImport = () => {
       const response = await salesImportAPI.rollbackImports(options);
       
       if (response.data.success) {
-        toast.success(`✅ ${response.data.deletedCount} adet kayıt başarıyla geri alındı!`);
+        const backupInfo = response.data.backupFile 
+          ? `\n💾 Yedek dosyası: ${response.data.backupFile}`
+          : '';
+        toast.success(`✅ ${response.data.deletedCount} adet kayıt başarıyla geri alındı!${backupInfo}`);
         setImportResults(null);
         setSelectedFile(null);
         

@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const User = require('../models/User');
 const PrimTransaction = require('../models/PrimTransaction');
+const fs = require('fs');
+const path = require('path');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -24,6 +26,37 @@ const upload = multer({
     }
   }
 });
+
+// Helper function: Kayıtları yedekle
+async function backupSales(salesData, backupType = 'rollback') {
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupDir = path.join(__dirname, '../backups');
+    
+    // Backup klasörü yoksa oluştur
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+    
+    const filename = `${backupType}_${timestamp}.json`;
+    const filepath = path.join(backupDir, filename);
+    
+    const backupData = {
+      timestamp: new Date().toISOString(),
+      type: backupType,
+      count: salesData.length,
+      data: salesData
+    };
+    
+    fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
+    console.log(`💾 Backup created: ${filename} (${salesData.length} records)`);
+    
+    return filename;
+  } catch (error) {
+    console.error('❌ Backup error:', error);
+    return null;
+  }
+}
 
 // Helper function: Excel tarihini JS tarihine çevir
 function excelDateToJSDate(excelDate, fieldName = '') {
@@ -349,10 +382,9 @@ router.post('/upload', [auth, adminAuth, upload.single('salesFile')], async (req
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
-    // JSON'a çevir - tarihleri text olarak oku
+    // JSON'a çevir - tarihleri RAW olarak oku (Excel serial number olarak)
     const rawData = XLSX.utils.sheet_to_json(worksheet, { 
-      raw: false, // Tüm değerleri string olarak al
-      dateNF: 'dd/mm', // Tarih formatını belirt
+      raw: true, // Excel değerlerini ham olarak al (tarihler serial number olacak)
       defval: '' // Boş hücreler için varsayılan değer
     });
     
@@ -491,7 +523,7 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
     let filterDescription = '';
     
     if (startDate && endDate) {
-      // Tarih aralığı modu
+      // Tarih aralığı modu - Türkiye saatini UTC'ye çevir
       const start = new Date(startDate);
       const end = new Date(endDate);
       
@@ -509,17 +541,21 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
         });
       }
       
+      // Türkiye saati UTC+3 - 3 saat çıkararak UTC'ye çevir
+      const startUTC = new Date(start.getTime() - (3 * 60 * 60 * 1000));
+      const endUTC = new Date(end.getTime() - (3 * 60 * 60 * 1000));
+      
       dateFilter = {
         createdAt: {
-          $gte: start,
-          $lte: end
+          $gte: startUTC,
+          $lte: endUTC
         }
       };
       
-      filterDescription = `${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')} tarihleri arasında`;
-      console.log(`📅 Looking for records between ${start.toISOString()} and ${end.toISOString()}`);
-      console.log(`📅 User selected: ${startDate} - ${endDate}`);
-      console.log(`📅 Converted to UTC: ${start.toISOString()} - ${end.toISOString()}`);
+      filterDescription = `${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')} tarihleri arasında (Türkiye saati)`;
+      console.log(`📅 User selected (TR time): ${startDate} - ${endDate}`);
+      console.log(`📅 Converted to UTC: ${startUTC.toISOString()} - ${endUTC.toISOString()}`);
+      console.log(`⏰ Timezone adjustment: -3 hours applied`);
       
     } else {
       // Saat modu (eski sistem)
@@ -572,6 +608,9 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
       // Import flag'i olmayan ama filtreye uyan kayıtları da dahil et
       console.log('⚠️ No isImported flag found, using filtered sales as fallback');
       
+      // Önce yedekle
+      const backupFilename = await backupSales(filteredSales, 'rollback');
+      
       const saleIds = filteredSales.map(sale => sale._id);
       const deletedTransactions = await PrimTransaction.deleteMany({ 
         sale: { $in: saleIds } 
@@ -585,7 +624,8 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
         success: true,
         message: `${deletedSales.deletedCount} adet ${filterDescription} eklenen kayıt ve ${deletedTransactions.deletedCount} adet prim transaction'ı başarıyla silindi`,
         deletedCount: deletedSales.deletedCount,
-        deletedTransactions: deletedTransactions.deletedCount
+        deletedTransactions: deletedTransactions.deletedCount,
+        backupFile: backupFilename
       });
     }
     
@@ -596,6 +636,9 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
         deletedCount: 0
       });
     }
+    
+    // Önce yedekle
+    const backupFilename = await backupSales(importedSales, 'rollback');
     
     // İlişkili prim transaction'larını sil
     const saleIds = importedSales.map(sale => sale._id);
@@ -618,7 +661,8 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
       success: true,
       message: `${deletedSales.deletedCount} adet import kaydı ve ${deletedTransactions.deletedCount} adet prim transaction'ı başarıyla silindi`,
       deletedCount: deletedSales.deletedCount,
-      deletedTransactions: deletedTransactions.deletedCount
+      deletedTransactions: deletedTransactions.deletedCount,
+      backupFile: backupFilename
     });
     
   } catch (error) {
