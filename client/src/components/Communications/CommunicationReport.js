@@ -54,19 +54,11 @@ const CommunicationReport = () => {
   const [users, setUsers] = useState([]);
   const [reportData, setReportData] = useState(null);
 
-  // Basit ve etkili filtre sistemi
+  // Sadeleştirilmiş filtre sistemi
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
-    selectedUser: 'all',
-    periodType: 'daily', // daily, weekly, monthly, yearly
-    communicationTypes: {
-      whatsapp: true,
-      incomingCalls: true,
-      outgoingCalls: true,
-      newCustomerMeetings: true,
-      afterSaleMeetings: true
-    }
+    selectedUser: 'all'
   });
 
   const [activeTab, setActiveTab] = useState('summary');
@@ -99,34 +91,43 @@ const CommunicationReport = () => {
       setLoading(true);
       console.log('🔄 Fetching communication data with filters:', filters);
 
-      // Paralel veri çekme - hem özet hem dönem bazlı
+      // Paralel veri çekme - farklı dönem türleri için
       const promises = [
-        // Özet rapor
-        communicationsAPI.getReport({
-          startDate: filters.startDate,
-          endDate: filters.endDate,
-          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined
-        }),
-        // Dönem bazlı rapor
+        // Günlük veriler (detaylı analiz için)
         communicationsAPI.getPeriodReport({
           startDate: filters.startDate,
           endDate: filters.endDate,
           salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined,
-          periodType: filters.periodType
+          periodType: 'daily'
+        }),
+        // Aylık veriler (trend analizi için)
+        communicationsAPI.getPeriodReport({
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined,
+          periodType: 'monthly'
+        }),
+        // Özet rapor (genel toplam için)
+        communicationsAPI.getReport({
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined
         })
       ];
 
-      const [summaryResponse, periodResponse] = await Promise.all(promises);
+      const [dailyResponse, monthlyResponse, summaryResponse] = await Promise.all(promises);
 
       console.log('📊 Communication data received:', {
-        summary: summaryResponse.data?.length || 0,
-        period: periodResponse.data?.length || 0
+        daily: dailyResponse.data?.length || 0,
+        monthly: monthlyResponse.data?.length || 0,
+        summary: summaryResponse.data?.length || 0
       });
 
       // Veriyi işle
       const processedData = processCommunicationData(
         summaryResponse.data || [], 
-        periodResponse.data || []
+        dailyResponse.data || [],
+        monthlyResponse.data || []
       );
       setReportData(processedData);
 
@@ -138,30 +139,28 @@ const CommunicationReport = () => {
     }
   };
 
-  const processCommunicationData = (summaryData, periodData) => {
-    console.log('🔄 Processing communication data:', { summaryData, periodData });
-    console.log('📊 Period type:', filters.periodType);
-    console.log('📊 Raw period data length:', periodData?.length);
+  const processCommunicationData = (summaryData, dailyData, monthlyData) => {
+    console.log('🔄 Processing communication data:', { summaryData, dailyData, monthlyData });
+    console.log('📊 Daily data length:', dailyData?.length);
+    console.log('📊 Monthly data length:', monthlyData?.length);
 
-    // Kullanıcı bazlı veri işleme
+    // Kullanıcı bazlı veri işleme - sadeleştirilmiş
     const userBasedData = summaryData.map(item => {
       const comm = item.communication || {};
       
-      // Filtre uygula
-      const filteredComm = {
-        whatsappIncoming: filters.communicationTypes.whatsapp ? (comm.whatsappIncoming || 0) : 0,
-        callIncoming: filters.communicationTypes.incomingCalls ? (comm.callIncoming || 0) : 0,
-        callOutgoing: filters.communicationTypes.outgoingCalls ? (comm.callOutgoing || 0) : 0,
-        meetingNewCustomer: filters.communicationTypes.newCustomerMeetings ? (comm.meetingNewCustomer || 0) : 0,
-        meetingAfterSale: filters.communicationTypes.afterSaleMeetings ? (comm.meetingAfterSale || 0) : 0
+      const communicationData = {
+        whatsappIncoming: comm.whatsappIncoming || 0,
+        callIncoming: comm.callIncoming || 0,
+        callOutgoing: comm.callOutgoing || 0,
+        meetingNewCustomer: comm.meetingNewCustomer || 0,
+        meetingAfterSale: comm.meetingAfterSale || 0,
+        total: (comm.whatsappIncoming || 0) + (comm.callIncoming || 0) + (comm.callOutgoing || 0) + 
+               (comm.meetingNewCustomer || 0) + (comm.meetingAfterSale || 0)
       };
-
-      // Toplam hesapla
-      filteredComm.total = Object.values(filteredComm).reduce((sum, val) => sum + val, 0);
 
       return {
         user: item.salesperson || { name: 'Bilinmeyen', email: '' },
-        communication: filteredComm,
+        communication: communicationData,
         recordCount: item.recordCount || 0
       };
     });
@@ -185,20 +184,22 @@ const CommunicationReport = () => {
       activeUsers: 0
     });
 
-    // Dönem bazlı veri işleme
-    const processedPeriodData = processPeriodData(periodData, filters.periodType);
-    console.log('📊 Processed period data:', processedPeriodData.length, 'items');
-    console.log('📊 Sample processed period data:', processedPeriodData.slice(0, 2));
+    // Günlük ve aylık veri işleme
+    const processedDailyData = processPeriodData(dailyData, 'daily');
+    const processedMonthlyData = processPeriodData(monthlyData, 'monthly');
+    
+    console.log('📊 Processed daily data:', processedDailyData.length, 'items');
+    console.log('📊 Processed monthly data:', processedMonthlyData.length, 'items');
 
-    // Dönem bazlı toplam istatistikler
-    const periodTotals = processedPeriodData.reduce((acc, item) => ({
+    // Günlük veri bazlı toplam istatistikler (en detaylı)
+    const dailyTotals = processedDailyData.reduce((acc, item) => ({
       whatsappIncoming: acc.whatsappIncoming + (item.communication.whatsappIncoming || 0),
       callIncoming: acc.callIncoming + (item.communication.callIncoming || 0),
       callOutgoing: acc.callOutgoing + (item.communication.callOutgoing || 0),
       meetingNewCustomer: acc.meetingNewCustomer + (item.communication.meetingNewCustomer || 0),
       meetingAfterSale: acc.meetingAfterSale + (item.communication.meetingAfterSale || 0),
       total: acc.total + (item.communication.totalCommunication || 0),
-      activeUsers: new Set(processedPeriodData.map(p => p.salesperson?._id).filter(Boolean)).size
+      activeUsers: new Set(processedDailyData.map(p => p.salesperson?._id).filter(Boolean)).size
     }), {
       whatsappIncoming: 0,
       callIncoming: 0,
@@ -209,23 +210,22 @@ const CommunicationReport = () => {
       activeUsers: 0
     });
 
-    // Dönem türüne göre hangi totali kullanacağımızı belirle
-    const totals = processedPeriodData.length > 0 ? periodTotals : summaryTotals;
+    // En uygun totali seç (günlük > özet)
+    const totals = processedDailyData.length > 0 ? dailyTotals : summaryTotals;
 
-    // Dönem bazlı kullanıcı verilerini hazırla
+    // Günlük veri bazlı kullanıcı verilerini hazırla
     let displayUsers = userBasedData;
     
-    // Eğer dönem bazlı veri varsa, onu kullan
-    if (processedPeriodData.length > 0) {
-      // Dönem bazlı verileri kullanıcı bazında grupla
-      const periodUserMap = new Map();
+    // Eğer günlük veri varsa, onu kullan (daha detaylı)
+    if (processedDailyData.length > 0) {
+      const dailyUserMap = new Map();
       
-      processedPeriodData.forEach(item => {
+      processedDailyData.forEach(item => {
         const userId = item.salesperson?._id;
         if (!userId) return;
         
-        if (!periodUserMap.has(userId)) {
-          periodUserMap.set(userId, {
+        if (!dailyUserMap.has(userId)) {
+          dailyUserMap.set(userId, {
             user: item.salesperson,
             communication: {
               whatsappIncoming: 0,
@@ -239,7 +239,7 @@ const CommunicationReport = () => {
           });
         }
         
-        const userData = periodUserMap.get(userId);
+        const userData = dailyUserMap.get(userId);
         userData.communication.whatsappIncoming += item.communication.whatsappIncoming || 0;
         userData.communication.callIncoming += item.communication.callIncoming || 0;
         userData.communication.callOutgoing += item.communication.callOutgoing || 0;
@@ -249,7 +249,7 @@ const CommunicationReport = () => {
         userData.recordCount += 1;
       });
       
-      displayUsers = Array.from(periodUserMap.values());
+      displayUsers = Array.from(dailyUserMap.values());
     }
 
     // En aktif kullanıcıları displayUsers'dan hesapla
@@ -259,7 +259,7 @@ const CommunicationReport = () => {
       .slice(0, 10);
 
     console.log('📊 Display users length:', displayUsers.length);
-    console.log('📊 Using period data?', processedPeriodData.length > 0);
+    console.log('📊 Using daily data?', processedDailyData.length > 0);
 
     // Totalleri displayUsers'dan yeniden hesapla (tutarlılık için)
     const finalTotals = displayUsers.reduce((acc, item) => ({
@@ -283,7 +283,8 @@ const CommunicationReport = () => {
     return {
       users: displayUsers,
       totals: finalTotals,
-      periods: processedPeriodData,
+      dailyPeriods: processedDailyData,
+      monthlyPeriods: processedMonthlyData,
       topUsers,
       metadata: {
         dateRange: {
@@ -336,29 +337,12 @@ const CommunicationReport = () => {
     }));
   };
 
-  const updateCommunicationType = (type, checked) => {
-    setFilters(prev => ({
-      ...prev,
-      communicationTypes: {
-        ...prev.communicationTypes,
-        [type]: checked
-      }
-    }));
-  };
 
   const resetFilters = () => {
     setFilters({
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
       endDate: new Date().toISOString().split('T')[0],
-      selectedUser: 'all',
-      periodType: 'daily',
-      communicationTypes: {
-        whatsapp: true,
-        incomingCalls: true,
-        outgoingCalls: true,
-        newCustomerMeetings: true,
-        afterSaleMeetings: true
-      }
+      selectedUser: 'all'
     });
   };
 
@@ -394,12 +378,12 @@ const CommunicationReport = () => {
   };
 
   const prepareTrendData = () => {
-    if (!reportData || !reportData.periods) return [];
+    if (!reportData || !reportData.monthlyPeriods) return [];
     
-    // Dönem bazlı trend verisi
+    // Aylık trend verisi
     const trendMap = new Map();
     
-    reportData.periods.forEach(item => {
+    reportData.monthlyPeriods.forEach(item => {
       const period = item.periodLabel;
       if (!trendMap.has(period)) {
         trendMap.set(period, {
@@ -422,7 +406,7 @@ const CommunicationReport = () => {
       data.Toplam += item.communication.totalCommunication || 0;
     });
     
-    return Array.from(trendMap.values()).slice(0, 20); // Son 20 dönem
+    return Array.from(trendMap.values()).slice(0, 12); // Son 12 ay
   };
 
   const COLORS = ['#28a745', '#007bff', '#ffc107', '#17a2b8', '#6c757d'];
@@ -539,76 +523,73 @@ const CommunicationReport = () => {
             </Col>
 
             {/* Temsilci Seçimi */}
-            <Col md={3} className="mb-3">
+            <Col md={6} className="mb-3">
               <Form.Group>
-                <Form.Label>Temsilci</Form.Label>
+                <Form.Label>Temsilci Seçimi</Form.Label>
                 <Form.Select
                   value={filters.selectedUser}
                   onChange={(e) => updateFilter('selectedUser', e.target.value)}
                 >
-                  <option value="all">Tüm Temsilciler</option>
+                  <option value="all">📊 Tüm Temsilciler</option>
                   {users.map(user => (
                     <option key={user._id} value={user._id}>
-                      {user.name}
+                      👤 {user.name}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
             </Col>
-
-            {/* Dönem Türü */}
-            <Col md={3} className="mb-3">
+            
+            <Col md={6} className="mb-3">
               <Form.Group>
-                <Form.Label>Dönem Türü</Form.Label>
-                <Form.Select
-                  value={filters.periodType}
-                  onChange={(e) => updateFilter('periodType', e.target.value)}
-                >
-                  <option value="daily">Günlük</option>
-                  <option value="weekly">Haftalık</option>
-                  <option value="monthly">Aylık</option>
-                  <option value="yearly">Yıllık</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* İletişim Türleri */}
-          <Row>
-            <Col md={12}>
-              <Form.Group>
-                <Form.Label>İletişim Türleri</Form.Label>
-                <div className="d-flex flex-wrap gap-3">
-                  <Form.Check
-                    type="checkbox"
-                    label="WhatsApp"
-                    checked={filters.communicationTypes.whatsapp}
-                    onChange={(e) => updateCommunicationType('whatsapp', e.target.checked)}
-                  />
-                  <Form.Check
-                    type="checkbox"
-                    label="Gelen Aramalar"
-                    checked={filters.communicationTypes.incomingCalls}
-                    onChange={(e) => updateCommunicationType('incomingCalls', e.target.checked)}
-                  />
-                  <Form.Check
-                    type="checkbox"
-                    label="Giden Aramalar"
-                    checked={filters.communicationTypes.outgoingCalls}
-                    onChange={(e) => updateCommunicationType('outgoingCalls', e.target.checked)}
-                  />
-                  <Form.Check
-                    type="checkbox"
-                    label="Yeni Müşteri Görüşmeleri"
-                    checked={filters.communicationTypes.newCustomerMeetings}
-                    onChange={(e) => updateCommunicationType('newCustomerMeetings', e.target.checked)}
-                  />
-                  <Form.Check
-                    type="checkbox"
-                    label="Satış Sonrası Görüşmeler"
-                    checked={filters.communicationTypes.afterSaleMeetings}
-                    onChange={(e) => updateCommunicationType('afterSaleMeetings', e.target.checked)}
-                  />
+                <Form.Label>Hızlı Tarih Seçimi</Form.Label>
+                <div className="d-flex gap-2">
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => {
+                      const today = new Date();
+                      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                      setFilters(prev => ({
+                        ...prev,
+                        startDate: firstDayOfMonth.toISOString().split('T')[0],
+                        endDate: today.toISOString().split('T')[0]
+                      }));
+                    }}
+                  >
+                    Bu Ay
+                  </Button>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => {
+                      const today = new Date();
+                      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                      const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                      setFilters(prev => ({
+                        ...prev,
+                        startDate: lastMonth.toISOString().split('T')[0],
+                        endDate: lastDayOfLastMonth.toISOString().split('T')[0]
+                      }));
+                    }}
+                  >
+                    Geçen Ay
+                  </Button>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => {
+                      const today = new Date();
+                      const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+                      setFilters(prev => ({
+                        ...prev,
+                        startDate: firstDayOfYear.toISOString().split('T')[0],
+                        endDate: today.toISOString().split('T')[0]
+                      }));
+                    }}
+                  >
+                    Bu Yıl
+                  </Button>
                 </div>
               </Form.Group>
             </Col>
@@ -810,12 +791,12 @@ const CommunicationReport = () => {
             <Tab eventKey="period" title={
               <span>
                 <FiCalendar className="me-1" />
-                Dönem Bazlı
+                Günlük Analiz
               </span>
             }>
               <Card>
                 <Card.Body>
-                  {reportData.periods && reportData.periods.length > 0 ? (
+                  {reportData.dailyPeriods && reportData.dailyPeriods.length > 0 ? (
                     <Table responsive hover>
                       <thead className="table-light">
                         <tr>
@@ -830,7 +811,7 @@ const CommunicationReport = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {reportData.periods.map((item, index) => (
+                        {reportData.dailyPeriods.map((item, index) => (
                           <tr key={`${item._id.salesperson}-${item.periodLabel}-${index}`}>
                             <td>
                               <div className="fw-bold text-primary">{item.periodLabel}</div>
@@ -864,11 +845,9 @@ const CommunicationReport = () => {
                   ) : (
                     <div className="text-center py-5">
                       <FiCalendar className="h1 text-muted mb-3" />
-                      <h5 className="text-muted">Dönem bazlı veri bulunamadı</h5>
+                      <h5 className="text-muted">Günlük veri bulunamadı</h5>
                       <p className="text-muted">
-                        Seçilen tarih aralığında {filters.periodType === 'daily' ? 'günlük' : 
-                        filters.periodType === 'weekly' ? 'haftalık' : 
-                        filters.periodType === 'monthly' ? 'aylık' : 'yıllık'} veri bulunmuyor.
+                        Seçilen tarih aralığında günlük iletişim verileri bulunmuyor.
                       </p>
                     </div>
                   )}
