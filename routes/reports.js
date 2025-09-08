@@ -6,6 +6,7 @@ const Sale = require('../models/Sale');
 const PrimTransaction = require('../models/PrimTransaction');
 const User = require('../models/User');
 const PrimPeriod = require('../models/PrimPeriod');
+const CommunicationYear = require('../models/CommunicationYear');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -207,7 +208,7 @@ router.get('/sales-summary', auth, async (req, res) => {
       query.primPeriod = new mongoose.Types.ObjectId(period);
     }
 
-    // Aktif satışlar
+    // Güncel Sale verilerini al
     const activeSales = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
       {
@@ -224,7 +225,6 @@ router.get('/sales-summary', auth, async (req, res) => {
       }
     ]);
 
-    // İptal edilen satışlar
     const cancelledSales = await Sale.aggregate([
       { $match: { ...query, status: 'iptal' } },
       {
@@ -238,6 +238,48 @@ router.get('/sales-summary', auth, async (req, res) => {
         }
       }
     ]);
+
+    // Geçmiş yıl verilerini de dahil et
+    let historicalSalesData = {
+      activeSales: { count: 0, totalAmount: 0, totalPrim: 0 },
+      cancelledSales: { count: 0, totalAmount: 0 }
+    };
+
+    if (startDate && endDate) {
+      const startYear = new Date(startDate).getFullYear();
+      const endYear = new Date(endDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+
+      // Geçmiş yılları dahil et
+      if (startYear < currentYear) {
+        const historicalYears = await CommunicationYear.find({
+          year: { $gte: startYear, $lt: currentYear }
+        });
+
+        console.log(`Sales Summary: Found ${historicalYears.length} historical years for range ${startYear}-${endYear}`);
+
+        historicalYears.forEach(yearData => {
+          if (yearData.yearlySalesData && yearData.yearlySalesData.size > 0) {
+            console.log(`Processing year ${yearData.year} sales data, users: ${yearData.yearlySalesData.size}`);
+            
+            for (let [userId, salesData] of yearData.yearlySalesData) {
+              // Eğer belirli bir temsilci seçildiyse, sadece o temsilciyi dahil et
+              if (salesperson && userId !== salesperson) {
+                continue;
+              }
+              
+              historicalSalesData.activeSales.count += salesData.totalSales || 0;
+              historicalSalesData.activeSales.totalAmount += salesData.totalAmount || 0;
+              historicalSalesData.activeSales.totalPrim += salesData.totalPrim || 0;
+              historicalSalesData.cancelledSales.count += salesData.cancellations || 0;
+              historicalSalesData.cancelledSales.totalAmount += salesData.cancellationAmount || 0;
+            }
+          }
+        });
+
+        console.log('Historical sales data summary:', historicalSalesData);
+      }
+    }
 
     // Ödeme tipi dağılımı
     const paymentTypeDistribution = await Sale.aggregate([
@@ -289,18 +331,43 @@ router.get('/sales-summary', auth, async (req, res) => {
     // Başarı oranı hesaplama
     const successRate = totalSalesCount > 0 ? ((realSalesCount / totalSalesCount) * 100) : 0;
 
+    // Güncel ve geçmiş verileri birleştir
+    const combinedActiveSales = {
+      count: (activeSales[0]?.count || 0) + historicalSalesData.activeSales.count,
+      totalListPrice: activeSales[0]?.totalListPrice || 0, // Geçmiş yıl verilerinde bu alan yok
+      totalActivityPrice: activeSales[0]?.totalActivityPrice || 0, // Geçmiş yıl verilerinde bu alan yok
+      totalBasePrimPrice: (activeSales[0]?.totalBasePrimPrice || 0) + historicalSalesData.activeSales.totalAmount,
+      totalPrimAmount: (activeSales[0]?.totalPrimAmount || 0) + historicalSalesData.activeSales.totalPrim,
+      paidPrims: activeSales[0]?.paidPrims || 0, // Geçmiş yıl verilerinde bu detay yok
+      unpaidPrims: activeSales[0]?.unpaidPrims || 0 // Geçmiş yıl verilerinde bu detay yok
+    };
+
+    const combinedCancelledSales = {
+      count: (cancelledSales[0]?.count || 0) + historicalSalesData.cancelledSales.count,
+      totalListPrice: cancelledSales[0]?.totalListPrice || 0,
+      totalActivityPrice: cancelledSales[0]?.totalActivityPrice || 0,
+      totalBasePrimPrice: (cancelledSales[0]?.totalBasePrimPrice || 0) + historicalSalesData.cancelledSales.totalAmount,
+      totalPrimAmount: cancelledSales[0]?.totalPrimAmount || 0
+    };
+
+    // Toplam sayıları güncelle
+    const combinedTotalSalesCount = totalSalesCount + historicalSalesData.activeSales.count + historicalSalesData.cancelledSales.count;
+    const combinedRealSalesCount = realSalesCount + historicalSalesData.activeSales.count; // Geçmiş yıl verileri gerçek satış kabul ediliyor
+    const combinedSuccessRate = combinedTotalSalesCount > 0 ? ((combinedRealSalesCount / combinedTotalSalesCount) * 100) : 0;
+
     res.json({
-      activeSales: activeSales[0] || { count: 0, totalListPrice: 0, totalActivityPrice: 0, totalBasePrimPrice: 0, totalPrimAmount: 0, paidPrims: 0, unpaidPrims: 0 },
-      cancelledSales: cancelledSales[0] || { count: 0, totalListPrice: 0, totalActivityPrice: 0, totalBasePrimPrice: 0, totalPrimAmount: 0 },
+      activeSales: combinedActiveSales,
+      cancelledSales: combinedCancelledSales,
       paymentTypeDistribution,
       monthlySales,
       successRateData: {
-        totalSalesCount,      // Toplam giriş (kapora + normal + iptal)
-        realSalesCount,       // Gerçek satış (aktif + kapora olmayan)
-        kaporaSalesCount,     // Kapora durumundaki
-        cancelledCount: cancelledSales[0]?.count || 0, // İptal edilenler
-        successRate: parseFloat(successRate.toFixed(1)) // Başarı oranı
-      }
+        totalSalesCount: combinedTotalSalesCount,
+        realSalesCount: combinedRealSalesCount,
+        kaporaSalesCount,     // Geçmiş yıl verilerinde kapora detayı yok
+        cancelledCount: combinedCancelledSales.count,
+        successRate: parseFloat(combinedSuccessRate.toFixed(1))
+      },
+      historicalDataIncluded: historicalSalesData.activeSales.count > 0 || historicalSalesData.cancelledSales.count > 0
     });
   } catch (error) {
     console.error('Sales summary error:', error);
