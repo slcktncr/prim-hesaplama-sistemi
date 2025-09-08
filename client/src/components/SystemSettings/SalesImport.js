@@ -278,26 +278,28 @@ const SalesImport = () => {
                       <>
                         <Row>
                           <Col md={6}>
-                            <Form.Label className="small">Başlangıç Tarihi</Form.Label>
+                            <Form.Label className="small">Başlangıç Tarihi ve Saati</Form.Label>
                             <Form.Control
                               type="datetime-local"
                               size="sm"
                               value={startDate}
                               onChange={(e) => setStartDate(e.target.value)}
+                              placeholder="Başlangıç tarih ve saat seçin"
                             />
                           </Col>
                           <Col md={6}>
-                            <Form.Label className="small">Bitiş Tarihi</Form.Label>
+                            <Form.Label className="small">Bitiş Tarihi ve Saati</Form.Label>
                             <Form.Control
                               type="datetime-local"
                               size="sm"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
+                              placeholder="Bitiş tarih ve saat seçin"
                             />
                           </Col>
                         </Row>
                         <Form.Text className="text-muted">
-                          Seçilen tarih aralığında eklenen kayıtlar silinecek
+                          📅 Tarih ve 🕐 saat (dakika dahil) seçebilirsiniz. Örn: 08/01/2025 14:30
                         </Form.Text>
                       </>
                     )}
