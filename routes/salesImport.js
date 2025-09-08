@@ -4,6 +4,7 @@ const XLSX = require('xlsx');
 const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const User = require('../models/User');
+const PrimTransaction = require('../models/PrimTransaction');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -237,6 +238,14 @@ async function convertToSaleRecord(record, adminUserId) {
       // Zaten doğru formatta
       const [day, month] = record.entryDate.split('/');
       entryDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}`;
+    } else if (typeof record.entryDate === 'number') {
+      // Excel serial number ise Date'e çevir sonra format et
+      const date = excelDateToJSDate(record.entryDate, 'entryDate');
+      if (date) {
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        entryDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+      }
     }
   }
   
@@ -245,6 +254,14 @@ async function convertToSaleRecord(record, adminUserId) {
       // Zaten doğru formatta
       const [day, month] = record.exitDate.split('/');
       exitDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}`;
+    } else if (typeof record.exitDate === 'number') {
+      // Excel serial number ise Date'e çevir sonra format et
+      const date = excelDateToJSDate(record.exitDate, 'exitDate');
+      if (date) {
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        exitDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+      }
     }
   }
   
@@ -457,6 +474,59 @@ router.post('/upload', [auth, adminAuth, upload.single('salesFile')], async (req
     res.status(500).json({ 
       message: 'Import sırasında hata oluştu', 
       error: error.message 
+    });
+  }
+});
+
+// @route   DELETE /api/sales-import/rollback
+// @desc    Import edilen kayıtları geri al
+// @access  Admin only
+router.delete('/rollback', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🔄 Rolling back imported sales...');
+    
+    // Import edilen kayıtları bul
+    const importedSales = await Sale.find({ 
+      isImported: true,
+      importedBy: { $exists: true }
+    });
+    
+    console.log(`📊 Found ${importedSales.length} imported sales to delete`);
+    
+    if (importedSales.length === 0) {
+      return res.json({
+        success: true,
+        message: 'Silinecek import kaydı bulunamadı',
+        deletedCount: 0
+      });
+    }
+    
+    // İlişkili prim transaction'larını sil
+    const saleIds = importedSales.map(sale => sale._id);
+    const deletedTransactions = await PrimTransaction.deleteMany({ 
+      sale: { $in: saleIds } 
+    });
+    
+    // Import edilen satışları sil
+    const deletedSales = await Sale.deleteMany({ 
+      isImported: true,
+      importedBy: { $exists: true }
+    });
+    
+    console.log(`✅ Rollback completed: ${deletedSales.deletedCount} sales deleted, ${deletedTransactions.deletedCount} transactions deleted`);
+    
+    res.json({
+      success: true,
+      message: `${deletedSales.deletedCount} adet import kaydı ve ${deletedTransactions.deletedCount} adet prim transaction'ı başarıyla silindi`,
+      deletedCount: deletedSales.deletedCount,
+      deletedTransactions: deletedTransactions.deletedCount
+    });
+    
+  } catch (error) {
+    console.error('❌ Rollback error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Import geri alma sırasında hata oluştu: ' + error.message 
     });
   }
 });

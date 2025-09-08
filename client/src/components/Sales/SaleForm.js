@@ -524,6 +524,9 @@ const SaleForm = () => {
       navigate('/sales');
     } catch (error) {
       console.error('Sale save error:', error);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response status:', error.response?.status);
+      
       const message = error.response?.data?.message || 
         (isEdit ? 'Satış güncellenirken hata oluştu' : 'Satış eklenirken hata oluştu');
       toast.error(message);

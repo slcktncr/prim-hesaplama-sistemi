@@ -19,7 +19,8 @@ import {
   FiCheckCircle,
   FiXCircle,
   FiAlertTriangle,
-  FiPlay
+  FiPlay,
+  FiRotateCcw
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
@@ -30,6 +31,7 @@ const SalesImport = () => {
   const [uploading, setUploading] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [importResults, setImportResults] = useState(null);
+  const [isRollingBack, setIsRollingBack] = useState(false);
   const [dryRun, setDryRun] = useState(true);
   const [overwriteExisting, setOverwriteExisting] = useState(false);
 
@@ -55,6 +57,34 @@ const SalesImport = () => {
       
       setSelectedFile(file);
       toast.success(`Dosya seçildi: ${file.name}`);
+    }
+  };
+
+  const handleRollback = async () => {
+    if (!window.confirm('⚠️ TÜM import edilen kayıtları geri almak istediğinizden emin misiniz?\n\nBu işlem GERİ ALINAMAZ!')) {
+      return;
+    }
+
+    setIsRollingBack(true);
+    try {
+      const response = await salesImportAPI.rollbackImports();
+      
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.deletedCount} adet import kaydı başarıyla geri alındı!`);
+        setImportResults(null);
+        setSelectedFile(null);
+        
+        // File input'u temizle
+        const fileInput = document.getElementById('salesFileInput');
+        if (fileInput) fileInput.value = '';
+      } else {
+        toast.error('Import geri alma işlemi başarısız oldu');
+      }
+    } catch (error) {
+      console.error('Rollback error:', error);
+      toast.error('Import geri alma sırasında hata oluştu: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsRollingBack(false);
     }
   };
 
@@ -153,14 +183,36 @@ const SalesImport = () => {
                   <p className="small text-muted">
                     Öncelikle doğru format için örnek şablonu indirin ve verilerinizi bu formata göre hazırlayın.
                   </p>
-                  <Button 
-                    variant="outline-primary" 
-                    onClick={downloadTemplate}
-                    className="mb-3"
-                  >
-                    <FiDownload className="me-2" />
-                    Excel Şablonunu İndir
-                  </Button>
+                  <div className="d-flex gap-2 mb-3">
+                    <Button 
+                      variant="outline-primary" 
+                      onClick={downloadTemplate}
+                      className="flex-fill"
+                    >
+                      <FiDownload className="me-2" />
+                      Excel Şablonunu İndir
+                    </Button>
+                    
+                    <Button 
+                      variant="outline-danger" 
+                      onClick={handleRollback}
+                      disabled={isRollingBack}
+                      className="flex-fill"
+                      title="Tüm import edilen kayıtları geri al"
+                    >
+                      {isRollingBack ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Geri Alınıyor...
+                        </>
+                      ) : (
+                        <>
+                          <FiRotateCcw className="me-2" />
+                          Import Geri Al
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   
                   <div className="small">
                     <strong>Gerekli Kolonlar:</strong>

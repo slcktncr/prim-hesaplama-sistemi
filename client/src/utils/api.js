@@ -198,7 +198,8 @@ export const salesImportAPI = {
       'Content-Type': 'multipart/form-data',
     },
   }),
-  downloadTemplate: () => API.get('/sales-import/template', { responseType: 'blob' })
+  downloadTemplate: () => API.get('/sales-import/template', { responseType: 'blob' }),
+  rollbackImports: () => API.delete('/sales-import/rollback')
 };
 
 export default API;
