@@ -22,7 +22,7 @@ import { toast } from 'react-toastify';
 import { FiCalendar, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 
 import { reportsAPI } from '../../utils/api';
-import { formatCurrency, formatNumber } from '../../utils/helpers';
+import { formatCurrency, formatCurrencyCompact, formatNumber, formatNumberCompact } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
 const PeriodComparisonReport = () => {
@@ -113,7 +113,10 @@ const PeriodComparisonReport = () => {
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="period" />
-                      <YAxis />
+                      <YAxis 
+                        tickFormatter={(value) => formatNumberCompact(value)}
+                        width={50}
+                      />
                       <Tooltip formatter={(value) => formatNumber(value)} />
                       <Line type="monotone" dataKey="aktiveSatış" stroke="#28a745" strokeWidth={2} />
                       <Line type="monotone" dataKey="iptalSatış" stroke="#dc3545" strokeWidth={2} />
@@ -132,7 +135,10 @@ const PeriodComparisonReport = () => {
                     <BarChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="period" />
-                      <YAxis />
+                      <YAxis 
+                        tickFormatter={(value) => formatCurrencyCompact(value)}
+                        width={60}
+                      />
                       <Tooltip formatter={(value) => formatCurrency(value)} />
                       <Bar dataKey="ciro" fill="#007bff" />
                       <Bar dataKey="prim" fill="#28a745" />

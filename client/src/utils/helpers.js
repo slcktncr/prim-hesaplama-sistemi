@@ -12,9 +12,43 @@ export const formatCurrency = (amount) => {
   }).format(amount || 0);
 };
 
+// Kısaltmalı para formatı (grafiklerde kullanım için)
+export const formatCurrencyCompact = (amount) => {
+  if (!amount) return '₺0';
+  
+  const absAmount = Math.abs(amount);
+  
+  if (absAmount >= 1000000000) {
+    return `₺${(amount / 1000000000).toFixed(1)}B`;
+  } else if (absAmount >= 1000000) {
+    return `₺${(amount / 1000000).toFixed(1)}M`;
+  } else if (absAmount >= 1000) {
+    return `₺${(amount / 1000).toFixed(1)}K`;
+  } else {
+    return `₺${amount.toFixed(0)}`;
+  }
+};
+
 // Sayı formatı
 export const formatNumber = (number) => {
   return new Intl.NumberFormat('tr-TR').format(number || 0);
+};
+
+// Kısaltmalı sayı formatı (grafiklerde kullanım için)
+export const formatNumberCompact = (number) => {
+  if (!number) return '0';
+  
+  const absNumber = Math.abs(number);
+  
+  if (absNumber >= 1000000000) {
+    return `${(number / 1000000000).toFixed(1)}B`;
+  } else if (absNumber >= 1000000) {
+    return `${(number / 1000000).toFixed(1)}M`;
+  } else if (absNumber >= 1000) {
+    return `${(number / 1000).toFixed(1)}K`;
+  } else {
+    return `${number}`;
+  }
 };
 
 // Tarih formatı

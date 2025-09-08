@@ -294,7 +294,14 @@ const SalesSummaryReport = () => {
                   <LineChart data={monthlyChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
-                    <YAxis />
+                    <YAxis 
+                      tickFormatter={(value) => {
+                        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                        if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                        return value;
+                      }}
+                      width={50}
+                    />
                     <Tooltip 
                       formatter={(value, name) => [
                         name === 'satış' ? formatNumber(value) : formatCurrency(value),
