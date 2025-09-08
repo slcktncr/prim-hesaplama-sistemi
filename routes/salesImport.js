@@ -35,6 +35,11 @@ function excelDateToJSDate(excelDate, fieldName = '') {
     isNumber: typeof excelDate === 'number'
   });
   
+  // String'i temizle - boşlukları kaldır
+  if (typeof excelDate === 'string') {
+    excelDate = excelDate.trim();
+  }
+  
   // Eğer zaten string ise
   if (typeof excelDate === 'string') {
     // YYYY-MM-DD formatı (saleDate için)
@@ -55,6 +60,27 @@ function excelDateToJSDate(excelDate, fieldName = '') {
       const date = new Date(year, parseInt(month) - 1, parseInt(day));
       console.log(`✅ ${fieldName} dönüştürüldü:`, date);
       return date;
+    }
+    
+    // Sadece sayı formatı (21/8, 1/12 gibi) - Excel'de sıfırsız olabilir
+    if (excelDate.match(/^\d{1,2}\/\d{1,2}$/)) {
+      const parts = excelDate.split('/');
+      if (parts.length === 2) {
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const currentYear = new Date().getFullYear();
+        
+        let year = currentYear;
+        if (fieldName === 'exitDate') {
+          year = currentYear + 1;
+        }
+        
+        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+          const date = new Date(year, month - 1, day);
+          console.log(`✅ ${fieldName} GG/AA formatından dönüştürüldü:`, date);
+          return date;
+        }
+      }
     }
     
     // DD/MM/YYYY formatı (Excel'den gelebilir)
@@ -133,9 +159,9 @@ function validateSaleRecord(record, rowIndex) {
       const date = excelDateToJSDate(record[dateField], dateField);
       if (!date || isNaN(date)) {
         if (dateField === 'saleDate') {
-          errors.push(`Satır ${rowIndex}: ${dateField} YYYY-MM-DD formatında olmalıdır (örn: 2021-03-15)`);
+          errors.push(`Satır ${rowIndex}: ${dateField} geçerli bir tarih formatında olmalıdır (örn: 2021-03-15)`);
         } else {
-          errors.push(`Satır ${rowIndex}: ${dateField} GG/AA formatında olmalıdır (örn: 01/05 = 1 Mayıs)`);
+          errors.push(`Satır ${rowIndex}: ${dateField} geçerli bir tarih formatında olmalıdır (örn: 21/08 veya 21/8)`);
         }
       }
     }
@@ -276,10 +302,11 @@ router.post('/upload', [auth, adminAuth, upload.single('salesFile')], async (req
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
-    // JSON'a çevir
+    // JSON'a çevir - tarihleri text olarak oku
     const rawData = XLSX.utils.sheet_to_json(worksheet, { 
-      raw: false, // Tarihleri string olarak al
-      dateNF: 'yyyy-mm-dd' // Tarih formatı
+      raw: false, // Tüm değerleri string olarak al
+      dateNF: 'dd/mm', // Tarih formatını belirt
+      defval: '' // Boş hücreler için varsayılan değer
     });
     
     console.log(`📊 Found ${rawData.length} rows in Excel file`);
