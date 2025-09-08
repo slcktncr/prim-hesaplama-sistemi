@@ -212,14 +212,26 @@ const CommunicationReport = () => {
       activeUsers: 0
     });
 
-    // En uygun totali seç (günlük > özet)
-    const totals = processedDailyData.length > 0 ? dailyTotals : summaryTotals;
+    // Tarih aralığına göre totali seç
+    const dateRangeForTotals = Math.ceil((new Date(filters.endDate) - new Date(filters.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+    const totals = (dateRangeForTotals <= 45 && processedDailyData.length > 0) ? dailyTotals : summaryTotals;
 
-    // Günlük veri bazlı kullanıcı verilerini hazırla
+    // Tarih aralığına göre hangi veriyi kullanacağımıza karar ver
+    const dateRange = Math.ceil((new Date(filters.endDate) - new Date(filters.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+    console.log('📊 Date range in days:', dateRange);
+    
     let displayUsers = userBasedData;
     
-    // Eğer günlük veri varsa, onu kullan (daha detaylı)
-    if (processedDailyData.length > 0) {
+    // Kısa dönem (≤45 gün) ise günlük veri, uzun dönem ise özet veri kullan
+    if (dateRange <= 45 && processedDailyData.length > 0) {
+      console.log('📊 Using DAILY data for short period');
+    } else {
+      console.log('📊 Using SUMMARY data for long period');
+      // Özet veriyi kullan, günlük veri işlemeyi atla
+      displayUsers = userBasedData;
+    }
+    
+    if (dateRange <= 45 && processedDailyData.length > 0) {
       const dailyUserMap = new Map();
       
       processedDailyData.forEach(item => {
