@@ -28,47 +28,87 @@ const upload = multer({
 function excelDateToJSDate(excelDate, fieldName = '') {
   if (!excelDate) return null;
   
-  // Eğer zaten string ise ve YYYY-MM-DD formatındaysa (saleDate için)
+  console.log(`🔍 ${fieldName} tarih dönüşümü:`, {
+    value: excelDate,
+    type: typeof excelDate,
+    isString: typeof excelDate === 'string',
+    isNumber: typeof excelDate === 'number'
+  });
+  
+  // Eğer zaten string ise
   if (typeof excelDate === 'string') {
+    // YYYY-MM-DD formatı (saleDate için)
     if (excelDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
       return new Date(excelDate);
     }
     
-    // GG/AA formatı (entryDate ve exitDate için) - örn: 01/05 = 1 Mayıs
+    // GG/AA formatı (entryDate ve exitDate için) - örn: 21/08 = 21 Ağustos
     if (excelDate.match(/^\d{1,2}\/\d{1,2}$/)) {
       const [day, month] = excelDate.split('/');
       const currentYear = new Date().getFullYear();
       
-      // Giriş tarihi için: eğer satış tarihinden küçükse bir sonraki yıl
-      // Çıkış tarihi için: giriş tarihinden 1 yıl sonra
       let year = currentYear;
-      
       if (fieldName === 'exitDate') {
-        // Çıkış tarihi genelde giriş tarihinden 1 yıl sonra
-        year = currentYear + 1;
+        year = currentYear + 1; // Çıkış tarihi 1 yıl sonra
       }
       
       const date = new Date(year, parseInt(month) - 1, parseInt(day));
+      console.log(`✅ ${fieldName} dönüştürüldü:`, date);
       return date;
+    }
+    
+    // DD/MM/YYYY formatı (Excel'den gelebilir)
+    if (excelDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+      const [day, month, year] = excelDate.split('/');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      console.log(`✅ ${fieldName} DD/MM/YYYY formatından dönüştürüldü:`, date);
+      return date;
+    }
+    
+    // MM/DD/YYYY formatı (Excel'den gelebilir)
+    if (excelDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/) && fieldName !== 'saleDate') {
+      // entryDate ve exitDate için MM/DD formatını DD/MM olarak yorumla
+      const parts = excelDate.split('/');
+      if (parts.length === 3) {
+        const [first, second, year] = parts;
+        // Eğer ikinci kısım 12'den büyükse, first=month, second=day
+        if (parseInt(second) > 12) {
+          const date = new Date(parseInt(year), parseInt(first) - 1, parseInt(second));
+          console.log(`✅ ${fieldName} MM/DD/YYYY formatından dönüştürüldü:`, date);
+          return date;
+        } else {
+          // Normal DD/MM/YYYY
+          const date = new Date(parseInt(year), parseInt(second) - 1, parseInt(first));
+          console.log(`✅ ${fieldName} DD/MM/YYYY formatından dönüştürüldü:`, date);
+          return date;
+        }
+      }
     }
   }
   
   // Excel serial date ise
   if (typeof excelDate === 'number') {
-    // Excel'in epoch'u 1900-01-01, JavaScript'in epoch'u 1970-01-01
     const excelEpoch = new Date(1900, 0, 1);
     const jsDate = new Date(excelEpoch.getTime() + (excelDate - 1) * 24 * 60 * 60 * 1000);
+    console.log(`✅ ${fieldName} Excel serial'dan dönüştürüldü:`, jsDate);
     return jsDate;
   }
   
   // Date objesi ise direkt döndür
   if (excelDate instanceof Date) {
+    console.log(`✅ ${fieldName} zaten Date objesi:`, excelDate);
     return excelDate;
   }
   
   // Parse etmeye çalış
   const parsed = new Date(excelDate);
-  return isNaN(parsed) ? null : parsed;
+  if (!isNaN(parsed)) {
+    console.log(`✅ ${fieldName} parse edildi:`, parsed);
+    return parsed;
+  }
+  
+  console.log(`❌ ${fieldName} dönüştürülemedi:`, excelDate);
+  return null;
 }
 
 // Helper function: Satış kaydını validate et
