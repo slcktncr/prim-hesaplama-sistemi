@@ -90,6 +90,8 @@ const CommunicationReport = () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching communication data with filters:', filters);
+      console.log('🔄 Selected user:', filters.selectedUser);
+      console.log('🔄 Date range:', filters.startDate, 'to', filters.endDate);
 
       // Paralel veri çekme - farklı dönem türleri için
       const promises = [
@@ -548,13 +550,17 @@ const CommunicationReport = () => {
                     variant="outline-primary" 
                     size="sm"
                     onClick={() => {
+                      console.log('🔄 Bu Ay clicked - current filters:', filters);
                       const today = new Date();
                       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                      setFilters(prev => ({
-                        ...prev,
+                      const newFilters = {
+                        ...filters,
                         startDate: firstDayOfMonth.toISOString().split('T')[0],
-                        endDate: today.toISOString().split('T')[0]
-                      }));
+                        endDate: today.toISOString().split('T')[0],
+                        selectedUser: 'all'
+                      };
+                      console.log('🔄 Bu Ay new filters:', newFilters);
+                      setFilters(newFilters);
                     }}
                   >
                     Bu Ay
@@ -563,14 +569,18 @@ const CommunicationReport = () => {
                     variant="outline-primary" 
                     size="sm"
                     onClick={() => {
+                      console.log('🔄 Geçen Ay clicked - current filters:', filters);
                       const today = new Date();
                       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                       const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                      setFilters(prev => ({
-                        ...prev,
+                      const newFilters = {
+                        ...filters,
                         startDate: lastMonth.toISOString().split('T')[0],
-                        endDate: lastDayOfLastMonth.toISOString().split('T')[0]
-                      }));
+                        endDate: lastDayOfLastMonth.toISOString().split('T')[0],
+                        selectedUser: 'all'
+                      };
+                      console.log('🔄 Geçen Ay new filters:', newFilters);
+                      setFilters(newFilters);
                     }}
                   >
                     Geçen Ay
@@ -579,13 +589,17 @@ const CommunicationReport = () => {
                     variant="outline-primary" 
                     size="sm"
                     onClick={() => {
+                      console.log('🔄 Bu Yıl clicked - current filters:', filters);
                       const today = new Date();
                       const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
-                      setFilters(prev => ({
-                        ...prev,
+                      const newFilters = {
+                        ...filters,
                         startDate: firstDayOfYear.toISOString().split('T')[0],
-                        endDate: today.toISOString().split('T')[0]
-                      }));
+                        endDate: today.toISOString().split('T')[0],
+                        selectedUser: 'all' // Açıkça tüm temsilcileri seç
+                      };
+                      console.log('🔄 Bu Yıl new filters:', newFilters);
+                      setFilters(newFilters);
                     }}
                   >
                     Bu Yıl
