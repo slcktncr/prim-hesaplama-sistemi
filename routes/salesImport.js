@@ -218,7 +218,7 @@ async function convertToSaleRecord(record, adminUserId) {
     }
   }
   
-  // Tarih dönüşümleri
+  // Tarih dönüşümleri - Sale model string bekliyor!
   console.log('📅 Tarih dönüşüm debug:', {
     entryDate: record.entryDate,
     exitDate: record.exitDate,
@@ -227,14 +227,30 @@ async function convertToSaleRecord(record, adminUserId) {
   });
   
   const saleDate = excelDateToJSDate(record.saleDate, 'saleDate');
-  const entryDate = excelDateToJSDate(record.entryDate, 'entryDate');
-  const exitDate = excelDateToJSDate(record.exitDate, 'exitDate');
   
-  console.log('📅 Dönüştürülen tarihler:', {
+  // entryDate ve exitDate'i string formatında tut (GG/AA)
+  let entryDate = null;
+  let exitDate = null;
+  
+  if (record.entryDate) {
+    if (typeof record.entryDate === 'string' && record.entryDate.match(/^\d{1,2}\/\d{1,2}$/)) {
+      // Zaten doğru formatta
+      const [day, month] = record.entryDate.split('/');
+      entryDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}`;
+    }
+  }
+  
+  if (record.exitDate) {
+    if (typeof record.exitDate === 'string' && record.exitDate.match(/^\d{1,2}\/\d{1,2}$/)) {
+      // Zaten doğru formatta
+      const [day, month] = record.exitDate.split('/');
+      exitDate = `${day.padStart(2, '0')}/${month.padStart(2, '0')}`;
+    }
+  }
+  
+  console.log('📅 String formatına çevrildi:', {
     entryDate,
-    exitDate,
-    entryDateValid: entryDate && !isNaN(entryDate),
-    exitDateValid: exitDate && !isNaN(exitDate)
+    exitDate
   });
   
   // İndirimli fiyat hesaplama
