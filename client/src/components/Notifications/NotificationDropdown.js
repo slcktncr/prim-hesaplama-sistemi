@@ -17,7 +17,19 @@ const NotificationDropdown = () => {
     fetchNotificationCounts();
     // Poll for updates every 30 seconds
     const interval = setInterval(fetchNotificationCounts, 30000);
-    return () => clearInterval(interval);
+    
+    // Sayfa değişikliklerinde bildirim sayılarını güncelle
+    const handleFocus = () => {
+      console.log('🔄 Page focused, refreshing notification counts');
+      fetchNotificationCounts();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchNotificationCounts = async () => {
@@ -34,18 +46,22 @@ const NotificationDropdown = () => {
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (forceTab = null) => {
     if (loading) return;
     
     try {
       setLoading(true);
+      const currentTab = forceTab || activeTab;
       
-      if (activeTab === 'announcements') {
+      if (currentTab === 'announcements') {
         const response = await announcementsAPI.getAll(false); // Only unread
         setAnnouncements(response.data.slice(0, 10)); // Latest 10
+        console.log('📢 Fetched announcements:', response.data.length);
       } else {
         const response = await activitiesAPI.getAll(10, true); // Latest 10 unread
         setActivities(response.data);
+        console.log('📋 Fetched activities:', response.data.length);
+        console.log('📋 Activities data:', response.data);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -58,6 +74,18 @@ const NotificationDropdown = () => {
   const handleDropdownToggle = (isOpen) => {
     if (isOpen) {
       fetchNotifications();
+    }
+  };
+
+  // Tab değiştiğinde verileri yeniden çek
+  const handleTabChange = (newTab) => {
+    console.log('🔄 Tab changed to:', newTab);
+    setActiveTab(newTab);
+    // Dropdown açıksa hemen veri çek
+    if (dropdownRef.current && dropdownRef.current.querySelector('.dropdown-menu.show')) {
+      setTimeout(() => {
+        fetchNotifications(newTab);
+      }, 100);
     }
   };
 
@@ -199,7 +227,7 @@ const NotificationDropdown = () => {
             <Button
               variant={activeTab === 'announcements' ? 'primary' : 'outline-primary'}
               size="sm"
-              onClick={() => setActiveTab('announcements')}
+              onClick={() => handleTabChange('announcements')}
               className="flex-fill"
             >
               Duyurular
@@ -212,7 +240,7 @@ const NotificationDropdown = () => {
             <Button
               variant={activeTab === 'activities' ? 'primary' : 'outline-primary'}
               size="sm"
-              onClick={() => setActiveTab('activities')}
+              onClick={() => handleTabChange('activities')}
               className="flex-fill"
             >
               Aktiviteler
