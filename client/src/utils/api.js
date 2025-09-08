@@ -3,7 +3,7 @@ import axios from 'axios';
 // API base configuration
 const API = axios.create({
   baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api',
-  timeout: 10000,
+  timeout: 300000, // 5 dakika timeout (büyük dosyalar için)
 });
 
 // Request interceptor to add auth token
@@ -197,12 +197,14 @@ export const salesImportAPI = {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 600000, // 10 dakika timeout (büyük Excel dosyaları için)
   }),
   downloadTemplate: () => API.get('/sales-import/template', { responseType: 'blob' }),
   rollbackImports: (options = {}) => {
     const { hours, startDate, endDate } = options;
     return API.delete('/sales-import/rollback', { 
-      data: { hours, startDate, endDate } 
+      data: { hours, startDate, endDate },
+      timeout: 300000, // 5 dakika timeout
     });
   }
 };

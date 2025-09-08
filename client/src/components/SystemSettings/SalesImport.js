@@ -29,6 +29,7 @@ import { salesImportAPI } from '../../utils/api';
 const SalesImport = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [importResults, setImportResults] = useState(null);
   const [isRollingBack, setIsRollingBack] = useState(false);
@@ -150,8 +151,19 @@ const SalesImport = () => {
       formData.append('overwriteExisting', overwriteExisting.toString());
 
       console.log('Uploading file:', selectedFile.name, 'dryRun:', dryRun);
+      
+      // Progress simulation for large files
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) return prev; // Don't go to 100% until response
+          return prev + Math.random() * 10;
+        });
+      }, 500);
 
       const response = await salesImportAPI.uploadFile(formData);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
       
       console.log('Upload response:', response.data);
       setImportResults(response.data.results);
@@ -169,9 +181,14 @@ const SalesImport = () => {
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Import sırasında hata oluştu: ' + (error.response?.data?.message || error.message));
+      if (error.code === 'ECONNABORTED') {
+        toast.error('⏰ Dosya çok büyük veya işlem zaman aşımına uğradı. Lütfen daha küçük dosyalarla deneyin.');
+      } else {
+        toast.error('Import sırasında hata oluştu: ' + (error.response?.data?.message || error.message));
+      }
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -390,6 +407,24 @@ const SalesImport = () => {
                       </>
                     )}
                   </Button>
+                  
+                  {uploading && (
+                    <div className="mt-3">
+                      <div className="d-flex justify-content-between mb-1">
+                        <small className="text-muted">İşlem İlerliyor...</small>
+                        <small className="text-muted">{Math.round(uploadProgress)}%</small>
+                      </div>
+                      <ProgressBar 
+                        now={uploadProgress} 
+                        variant="success"
+                        striped
+                        animated
+                      />
+                      <small className="text-muted">
+                        ⏰ Büyük dosyalar 5-10 dakika sürebilir. Lütfen bekleyin...
+                      </small>
+                    </div>
+                  )}
                 </Card.Body>
               </Card>
             </Col>
