@@ -524,10 +524,24 @@ router.put('/assign-sales-to-legacy', [auth, adminAuth], async (req, res) => {
       });
     }
     
-    // saleDate üzerinden filtrele (createdAt değil)
-    query.saleDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
+    // createdAt üzerinden filtrele (kaydedilme tarihi)
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    
+    // Eğer sadece tarih verilmişse, gün sonuna kadar genişlet
+    if (startDate && !startDate.includes('T')) {
+      // Başlangıç: günün başlangıcı (00:00:00)
+      startDateTime.setHours(0, 0, 0, 0);
+    }
+    
+    if (endDate && !endDate.includes('T')) {
+      // Bitiş: günün sonu (23:59:59)
+      endDateTime.setHours(23, 59, 59, 999);
+    }
+    
+    query.createdAt = {
+      $gte: startDateTime,
+      $lte: endDateTime
     };
     
     console.log('📋 Sales query:', query);

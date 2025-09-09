@@ -35,7 +35,8 @@ const LegacyUserManagement = () => {
   const [assignData, setAssignData] = useState({
     startDate: '',
     endDate: '',
-    currentUserId: ''
+    currentUserId: '',
+    useDateTime: false // Saat seçimi aktif mi?
   });
   const [stats, setStats] = useState({
     totalSales: 0,
@@ -132,7 +133,8 @@ const LegacyUserManagement = () => {
         setAssignData({
           startDate: '',
           endDate: '',
-          currentUserId: ''
+          currentUserId: '',
+          useDateTime: false
         });
       }
     } catch (error) {
@@ -151,7 +153,8 @@ const LegacyUserManagement = () => {
     setAssignData({
       startDate: yesterday.toISOString().split('T')[0],
       endDate: today.toISOString().split('T')[0],
-      currentUserId: ''
+      currentUserId: '',
+      useDateTime: false
     });
     setShowAssignModal(true);
   };
@@ -286,19 +289,44 @@ const LegacyUserManagement = () => {
           <Alert variant="info">
             <strong>📋 Bu işlem:</strong>
             <ul className="mb-0 mt-2">
-              <li><strong>Seçilen temsilcinin</strong> belirtilen tarih aralığındaki satışlarını "Eski Satış Temsilcisi"ne atar</li>
+              <li><strong>Seçilen temsilcinin</strong> belirtilen <strong>tarih ve saat aralığında kaydedilen</strong> satışlarını "Eski Satış Temsilcisi"ne atar</li>
               <li>Performans raporlarında bu satışlar <strong>performans hesaplamalarına dahil edilmez</strong></li>
               <li>Orijinal temsilci bilgisi korunur (geri alınabilir)</li>
-              <li>Örnek: "Selçuk TUNÇER'in 08.09.2025 - 10.09.2025 arası satışları"</li>
+              <li>Örnek: "Selçuk TUNÇER'in 08.09.2025 14:00 - 18:00 arasında kaydedilen satışları"</li>
             </ul>
           </Alert>
+
+          {/* Saat seçimi toggle */}
+          <Form.Group className="mb-3">
+            <Form.Check
+              type="switch"
+              id="datetime-switch"
+              label="🕐 Saat bazlı filtreleme (kaydedilme zamanı)"
+              checked={assignData.useDateTime}
+              onChange={(e) => setAssignData(prev => ({
+                ...prev,
+                useDateTime: e.target.checked,
+                // Toggle değiştiğinde tarihleri resetle
+                startDate: '',
+                endDate: ''
+              }))}
+            />
+            <Form.Text className="text-muted">
+              {assignData.useDateTime 
+                ? "Belirli saat aralığında kaydedilen satışları filtreler"
+                : "Tüm gün boyunca kaydedilen satışları filtreler"
+              }
+            </Form.Text>
+          </Form.Group>
 
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Başlangıç Tarihi</Form.Label>
+                <Form.Label>
+                  {assignData.useDateTime ? 'Başlangıç Tarihi ve Saati' : 'Başlangıç Tarihi'}
+                </Form.Label>
                 <Form.Control
-                  type="date"
+                  type={assignData.useDateTime ? "datetime-local" : "date"}
                   value={assignData.startDate}
                   onChange={(e) => setAssignData(prev => ({
                     ...prev,
@@ -309,9 +337,11 @@ const LegacyUserManagement = () => {
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Bitiş Tarihi</Form.Label>
+                <Form.Label>
+                  {assignData.useDateTime ? 'Bitiş Tarihi ve Saati' : 'Bitiş Tarihi'}
+                </Form.Label>
                 <Form.Control
-                  type="date"
+                  type={assignData.useDateTime ? "datetime-local" : "date"}
                   value={assignData.endDate}
                   onChange={(e) => setAssignData(prev => ({
                     ...prev,
