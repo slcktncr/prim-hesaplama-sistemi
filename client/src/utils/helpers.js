@@ -223,6 +223,93 @@ export const getSaleTypeValue = (name) => {
     .substring(0, 20); // Maksimum 20 karakter
 };
 
+// Quick date filter helpers
+export const getQuickDateFilters = (currentFilters = {}) => {
+  const today = new Date();
+  
+  return {
+    yesterday: () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      return {
+        ...currentFilters,
+        startDate: yesterday.toISOString().split('T')[0],
+        endDate: yesterday.toISOString().split('T')[0],
+        selectedUser: 'all'
+      };
+    },
+    
+    thisMonth: () => {
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      return {
+        ...currentFilters,
+        startDate: firstDayOfMonth.toISOString().split('T')[0],
+        endDate: today.toISOString().split('T')[0],
+        selectedUser: 'all'
+      };
+    },
+    
+    lastMonth: () => {
+      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      return {
+        ...currentFilters,
+        startDate: lastMonth.toISOString().split('T')[0],
+        endDate: lastDayOfLastMonth.toISOString().split('T')[0],
+        selectedUser: 'all'
+      };
+    },
+    
+    thisYear: () => {
+      const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+      return {
+        ...currentFilters,
+        startDate: firstDayOfYear.toISOString().split('T')[0],
+        endDate: today.toISOString().split('T')[0],
+        selectedUser: 'all'
+      };
+    }
+  };
+};
+
+// Quick date filter buttons component helper
+export const QuickDateButtons = ({ filters, setFilters, size = "sm", className = "" }) => {
+  const quickFilters = getQuickDateFilters(filters);
+  
+  return (
+    <div className={`d-flex gap-2 ${className}`}>
+      <button 
+        className="btn btn-outline-primary"
+        style={{ fontSize: size === "sm" ? "0.875rem" : "1rem" }}
+        onClick={() => setFilters(quickFilters.yesterday())}
+      >
+        Dün
+      </button>
+      <button 
+        className="btn btn-outline-primary"
+        style={{ fontSize: size === "sm" ? "0.875rem" : "1rem" }}
+        onClick={() => setFilters(quickFilters.thisMonth())}
+      >
+        Bu Ay
+      </button>
+      <button 
+        className="btn btn-outline-primary"
+        style={{ fontSize: size === "sm" ? "0.875rem" : "1rem" }}
+        onClick={() => setFilters(quickFilters.lastMonth())}
+      >
+        Geçen Ay
+      </button>
+      <button 
+        className="btn btn-outline-primary"
+        style={{ fontSize: size === "sm" ? "0.875rem" : "1rem" }}
+        onClick={() => setFilters(quickFilters.thisYear())}
+      >
+        Bu Yıl
+      </button>
+    </div>
+  );
+};
+
 // Local storage helpers
 export const setLocalStorage = (key, value) => {
   try {

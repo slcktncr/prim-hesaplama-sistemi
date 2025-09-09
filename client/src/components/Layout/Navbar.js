@@ -1,14 +1,16 @@
-import React from 'react';
-import { Navbar as BSNavbar, Nav, Dropdown, Container } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Navbar as BSNavbar, Nav, Dropdown, Container, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FiUser, FiLogOut, FiSettings, FiShield } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiSettings, FiShield, FiCalendar } from 'react-icons/fi';
 import DailyStatusToggle from '../Common/DailyStatusToggle';
 import NotificationDropdown from '../Notifications/NotificationDropdown';
+import UpcomingEntriesModal from '../Sales/UpcomingEntriesModal';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showUpcomingEntries, setShowUpcomingEntries] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -41,6 +43,16 @@ const Navbar = () => {
         <div className="d-flex align-items-center gap-3">
           {/* Daily Status Toggle */}
           <DailyStatusToggle />
+          
+          {/* Upcoming Entries Button */}
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => setShowUpcomingEntries(true)}
+            title="Yaklaşan girişleri göster"
+          >
+            <FiCalendar />
+          </Button>
           
           {/* Notifications */}
           <NotificationDropdown />
@@ -112,6 +124,12 @@ const Navbar = () => {
           </Dropdown>
         </div>
       </Container>
+      
+      {/* Upcoming Entries Modal */}
+      <UpcomingEntriesModal 
+        show={showUpcomingEntries} 
+        onHide={() => setShowUpcomingEntries(false)} 
+      />
     </div>
   );
 };

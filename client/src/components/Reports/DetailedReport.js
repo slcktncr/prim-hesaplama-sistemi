@@ -19,7 +19,8 @@ import {
   getSaleStatusBadgeClass,
   getPrimStatusBadgeClass,
   getPaymentTypeClass,
-  debounce 
+  debounce,
+  getQuickDateFilters
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
@@ -157,6 +158,56 @@ const DetailedReport = () => {
                 />
               </Form.Group>
             </Col>
+          </Row>
+          
+          <Row className="mb-3">
+            <Col md={12}>
+              <Form.Group>
+                <Form.Label>Hızlı Tarih Seçimi</Form.Label>
+                <div className="d-flex gap-2">
+                  {(() => {
+                    const quickFilters = getQuickDateFilters(filters);
+                    return (
+                      <>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.yesterday())}
+                        >
+                          Dün
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.thisMonth())}
+                        >
+                          Bu Ay
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.lastMonth())}
+                        >
+                          Geçen Ay
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.thisYear())}
+                        >
+                          Bu Yıl
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+          
+          <Row>
+            <Col md={2}></Col>
+            <Col md={2}></Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Dönem</Form.Label>

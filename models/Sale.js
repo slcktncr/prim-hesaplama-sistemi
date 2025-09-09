@@ -7,6 +7,19 @@ const saleSchema = new mongoose.Schema({
     required: [true, 'Müşteri adı soyadı gereklidir'],
     trim: true
   },
+  phone: {
+    type: String,
+    trim: true,
+    maxlength: [15, 'Telefon numarası 15 karakterden uzun olamaz'],
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Opsiyonel alan
+        // Basit telefon numarası formatı kontrolü
+        return /^[\d\s\-\+\(\)]+$/.test(v);
+      },
+      message: 'Geçerli bir telefon numarası giriniz'
+    }
+  },
   blockNo: {
     type: String,
     required: [true, 'Blok no gereklidir'],
@@ -45,8 +58,13 @@ const saleSchema = new mongoose.Schema({
   },
   contractNo: {
     type: String,
-    required: [true, 'Sözleşme no gereklidir'],
+    required: function() {
+      // Dinamik kontrol için SaleType kontrolü yapılmalı
+      // Ancak burada SaleType erişimi zor olduğu için sadece boş değilse unique olsun
+      return false; // Backend validation'da kontrol ediyoruz
+    },
     unique: true,
+    sparse: true, // Boş değerler için unique constraint uygulanmasın
     trim: true
   },
   listPrice: {

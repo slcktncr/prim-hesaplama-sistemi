@@ -11,7 +11,7 @@ import {
   getSaleTypeValue 
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
-import { FiFileText, FiInfo } from 'react-icons/fi';
+import { FiFileText, FiInfo, FiPlus, FiX } from 'react-icons/fi';
 
 const SaleForm = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const SaleForm = () => {
 
   const [formData, setFormData] = useState({
     customerName: '',
+    phone: '',
     blockNo: '',
     apartmentNo: '',
     periodNo: '',
@@ -48,6 +49,7 @@ const SaleForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEdit);
+  const [showPhoneField, setShowPhoneField] = useState(false);
 
   useEffect(() => {
     fetchPeriods();
@@ -203,6 +205,7 @@ const SaleForm = () => {
 
         setFormData({
           customerName: sale.customerName || '',
+          phone: sale.phone || '',
           blockNo: sale.blockNo || '',
           apartmentNo: sale.apartmentNo || '',
           periodNo: sale.periodNo || '',
@@ -220,6 +223,11 @@ const SaleForm = () => {
           exitDate: sale.exitDate || '',
           notes: sale.notes || ''
         });
+        
+        // Telefon varsa alanı göster
+        if (sale.phone) {
+          setShowPhoneField(true);
+        }
       } else {
         toast.error('Satış bulunamadı');
         navigate('/sales');
@@ -485,6 +493,7 @@ const SaleForm = () => {
       
       const saleData = {
         customerName: formData.customerName,
+        phone: formData.phone || undefined, // Boşsa undefined gönder
         blockNo: formData.blockNo,
         apartmentNo: formData.apartmentNo,
         periodNo: formData.periodNo,
@@ -633,6 +642,56 @@ const SaleForm = () => {
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
+                  
+                  {/* Telefon No - Dinamik Alan */}
+                  {showPhoneField ? (
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>
+                          Telefon No
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            className="ms-2"
+                            onClick={() => {
+                              setShowPhoneField(false);
+                              setFormData(prev => ({ ...prev, phone: '' }));
+                            }}
+                          >
+                            <FiX />
+                          </Button>
+                        </Form.Label>
+                        <Form.Control
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          isInvalid={!!errors.phone}
+                          placeholder="0555 123 45 67"
+                          maxLength={15}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.phone}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  ) : (
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>&nbsp;</Form.Label>
+                        <div>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => setShowPhoneField(true)}
+                          >
+                            <FiPlus className="me-1" />
+                            Telefon No Ekle
+                          </Button>
+                        </div>
+                      </Form.Group>
+                    </Col>
+                  )}
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>

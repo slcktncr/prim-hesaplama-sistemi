@@ -140,10 +140,43 @@ const getOrCreatePrimPeriod = async (saleDate, createdBy) => {
 // @access  Private
 router.post('/', auth, [
   body('customerName').trim().notEmpty().withMessage('Müşteri adı soyadı gereklidir'),
+  body('phone').optional().custom((value) => {
+    if (value && !/^[\d\s\-\+\(\)]+$/.test(value)) {
+      throw new Error('Geçerli bir telefon numarası giriniz');
+    }
+    return true;
+  }),
   body('blockNo').trim().notEmpty().withMessage('Blok no gereklidir'),
   body('apartmentNo').trim().notEmpty().withMessage('Daire no gereklidir'),
   body('periodNo').trim().notEmpty().withMessage('Dönem no gereklidir'),
-  body('contractNo').trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
+  body('contractNo').custom(async (value, { req }) => {
+    if (!value || value.trim() === '') {
+      // Sözleşme no'nun gerekli olup olmadığını SaleType'dan kontrol et
+      const saleTypeValue = req.body.saleType;
+      if (saleTypeValue) {
+        const activeSaleTypes = await SaleType.find({ isActive: true });
+        const matchingSaleType = activeSaleTypes.find(type => {
+          const lowerName = type.name.toLowerCase();
+          if (lowerName.includes('kapora')) return saleTypeValue === 'kapora';
+          if (lowerName.includes('manuel')) return saleTypeValue === 'manuel';
+          if (lowerName.includes('normal') || lowerName.includes('satış')) return saleTypeValue === 'satis';
+          return saleTypeValue === lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
+        });
+        
+        // Eğer bu satış türü için contractNo gerekli değilse, boş olabilir
+        if (matchingSaleType && !matchingSaleType.requiredFields?.contractNo) {
+          return true;
+        }
+      }
+      throw new Error('Sözleşme no gereklidir');
+    }
+    
+    // Değer varsa uzunluk kontrolü yap
+    if (value.length < 1 || value.length > 10) {
+      throw new Error('Sözleşme no 1-10 karakter arasında olmalıdır');
+    }
+    return true;
+  }),
   body('saleType').custom(validateSaleType),
   // Koşullu validasyonlar
   body('saleDate').custom((value, { req }) => {
@@ -187,15 +220,17 @@ router.post('/', auth, [
     }
 
     const {
-      customerName, blockNo, apartmentNo, periodNo, saleDate, kaporaDate,
+      customerName, phone, blockNo, apartmentNo, periodNo, saleDate, kaporaDate,
       contractNo, listPrice, activitySalePrice, paymentType, saleType,
       entryDate, exitDate, notes, discountRate, originalListPrice, discountedListPrice
     } = req.body;
 
-    // Sözleşme no kontrolü
-    const existingSale = await Sale.findOne({ contractNo });
-    if (existingSale) {
-      return res.status(400).json({ message: 'Bu sözleşme numarası ile kayıtlı satış bulunmaktadır' });
+    // Sözleşme no kontrolü (sadece contractNo varsa)
+    if (contractNo && contractNo.trim()) {
+      const existingSale = await Sale.findOne({ contractNo });
+      if (existingSale) {
+        return res.status(400).json({ message: 'Bu sözleşme numarası ile kayıtlı satış bulunmaktadır' });
+      }
     }
 
     let currentPrimRate, primPeriodId, listPriceNum, activitySalePriceNum, basePrimPrice, primAmount;
@@ -288,6 +323,7 @@ router.post('/', auth, [
     // Yeni satış oluştur
     const saleData = {
       customerName,
+      phone: phone || undefined, // Boşsa undefined
       blockNo,
       apartmentNo,
       periodNo,
@@ -570,10 +606,22 @@ router.get('/:id', auth, async (req, res) => {
 // @access  Private
 router.put('/:id', auth, [
   body('customerName').optional().trim().isLength({ min: 1 }).withMessage('Müşteri adı soyadı gereklidir'),
+  body('phone').optional().custom((value) => {
+    if (value && !/^[\d\s\-\+\(\)]+$/.test(value)) {
+      throw new Error('Geçerli bir telefon numarası giriniz');
+    }
+    return true;
+  }),
   body('blockNo').optional().trim().isLength({ min: 1 }).withMessage('Blok no gereklidir'),
   body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
-  body('contractNo').optional().trim().isLength({ min: 1, max: 10 }).withMessage('Sözleşme no 1-10 karakter arasında olmalıdır'),
+  body('contractNo').optional().custom(async (value, { req }) => {
+    // Eğer değer varsa uzunluk kontrolü yap
+    if (value && (value.length < 1 || value.length > 10)) {
+      throw new Error('Sözleşme no 1-10 karakter arasında olmalıdır');
+    }
+    return true;
+  }),
   body('saleType').optional().custom(validateSaleType),
   body('saleDate').optional().custom((value, { req }) => {
     if (!value) return true; // Optional field
@@ -1515,6 +1563,107 @@ router.put('/:id/modify', [
   } catch (error) {
     console.error('Sale modification error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/sales/upcoming-entries
+// @desc    Yaklaşan giriş tarihli satışları listele
+// @access  Private
+router.get('/upcoming-entries', auth, async (req, res) => {
+  try {
+    const { days = 7 } = req.query; // Varsayılan 7 gün
+    const daysAhead = parseInt(days);
+    
+    // Bugünün tarihi ve gelecek X gün
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1; // 0-based to 1-based
+    const currentDay = today.getDate();
+    const currentYear = today.getFullYear();
+    
+    // Yaklaşan günleri hesapla (GG/AA formatında)
+    const upcomingDates = [];
+    for (let i = 0; i <= daysAhead; i++) {
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + i);
+      
+      const day = futureDate.getDate().toString().padStart(2, '0');
+      const month = (futureDate.getMonth() + 1).toString().padStart(2, '0');
+      upcomingDates.push(`${day}/${month}`);
+    }
+    
+    console.log('🔍 Upcoming entries search:', {
+      daysAhead,
+      upcomingDates,
+      currentUser: req.user.email
+    });
+    
+    // Sadece aktif satışları getir
+    let query = { 
+      status: 'aktif',
+      entryDate: { $in: upcomingDates }
+    };
+    
+    // Admin değilse sadece kendi satışlarını göster
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user._id;
+    }
+    
+    const upcomingSales = await Sale.find(query)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name')
+      .sort({ entryDate: 1, customerName: 1 })
+      .limit(50); // Performans için limit
+    
+    // Giriş tarihine göre grupla ve sırala
+    const groupedByDate = {};
+    const sortedDates = [];
+    
+    upcomingSales.forEach(sale => {
+      const entryDate = sale.entryDate;
+      if (!groupedByDate[entryDate]) {
+        groupedByDate[entryDate] = [];
+        sortedDates.push(entryDate);
+      }
+      groupedByDate[entryDate].push(sale);
+    });
+    
+    // Tarihleri sırala (bugün, yarın, vb.)
+    sortedDates.sort((a, b) => {
+      const [dayA, monthA] = a.split('/').map(Number);
+      const [dayB, monthB] = b.split('/').map(Number);
+      
+      // Basit tarih karşılaştırması (aynı yıl varsayımı)
+      const dateA = new Date(currentYear, monthA - 1, dayA);
+      const dateB = new Date(currentYear, monthB - 1, dayB);
+      
+      return dateA - dateB;
+    });
+    
+    console.log('📅 Upcoming entries found:', {
+      totalSales: upcomingSales.length,
+      uniqueDates: sortedDates.length,
+      dates: sortedDates
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        sales: upcomingSales,
+        groupedByDate,
+        sortedDates,
+        totalCount: upcomingSales.length,
+        daysAhead,
+        searchDates: upcomingDates
+      }
+    });
+    
+  } catch (error) {
+    console.error('Upcoming entries fetch error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Yaklaşan girişler yüklenirken hata oluştu',
+      error: error.message 
+    });
   }
 });
 

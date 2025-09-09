@@ -29,7 +29,7 @@ import {
 } from 'react-icons/fi';
 
 import { communicationsAPI, usersAPI } from '../../utils/api';
-import { formatDate, formatNumber } from '../../utils/helpers';
+import { formatDate, formatNumber, getQuickDateFilters } from '../../utils/helpers';
 import { 
   BarChart, 
   Bar, 
@@ -558,6 +558,25 @@ const CommunicationReport = () => {
               <Form.Group>
                 <Form.Label>Hızlı Tarih Seçimi</Form.Label>
                 <div className="d-flex gap-2">
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('🔄 Dün clicked - current filters:', filters);
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+                      const newFilters = {
+                        ...filters,
+                        startDate: yesterday.toISOString().split('T')[0],
+                        endDate: yesterday.toISOString().split('T')[0],
+                        selectedUser: 'all'
+                      };
+                      console.log('🔄 Dün new filters:', newFilters);
+                      setFilters(newFilters);
+                    }}
+                  >
+                    Dün
+                  </Button>
                   <Button 
                     variant="outline-primary" 
                     size="sm"

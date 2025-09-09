@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import { FiRefreshCw, FiFilter, FiTrendingUp } from 'react-icons/fi';
 
 import { reportsAPI, primsAPI, usersAPI } from '../../utils/api';
-import { formatCurrency, formatNumber, debounce } from '../../utils/helpers';
+import { formatCurrency, formatNumber, debounce, getQuickDateFilters } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import MultiSelectDropdown from '../Common/MultiSelectDropdown';
 
@@ -197,6 +197,56 @@ const PerformanceReport = () => {
                 />
               </Form.Group>
             </Col>
+          </Row>
+          
+          <Row className="mb-3">
+            <Col md={12}>
+              <Form.Group>
+                <Form.Label>Hızlı Tarih Seçimi</Form.Label>
+                <div className="d-flex gap-2">
+                  {(() => {
+                    const quickFilters = getQuickDateFilters(filters);
+                    return (
+                      <>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.yesterday())}
+                        >
+                          Dün
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.thisMonth())}
+                        >
+                          Bu Ay
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.lastMonth())}
+                        >
+                          Geçen Ay
+                        </Button>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm"
+                          onClick={() => setFilters(quickFilters.thisYear())}
+                        >
+                          Bu Yıl
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+          
+          <Row className="mb-3">
+            <Col md={2}></Col>
+            <Col md={2}></Col>
             <Col md={3}>
               <MultiSelectDropdown
                 label="Dönemler"

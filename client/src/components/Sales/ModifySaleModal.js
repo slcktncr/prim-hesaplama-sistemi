@@ -109,7 +109,12 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
     if (!formData.activitySalePrice || parseFloat(formData.activitySalePrice) <= 0) {
       newErrors.activitySalePrice = 'Geçerli bir aktivite satış fiyatı giriniz';
     }
-    if (!formData.contractNo.trim()) newErrors.contractNo = 'Sözleşme no gereklidir';
+    // Sözleşme no kontrolü - Yazlık ev ve Kışlık ev için gerekli değil
+    const saleTypeValue = sale?.saleType || 'satis';
+    const isContractRequired = !['yazlikev', 'kislikev'].includes(saleTypeValue);
+    if (isContractRequired && !formData.contractNo.trim()) {
+      newErrors.contractNo = 'Sözleşme no gereklidir';
+    }
     if (!formData.entryDate.trim()) newErrors.entryDate = 'Giriş tarihi gereklidir';
     if (!formData.exitDate.trim()) newErrors.exitDate = 'Çıkış tarihi gereklidir';
     if (!formData.reason.trim()) newErrors.reason = 'Değişiklik sebebi gereklidir';

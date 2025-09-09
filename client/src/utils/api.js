@@ -56,7 +56,8 @@ export const salesAPI = {
   convertToSale: (id, saleData) => API.put(`/sales/${id}/convert-to-sale`, saleData),
   modifySale: (id, modificationData) => API.put(`/sales/${id}/modify`, modificationData),
   updateTransactionPeriod: (transactionId, newPeriodId) => 
-    API.put(`/sales/transaction/${transactionId}/period`, { newPeriodId })
+    API.put(`/sales/transaction/${transactionId}/period`, { newPeriodId }),
+  getUpcomingEntries: (days = 7) => API.get(`/sales/upcoming-entries?days=${days}`)
 };
 
 // Prims API calls
