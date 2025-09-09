@@ -67,11 +67,24 @@ const LegacyUserManagement = () => {
       console.log('📋 All users response:', response.data);
       
       const activeUsers = response.data.filter(user => {
-        const isValid = user.role === 'salesperson' && 
-                       user.isActive && 
-                       user.email !== 'eski.satis@legacy.system';
+        // Daha esnek filtering - sadece legacy user'ı hariç tut
+        const isNotLegacy = user.email !== 'eski.satis@legacy.system';
+        const hasValidRole = user.role === 'salesperson' || user.role === 'admin'; // Admin'leri de dahil et
+        const isActiveOrApproved = user.isActive || user.isApproved; // Approved olanları da dahil et
         
-        console.log(`👤 User ${user.name}: role=${user.role}, isActive=${user.isActive}, email=${user.email}, valid=${isValid}`);
+        const isValid = isNotLegacy && hasValidRole && isActiveOrApproved;
+        
+        console.log(`👤 User ${user.name}:`, {
+          role: user.role,
+          isActive: user.isActive,
+          isApproved: user.isApproved,
+          email: user.email,
+          isNotLegacy,
+          hasValidRole,
+          isActiveOrApproved,
+          finalValid: isValid
+        });
+        
         return isValid;
       });
       
@@ -79,8 +92,22 @@ const LegacyUserManagement = () => {
       setUsers(activeUsers);
       
       if (activeUsers.length === 0) {
-        console.warn('⚠️ No active salesperson users found!');
-        toast.warn('Aktif satış temsilcisi bulunamadı');
+        console.warn('⚠️ No users found with current filters!');
+        console.warn('🔄 Falling back to all users except legacy...');
+        
+        // Fallback: Sadece legacy user'ı hariç tut, diğer tüm filtreleri kaldır
+        const fallbackUsers = response.data.filter(user => 
+          user.email !== 'eski.satis@legacy.system' && user.name
+        );
+        
+        console.log('🔄 Fallback users:', fallbackUsers);
+        setUsers(fallbackUsers);
+        
+        if (fallbackUsers.length === 0) {
+          toast.error('Hiç kullanıcı bulunamadı');
+        } else {
+          toast.info(`${fallbackUsers.length} kullanıcı bulundu (tüm roller dahil)`);
+        }
       }
     } catch (error) {
       console.error('❌ Users fetch error:', error);
