@@ -451,6 +451,107 @@ router.post('/', auth, [
   }
 });
 
+// @route   GET /api/sales/upcoming-entries
+// @desc    Yaklaşan giriş tarihli satışları listele
+// @access  Private
+router.get('/upcoming-entries', auth, async (req, res) => {
+  try {
+    const { days = 7 } = req.query; // Varsayılan 7 gün
+    const daysAhead = parseInt(days);
+    
+    // Bugünün tarihi ve gelecek X gün
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1; // 0-based to 1-based
+    const currentDay = today.getDate();
+    const currentYear = today.getFullYear();
+    
+    // Yaklaşan günleri hesapla (GG/AA formatında)
+    const upcomingDates = [];
+    for (let i = 0; i <= daysAhead; i++) {
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + i);
+      
+      const day = futureDate.getDate().toString().padStart(2, '0');
+      const month = (futureDate.getMonth() + 1).toString().padStart(2, '0');
+      upcomingDates.push(`${day}/${month}`);
+    }
+    
+    console.log('🔍 Upcoming entries search:', {
+      daysAhead,
+      upcomingDates,
+      currentUser: req.user.email
+    });
+    
+    // Sadece aktif satışları getir
+    let query = { 
+      status: 'aktif',
+      entryDate: { $in: upcomingDates }
+    };
+    
+    // Admin değilse sadece kendi satışlarını göster
+    if (req.user.role !== 'admin') {
+      query.salesperson = req.user._id;
+    }
+    
+    const upcomingSales = await Sale.find(query)
+      .populate('salesperson', 'name email')
+      .populate('primPeriod', 'name')
+      .sort({ entryDate: 1, customerName: 1 })
+      .limit(50); // Performans için limit
+    
+    // Giriş tarihine göre grupla ve sırala
+    const groupedByDate = {};
+    const sortedDates = [];
+    
+    upcomingSales.forEach(sale => {
+      const entryDate = sale.entryDate;
+      if (!groupedByDate[entryDate]) {
+        groupedByDate[entryDate] = [];
+        sortedDates.push(entryDate);
+      }
+      groupedByDate[entryDate].push(sale);
+    });
+    
+    // Tarihleri sırala (bugün, yarın, vb.)
+    sortedDates.sort((a, b) => {
+      const [dayA, monthA] = a.split('/').map(Number);
+      const [dayB, monthB] = b.split('/').map(Number);
+      
+      // Basit tarih karşılaştırması (aynı yıl varsayımı)
+      const dateA = new Date(currentYear, monthA - 1, dayA);
+      const dateB = new Date(currentYear, monthB - 1, dayB);
+      
+      return dateA - dateB;
+    });
+    
+    console.log('📅 Upcoming entries found:', {
+      totalSales: upcomingSales.length,
+      uniqueDates: sortedDates.length,
+      dates: sortedDates
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        sales: upcomingSales,
+        groupedByDate,
+        sortedDates,
+        totalCount: upcomingSales.length,
+        daysAhead,
+        searchDates: upcomingDates
+      }
+    });
+    
+  } catch (error) {
+    console.error('Upcoming entries fetch error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Yaklaşan girişler yüklenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
 // @route   GET /api/sales
 // @desc    Satışları listele
 // @access  Private
@@ -1566,105 +1667,5 @@ router.put('/:id/modify', [
   }
 });
 
-// @route   GET /api/sales/upcoming-entries
-// @desc    Yaklaşan giriş tarihli satışları listele
-// @access  Private
-router.get('/upcoming-entries', auth, async (req, res) => {
-  try {
-    const { days = 7 } = req.query; // Varsayılan 7 gün
-    const daysAhead = parseInt(days);
-    
-    // Bugünün tarihi ve gelecek X gün
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1; // 0-based to 1-based
-    const currentDay = today.getDate();
-    const currentYear = today.getFullYear();
-    
-    // Yaklaşan günleri hesapla (GG/AA formatında)
-    const upcomingDates = [];
-    for (let i = 0; i <= daysAhead; i++) {
-      const futureDate = new Date(today);
-      futureDate.setDate(today.getDate() + i);
-      
-      const day = futureDate.getDate().toString().padStart(2, '0');
-      const month = (futureDate.getMonth() + 1).toString().padStart(2, '0');
-      upcomingDates.push(`${day}/${month}`);
-    }
-    
-    console.log('🔍 Upcoming entries search:', {
-      daysAhead,
-      upcomingDates,
-      currentUser: req.user.email
-    });
-    
-    // Sadece aktif satışları getir
-    let query = { 
-      status: 'aktif',
-      entryDate: { $in: upcomingDates }
-    };
-    
-    // Admin değilse sadece kendi satışlarını göster
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
-    
-    const upcomingSales = await Sale.find(query)
-      .populate('salesperson', 'name email')
-      .populate('primPeriod', 'name')
-      .sort({ entryDate: 1, customerName: 1 })
-      .limit(50); // Performans için limit
-    
-    // Giriş tarihine göre grupla ve sırala
-    const groupedByDate = {};
-    const sortedDates = [];
-    
-    upcomingSales.forEach(sale => {
-      const entryDate = sale.entryDate;
-      if (!groupedByDate[entryDate]) {
-        groupedByDate[entryDate] = [];
-        sortedDates.push(entryDate);
-      }
-      groupedByDate[entryDate].push(sale);
-    });
-    
-    // Tarihleri sırala (bugün, yarın, vb.)
-    sortedDates.sort((a, b) => {
-      const [dayA, monthA] = a.split('/').map(Number);
-      const [dayB, monthB] = b.split('/').map(Number);
-      
-      // Basit tarih karşılaştırması (aynı yıl varsayımı)
-      const dateA = new Date(currentYear, monthA - 1, dayA);
-      const dateB = new Date(currentYear, monthB - 1, dayB);
-      
-      return dateA - dateB;
-    });
-    
-    console.log('📅 Upcoming entries found:', {
-      totalSales: upcomingSales.length,
-      uniqueDates: sortedDates.length,
-      dates: sortedDates
-    });
-    
-    res.json({
-      success: true,
-      data: {
-        sales: upcomingSales,
-        groupedByDate,
-        sortedDates,
-        totalCount: upcomingSales.length,
-        daysAhead,
-        searchDates: upcomingDates
-      }
-    });
-    
-  } catch (error) {
-    console.error('Upcoming entries fetch error:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Yaklaşan girişler yüklenirken hata oluştu',
-      error: error.message 
-    });
-  }
-});
 
 module.exports = router;
