@@ -542,7 +542,11 @@ router.get('/salesperson-performance', auth, async (req, res) => {
       console.log('Salesperson Performance MongoDB Query:', JSON.stringify(query, null, 2));
     }
 
-    // Temsilci performansları
+    // Legacy user'ı bul
+    const legacyUser = await User.findOne({ email: 'eski.satis@legacy.system' });
+    console.log('🔍 Legacy user found:', legacyUser ? legacyUser.name : 'Not found');
+    
+    // Temsilci performansları (Legacy user hariç)
     const performance = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
       {
@@ -566,6 +570,12 @@ router.get('/salesperson-performance', auth, async (req, res) => {
       },
       {
         $unwind: '$user'
+      },
+      // Legacy user'ı filtrele
+      {
+        $match: {
+          'user.email': { $ne: 'eski.satis@legacy.system' }
+        }
       },
       {
         $project: {
@@ -763,6 +773,12 @@ router.get('/top-performers', auth, async (req, res) => {
       },
       {
         $unwind: '$user'
+      },
+      // Legacy user'ı filtrele
+      {
+        $match: {
+          'user.email': { $ne: 'eski.satis@legacy.system' }
+        }
       },
       {
         $project: {
@@ -1031,8 +1047,11 @@ router.post('/export', auth, async (req, res) => {
     }
     
     if (currentPeriod) {
-      // Önce tüm kullanıcıları al
-      const allUsers = await User.find({ isActive: true }).select('name email');
+      // Önce tüm kullanıcıları al (Legacy user hariç)
+      const allUsers = await User.find({ 
+        isActive: true, 
+        email: { $ne: 'eski.satis@legacy.system' }
+      }).select('name email');
       
       // Aktif dönemde satışı olan temsilcileri al
       const salesPerformance = await Sale.aggregate([
