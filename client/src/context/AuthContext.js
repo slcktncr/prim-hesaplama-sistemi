@@ -161,7 +161,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <AuthContext.Provider

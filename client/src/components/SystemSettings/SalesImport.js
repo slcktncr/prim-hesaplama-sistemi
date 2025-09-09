@@ -8,9 +8,7 @@ import {
   Spinner,
   ProgressBar,
   Row,
-  Col,
-  Table,
-  Badge
+  Col
 } from 'react-bootstrap';
 import { 
   FiUpload, 

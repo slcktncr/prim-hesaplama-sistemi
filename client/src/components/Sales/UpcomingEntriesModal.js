@@ -34,7 +34,7 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
     if (show) {
       fetchUpcomingEntries();
     }
-  }, [show, daysAhead]);
+  }, [show, daysAhead]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUpcomingEntries = async () => {
     try {

@@ -6,9 +6,7 @@ import {
   Badge, 
   Modal, 
   Form, 
-  Alert,
-  Row,
-  Col
+  Alert
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { 

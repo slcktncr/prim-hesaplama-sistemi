@@ -8,15 +8,12 @@ import {
   Modal,
   Form,
   Spinner,
-  ProgressBar,
   Row,
   Col
 } from 'react-bootstrap';
 import { 
   FiRefreshCw, 
   FiDatabase, 
-  FiCheckCircle, 
-  FiXCircle,
   FiAlertTriangle,
   FiPlay,
   FiEye
