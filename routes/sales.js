@@ -358,13 +358,47 @@ router.post('/', auth, [
 
     console.log('💾 Sale oluşturuluyor, saleData:', saleData);
     
-    // SaleData validation
-    const requiredFields = ['customerName', 'blockNo', 'apartmentNo', 'periodNo', 'contractNo', 'saleType'];
-    for (const field of requiredFields) {
+    // SaleData validation - dinamik kontrol
+    const baseRequiredFields = ['customerName', 'blockNo', 'apartmentNo', 'periodNo', 'saleType'];
+    
+    // ContractNo için dinamik kontrol
+    let isContractNoRequired = true;
+    try {
+      const activeSaleTypes = await SaleType.find({ isActive: true });
+      const matchingSaleType = activeSaleTypes.find(type => {
+        const lowerName = type.name.toLowerCase();
+        if (lowerName.includes('kapora')) return saleType === 'kapora';
+        if (lowerName.includes('manuel')) return saleType === 'manuel';
+        if (lowerName.includes('normal') || lowerName.includes('satış')) return saleType === 'satis';
+        return saleType === lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
+      });
+      
+      if (matchingSaleType && matchingSaleType.requiredFields?.contractNo === false) {
+        isContractNoRequired = false;
+      }
+    } catch (error) {
+      console.error('❌ SaleType check error:', error);
+      // Hata durumunda contractNo'yu zorunlu tut
+    }
+    
+    console.log('🔍 ContractNo requirement check:', {
+      saleType,
+      isContractNoRequired,
+      contractNo: saleData.contractNo
+    });
+    
+    // Temel alanları kontrol et
+    for (const field of baseRequiredFields) {
       if (!saleData[field]) {
         console.log(`❌ Gerekli alan eksik: ${field}`);
         return res.status(400).json({ message: `Gerekli alan eksik: ${field}` });
       }
+    }
+    
+    // ContractNo'yu dinamik olarak kontrol et
+    if (isContractNoRequired && !saleData.contractNo) {
+      console.log(`❌ Gerekli alan eksik: contractNo (saleType: ${saleType})`);
+      return res.status(400).json({ message: `Gerekli alan eksik: contractNo` });
     }
     
     const sale = new Sale(saleData);
