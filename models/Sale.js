@@ -277,7 +277,17 @@ const saleSchema = new mongoose.Schema({
       basePrimPrice: Number,
       primAmount: Number
     }
-  }]
+  }],
+  
+  // Import tracking fields
+  isImported: {
+    type: Boolean,
+    default: false
+  },
+  originalSalesperson: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
 });
 
 // Prim hesaplama middleware

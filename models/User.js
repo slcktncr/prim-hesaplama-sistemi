@@ -58,6 +58,16 @@ const userSchema = new mongoose.Schema({
     type: Date
   },
   
+  // Virtual user fields (for legacy data)
+  isVirtual: {
+    type: Boolean,
+    default: false
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  
   // Ceza puanı sistemi
   isPenaltyDeactivated: {
     type: Boolean,

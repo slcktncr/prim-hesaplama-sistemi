@@ -31,6 +31,7 @@ import HistoricalDataManagement from '../Communications/HistoricalDataManagement
 import AnnouncementManagement from '../Announcements/AnnouncementManagement';
 import HistoricalDataMigration from './HistoricalDataMigration';
 import SalesImport from './SalesImport';
+import LegacyUserManagement from './LegacyUserManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -127,6 +128,12 @@ const SystemSettings = () => {
                   Satış Import
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="legacy-user">
+                  <FiShield className="me-2" />
+                  Eski Satış Temsilcisi
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -166,6 +173,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="sales-import">
                   <SalesImport />
+                </Tab.Pane>
+                <Tab.Pane eventKey="legacy-user">
+                  <LegacyUserManagement />
                 </Tab.Pane>
               </Tab.Content>
             </div>

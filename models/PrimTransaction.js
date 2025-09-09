@@ -67,6 +67,16 @@ const primTransactionSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  
+  // Import tracking fields
+  isImported: {
+    type: Boolean,
+    default: false
+  },
+  originalSalesperson: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 });
 

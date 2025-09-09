@@ -415,4 +415,158 @@ router.get('/historical-years', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   POST /api/migration/create-legacy-user
+// @desc    "Eski Satış Temsilcisi" virtual user oluştur
+// @access  Admin only
+router.post('/create-legacy-user', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🔍 Creating legacy salesperson user...');
+    
+    // Zaten var mı kontrol et
+    const existingUser = await User.findOne({ email: 'eski.satis@legacy.system' });
+    if (existingUser) {
+      return res.json({
+        success: true,
+        message: 'Eski Satış Temsilcisi zaten mevcut',
+        user: existingUser,
+        isExisting: true
+      });
+    }
+    
+    // Virtual user oluştur
+    const legacyUser = new User({
+      firstName: 'Eski',
+      lastName: 'Satış Temsilcisi',
+      name: 'Eski Satış Temsilcisi',
+      email: 'eski.satis@legacy.system',
+      password: 'legacy_user_no_login', // Login edilemez
+      role: 'salesperson',
+      isActive: false, // Aktif değil, sadece data için
+      isApproved: false,
+      permissions: {
+        canViewAllSales: false,
+        canViewAllReports: false,
+        canViewAllPrims: false,
+        canViewDashboard: false,
+        canManageOwnSales: false,
+        canViewOwnReports: false,
+        canViewOwnPrims: false
+      },
+      // Virtual user flag'i ekle
+      isVirtual: true,
+      description: 'Import edilen geçmiş satışlar için virtual kullanıcı'
+    });
+    
+    await legacyUser.save();
+    console.log('✅ Legacy user created:', legacyUser._id);
+    
+    res.json({
+      success: true,
+      message: 'Eski Satış Temsilcisi başarıyla oluşturuldu',
+      user: {
+        _id: legacyUser._id,
+        name: legacyUser.name,
+        email: legacyUser.email,
+        role: legacyUser.role
+      },
+      isExisting: false
+    });
+    
+  } catch (error) {
+    console.error('❌ Legacy user creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Eski Satış Temsilcisi oluşturulamadı',
+      error: error.message
+    });
+  }
+});
+
+// @route   PUT /api/migration/assign-sales-to-legacy
+// @desc    Import edilen satışları "Eski Satış Temsilcisi"ne ata
+// @access  Admin only
+router.put('/assign-sales-to-legacy', [auth, adminAuth], async (req, res) => {
+  try {
+    const { startDate, endDate, currentUserId } = req.body;
+    
+    console.log('🔍 Assigning imported sales to legacy user...', {
+      startDate,
+      endDate,
+      currentUserId
+    });
+    
+    // Legacy user'ı bul
+    let legacyUser = await User.findOne({ email: 'eski.satis@legacy.system' });
+    if (!legacyUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Eski Satış Temsilcisi bulunamadı. Önce oluşturun.'
+      });
+    }
+    
+    // Query oluştur
+    let query = {};
+    
+    if (currentUserId) {
+      query.salesperson = currentUserId;
+    }
+    
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+    
+    console.log('📋 Sales query:', query);
+    
+    // Satışları bul ve güncelle
+    const result = await Sale.updateMany(
+      query,
+      { 
+        $set: { 
+          salesperson: legacyUser._id,
+          isImported: true, // Import flag'i ekle
+          originalSalesperson: currentUserId // Orijinal temsilciyi sakla
+        }
+      }
+    );
+    
+    console.log('✅ Sales updated:', result);
+    
+    // PrimTransaction'ları da güncelle
+    const primResult = await PrimTransaction.updateMany(
+      { salesperson: currentUserId },
+      { 
+        $set: { 
+          salesperson: legacyUser._id,
+          isImported: true,
+          originalSalesperson: currentUserId
+        }
+      }
+    );
+    
+    console.log('✅ PrimTransactions updated:', primResult);
+    
+    res.json({
+      success: true,
+      message: `${result.modifiedCount} satış ve ${primResult.modifiedCount} prim kaydı "Eski Satış Temsilcisi"ne atandı`,
+      salesUpdated: result.modifiedCount,
+      primsUpdated: primResult.modifiedCount,
+      legacyUser: {
+        _id: legacyUser._id,
+        name: legacyUser.name
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Assign sales to legacy error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Satışlar atanamadı',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -189,7 +189,9 @@ export const activitiesAPI = {
 // Migration API
 export const migrationAPI = {
   getHistoricalYears: () => API.get('/migration/historical-years'),
-  migrateHistoricalToDaily: (data) => API.post('/migration/historical-to-daily', data)
+  migrateHistoricalToDaily: (data) => API.post('/migration/historical-to-daily', data),
+  createLegacyUser: () => API.post('/migration/create-legacy-user'),
+  assignSalesToLegacy: (data) => API.put('/migration/assign-sales-to-legacy', data)
 };
 
 // Sales Import API
