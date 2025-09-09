@@ -27,8 +27,8 @@ const SaleForm = () => {
     apartmentNo: '',
     periodNo: '',
     saleType: 'satis', // 'kapora' veya 'satis'
-    saleDate: '',
-    kaporaDate: '',
+    saleDate: new Date().toISOString().split('T')[0], // Varsayılan: bugün
+    kaporaDate: new Date().toISOString().split('T')[0], // Varsayılan: bugün
     contractNo: '',
     listPrice: '',           // Ana liste fiyatı (girilen)
     originalListPrice: '',   // İndirim öncesi orijinal liste fiyatı (aynı listPrice ile)
@@ -161,16 +161,34 @@ const SaleForm = () => {
   const isFieldRequired = (fieldName) => {
     // Eğer currentSaleType varsa ve requiredFields tanımlıysa onu kullan
     if (currentSaleType?.requiredFields?.[fieldName] !== undefined) {
+      console.log('🔍 Field requirement check:', {
+        fieldName,
+        saleType: currentSaleType.name,
+        value: formData.saleType,
+        required: currentSaleType.requiredFields[fieldName],
+        requiredFields: currentSaleType.requiredFields
+      });
       return currentSaleType.requiredFields[fieldName];
     }
     
     // Fallback: eski mantık
     const saleTypeValue = getSaleTypeValue(formData.saleType);
+    console.log('🔍 Fallback field requirement check:', {
+      fieldName,
+      originalValue: formData.saleType,
+      processedValue: saleTypeValue
+    });
     
     switch (fieldName) {
       case 'contractNo':
         const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
-        return !nonContractTypes.includes(saleTypeValue);
+        const isRequired = !nonContractTypes.includes(saleTypeValue);
+        console.log('🔍 ContractNo requirement:', {
+          saleTypeValue,
+          nonContractTypes,
+          isRequired
+        });
+        return isRequired;
       case 'listPrice':
       case 'activitySalePrice':
       case 'paymentType':
@@ -429,7 +447,15 @@ const SaleForm = () => {
     }
 
     // Sözleşme no validasyonu - sadece gerekli olan türler için
-    if (isContractRequired()) {
+    const contractRequired = isContractRequired();
+    console.log('🔍 Contract validation:', {
+      contractRequired,
+      contractNo: formData.contractNo,
+      saleType: formData.saleType,
+      currentSaleType: currentSaleType?.name
+    });
+    
+    if (contractRequired) {
       if (!validateRequired(formData.contractNo)) {
         newErrors.contractNo = 'Sözleşme no gereklidir';
       } else if (formData.contractNo.length < 6 || formData.contractNo.length > 6) {
