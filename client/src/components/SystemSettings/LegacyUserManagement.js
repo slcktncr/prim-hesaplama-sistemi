@@ -62,15 +62,28 @@ const LegacyUserManagement = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('🔍 Fetching users for assignment...');
       const response = await usersAPI.getAllUsers();
-      const activeUsers = response.data.filter(user => 
-        user.role === 'salesperson' && 
-        user.isActive && 
-        user.email !== 'eski.satis@legacy.system'
-      );
+      console.log('📋 All users response:', response.data);
+      
+      const activeUsers = response.data.filter(user => {
+        const isValid = user.role === 'salesperson' && 
+                       user.isActive && 
+                       user.email !== 'eski.satis@legacy.system';
+        
+        console.log(`👤 User ${user.name}: role=${user.role}, isActive=${user.isActive}, email=${user.email}, valid=${isValid}`);
+        return isValid;
+      });
+      
+      console.log('✅ Filtered active users:', activeUsers);
       setUsers(activeUsers);
+      
+      if (activeUsers.length === 0) {
+        console.warn('⚠️ No active salesperson users found!');
+        toast.warn('Aktif satış temsilcisi bulunamadı');
+      }
     } catch (error) {
-      console.error('Users fetch error:', error);
+      console.error('❌ Users fetch error:', error);
       toast.error('Kullanıcılar yüklenirken hata oluştu');
     }
   };
@@ -358,18 +371,28 @@ const LegacyUserManagement = () => {
             </Form.Label>
             <Form.Select
               value={assignData.currentUserId}
-              onChange={(e) => setAssignData(prev => ({
-                ...prev,
-                currentUserId: e.target.value
-              }))}
+              onChange={(e) => {
+                console.log('🔄 User selection changed:', e.target.value);
+                setAssignData(prev => ({
+                  ...prev,
+                  currentUserId: e.target.value
+                }));
+              }}
               required
             >
-              <option value="">🔽 Temsilci Seçin</option>
-              {users.map(user => (
-                <option key={user._id} value={user._id}>
-                  👤 {user.name}
-                </option>
-              ))}
+              <option value="">🔽 Temsilci Seçin ({users.length} temsilci)</option>
+              {users.length === 0 ? (
+                <option disabled>Temsilci bulunamadı</option>
+              ) : (
+                users.map(user => {
+                  console.log('📝 Rendering user option:', user);
+                  return (
+                    <option key={user._id} value={user._id}>
+                      👤 {user.name} ({user.email})
+                    </option>
+                  );
+                })
+              )}
             </Form.Select>
             <Form.Text className="text-muted">
               <strong>Örnek:</strong> "Selçuk TUNÇER" seçerseniz, sadece onun belirtilen tarih aralığındaki satışları atanır
