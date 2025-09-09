@@ -656,7 +656,7 @@ const SaleForm = () => {
                           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
                           .map(type => (
                           <option key={type._id} value={type.value}>
-                            {type.name} (value: {type.value})
+                            {type.name}
                           </option>
                         ))}
                       </Form.Select>

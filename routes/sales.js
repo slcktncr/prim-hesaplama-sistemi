@@ -39,8 +39,10 @@ const validateSaleType = async (value) => {
     const validSaleTypeValues = activeSaleTypes.map(type => {
       const lowerName = type.name.toLowerCase();
       if (lowerName.includes('kapora')) return 'kapora';
-      if (lowerName.includes('normal') || lowerName.includes('satış')) return 'satis';
+      // ÖNCE özel türleri kontrol et (daha spesifik olanlar)
       if (lowerName.includes('manuel')) return 'manuel';
+      // Sonra genel satış türleri (daha genel olanlar)
+      if (lowerName.includes('normal') || lowerName.includes('satış')) return 'satis';
       return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
     });
     

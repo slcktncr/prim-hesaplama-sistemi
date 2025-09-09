@@ -206,14 +206,14 @@ export const getSaleTypeValue = (name) => {
     return 'kapora';
   }
   
-  // Normal satış türleri
-  if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
-    return 'satis';
-  }
-  
-  // Manuel satış
+  // ÖNCE özel türleri kontrol et (daha spesifik olanlar)
   if (lowerName.includes('manuel')) {
     return 'manuel';
+  }
+  
+  // Sonra genel satış türleri (daha genel olanlar)
+  if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
+    return 'satis';
   }
   
   // Diğer yeni türler için clean value oluştur
