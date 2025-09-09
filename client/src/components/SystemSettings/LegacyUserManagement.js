@@ -202,8 +202,20 @@ const LegacyUserManagement = () => {
         });
       }
     } catch (error) {
-      console.error('Assign sales error:', error);
-      toast.error(error.response?.data?.message || 'Satışlar atanamadı');
+      console.error('❌ Assign sales error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Satışlar atanamadı';
+      
+      toast.error(`Hata: ${errorMessage}`, { autoClose: 8000 });
+      
+      // Debug için detayları göster
+      if (error.response?.data?.details) {
+        console.error('❌ Error details:', error.response.data.details);
+      }
     } finally {
       setAssignLoading(false);
     }

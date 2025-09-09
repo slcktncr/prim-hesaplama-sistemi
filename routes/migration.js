@@ -4,6 +4,7 @@ const CommunicationYear = require('../models/CommunicationYear');
 const CommunicationRecord = require('../models/CommunicationRecord');
 const Sale = require('../models/Sale');
 const User = require('../models/User');
+const PrimTransaction = require('../models/PrimTransaction');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -595,10 +596,18 @@ router.put('/assign-sales-to-legacy', [auth, adminAuth], async (req, res) => {
     
   } catch (error) {
     console.error('❌ Assign sales to legacy error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
     res.status(500).json({
       success: false,
-      message: 'Satışlar atanamadı',
-      error: error.message
+      message: `Satışlar atanamadı: ${error.message}`,
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
