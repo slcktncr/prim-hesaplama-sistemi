@@ -28,6 +28,11 @@ import { formatDate } from '../../utils/helpers';
 const LegacyUserManagement = () => {
   const [legacyUser, setLegacyUser] = useState(null);
   const [users, setUsers] = useState([]);
+  
+  // Debug: users state değişimini izle
+  useEffect(() => {
+    console.log('🔄 Users state changed:', users);
+  }, [users]);
   const [loading, setLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [assignLoading, setAssignLoading] = useState(false);
@@ -96,15 +101,34 @@ const LegacyUserManagement = () => {
         console.warn('🔄 Falling back to all users except legacy...');
         
         // Fallback: Sadece legacy user'ı hariç tut, diğer tüm filtreleri kaldır
-        const fallbackUsers = response.data.filter(user => 
-          user.email !== 'eski.satis@legacy.system' && user.name
-        );
+        const fallbackUsers = response.data.filter(user => {
+          const isNotLegacy = user.email !== 'eski.satis@legacy.system';
+          const hasName = user.name && user.name.trim() !== '';
+          const isValid = isNotLegacy && hasName;
+          
+          console.log(`🔄 Fallback user ${user.name || 'NO_NAME'}:`, {
+            email: user.email,
+            name: user.name,
+            isNotLegacy,
+            hasName,
+            isValid
+          });
+          
+          return isValid;
+        });
         
-        console.log('🔄 Fallback users:', fallbackUsers);
+        console.log('🔄 Final fallback users:', fallbackUsers);
+        console.log('🔄 Setting users state with:', fallbackUsers.length, 'users');
         setUsers(fallbackUsers);
         
         if (fallbackUsers.length === 0) {
-          toast.error('Hiç kullanıcı bulunamadı');
+          console.error('❌ Even fallback failed! Raw data:', response.data);
+          
+          // Son çare: Ham veriyi direkt kullan
+          console.log('🆘 Last resort: Using raw data...');
+          setUsers(response.data || []);
+          
+          toast.error(`Hiç kullanıcı bulunamadı. Ham veri: ${response.data?.length || 0} kayıt`);
         } else {
           toast.info(`${fallbackUsers.length} kullanıcı bulundu (tüm roller dahil)`);
         }
