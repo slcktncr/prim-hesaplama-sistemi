@@ -1478,6 +1478,22 @@ router.put('/:id/modify', [
       newData: newData
     });
 
+    // Değişiklik nedenini notlara da ekle
+    const existingNotes = sale.notes || '';
+    const modificationNote = `[DEĞİŞİKLİK NEDENI - ${new Date().toLocaleDateString('tr-TR')}]: ${reason.trim()}`;
+    sale.notes = existingNotes 
+      ? `${existingNotes}\n\n${modificationNote}`
+      : modificationNote;
+    
+    // Not bilgilerini güncelle
+    if (!sale.notesAddedBy) {
+      sale.notesAddedBy = req.user._id;
+      sale.notesAddedAt = new Date();
+    } else {
+      sale.notesUpdatedBy = req.user._id;
+      sale.notesUpdatedAt = new Date();
+    }
+
     await sale.save();
 
     // Yeni hesaplanan değerleri güncelle

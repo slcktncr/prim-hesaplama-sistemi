@@ -80,6 +80,9 @@ const SalesList = () => {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  
+  // Cancel modal state
+  const [cancelReason, setCancelReason] = useState('');
   const [selectedSale, setSelectedSale] = useState(null);
 
   const { user } = useAuth();
@@ -150,13 +153,31 @@ const SalesList = () => {
 
   const handleCancelSale = async () => {
     if (!selectedSale) return;
+    
+    // İptal nedeni zorunlu kontrolü
+    if (!cancelReason.trim()) {
+      toast.error('İptal nedeni belirtilmesi zorunludur');
+      return;
+    }
 
     try {
+      // Önce satışı iptal et
       await salesAPI.cancelSale(selectedSale._id);
-      toast.success('Satış başarıyla iptal edildi');
+      
+      // Sonra iptal nedenini notlara ekle
+      const existingNotes = selectedSale.notes || '';
+      const cancelNote = `[İPTAL NEDENI - ${new Date().toLocaleDateString('tr-TR')}]: ${cancelReason.trim()}`;
+      const newNotes = existingNotes 
+        ? `${existingNotes}\n\n${cancelNote}`
+        : cancelNote;
+      
+      await salesAPI.updateNotes(selectedSale._id, newNotes);
+      
+      toast.success('Satış başarıyla iptal edildi ve iptal nedeni notlara eklendi');
       fetchSales();
       setShowCancelModal(false);
       setSelectedSale(null);
+      setCancelReason('');
     } catch (error) {
       console.error('Cancel sale error:', error);
       toast.error(error.response?.data?.message || 'Satış iptal edilirken hata oluştu');
@@ -176,6 +197,7 @@ const SalesList = () => {
 
   const openCancelModal = (sale) => {
     setSelectedSale(sale);
+    setCancelReason(''); // Reset cancel reason
     setShowCancelModal(true);
   };
 
@@ -773,12 +795,31 @@ const SalesList = () => {
               İptal edilirse, gelecek prim döneminde kesinti yapılacaktır.
             </Alert>
           )}
+          
+          <Form.Group className="mt-3">
+            <Form.Label>İptal Nedeni *</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="İptal nedenini detaylı olarak açıklayın..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              maxLength={500}
+            />
+            <Form.Text className="text-muted">
+              Bu bilgi satış notlarına kaydedilecektir. ({cancelReason.length}/500 karakter)
+            </Form.Text>
+          </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
             Vazgeç
           </Button>
-          <Button variant="danger" onClick={handleCancelSale}>
+          <Button 
+            variant="danger" 
+            onClick={handleCancelSale}
+            disabled={!cancelReason.trim()}
+          >
             İptal Et
           </Button>
         </Modal.Footer>

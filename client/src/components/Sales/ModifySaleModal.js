@@ -133,6 +133,16 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
       toast.error('Lütfen tüm zorunlu alanları doldurun');
       return;
     }
+    
+    // Değişiklik nedeni zorunlu kontrolü
+    if (!formData.reason.trim()) {
+      setErrors(prev => ({
+        ...prev,
+        reason: 'Değişiklik nedeni belirtilmesi zorunludur'
+      }));
+      toast.error('Değişiklik nedeni belirtilmesi zorunludur');
+      return;
+    }
 
     setLoading(true);
 
