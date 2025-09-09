@@ -504,19 +504,31 @@ router.put('/assign-sales-to-legacy', [auth, adminAuth], async (req, res) => {
       });
     }
     
-    // Query oluştur
+    // Query oluştur - daha spesifik filtreler
     let query = {};
     
-    if (currentUserId) {
-      query.salesperson = currentUserId;
+    // Temsilci seçimi zorunlu (güvenlik için)
+    if (!currentUserId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Temsilci seçimi zorunludur'
+      });
+    }
+    query.salesperson = currentUserId;
+    
+    // Tarih aralığı zorunlu (güvenlik için)
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Başlangıç ve bitiş tarihi zorunludur'
+      });
     }
     
-    if (startDate && endDate) {
-      query.createdAt = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    }
+    // saleDate üzerinden filtrele (createdAt değil)
+    query.saleDate = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    };
     
     console.log('📋 Sales query:', query);
     
@@ -548,11 +560,19 @@ router.put('/assign-sales-to-legacy', [auth, adminAuth], async (req, res) => {
     
     console.log('✅ PrimTransactions updated:', primResult);
     
+    // Temsilci bilgisini al
+    const currentUser = await User.findById(currentUserId);
+    
     res.json({
       success: true,
-      message: `${result.modifiedCount} satış ve ${primResult.modifiedCount} prim kaydı "Eski Satış Temsilcisi"ne atandı`,
+      message: `${currentUser?.name || 'Seçilen temsilci'}'nin ${startDate} - ${endDate} tarihleri arasındaki ${result.modifiedCount} satışı "Eski Satış Temsilcisi"ne atandı`,
       salesUpdated: result.modifiedCount,
       primsUpdated: primResult.modifiedCount,
+      dateRange: { startDate, endDate },
+      salesperson: {
+        _id: currentUserId,
+        name: currentUser?.name
+      },
       legacyUser: {
         _id: legacyUser._id,
         name: legacyUser.name

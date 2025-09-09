@@ -121,7 +121,10 @@ const LegacyUserManagement = () => {
       const response = await migrationAPI.assignSalesToLegacy(assignData);
       
       if (response.data.success) {
-        toast.success(response.data.message);
+        const selectedUser = users.find(u => u._id === assignData.currentUserId);
+        const detailedMessage = `✅ ${selectedUser?.name || 'Seçilen temsilci'}'nin ${assignData.startDate} - ${assignData.endDate} tarihleri arasındaki ${response.data.salesUpdated} satışı "Eski Satış Temsilcisi"ne atandı!`;
+        
+        toast.success(detailedMessage, { autoClose: 5000 });
         setShowAssignModal(false);
         fetchStats(); // Refresh stats
         
@@ -283,9 +286,10 @@ const LegacyUserManagement = () => {
           <Alert variant="info">
             <strong>📋 Bu işlem:</strong>
             <ul className="mb-0 mt-2">
-              <li>Seçilen tarih aralığındaki satışları "Eski Satış Temsilcisi"ne atar</li>
-              <li>Performans raporlarında bu satışlar ayrı gösterilir</li>
+              <li><strong>Seçilen temsilcinin</strong> belirtilen tarih aralığındaki satışlarını "Eski Satış Temsilcisi"ne atar</li>
+              <li>Performans raporlarında bu satışlar <strong>performans hesaplamalarına dahil edilmez</strong></li>
               <li>Orijinal temsilci bilgisi korunur (geri alınabilir)</li>
+              <li>Örnek: "Selçuk TUNÇER'in 08.09.2025 - 10.09.2025 arası satışları"</li>
             </ul>
           </Alert>
 
@@ -319,23 +323,26 @@ const LegacyUserManagement = () => {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Mevcut Temsilci (Opsiyonel)</Form.Label>
+            <Form.Label>
+              <strong>Hangi Temsilcinin Satışları? *</strong>
+            </Form.Label>
             <Form.Select
               value={assignData.currentUserId}
               onChange={(e) => setAssignData(prev => ({
                 ...prev,
                 currentUserId: e.target.value
               }))}
+              required
             >
-              <option value="">Tüm Temsilciler</option>
+              <option value="">🔽 Temsilci Seçin</option>
               {users.map(user => (
                 <option key={user._id} value={user._id}>
-                  {user.name}
+                  👤 {user.name}
                 </option>
               ))}
             </Form.Select>
             <Form.Text className="text-muted">
-              Boş bırakırsanız tüm temsilcilerin satışları atanır
+              <strong>Örnek:</strong> "Selçuk TUNÇER" seçerseniz, sadece onun belirtilen tarih aralığındaki satışları atanır
             </Form.Text>
           </Form.Group>
         </Modal.Body>
@@ -347,7 +354,7 @@ const LegacyUserManagement = () => {
           <Button 
             variant="primary" 
             onClick={handleAssignSales}
-            disabled={assignLoading || !assignData.startDate || !assignData.endDate}
+            disabled={assignLoading || !assignData.startDate || !assignData.endDate || !assignData.currentUserId}
           >
             {assignLoading ? (
               <>
