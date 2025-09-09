@@ -197,15 +197,30 @@ export const debounce = (func, wait) => {
 
 // Satış türü ismine göre value mapping - Frontend ve Backend arasında tutarlılık için
 export const getSaleTypeValue = (name) => {
-  const lowerName = name.toLowerCase();
+  if (!name) return 'satis';
+  
+  const lowerName = name.toLowerCase().trim();
+  
+  // Kapora türleri
   if (lowerName.includes('kapora')) {
     return 'kapora';
-  } else if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
-    return 'satis';
-  } else {
-    // Yeni türler için unique value oluştur
-    return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
   }
+  
+  // Normal satış türleri
+  if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('satis')) {
+    return 'satis';
+  }
+  
+  // Manuel satış
+  if (lowerName.includes('manuel')) {
+    return 'manuel';
+  }
+  
+  // Diğer yeni türler için clean value oluştur
+  return lowerName
+    .replace(/\s+/g, '') // Boşlukları kaldır
+    .replace(/[^\w]/g, '') // Özel karakterleri kaldır
+    .substring(0, 20); // Maksimum 20 karakter
 };
 
 // Local storage helpers

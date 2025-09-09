@@ -123,11 +123,18 @@ const SaleForm = () => {
         value: getSaleTypeValue(type.name)
       }));
       
+      console.log('🔍 Sale Types Debug:', {
+        originalTypes: types,
+        mappedTypes: mappedTypes,
+        currentFormValue: formData.saleType
+      });
+      
       setSaleTypes(mappedTypes);
       
       // Varsayılan satış türünü seç
       const defaultType = mappedTypes.find(t => t.isDefault);
       if (defaultType && !isEdit) {
+        console.log('🎯 Setting default type:', defaultType);
         setFormData(prev => ({
           ...prev,
           saleType: defaultType.value
@@ -239,6 +246,15 @@ const SaleForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
+    // Debug için satış türü değişikliklerini logla
+    if (name === 'saleType') {
+      console.log('🔄 Sale Type Changed:', {
+        oldValue: formData.saleType,
+        newValue: value,
+        availableTypes: saleTypes.map(t => ({ name: t.name, value: t.value }))
+      });
+    }
+    
     // Sözleşme no için karakter sınırı kontrolü
     if (name === 'contractNo') {
       if (value.length > 10) {
@@ -251,9 +267,9 @@ const SaleForm = () => {
       
       // Satış tipi değiştiğinde sözleşme no'yu temizle (gerekli değilse)
       if (name === 'saleType') {
-        const saleTypeValue = getSaleTypeValue(value);
+        // value zaten getSaleTypeValue ile oluşturulmuş
         const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
-        if (nonContractTypes.includes(saleTypeValue)) {
+        if (nonContractTypes.includes(value)) {
           newFormData.contractNo = '';
         }
       }

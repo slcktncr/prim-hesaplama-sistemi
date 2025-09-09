@@ -10,14 +10,24 @@ const router = express.Router();
 
 // @route   GET /api/system-settings/sale-types
 // @desc    Satış türlerini listele
-// @access  Private (Admin only)
-router.get('/sale-types', [auth, adminAuth], async (req, res) => {
+// @access  Private (All authenticated users)
+router.get('/sale-types', [auth], async (req, res) => {
   try {
-    const saleTypes = await SaleType.find()
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
-
-    res.json(saleTypes);
+    const isAdmin = req.user.role === 'admin';
+    
+    if (isAdmin) {
+      // Admin için tüm satış türleri (yönetim paneli için)
+      const saleTypes = await SaleType.find()
+        .populate('createdBy', 'name email')
+        .sort({ createdAt: -1 });
+      res.json(saleTypes);
+    } else {
+      // Temsilciler için sadece aktif satış türleri
+      const saleTypes = await SaleType.find({ isActive: true })
+        .select('name description color isDefault requiredFields sortOrder')
+        .sort({ sortOrder: 1, createdAt: -1 });
+      res.json(saleTypes);
+    }
   } catch (error) {
     console.error('Get sale types error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
