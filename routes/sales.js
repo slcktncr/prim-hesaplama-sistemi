@@ -40,7 +40,8 @@ const validateSaleType = async (value) => {
       const lowerName = type.name.toLowerCase();
       if (lowerName.includes('kapora')) return 'kapora';
       if (lowerName.includes('normal') || lowerName.includes('satış')) return 'satis';
-      return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '');
+      if (lowerName.includes('manuel')) return 'manuel';
+      return lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
     });
     
     // Eski sistem değerleri de ekle

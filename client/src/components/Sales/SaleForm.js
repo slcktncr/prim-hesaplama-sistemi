@@ -126,7 +126,12 @@ const SaleForm = () => {
       console.log('🔍 Sale Types Debug:', {
         originalTypes: types,
         mappedTypes: mappedTypes,
-        currentFormValue: formData.saleType
+        currentFormValue: formData.saleType,
+        valueMatches: mappedTypes.map(t => ({
+          name: t.name,
+          value: t.value,
+          matches: t.value === formData.saleType
+        }))
       });
       
       setSaleTypes(mappedTypes);
@@ -644,12 +649,14 @@ const SaleForm = () => {
                         onChange={handleChange}
                         isInvalid={!!errors.saleType}
                         disabled={isEdit && !isAdmin} // Edit modunda sadece admin değiştirebilir
+                        key={`sale-type-${saleTypes.length}`} // Force re-render when saleTypes change
                       >
+                        <option value="">Satış Türü Seçin</option>
                         {saleTypes
                           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
                           .map(type => (
                           <option key={type._id} value={type.value}>
-                            {type.name}
+                            {type.name} (value: {type.value})
                           </option>
                         ))}
                       </Form.Select>
