@@ -888,6 +888,81 @@ router.post('/restore/:filename', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   POST /api/sales-import/create-backup
+// @desc    Manuel yedek oluştur (satışlar veya iletişim kayıtları)
+// @access  Admin only
+router.post('/create-backup', [auth, adminAuth], async (req, res) => {
+  try {
+    const { type, description } = req.body; // type: 'sales' | 'communications'
+    
+    console.log(`📋 Manual backup request by ${req.user.email}, type: ${type}`);
+    
+    let data = [];
+    let backupType = 'manual';
+    let backupDescription = description || 'Manuel yedek';
+    
+    if (type === 'sales') {
+      // Tüm satış kayıtlarını al
+      data = await Sale.find({})
+        .populate('salesperson', 'name email')
+        .populate('primPeriod', 'name')
+        .sort({ createdAt: -1 });
+      
+      backupDescription = `Manuel satış yedeği - ${backupDescription}`;
+      console.log(`📊 Found ${data.length} sales records for backup`);
+      
+    } else if (type === 'communications') {
+      // İletişim kayıtlarını al
+      const CommunicationRecord = require('../models/CommunicationRecord');
+      data = await CommunicationRecord.find({})
+        .populate('salesperson', 'name email')
+        .sort({ date: -1 });
+      
+      backupDescription = `Manuel iletişim yedeği - ${backupDescription}`;
+      console.log(`📊 Found ${data.length} communication records for backup`);
+      
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçersiz yedek türü. "sales" veya "communications" olmalı.'
+      });
+    }
+    
+    if (data.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Yedeklenecek veri bulunamadı'
+      });
+    }
+    
+    // Yedek dosyası oluştur
+    const backupFilename = await backupSales(data, `${backupType}_${type}`);
+    
+    if (!backupFilename) {
+      return res.status(500).json({
+        success: false,
+        message: 'Yedek dosyası oluşturulamadı'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: `${data.length} kayıt başarıyla yedeklendi`,
+      backupFilename: backupFilename,
+      recordCount: data.length,
+      type: type,
+      description: backupDescription
+    });
+    
+  } catch (error) {
+    console.error('❌ Manual backup error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Manuel yedek oluşturulurken hata: ' + error.message 
+    });
+  }
+});
+
 // @route   GET /api/sales-import/template
 // @desc    Excel şablon dosyasını indir
 // @access  Admin only

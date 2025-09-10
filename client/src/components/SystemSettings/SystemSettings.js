@@ -32,6 +32,7 @@ import AnnouncementManagement from '../Announcements/AnnouncementManagement';
 import HistoricalDataMigration from './HistoricalDataMigration';
 import SalesImport from './SalesImport';
 import LegacyUserManagement from './LegacyUserManagement';
+import BackupManagement from '../Admin/BackupManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -134,6 +135,12 @@ const SystemSettings = () => {
                   Eski Satış Temsilcisi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="backup-management">
+                  <FiDatabase className="me-2" />
+                  Yedek Yönetimi
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -176,6 +183,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="legacy-user">
                   <LegacyUserManagement />
+                </Tab.Pane>
+                <Tab.Pane eventKey="backup-management">
+                  <BackupManagement />
                 </Tab.Pane>
               </Tab.Content>
             </div>

@@ -141,18 +141,6 @@ const Sidebar = ({ onLinkClick }) => {
           </Nav.Link>
         </LinkContainer>
 
-        {isAdmin && (
-          <>
-            <div className="px-3 py-2 text-muted small">YÖNETİM</div>
-            
-            <LinkContainer to="/admin/backups" onClick={handleLinkClick}>
-              <Nav.Link>
-                <FiDatabase className="me-2" />
-                Yedek Yönetimi
-              </Nav.Link>
-            </LinkContainer>
-          </>
-        )}
       </Nav>
     </div>
   );

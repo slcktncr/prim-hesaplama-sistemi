@@ -23,7 +23,6 @@ import DailyCommunicationEntry from './components/Communications/DailyCommunicat
 import CommunicationReport from './components/Communications/CommunicationReport';
 import AnnouncementList from './components/Announcements/AnnouncementList';
 import AnnouncementManagement from './components/Announcements/AnnouncementManagement';
-import BackupManagement from './components/Admin/BackupManagement';
 import Loading from './components/Common/Loading';
 
 // Protected Route Component
@@ -143,11 +142,6 @@ function AppContent() {
                     <Route path="/admin/system-settings" element={
                       <ProtectedRoute adminOnly={true}>
                         <SystemSettings />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin/backups" element={
-                      <ProtectedRoute adminOnly={true}>
-                        <BackupManagement />
                       </ProtectedRoute>
                     } />
                     

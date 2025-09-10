@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Alert, Modal, Spinner, Form } from 'react-bootstrap';
-import { FaDownload, FaHistory, FaTrash, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaDownload, FaHistory, FaTrash, FaInfoCircle, FaExclamationTriangle, FaPlus, FaShoppingCart, FaComments } from 'react-icons/fa';
 import { salesImportAPI } from '../../utils/api';
 
 const BackupManagement = () => {
@@ -12,6 +12,8 @@ const BackupManagement = () => {
   const [selectedBackup, setSelectedBackup] = useState(null);
   const [restoring, setRestoring] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [creatingBackup, setCreatingBackup] = useState(false);
+  const [backupDescription, setBackupDescription] = useState('');
 
   useEffect(() => {
     fetchBackups();
@@ -75,6 +77,32 @@ const BackupManagement = () => {
     }
   };
 
+  const handleCreateBackup = async (type) => {
+    try {
+      setCreatingBackup(true);
+      setError('');
+      
+      const description = backupDescription || `${type === 'sales' ? 'Satış' : 'İletişim'} kayıtları manuel yedeği`;
+      
+      const response = await salesImportAPI.createManualBackup(type, description);
+      
+      if (response.data.success) {
+        setSuccess(`✅ ${response.data.message} (${response.data.backupFilename})`);
+        setBackupDescription('');
+        
+        // Yedek listesini yenile
+        await fetchBackups();
+      } else {
+        setError('Manuel yedek oluşturulamadı: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Manual backup error:', error);
+      setError('Manuel yedek hatası: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
   const formatDate = (dateString) => {
     try {
       return new Date(dateString).toLocaleString('tr-TR');
@@ -111,7 +139,12 @@ const BackupManagement = () => {
       case 'pre-restore':
         return 'Restore Öncesi';
       case 'manual':
-        return 'Manuel Yedek';
+      case 'manual_sales':
+        return 'Manuel Satış Yedeği';
+      case 'manual_communications':
+        return 'Manuel İletişim Yedeği';
+      case 'test':
+        return 'Test Yedeği';
       default:
         return 'Bilinmeyen';
     }
@@ -144,6 +177,67 @@ const BackupManagement = () => {
               Listeyi Yenile
             </Button>
           </div>
+        </Col>
+      </Row>
+
+      {/* Manuel Yedekleme Butonları */}
+      <Row className="mb-4">
+        <Col>
+          <Card>
+            <Card.Header>
+              <h5 className="mb-0">
+                <FaPlus className="me-2" />
+                Manuel Yedekleme
+              </h5>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                <Col md={8}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Yedek Açıklaması (İsteğe Bağlı)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Örnek: Aylık rutin yedekleme"
+                      value={backupDescription}
+                      onChange={(e) => setBackupDescription(e.target.value)}
+                      disabled={creatingBackup}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Label>&nbsp;</Form.Label>
+                  <div className="d-flex gap-2">
+                    <Button
+                      variant="success"
+                      onClick={() => handleCreateBackup('sales')}
+                      disabled={creatingBackup}
+                      className="flex-fill"
+                    >
+                      {creatingBackup ? (
+                        <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                      ) : (
+                        <FaShoppingCart className="me-2" />
+                      )}
+                      Satışları Yedekle
+                    </Button>
+                    <Button
+                      variant="info"
+                      onClick={() => handleCreateBackup('communications')}
+                      disabled={creatingBackup}
+                      className="flex-fill"
+                    >
+                      {creatingBackup ? (
+                        <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                      ) : (
+                        <FaComments className="me-2" />
+                      )}
+                      İletişimi Yedekle
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
 
