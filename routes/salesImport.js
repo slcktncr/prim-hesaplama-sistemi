@@ -339,7 +339,7 @@ async function convertToSaleRecord(record, adminUserId) {
     apartmentNo: record.apartmentNo.toString().trim(),
     periodNo: record.periodNo.toString().trim(),
     saleType: record.saleType,
-    contractNo: record.contractNo ? record.contractNo.toString().trim() : '',
+    contractNo: record.contractNo && record.contractNo.toString().trim() !== '' ? record.contractNo.toString().trim() : null,
     saleDate: saleDate,
     entryDate: entryDate,
     exitDate: exitDate,

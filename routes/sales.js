@@ -401,6 +401,11 @@ router.post('/', auth, [
       return res.status(400).json({ message: `Gerekli alan eksik: contractNo` });
     }
     
+    // Boş contractNo'yu null'a çevir (MongoDB unique index hatası önlemek için)
+    if (!saleData.contractNo || saleData.contractNo.trim() === '') {
+      saleData.contractNo = null;
+    }
+    
     const sale = new Sale(saleData);
     // Sale modeli kaydediliyor
 
@@ -833,6 +838,11 @@ router.put('/:id', auth, [
           updates.discountedListPrice !== undefined) {
         needsPrimRecalculation = true;
       }
+    }
+
+    // Boş contractNo'yu null'a çevir (MongoDB unique index hatası önlemek için)
+    if (updates.contractNo !== undefined && (!updates.contractNo || updates.contractNo.trim() === '')) {
+      updates.contractNo = null;
     }
 
     // Güncelleme işlemi
