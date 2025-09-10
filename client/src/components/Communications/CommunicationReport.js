@@ -46,7 +46,6 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
 
 const CommunicationReport = () => {
