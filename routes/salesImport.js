@@ -342,6 +342,19 @@ async function convertToSaleRecord(record, adminUserId) {
     primAmount = (basePrimPrice * primRate) / 100;
   }
   
+  // originalListPrice hesaplama
+  let originalListPrice = parseFloat(record.originalListPrice) || 0;
+  
+  // Eğer originalListPrice eksikse ama indirim varsa, otomatik hesapla
+  if (!originalListPrice && discountRate > 0 && listPrice > 0) {
+    originalListPrice = listPrice / (1 - discountRate / 100);
+    console.log(`📊 Otomatik originalListPrice hesaplandı: ${originalListPrice.toFixed(2)} TL (${record.customerName})`);
+  } else if (!originalListPrice && listPrice > 0) {
+    // İndirim yoksa originalListPrice = listPrice
+    originalListPrice = listPrice;
+    console.log(`📊 İndirim yok, originalListPrice = listPrice: ${originalListPrice} TL (${record.customerName})`);
+  }
+
   const saleRecord = {
     customerName: record.customerName.toString().trim(),
     blockNo: record.blockNo.toString().trim(),
@@ -354,6 +367,7 @@ async function convertToSaleRecord(record, adminUserId) {
     listPrice: listPrice,
     discountRate: discountRate,
     discountedListPrice: discountedListPrice,
+    originalListPrice: originalListPrice, // Hesaplanmış değer
     activitySalePrice: activitySalePrice,
     basePrimPrice: basePrimPrice,
     primAmount: primAmount,
