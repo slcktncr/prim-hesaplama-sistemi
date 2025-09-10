@@ -689,6 +689,191 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Helper function: Yedek dosyalarını listele
+async function listBackupFiles() {
+  try {
+    const backupDir = path.join(__dirname, '../backups');
+    
+    if (!fs.existsSync(backupDir)) {
+      return [];
+    }
+    
+    const files = fs.readdirSync(backupDir)
+      .filter(file => file.endsWith('.json'))
+      .map(file => {
+        const filepath = path.join(backupDir, file);
+        const stats = fs.statSync(filepath);
+        
+        try {
+          const content = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+          return {
+            filename: file,
+            filepath: filepath,
+            size: stats.size,
+            created: stats.ctime,
+            modified: stats.mtime,
+            type: content.type || 'unknown',
+            count: content.count || 0,
+            timestamp: content.timestamp
+          };
+        } catch (error) {
+          return {
+            filename: file,
+            filepath: filepath,
+            size: stats.size,
+            created: stats.ctime,
+            modified: stats.mtime,
+            type: 'corrupted',
+            count: 0,
+            timestamp: null,
+            error: error.message
+          };
+        }
+      })
+      .sort((a, b) => new Date(b.created) - new Date(a.created));
+    
+    return files;
+  } catch (error) {
+    console.error('❌ List backup files error:', error);
+    return [];
+  }
+}
+
+// Helper function: Yedek dosyasını geri yükle
+async function restoreFromBackup(filename, adminUserId) {
+  try {
+    const backupDir = path.join(__dirname, '../backups');
+    const filepath = path.join(backupDir, filename);
+    
+    if (!fs.existsSync(filepath)) {
+      throw new Error('Yedek dosyası bulunamadı');
+    }
+    
+    const backupData = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+    
+    if (!backupData.data || !Array.isArray(backupData.data)) {
+      throw new Error('Geçersiz yedek dosyası formatı');
+    }
+    
+    console.log(`📋 Restoring ${backupData.data.length} records from ${filename}`);
+    
+    const results = {
+      totalRecords: backupData.data.length,
+      restoredRecords: 0,
+      skippedRecords: 0,
+      errors: []
+    };
+    
+    // Mevcut kayıtları yedekle (restore işlemi öncesi)
+    const currentSales = await Sale.find({}).select('_id customerName contractNo');
+    const preRestoreBackup = await backupSales(currentSales, 'pre-restore');
+    
+    for (const saleData of backupData.data) {
+      try {
+        // MongoDB ObjectId'lerini temizle
+        delete saleData._id;
+        delete saleData.__v;
+        
+        // Restore bilgilerini ekle
+        saleData.isRestored = true;
+        saleData.restoredAt = new Date();
+        saleData.restoredBy = adminUserId;
+        saleData.restoredFrom = filename;
+        
+        // Kullanıcı ID'sini kontrol et
+        if (saleData.salesperson) {
+          const userExists = await User.findById(saleData.salesperson);
+          if (!userExists) {
+            saleData.salesperson = adminUserId; // Admin'e ata
+            results.errors.push(`Kullanıcı bulunamadı, admin'e atandı: ${saleData.customerName}`);
+          }
+        }
+        
+        // Kayıt oluştur
+        await Sale.create(saleData);
+        results.restoredRecords++;
+        
+      } catch (error) {
+        results.errors.push(`${saleData.customerName || 'Bilinmeyen'}: ${error.message}`);
+        results.skippedRecords++;
+      }
+    }
+    
+    console.log(`✅ Restore completed: ${results.restoredRecords} restored, ${results.skippedRecords} skipped`);
+    
+    return {
+      ...results,
+      preRestoreBackup,
+      backupInfo: {
+        filename: backupData.type || 'unknown',
+        timestamp: backupData.timestamp,
+        originalCount: backupData.count
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Restore error:', error);
+    throw error;
+  }
+}
+
+// @route   GET /api/sales-import/backups
+// @desc    Yedek dosyalarını listele
+// @access  Admin only
+router.get('/backups', [auth, adminAuth], async (req, res) => {
+  try {
+    const backups = await listBackupFiles();
+    
+    res.json({
+      success: true,
+      backups: backups,
+      totalBackups: backups.length,
+      backupDirectory: path.join(__dirname, '../backups')
+    });
+    
+  } catch (error) {
+    console.error('❌ List backups error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Yedek dosyaları listelenirken hata oluştu: ' + error.message 
+    });
+  }
+});
+
+// @route   POST /api/sales-import/restore/:filename
+// @desc    Yedek dosyasından verileri geri yükle
+// @access  Admin only
+router.post('/restore/:filename', [auth, adminAuth], async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const { confirmRestore = false } = req.body;
+    
+    if (!confirmRestore) {
+      return res.status(400).json({
+        success: false,
+        message: 'Restore işlemini onaylamak için confirmRestore: true göndermelisiniz'
+      });
+    }
+    
+    console.log(`🔄 Starting restore from ${filename} by ${req.user.email}`);
+    
+    const results = await restoreFromBackup(filename, req.user._id);
+    
+    res.json({
+      success: true,
+      message: `${results.restoredRecords} kayıt başarıyla geri yüklendi`,
+      results: results
+    });
+    
+  } catch (error) {
+    console.error('❌ Restore operation error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Restore işlemi sırasında hata oluştu: ' + error.message 
+    });
+  }
+});
+
 // @route   GET /api/sales-import/template
 // @desc    Excel şablon dosyasını indir
 // @access  Admin only

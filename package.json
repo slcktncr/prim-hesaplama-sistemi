@@ -12,7 +12,8 @@
     "heroku-postbuild": "cd client && npm install && npm run build && npm run fix:contract-index",
     "migrate:payment-methods": "node scripts/migratePaymentMethods.js",
     "fix:contract-index": "node scripts/fixContractNoIndex.js",
-    "list:users": "node scripts/listActiveUsers.js"
+    "list:users": "node scripts/listActiveUsers.js",
+    "backup:manager": "node scripts/backupManager.js"
   },
   "dependencies": {
     "express": "^4.18.2",
