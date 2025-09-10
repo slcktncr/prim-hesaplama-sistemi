@@ -198,6 +198,11 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
                                   <FiUser className="me-2 text-muted" />
                                   <div>
                                     <strong>{sale.customerName}</strong>
+                                    {sale.phone && (
+                                      <div className="small text-primary fw-bold">
+                                        📞 {sale.phone}
+                                      </div>
+                                    )}
                                     {sale.contractNo && (
                                       <div className="small text-muted">
                                         Sözleşme: {sale.contractNo}

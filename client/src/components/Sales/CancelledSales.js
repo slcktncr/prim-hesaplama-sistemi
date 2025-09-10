@@ -235,6 +235,12 @@ const CancelledSales = () => {
                         <div>
                           <strong>{sale.customerName}</strong>
                           <br />
+                          {sale.phone && (
+                            <small className="text-primary fw-bold">
+                              📞 {sale.phone}
+                            </small>
+                          )}
+                          {sale.phone && <br />}
                           <small className="text-muted">
                             Dönem: {sale.periodNo}
                           </small>

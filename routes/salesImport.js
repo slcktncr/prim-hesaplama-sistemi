@@ -243,12 +243,21 @@ function validateSaleRecord(record, rowIndex) {
 
 // Helper function: Excel verisini Sale modeline çevir
 async function convertToSaleRecord(record, adminUserId) {
-  // Kullanıcıyı bul (username'e göre)
+  // Kullanıcıyı bul (name veya email'e göre)
   let salesperson = adminUserId; // Default admin
   if (record.salesperson && record.salesperson !== 'admin') {
-    const user = await User.findOne({ username: record.salesperson });
+    // Önce isim ile ara, sonra email ile ara
+    const user = await User.findOne({
+      $or: [
+        { name: { $regex: new RegExp('^' + record.salesperson.trim() + '$', 'i') } },
+        { email: record.salesperson.trim().toLowerCase() }
+      ]
+    });
     if (user) {
       salesperson = user._id;
+      console.log(`✅ Kullanıcı bulundu: ${record.salesperson} -> ${user.name} (${user.email})`);
+    } else {
+      console.log(`⚠️ Kullanıcı bulunamadı: ${record.salesperson}`);
     }
   }
   
