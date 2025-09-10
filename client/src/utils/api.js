@@ -209,7 +209,10 @@ export const salesImportAPI = {
       data: { hours, startDate, endDate },
       timeout: 300000, // 5 dakika timeout
     });
-  }
+  },
+  // Backup Management
+  getBackups: () => API.get('/sales-import/backups'),
+  restoreFromBackup: (filename, confirmRestore = true) => API.post(`/sales-import/restore/${filename}`, { confirmRestore })
 };
 
 export default API;

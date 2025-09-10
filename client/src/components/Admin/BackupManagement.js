@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Alert, Modal, Spinner, Form } from 'react-bootstrap';
 import { FaDownload, FaHistory, FaTrash, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
-import api from '../../utils/api';
+import { salesImportAPI } from '../../utils/api';
 
 const BackupManagement = () => {
   const [backups, setBackups] = useState([]);
@@ -22,7 +22,7 @@ const BackupManagement = () => {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/api/sales-import/backups');
+      const response = await salesImportAPI.getBackups();
       
       if (response.data.success) {
         setBackups(response.data.backups);
@@ -55,9 +55,7 @@ const BackupManagement = () => {
       setRestoring(true);
       setError('');
       
-      const response = await api.post(`/api/sales-import/restore/${selectedBackup.filename}`, {
-        confirmRestore: true
-      });
+      const response = await salesImportAPI.restoreFromBackup(selectedBackup.filename, true);
       
       if (response.data.success) {
         setSuccess(`✅ ${response.data.message}`);
