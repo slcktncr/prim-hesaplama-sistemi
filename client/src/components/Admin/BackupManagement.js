@@ -31,6 +31,8 @@ const BackupManagement = () => {
       }
     } catch (error) {
       console.error('Backup list error:', error);
+      console.error('Full error object:', error);
+      console.error('Response data:', error.response?.data);
       setError('Yedek dosyaları yüklenirken hata: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
@@ -176,6 +178,10 @@ const BackupManagement = () => {
                 <Alert variant="info">
                   <FaInfoCircle className="me-2" />
                   Henüz hiç yedek dosyası bulunamadı.
+                  <hr />
+                  <small className="text-muted">
+                    <strong>Test için:</strong> Terminal'de <code>npm run create:test-backup</code> komutunu çalıştırarak test yedeği oluşturabilirsiniz.
+                  </small>
                 </Alert>
               ) : (
                 <div className="table-responsive">

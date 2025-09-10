@@ -13,7 +13,8 @@
     "migrate:payment-methods": "node scripts/migratePaymentMethods.js",
     "fix:contract-index": "node scripts/fixContractNoIndex.js",
     "list:users": "node scripts/listActiveUsers.js",
-    "backup:manager": "node scripts/backupManager.js"
+    "backup:manager": "node scripts/backupManager.js",
+    "create:test-backup": "node scripts/createTestBackup.js"
   },
   "dependencies": {
     "express": "^4.18.2",

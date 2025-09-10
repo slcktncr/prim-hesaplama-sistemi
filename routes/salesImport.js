@@ -822,20 +822,34 @@ async function restoreFromBackup(filename, adminUserId) {
 // @access  Admin only
 router.get('/backups', [auth, adminAuth], async (req, res) => {
   try {
+    console.log('📋 Backup files list request by:', req.user.email);
+    
+    const backupDir = path.join(__dirname, '../backups');
+    console.log('📁 Backup directory:', backupDir);
+    console.log('📁 Directory exists:', fs.existsSync(backupDir));
+    
     const backups = await listBackupFiles();
+    console.log('📊 Found backups:', backups.length);
     
     res.json({
       success: true,
       backups: backups,
       totalBackups: backups.length,
-      backupDirectory: path.join(__dirname, '../backups')
+      backupDirectory: backupDir,
+      debug: {
+        directoryExists: fs.existsSync(backupDir),
+        user: req.user.email,
+        timestamp: new Date().toISOString()
+      }
     });
     
   } catch (error) {
     console.error('❌ List backups error:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ 
       success: false,
-      message: 'Yedek dosyaları listelenirken hata oluştu: ' + error.message 
+      message: 'Yedek dosyaları listelenirken hata oluştu: ' + error.message,
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
