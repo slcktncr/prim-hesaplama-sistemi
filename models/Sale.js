@@ -63,9 +63,8 @@ const saleSchema = new mongoose.Schema({
       // Ancak burada SaleType erişimi zor olduğu için sadece boş değilse unique olsun
       return false; // Backend validation'da kontrol ediyoruz
     },
-    unique: true,
-    sparse: true, // Boş değerler için unique constraint uygulanmasın
     trim: true
+    // Index'i schema seviyesinde tanımlayacağız
   },
   listPrice: {
     type: Number,
@@ -307,5 +306,8 @@ saleSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
+
+// ContractNo için sparse unique index
+saleSchema.index({ contractNo: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Sale', saleSchema);
