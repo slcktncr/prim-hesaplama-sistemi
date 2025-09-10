@@ -333,13 +333,12 @@ async function convertToSaleRecord(record, adminUserId) {
     primAmount = (basePrimPrice * primRate) / 100;
   }
   
-  return {
+  const saleRecord = {
     customerName: record.customerName.toString().trim(),
     blockNo: record.blockNo.toString().trim(),
     apartmentNo: record.apartmentNo.toString().trim(),
     periodNo: record.periodNo.toString().trim(),
     saleType: record.saleType,
-    contractNo: record.contractNo && record.contractNo.toString().trim() !== '' ? record.contractNo.toString().trim() : null,
     saleDate: saleDate,
     entryDate: entryDate,
     exitDate: exitDate,
@@ -360,6 +359,13 @@ async function convertToSaleRecord(record, adminUserId) {
     importedAt: new Date(),
     importedBy: adminUserId
   };
+
+  // ContractNo'yu sadece değeri varsa ekle
+  if (record.contractNo && record.contractNo.toString().trim() !== '') {
+    saleRecord.contractNo = record.contractNo.toString().trim();
+  }
+
+  return saleRecord;
 }
 
 // @route   POST /api/sales-import/upload

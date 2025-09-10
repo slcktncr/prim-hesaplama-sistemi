@@ -401,9 +401,9 @@ router.post('/', auth, [
       return res.status(400).json({ message: `Gerekli alan eksik: contractNo` });
     }
     
-    // Boş contractNo'yu null'a çevir (MongoDB unique index hatası önlemek için)
+    // Boş contractNo'yu undefined yap (MongoDB unique index hatası önlemek için)
     if (!saleData.contractNo || saleData.contractNo.trim() === '') {
-      saleData.contractNo = null;
+      delete saleData.contractNo; // Alanı tamamen kaldır
     }
     
     const sale = new Sale(saleData);
@@ -840,9 +840,11 @@ router.put('/:id', auth, [
       }
     }
 
-    // Boş contractNo'yu null'a çevir (MongoDB unique index hatası önlemek için)
+    // Boş contractNo'yu handle et (MongoDB unique index hatası önlemek için)
     if (updates.contractNo !== undefined && (!updates.contractNo || updates.contractNo.trim() === '')) {
-      updates.contractNo = null;
+      // Boş contractNo'yu tamamen kaldır
+      sale.contractNo = undefined;
+      delete updates.contractNo;
     }
 
     // Güncelleme işlemi
