@@ -522,10 +522,7 @@ router.get('/upcoming-entries', auth, async (req, res) => {
       entryDate: { $in: upcomingDates }
     };
     
-    // Admin değilse sadece kendi satışlarını göster
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
+    // Tüm kullanıcılar artık herkesi görebilir
     
     const upcomingSales = await Sale.find(query)
       .populate('salesperson', 'name email')

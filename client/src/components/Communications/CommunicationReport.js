@@ -30,6 +30,7 @@ import {
 
 import { communicationsAPI, usersAPI } from '../../utils/api';
 import { formatDate, formatNumber, getQuickDateFilters } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import { 
   BarChart, 
   Bar, 
@@ -92,6 +93,17 @@ const CommunicationReport = () => {
       console.log('🔄 Fetching communication data with filters:', filters);
       console.log('🔄 Selected user:', filters.selectedUser);
       console.log('🔄 Date range:', filters.startDate, 'to', filters.endDate);
+      console.log('🔄 Current user role:', user?.role);
+      console.log('🔄 Current user ID:', user?._id);
+
+      // Tüm kullanıcılar artık herkesi görebilir
+      const getSalespersonParam = () => {
+        // Seçilen kullanıcı veya tümü
+        return filters.selectedUser !== 'all' ? filters.selectedUser : undefined;
+      };
+      
+      const salespersonParam = getSalespersonParam();
+      console.log('🔍 Using salesperson param:', salespersonParam);
 
       // Paralel veri çekme - farklı dönem türleri için
       const promises = [
@@ -99,21 +111,21 @@ const CommunicationReport = () => {
         communicationsAPI.getPeriodReport({
           startDate: filters.startDate,
           endDate: filters.endDate,
-          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined,
+          salesperson: salespersonParam,
           periodType: 'daily'
         }),
         // Aylık veriler (trend analizi için)
         communicationsAPI.getPeriodReport({
           startDate: filters.startDate,
           endDate: filters.endDate,
-          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined,
+          salesperson: salespersonParam,
           periodType: 'monthly'
         }),
         // Özet rapor (genel toplam için)
         communicationsAPI.getReport({
           startDate: filters.startDate,
           endDate: filters.endDate,
-          salesperson: filters.selectedUser !== 'all' ? filters.selectedUser : undefined
+          salesperson: salespersonParam
         })
       ];
 
@@ -123,6 +135,12 @@ const CommunicationReport = () => {
         daily: dailyResponse.data?.length || 0,
         monthly: monthlyResponse.data?.length || 0,
         summary: summaryResponse.data?.length || 0
+      });
+      
+      console.log('📊 Raw API responses:', {
+        dailyResponse: dailyResponse.data,
+        monthlyResponse: monthlyResponse.data,
+        summaryResponse: summaryResponse.data
       });
 
       // Veriyi işle

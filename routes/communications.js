@@ -162,10 +162,8 @@ router.get('/records', auth, async (req, res) => {
 
     let query = {};
 
-    // Admin değilse sadece kendi kayıtlarını görebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user.id;
-    } else if (salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar artık herkesi görebilir
+    if (salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
     }
 
@@ -217,11 +215,8 @@ router.get('/report', auth, async (req, res) => {
     let query = {};
     let salesQuery = {};
 
-    // Admin değilse sadece kendi verilerini görebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user.id;
-      salesQuery.salesperson = req.user.id;
-    } else if (salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar artık herkesi görebilir
+    if (salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
       salesQuery.salesperson = salesperson;
     }
@@ -476,11 +471,8 @@ router.get('/daily-report', auth, async (req, res) => {
     let query = {};
     let salesQuery = {};
 
-    // Admin değilse sadece kendi verilerini görebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user.id;
-      salesQuery.salesperson = req.user.id;
-    } else if (salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar artık herkesi görebilir
+    if (salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
       salesQuery.salesperson = salesperson;
     }
@@ -646,11 +638,8 @@ router.get('/report-detailed', auth, async (req, res) => {
     let query = {};
     let salesQuery = {};
 
-    // Admin değilse sadece kendi verilerini görebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user.id;
-      salesQuery.salesperson = req.user.id;
-    } else if (salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar artık herkesi görebilir
+    if (salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
       salesQuery.salesperson = salesperson;
     }
@@ -918,10 +907,8 @@ router.get('/period-report', auth, async (req, res) => {
 
     let query = {};
 
-    // Admin değilse sadece kendi verilerini görebilir
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user.id;
-    } else if (salesperson && salesperson !== 'all') {
+    // Tüm kullanıcılar artık herkesi görebilir
+    if (salesperson && salesperson !== 'all') {
       query.salesperson = salesperson;
     }
 
