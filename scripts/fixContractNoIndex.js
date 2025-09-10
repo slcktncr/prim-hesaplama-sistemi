@@ -23,6 +23,16 @@ const fixContractNoIndex = async () => {
     const indexes = await salesCollection.indexes();
     console.log(indexes.map(idx => ({ name: idx.name, key: idx.key, sparse: idx.sparse, unique: idx.unique })));
     
+    // Yeni index zaten varsa çık
+    const existingSparseIndex = indexes.find(idx => 
+      idx.key.contractNo === 1 && idx.sparse === true && idx.unique === true
+    );
+    
+    if (existingSparseIndex) {
+      console.log('✅ Sparse unique index zaten mevcut, işlem gerekmiyor');
+      return;
+    }
+    
     // Mevcut contractNo index'ini sil
     try {
       console.log('🗑️ Eski contractNo_1 index\'i siliniyor...');

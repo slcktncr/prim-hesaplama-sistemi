@@ -9,7 +9,7 @@
     "client": "cd client && npm start",
     "build": "cd client && npm install && npm run build",
     "start": "node server.js",
-    "heroku-postbuild": "cd client && npm install && npm run build",
+    "heroku-postbuild": "cd client && npm install && npm run build && npm run fix:contract-index",
     "migrate:payment-methods": "node scripts/migratePaymentMethods.js",
     "fix:contract-index": "node scripts/fixContractNoIndex.js"
   },
