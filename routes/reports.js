@@ -736,7 +736,7 @@ router.get('/salesperson-performance', auth, async (req, res) => {
 });
 
 // @route   GET /api/reports/period-comparison
-// @desc    Dönem karşılaştırma raporu
+// @desc    Dönem karşılaştırma raporu (satış tarihine göre)
 // @access  Private
 router.get('/period-comparison', auth, async (req, res) => {
   try {
@@ -744,14 +744,37 @@ router.get('/period-comparison', auth, async (req, res) => {
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
-    // Son 6 ayın dönemlerini al
-    const periods = await PrimPeriod.find({ isActive: true })
-      .sort({ year: -1, month: -1 })
-      .limit(6);
+    // Son 6 ayın gerçek tarih dönemlerini oluştur (satış tarihine göre)
+    const now = new Date();
+    const periods = [];
+    
+    for (let i = 0; i < 6; i++) {
+      const periodDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const periodEnd = new Date(periodDate.getFullYear(), periodDate.getMonth() + 1, 0, 23, 59, 59);
+      
+      periods.push({
+        name: periodDate.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' }),
+        startDate: periodDate,
+        endDate: periodEnd,
+        year: periodDate.getFullYear(),
+        month: periodDate.getMonth() + 1
+      });
+    }
+
+    console.log('🗓️ Period comparison - Generated periods:', periods.map(p => ({ name: p.name, start: p.startDate, end: p.endDate })));
 
     const periodComparison = await Promise.all(
       periods.map(async (period) => {
-        const periodQuery = { ...query, primPeriod: period._id };
+        // Satış tarihine göre filtreleme yap (saleDate bazlı)
+        const periodQuery = { 
+          ...query, 
+          saleDate: {
+            $gte: period.startDate,
+            $lte: period.endDate
+          }
+        };
+        
+        console.log(`📊 Period comparison - Querying for ${period.name}:`, periodQuery.saleDate);
         
         const activeSales = await Sale.aggregate([
           { $match: { ...periodQuery, status: 'aktif' } },
@@ -781,9 +804,10 @@ router.get('/period-comparison', auth, async (req, res) => {
         });
         const successRate = totalSalesCount > 0 ? ((realSalesCount / totalSalesCount) * 100) : 0;
         
-        return {
+        const result = {
           period: period.name,
-          periodId: period._id,
+          periodYear: period.year,
+          periodMonth: period.month,
           activeSales: activeSales[0]?.count || 0,
           cancelledSales,
           totalAmount: activeSales[0]?.totalAmount || 0,
@@ -794,8 +818,14 @@ router.get('/period-comparison', auth, async (req, res) => {
           kaporaSalesCount,
           successRate: parseFloat(successRate.toFixed(1))
         };
+        
+        console.log(`📈 Period comparison result for ${period.name}:`, { activeSales: result.activeSales, totalAmount: result.totalAmount });
+        
+        return result;
       })
     );
+
+    console.log('🎯 Final period comparison data:', periodComparison.map(p => ({ period: p.period, activeSales: p.activeSales, totalAmount: p.totalAmount })));
 
     res.json(periodComparison);
   } catch (error) {
