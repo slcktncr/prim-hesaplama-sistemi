@@ -170,36 +170,34 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
   return (
     <div>
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h1>
+          <h1 className="mb-1">
             <FiBarChart2 className="me-2" />
             Raporlar
           </h1>
-          <p className="text-muted mb-0">
+          <p className="text-muted mb-0 small">
             Satış performansı ve prim analiz raporları
             {!isAdmin && ` (${user?.name})`}
           </p>
         </div>
-        <div className="d-flex gap-2">
-          <Button 
-            variant="success" 
-            onClick={() => setShowExportModal(true)}
-          >
-            <FiDownload className="me-2" />
-            Rapor İndir
-          </Button>
-        </div>
+        <Button 
+          variant="success" 
+          size="sm"
+          onClick={() => setShowExportModal(true)}
+        >
+          <FiDownload className="me-2" />
+          Rapor İndir
+        </Button>
       </div>
 
-
       {/* Report Tabs */}
-      <Card>
-        <Card.Body>
+      <Card className="shadow-sm">
+        <Card.Body className="p-3">
           <Tabs
             activeKey={activeTab}
             onSelect={(k) => setActiveTab(k)}
-            className="mb-4"
+            className="mb-3"
           >
             {/* Sales Summary Tab */}
             <Tab 
@@ -283,29 +281,33 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
       </Card>
 
       {/* Quick Stats Cards */}
-      <Row className="mt-4">
-                  <Col md={3}>
-            <Card className="text-center">
-              <Card.Body>
-                <FiBarChart2 size={32} className="text-primary mb-2" />
-                <div className="h6">Satış Özeti</div>
-                <div className="small text-muted">
-                  Toplam satış ve ciro analizi
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+      <Row className="mt-3 g-3">
+        <Col md={3}>
+          <Card 
+            className="text-center report-card h-100 shadow-sm" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setActiveTab('sales-summary')}
+          >
+            <Card.Body className="p-3">
+              <FiBarChart2 size={24} className="text-primary mb-2" />
+              <div className="h6 mb-1">Satış Özeti</div>
+              <div className="small text-muted">
+                Toplam satış ve ciro analizi
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
         
         {isAdmin && (
           <Col md={3}>
             <Card 
-              className="text-center report-card" 
+              className="text-center report-card h-100 shadow-sm" 
               style={{ cursor: 'pointer' }}
               onClick={() => setActiveTab('performance')}
             >
-              <Card.Body>
-                <FiTrendingUp size={32} className="text-success mb-2" />
-                <div className="h6">Performans</div>
+              <Card.Body className="p-3">
+                <FiTrendingUp size={24} className="text-success mb-2" />
+                <div className="h6 mb-1">Performans</div>
                 <div className="small text-muted">
                   Temsilci bazında analiz
                 </div>
@@ -316,13 +318,13 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
         
         <Col md={3}>
           <Card 
-            className="text-center report-card" 
+            className="text-center report-card h-100 shadow-sm" 
             style={{ cursor: 'pointer' }}
             onClick={() => setActiveTab('period-comparison')}
           >
-            <Card.Body>
-              <FiCalendar size={32} className="text-info mb-2" />
-              <div className="h6">Dönem Analizi</div>
+            <Card.Body className="p-3">
+              <FiCalendar size={24} className="text-info mb-2" />
+              <div className="h6 mb-1">Dönem Analizi</div>
               <div className="small text-muted">
                 Aylık karşılaştırmalar
               </div>
@@ -332,13 +334,13 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
         
         <Col md={3}>
           <Card 
-            className="text-center report-card" 
+            className="text-center report-card h-100 shadow-sm" 
             style={{ cursor: 'pointer' }}
             onClick={() => setActiveTab('top-performers')}
           >
-            <Card.Body>
-              <FiTarget size={32} className="text-warning mb-2" />
-              <div className="h6">Liderlik</div>
+            <Card.Body className="p-3">
+              <FiTarget size={24} className="text-warning mb-2" />
+              <div className="h6 mb-1">Liderlik</div>
               <div className="small text-muted">
                 En başarılı temsilciler
               </div>

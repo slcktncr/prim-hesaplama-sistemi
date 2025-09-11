@@ -267,6 +267,24 @@ const PrimPeriods = () => {
     setShowBulkModal(true);
   };
 
+  const generateFullYearPeriods = (year) => {
+    const periods = [];
+    for (let month = 1; month <= 12; month++) {
+      const periodName = createPeriodName(month, year);
+      const isExisting = periods.find(p => p.name === periodName);
+      
+      if (!isExisting) {
+        periods.push({
+          month: month,
+          year: year,
+          name: periodName,
+          selected: true
+        });
+      }
+    }
+    setBulkPeriods(periods);
+  };
+
   const closeBulkModal = () => {
     setShowBulkModal(false);
     setBulkPeriods([]);
@@ -592,7 +610,7 @@ const PrimPeriods = () => {
                 </Col>
               </Row>
               
-              <div className="d-flex gap-2">
+              <div className="d-flex flex-wrap gap-2 mb-3">
                 <Button variant="outline-secondary" onClick={generateBulkPeriods}>
                   Dönemleri Oluştur
                 </Button>
@@ -608,6 +626,44 @@ const PrimPeriods = () => {
                     </Button>
                   </>
                 )}
+              </div>
+              
+              {/* Hızlı Yıl Seçimi */}
+              <div className="border-top pt-3">
+                <h6 className="mb-2">🚀 Hızlı Yıl Seçimi</h6>
+                <div className="d-flex flex-wrap gap-2">
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => generateFullYearPeriods(2024)}
+                  >
+                    2024 Tüm Yıl
+                  </Button>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => generateFullYearPeriods(2025)}
+                  >
+                    2025 Tüm Yıl
+                  </Button>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => generateFullYearPeriods(2026)}
+                  >
+                    2026 Tüm Yıl
+                  </Button>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => generateFullYearPeriods(bulkFormData.startYear)}
+                  >
+                    {bulkFormData.startYear} Tüm Yıl
+                  </Button>
+                </div>
+                <small className="text-muted d-block mt-2">
+                  💡 Bir yıla tıklayın, o yılın tüm ayları (Ocak-Aralık) otomatik oluşturulur
+                </small>
               </div>
             </div>
 
