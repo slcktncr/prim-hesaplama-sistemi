@@ -163,13 +163,52 @@ router.get('/dashboard', auth, async (req, res) => {
       { $sort: { count: -1 } }
     ]);
 
-    // Satış türlerini düzenle
-    const saleTypesStats = {
-      satis: salesByType.find(item => item._id === 'satis') || { _id: 'satis', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
-      kapora: salesByType.find(item => item._id === 'kapora') || { _id: 'kapora', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
-      yazlik: salesByType.find(item => item._id === 'yazlik') || { _id: 'yazlik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
-      kislik: salesByType.find(item => item._id === 'kislik') || { _id: 'kislik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 }
-    };
+    // Debug: Gerçek saleType değerlerini logla
+    console.log('🔍 Dashboard - Gerçek saleType değerleri:', salesByType.map(item => item._id));
+
+    // SaleType tablosundan dinamik mapping al
+    const SaleType = require('../models/SaleType');
+    const activeSaleTypes = await SaleType.find({ isActive: true }).select('name');
+    
+    // Satış türlerini dinamik olarak düzenle
+    const saleTypesStats = {};
+    
+    // Varsayılan türleri ekle
+    saleTypesStats.satis = salesByType.find(item => item._id === 'satis') || { _id: 'satis', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+    saleTypesStats.kapora = salesByType.find(item => item._id === 'kapora') || { _id: 'kapora', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+    
+    // Dinamik türleri SaleType tablosundan al
+    activeSaleTypes.forEach(saleType => {
+      const lowerName = saleType.name.toLowerCase();
+      let mappedKey = null;
+      
+      if (lowerName.includes('yazlık') || lowerName.includes('yazlik')) {
+        mappedKey = 'yazlik';
+      } else if (lowerName.includes('kışlık') || lowerName.includes('kislik')) {
+        mappedKey = 'kislik';
+      }
+      
+      if (mappedKey) {
+        // SaleType name'inden saleType value'sını türet
+        const saleTypeValue = lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
+        const foundStats = salesByType.find(item => item._id === saleTypeValue);
+        
+        if (foundStats) {
+          saleTypesStats[mappedKey] = foundStats;
+          console.log(`📊 Dinamik mapping: ${saleType.name} -> ${mappedKey} (${saleTypeValue})`);
+        } else {
+          saleTypesStats[mappedKey] = { _id: saleTypeValue, count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+        }
+      }
+    });
+    
+    // Eksik olanları varsayılan değerlerle doldur
+    if (!saleTypesStats.yazlik) {
+      saleTypesStats.yazlik = salesByType.find(item => item._id === 'yazlik') || { _id: 'yazlik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+    }
+    if (!saleTypesStats.kislik) {
+      saleTypesStats.kislik = salesByType.find(item => item._id === 'kislik') || { _id: 'kislik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+    }
 
     // En başarılı temsilciler (sadece admin için) - Farklı kategorilerde
     let topPerformers = {

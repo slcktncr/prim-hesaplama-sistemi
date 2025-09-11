@@ -12,7 +12,7 @@ import {
 import { toast } from 'react-toastify';
 import { FiRefreshCw, FiFilter, FiDownload, FiList } from 'react-icons/fi';
 
-import { reportsAPI, primsAPI } from '../../utils/api';
+import { reportsAPI, primsAPI, systemSettingsAPI } from '../../utils/api';
 import { 
   formatCurrency, 
   formatDate,
@@ -27,6 +27,7 @@ import Loading from '../Common/Loading';
 const DetailedReport = () => {
   const [detailedData, setDetailedData] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [saleTypes, setSaleTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -39,6 +40,7 @@ const DetailedReport = () => {
 
   useEffect(() => {
     fetchPeriods();
+    fetchSaleTypes();
     const debouncedFetch = debounce(fetchDetailedData, 500);
     debouncedFetch();
   }, [filters]);
@@ -49,6 +51,17 @@ const DetailedReport = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchSaleTypes = async () => {
+    try {
+      const response = await systemSettingsAPI.getSaleTypes();
+      setSaleTypes(response.data || []);
+    } catch (error) {
+      console.error('Sale types fetch error:', error);
+      // Hata durumunda varsayılan değerleri kullan
+      setSaleTypes([]);
     }
   };
 
@@ -248,8 +261,21 @@ const DetailedReport = () => {
                   <option value="">Tüm Türler</option>
                   <option value="satis">Normal Satış</option>
                   <option value="kapora">Kapora</option>
-                  <option value="yazlik">Yazlık Ev</option>
-                  <option value="kislik">Kışlık Ev</option>
+                  {saleTypes.map(saleType => {
+                    const lowerName = saleType.name.toLowerCase();
+                    let mappedValue = lowerName.replace(/\s+/g, '').replace(/[^\w]/g, '').substring(0, 20);
+                    
+                    // Varsayılan türleri atla (zaten yukarıda tanımlanmış)
+                    if (lowerName.includes('normal') || lowerName.includes('satış') || lowerName.includes('kapora')) {
+                      return null;
+                    }
+                    
+                    return (
+                      <option key={saleType._id} value={mappedValue}>
+                        {saleType.name}
+                      </option>
+                    );
+                  })}
                 </Form.Select>
               </Form.Group>
             </Col>
