@@ -15,7 +15,10 @@ import {
   FiCalendar, 
   FiPlus,
   FiUser,
-  FiRefreshCw
+  FiRefreshCw,
+  FiLayers,
+  FiCheck,
+  FiX
 } from 'react-icons/fi';
 
 import { primsAPI } from '../../utils/api';
@@ -33,9 +36,17 @@ const PrimPeriods = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [formData, setFormData] = useState({
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear()
+  });
+  const [bulkPeriods, setBulkPeriods] = useState([]);
+  const [bulkFormData, setBulkFormData] = useState({
+    startMonth: new Date().getMonth() + 1,
+    startYear: new Date().getFullYear(),
+    endMonth: new Date().getMonth() + 6, // 6 ay sonrası
+    endYear: new Date().getFullYear()
   });
 
   useEffect(() => {
@@ -140,6 +151,133 @@ const PrimPeriods = () => {
     });
   };
 
+  // Toplu dönem oluşturma fonksiyonları
+  const handleBulkInputChange = (e) => {
+    const { name, value } = e.target;
+    setBulkFormData(prev => ({
+      ...prev,
+      [name]: parseInt(value)
+    }));
+  };
+
+  const generateBulkPeriods = () => {
+    const { startMonth, startYear, endMonth, endYear } = bulkFormData;
+    const periods = [];
+    
+    let currentMonth = startMonth;
+    let currentYear = startYear;
+    
+    // Son ay ve yıla kadar döngü
+    while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+      const periodName = createPeriodName(currentMonth, currentYear);
+      const isExisting = periods.find(p => p.name === periodName);
+      
+      if (!isExisting) {
+        periods.push({
+          month: currentMonth,
+          year: currentYear,
+          name: periodName,
+          selected: true // Varsayılan olarak seçili
+        });
+      }
+      
+      // Sonraki aya geç
+      currentMonth++;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      }
+    }
+    
+    setBulkPeriods(periods);
+  };
+
+  const togglePeriodSelection = (index) => {
+    setBulkPeriods(prev => prev.map((period, i) => 
+      i === index ? { ...period, selected: !period.selected } : period
+    ));
+  };
+
+  const selectAllPeriods = () => {
+    setBulkPeriods(prev => prev.map(period => ({ ...period, selected: true })));
+  };
+
+  const deselectAllPeriods = () => {
+    setBulkPeriods(prev => prev.map(period => ({ ...period, selected: false })));
+  };
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    
+    const selectedPeriods = bulkPeriods.filter(p => p.selected);
+    
+    if (selectedPeriods.length === 0) {
+      toast.error('En az bir dönem seçiniz');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const periodsData = {
+        periods: selectedPeriods.map(p => ({
+          month: p.month,
+          year: p.year
+        }))
+      };
+
+      const response = await primsAPI.createBulkPeriods(periodsData);
+      
+      toast.success(response.data.message);
+      
+      // Modal'ı kapat ve listeyi yenile
+      setShowBulkModal(false);
+      setBulkPeriods([]);
+      setBulkFormData({
+        startMonth: new Date().getMonth() + 1,
+        startYear: new Date().getFullYear(),
+        endMonth: new Date().getMonth() + 6,
+        endYear: new Date().getFullYear()
+      });
+      fetchPeriods();
+      
+      // Detaylı sonuç göster
+      if (response.data.summary) {
+        const { created, skipped, skippedPeriods } = response.data.summary;
+        if (skipped > 0) {
+          toast.info(`${created} yeni dönem oluşturuldu. ${skipped} dönem zaten mevcuttu: ${skippedPeriods.join(', ')}`);
+        }
+      }
+      
+    } catch (error) {
+      console.error('Bulk create periods error:', error);
+      toast.error(error.response?.data?.message || 'Toplu dönem oluşturulurken hata oluştu');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openBulkModal = () => {
+    setBulkFormData({
+      startMonth: new Date().getMonth() + 1,
+      startYear: new Date().getFullYear(),
+      endMonth: new Date().getMonth() + 6,
+      endYear: new Date().getFullYear()
+    });
+    setBulkPeriods([]);
+    setShowBulkModal(true);
+  };
+
+  const closeBulkModal = () => {
+    setShowBulkModal(false);
+    setBulkPeriods([]);
+    setBulkFormData({
+      startMonth: new Date().getMonth() + 1,
+      startYear: new Date().getFullYear(),
+      endMonth: new Date().getMonth() + 6,
+      endYear: new Date().getFullYear()
+    });
+  };
+
   if (loading) {
     return <Loading text="Prim dönemleri yükleniyor..." />;
   }
@@ -157,10 +295,16 @@ const PrimPeriods = () => {
             Prim hesaplama dönemlerini yönetin
           </p>
         </div>
-        <Button variant="primary" onClick={openModal}>
-          <FiPlus className="me-2" />
-          Yeni Dönem
-        </Button>
+        <div className="d-flex gap-2">
+          <Button variant="outline-primary" onClick={openBulkModal}>
+            <FiLayers className="me-2" />
+            Toplu Oluştur
+          </Button>
+          <Button variant="primary" onClick={openModal}>
+            <FiPlus className="me-2" />
+            Yeni Dönem
+          </Button>
+        </div>
       </div>
 
       {/* Error Alert */}
@@ -365,6 +509,166 @@ const PrimPeriods = () => {
               disabled={saving}
             >
               {saving ? 'Oluşturuluyor...' : 'Dönem Oluştur'}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+
+      {/* Bulk Create Periods Modal */}
+      <Modal show={showBulkModal} onHide={closeBulkModal} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FiLayers className="me-2" />
+            Toplu Prim Dönemi Oluştur
+          </Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleBulkSubmit}>
+          <Modal.Body>
+            {/* Tarih Aralığı Seçimi */}
+            <div className="mb-4">
+              <h6>Dönem Aralığı Seçin</h6>
+              <Row>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Başlangıç Ayı</Form.Label>
+                    <Form.Select
+                      name="startMonth"
+                      value={bulkFormData.startMonth}
+                      onChange={handleBulkInputChange}
+                    >
+                      {monthNames.map((month, index) => (
+                        <option key={index + 1} value={index + 1}>
+                          {month}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Başlangıç Yılı</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="startYear"
+                      min="2020"
+                      max="2050"
+                      value={bulkFormData.startYear}
+                      onChange={handleBulkInputChange}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Bitiş Ayı</Form.Label>
+                    <Form.Select
+                      name="endMonth"
+                      value={bulkFormData.endMonth > 12 ? bulkFormData.endMonth - 12 : bulkFormData.endMonth}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        const adjustedValue = bulkFormData.endYear > bulkFormData.startYear ? value : value;
+                        setBulkFormData(prev => ({ ...prev, endMonth: adjustedValue }));
+                      }}
+                    >
+                      {monthNames.map((month, index) => (
+                        <option key={index + 1} value={index + 1}>
+                          {month}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Bitiş Yılı</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="endYear"
+                      min={bulkFormData.startYear}
+                      max="2050"
+                      value={bulkFormData.endYear}
+                      onChange={handleBulkInputChange}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <div className="d-flex gap-2">
+                <Button variant="outline-secondary" onClick={generateBulkPeriods}>
+                  Dönemleri Oluştur
+                </Button>
+                {bulkPeriods.length > 0 && (
+                  <>
+                    <Button variant="outline-success" size="sm" onClick={selectAllPeriods}>
+                      <FiCheck className="me-1" />
+                      Tümünü Seç
+                    </Button>
+                    <Button variant="outline-danger" size="sm" onClick={deselectAllPeriods}>
+                      <FiX className="me-1" />
+                      Tümünü Kaldır
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Oluşturulacak Dönemler Listesi */}
+            {bulkPeriods.length > 0 && (
+              <div>
+                <h6>Oluşturulacak Dönemler ({bulkPeriods.filter(p => p.selected).length} seçili)</h6>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }} className="border rounded p-3">
+                  <Row>
+                    {bulkPeriods.map((period, index) => {
+                      const isExisting = periods.find(p => p.name === period.name);
+                      return (
+                        <Col md={4} key={index} className="mb-2">
+                          <div 
+                            className={`p-2 rounded border cursor-pointer ${
+                              period.selected ? 'bg-primary text-white' : 'bg-light'
+                            } ${isExisting ? 'opacity-50' : ''}`}
+                            onClick={() => !isExisting && togglePeriodSelection(index)}
+                            style={{ cursor: isExisting ? 'not-allowed' : 'pointer' }}
+                          >
+                            <div className="d-flex align-items-center justify-content-between">
+                              <small className="fw-bold">
+                                {period.name}
+                              </small>
+                              {isExisting && (
+                                <Badge bg="warning" className="ms-2">
+                                  Mevcut
+                                </Badge>
+                              )}
+                              {!isExisting && period.selected && (
+                                <FiCheck className="ms-2" />
+                              )}
+                            </div>
+                          </div>
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                </div>
+                
+                <Alert variant="info" className="mt-3">
+                  <strong>Bilgi:</strong>
+                  <ul className="mb-0 mt-2">
+                    <li>Mavi renkli dönemler oluşturulacak</li>
+                    <li>"Mevcut" etiketli dönemler zaten var, atlanacak</li>
+                    <li>Dönemlere tıklayarak seçim yapabilirsiniz</li>
+                  </ul>
+                </Alert>
+              </div>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeBulkModal}>
+              İptal
+            </Button>
+            <Button 
+              variant="primary" 
+              type="submit"
+              disabled={saving || bulkPeriods.filter(p => p.selected).length === 0}
+            >
+              {saving ? 'Oluşturuluyor...' : `${bulkPeriods.filter(p => p.selected).length} Dönem Oluştur`}
             </Button>
           </Modal.Footer>
         </Form>

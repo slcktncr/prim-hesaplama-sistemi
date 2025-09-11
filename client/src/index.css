@@ -49,6 +49,26 @@ body.normal-zoom {
   font-size: 1rem !important;
 }
 
+/* Sortable Table Headers */
+.sortable-header {
+  transition: all 0.2s ease;
+  background-color: transparent !important;
+  border-bottom: 2px solid #dee2e6 !important;
+  font-weight: 600 !important;
+  color: #495057 !important;
+  position: relative;
+}
+
+.sortable-header:hover {
+  background-color: #f8f9fa !important;
+  color: #0d6efd !important;
+  transform: translateY(-1px);
+}
+
+.sortable-header:active {
+  transform: translateY(0);
+}
+
 body.normal-zoom .content-wrapper {
   padding: 2rem !important;
 }

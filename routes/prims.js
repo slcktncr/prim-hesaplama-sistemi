@@ -145,6 +145,92 @@ router.post('/periods', [auth, adminAuth], [
   }
 });
 
+// @route   POST /api/prims/periods/bulk
+// @desc    Toplu prim dönemi oluştur
+// @access  Private (Admin only)
+router.post('/periods/bulk', [auth, adminAuth], [
+  body('periods').isArray({ min: 1 }).withMessage('En az bir dönem seçilmelidir'),
+  body('periods.*.month').isInt({ min: 1, max: 12 }).withMessage('Ay 1-12 arasında olmalıdır'),
+  body('periods.*.year').isInt({ min: 2020, max: 2050 }).withMessage('Geçerli bir yıl giriniz')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { periods } = req.body;
+
+    // Ay adları
+    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+    // Dönem adlarını oluştur ve mevcut dönemleri kontrol et
+    const periodData = periods.map(p => ({
+      name: `${monthNames[p.month - 1]} ${p.year}`,
+      month: parseInt(p.month),
+      year: parseInt(p.year),
+      createdBy: req.user._id
+    }));
+
+    // Mevcut dönemleri kontrol et
+    const existingPeriods = await PrimPeriod.find({
+      name: { $in: periodData.map(p => p.name) }
+    }).select('name');
+
+    const existingNames = existingPeriods.map(p => p.name);
+    const newPeriods = periodData.filter(p => !existingNames.includes(p.name));
+    const skippedPeriods = periodData.filter(p => existingNames.includes(p.name));
+
+    console.log(`🔄 Toplu dönem oluşturma:`, {
+      requested: periodData.length,
+      existing: skippedPeriods.length,
+      toCreate: newPeriods.length
+    });
+
+    let createdPeriods = [];
+    
+    if (newPeriods.length > 0) {
+      // Yeni dönemleri toplu oluştur
+      const insertedPeriods = await PrimPeriod.insertMany(newPeriods);
+      
+      // Populate edilmiş versiyonları al
+      createdPeriods = await PrimPeriod.find({
+        _id: { $in: insertedPeriods.map(p => p._id) }
+      }).populate('createdBy', 'name').sort({ year: -1, month: -1 });
+    }
+
+    const summary = {
+      total: periodData.length,
+      created: createdPeriods.length,
+      skipped: skippedPeriods.length,
+      createdPeriods: createdPeriods,
+      skippedPeriods: skippedPeriods.map(p => p.name)
+    };
+
+    console.log(`✅ Toplu dönem oluşturma tamamlandı:`, summary);
+
+    if (createdPeriods.length === 0) {
+      return res.status(200).json({
+        message: 'Seçilen tüm dönemler zaten mevcut',
+        summary
+      });
+    }
+
+    const message = skippedPeriods.length > 0 
+      ? `${createdPeriods.length} dönem oluşturuldu, ${skippedPeriods.length} dönem zaten mevcuttu`
+      : `${createdPeriods.length} dönem başarıyla oluşturuldu`;
+
+    res.status(201).json({
+      message,
+      summary
+    });
+  } catch (error) {
+    console.error('Bulk create periods error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // @route   GET /api/prims/transactions
 // @desc    Prim işlemlerini listele
 // @access  Private

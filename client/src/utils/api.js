@@ -66,6 +66,7 @@ export const primsAPI = {
   updateRate: (rate) => API.post('/prims/rate', { rate }),
   getPeriods: () => API.get('/prims/periods'),
   createPeriod: (periodData) => API.post('/prims/periods', periodData),
+  createBulkPeriods: (periodsData) => API.post('/prims/periods/bulk', periodsData),
   getTransactions: (params) => API.get('/prims/transactions', { params }),
   getEarnings: (params) => API.get('/prims/earnings', { params }),
   getDeductions: (params) => API.get('/prims/deductions', { params }),

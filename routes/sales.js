@@ -602,7 +602,9 @@ router.get('/', auth, async (req, res) => {
       primStatus, 
       startDate, 
       endDate,
-      salesperson 
+      salesperson,
+      sortBy = 'saleDate',
+      sortOrder = 'desc'
     } = req.query;
     
     let query = { status };
@@ -645,12 +647,60 @@ router.get('/', auth, async (req, res) => {
       query.saleDate = { $lte: new Date(endDate) };
     }
 
-    const sales = await Sale.find(query)
-      .populate('salesperson', 'name email')
-      .populate('primPeriod', 'name')
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+    // Sıralama parametresi oluştur
+    const sortParam = {};
+    
+    // Güvenli alan kontrolü
+    const allowedSortFields = [
+      'customerName', 'contractNo', 'saleType', 'saleDate', 'kaporaDate', 
+      'basePrimPrice', 'primAmount', 'status', 'createdAt', 'listPrice',
+      'activitySalePrice', 'blockNo', 'apartmentNo'
+    ];
+    
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'saleDate';
+    sortParam[sortField] = sortOrder === 'asc' ? 1 : -1;
+    
+    console.log(`🔄 Sales sorting: ${sortField} ${sortOrder} (requested: ${sortBy})`);
+    
+    // Eğer salesperson'a göre sıralama isteniyorsa, lookup ile yapılmalı
+    let salesQuery;
+    if (sortBy === 'salesperson') {
+      // Aggregate pipeline ile salesperson'a göre sıralama
+      salesQuery = Sale.aggregate([
+        { $match: query },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'salesperson',
+            foreignField: '_id',
+            as: 'salesperson'
+          }
+        },
+        { $unwind: '$salesperson' },
+        {
+          $lookup: {
+            from: 'primperiods',
+            localField: 'primPeriod',
+            foreignField: '_id',
+            as: 'primPeriod'
+          }
+        },
+        { $unwind: { path: '$primPeriod', preserveNullAndEmptyArrays: true } },
+        { $sort: { 'salesperson.name': sortOrder === 'asc' ? 1 : -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit * 1 }
+      ]);
+    } else {
+      // Normal query ile diğer alanlar için sıralama
+      salesQuery = Sale.find(query)
+        .populate('salesperson', 'name email')
+        .populate('primPeriod', 'name')
+        .sort(sortParam)
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+    }
+
+    const sales = await salesQuery;
 
     // Satış türü adlarını ve renklerini ekle
     const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {

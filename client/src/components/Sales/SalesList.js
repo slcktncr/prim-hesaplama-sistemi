@@ -29,7 +29,9 @@ import {
   FiCalendar,
   FiFileText,
   FiClock,
-  FiEdit3
+  FiEdit3,
+  FiChevronUp,
+  FiChevronDown
 } from 'react-icons/fi';
 
 import { salesAPI, primsAPI, usersAPI } from '../../utils/api';
@@ -66,6 +68,10 @@ const SalesList = () => {
     endDate: '',
     salesperson: '' // temsilci filtresi
   });
+  const [sorting, setSorting] = useState({
+    field: 'saleDate', // varsayılan sıralama alanı
+    direction: 'desc' // 'asc' veya 'desc'
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [pagination, setPagination] = useState({
     totalPages: 1,
@@ -96,12 +102,17 @@ const SalesList = () => {
   useEffect(() => {
     const debouncedFetch = debounce(fetchSales, 500);
     debouncedFetch();
-  }, [filters]);
+  }, [filters, sorting]);
 
   const fetchSales = async () => {
     try {
       setLoading(true);
-      const response = await salesAPI.getSales(filters);
+      const params = {
+        ...filters,
+        sortBy: sorting.field,
+        sortOrder: sorting.direction
+      };
+      const response = await salesAPI.getSales(params);
       setSales(response.data.sales || []);
       setPagination({
         totalPages: response.data.totalPages || 1,
@@ -149,6 +160,27 @@ const SalesList = () => {
       ...prev,
       page
     }));
+  };
+
+  const handleSort = (field) => {
+    setSorting(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+    // Sayfa 1'e dön sıralama değiştiğinde
+    setFilters(prev => ({
+      ...prev,
+      page: 1
+    }));
+  };
+
+  const getSortIcon = (field) => {
+    if (sorting.field !== field) {
+      return <span className="text-muted ms-1" style={{ opacity: 0.3 }}>⇅</span>;
+    }
+    return sorting.direction === 'asc' 
+      ? <FiChevronUp className="ms-1 text-primary" />
+      : <FiChevronDown className="ms-1 text-primary" />;
   };
 
   const handleCancelSale = async () => {
@@ -423,15 +455,63 @@ const SalesList = () => {
               <Table responsive hover className="mb-0">
                 <thead>
                   <tr>
-                    <th>Müşteri</th>
+                    <th 
+                      onClick={() => handleSort('customerName')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Müşteri {getSortIcon('customerName')}
+                    </th>
                     <th>Konum</th>
-                    <th>Sözleşme No</th>
-                    <th>Tür</th>
-                    <th>Tarih</th>
-                    <th>Fiyatlar</th>
-                    <th>Prim</th>
-                    <th>Durum</th>
-                    <th>Temsilci</th>
+                    <th 
+                      onClick={() => handleSort('contractNo')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Sözleşme No {getSortIcon('contractNo')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('saleType')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Tür {getSortIcon('saleType')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('saleDate')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Tarih {getSortIcon('saleDate')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('basePrimPrice')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Fiyatlar {getSortIcon('basePrimPrice')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('primAmount')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Prim {getSortIcon('primAmount')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('status')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Durum {getSortIcon('status')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('salesperson')} 
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      className="sortable-header"
+                    >
+                      Temsilci {getSortIcon('salesperson')}
+                    </th>
                     <th>Notlar</th>
                     <th>İşlemler</th>
                   </tr>
