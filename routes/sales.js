@@ -135,6 +135,9 @@ const getOrCreatePrimPeriod = async (saleDate, createdBy) => {
   return period._id;
 };
 
+// Export the function for use in other modules
+module.exports.getOrCreatePrimPeriod = getOrCreatePrimPeriod;
+
 // @route   POST /api/sales
 // @desc    Yeni satış ekle
 // @access  Private

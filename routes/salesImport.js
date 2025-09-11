@@ -324,15 +324,24 @@ async function convertToSaleRecord(record, adminUserId) {
   const primRate = 1; // %1 prim oranı
   let primPeriod = null;
   
-  // Aktif prim dönemini bul
+  // Satış tarihine göre prim dönemini belirle
   try {
-    const PrimPeriod = require('../models/PrimPeriod');
-    const activePeriod = await PrimPeriod.findOne({ isActive: true });
-    if (activePeriod) {
-      primPeriod = activePeriod._id;
+    const saleDate = convertStringDateToISO(record.saleDate);
+    if (saleDate) {
+      const { getOrCreatePrimPeriod } = require('./sales');
+      primPeriod = await getOrCreatePrimPeriod(saleDate, adminUserId);
+      console.log(`📅 Import - Satış tarihi: ${saleDate} → Prim dönemi: ${primPeriod}`);
+    } else {
+      // Fallback: aktif dönem kullan
+      const PrimPeriod = require('../models/PrimPeriod');
+      const activePeriod = await PrimPeriod.findOne({ isActive: true });
+      if (activePeriod) {
+        primPeriod = activePeriod._id;
+        console.log('⚠️ Satış tarihi bulunamadı, aktif dönem kullanıldı');
+      }
     }
   } catch (error) {
-    console.error('Prim dönemi bulunamadı:', error);
+    console.error('Prim dönemi belirleme hatası:', error);
   }
   
   // Prim tutarını otomatik hesapla
