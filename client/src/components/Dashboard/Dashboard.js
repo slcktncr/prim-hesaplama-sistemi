@@ -88,7 +88,8 @@ const Dashboard = () => {
     thisMonthSales,
     paidPrims,
     unpaidPrims,
-    topPerformers
+    topPerformers,
+    saleTypesStats
   } = dashboardData || {};
 
   return (
@@ -240,6 +241,64 @@ const Dashboard = () => {
           />
         </Col>
       </Row>
+
+      {/* Satış Türleri İstatistikleri */}
+      {saleTypesStats && (
+        <>
+          <div className="mb-3">
+            <h5 className="text-muted">
+              <FiBarChart className="me-2" />
+              Satış Türleri İstatistikleri
+            </h5>
+          </div>
+          <Row className="mb-4">
+            <Col lg={3} md={6} className="mb-3">
+              <StatsCard
+                title="Normal Satış"
+                value={formatNumber(saleTypesStats.satis?.count || 0)}
+                icon="shopping-bag"
+                color="primary"
+              />
+              <div className="mt-2 small text-muted text-center">
+                Ciro: {formatCurrency(saleTypesStats.satis?.totalAmount || 0)}
+              </div>
+            </Col>
+            <Col lg={3} md={6} className="mb-3">
+              <StatsCard
+                title="Kapora"
+                value={formatNumber(saleTypesStats.kapora?.count || 0)}
+                icon="clock"
+                color="warning"
+              />
+              <div className="mt-2 small text-muted text-center">
+                Ciro: {formatCurrency(saleTypesStats.kapora?.totalAmount || 0)}
+              </div>
+            </Col>
+            <Col lg={3} md={6} className="mb-3">
+              <StatsCard
+                title="Yazlık Ev"
+                value={formatNumber(saleTypesStats.yazlik?.count || 0)}
+                icon="target"
+                color="success"
+              />
+              <div className="mt-2 small text-muted text-center">
+                Ciro: {formatCurrency(saleTypesStats.yazlik?.totalAmount || 0)}
+              </div>
+            </Col>
+            <Col lg={3} md={6} className="mb-3">
+              <StatsCard
+                title="Kışlık Ev"
+                value={formatNumber(saleTypesStats.kislik?.count || 0)}
+                icon="target"
+                color="info"
+              />
+              <div className="mt-2 small text-muted text-center">
+                Ciro: {formatCurrency(saleTypesStats.kislik?.totalAmount || 0)}
+              </div>
+            </Col>
+          </Row>
+        </>
+      )}
 
       <Row>
         {/* En İyi Performans (Sadece Admin için) */}

@@ -33,7 +33,8 @@ const DetailedReport = () => {
     startDate: '',
     endDate: '',
     period: '',
-    status: 'aktif'
+    status: 'aktif',
+    saleType: '' // Satış türü filtresi
   });
 
   useEffect(() => {
@@ -78,7 +79,8 @@ const DetailedReport = () => {
       startDate: '',
       endDate: '',
       period: '',
-      status: 'aktif'
+      status: 'aktif',
+      saleType: ''
     });
   };
 
@@ -224,7 +226,7 @@ const DetailedReport = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={3}>
+            <Col md={2}>
               <Form.Group>
                 <Form.Label>Durum</Form.Label>
                 <Form.Select
@@ -233,6 +235,21 @@ const DetailedReport = () => {
                 >
                   <option value="aktif">Aktif Satışlar</option>
                   <option value="iptal">İptal Edilenler</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+              <Form.Group>
+                <Form.Label>Satış Türü</Form.Label>
+                <Form.Select
+                  value={filters.saleType}
+                  onChange={(e) => handleFilterChange('saleType', e.target.value)}
+                >
+                  <option value="">Tüm Türler</option>
+                  <option value="satis">Normal Satış</option>
+                  <option value="kapora">Kapora</option>
+                  <option value="yazlik">Yazlık Ev</option>
+                  <option value="kislik">Kışlık Ev</option>
                 </Form.Select>
               </Form.Group>
             </Col>

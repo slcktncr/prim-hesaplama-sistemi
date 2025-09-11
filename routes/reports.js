@@ -148,6 +148,29 @@ router.get('/dashboard', auth, async (req, res) => {
     const paidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödendi' });
     const unpaidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödenmedi' });
 
+    // Satış türlerine göre istatistikler
+    const salesByType = await Sale.aggregate([
+      { $match: { ...query, status: 'aktif' } },
+      { 
+        $group: { 
+          _id: '$saleType', 
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$basePrimPrice' },
+          totalPrim: { $sum: '$primAmount' },
+          avgAmount: { $avg: '$basePrimPrice' }
+        } 
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Satış türlerini düzenle
+    const saleTypesStats = {
+      satis: salesByType.find(item => item._id === 'satis') || { _id: 'satis', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
+      kapora: salesByType.find(item => item._id === 'kapora') || { _id: 'kapora', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
+      yazlik: salesByType.find(item => item._id === 'yazlik') || { _id: 'yazlik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 },
+      kislik: salesByType.find(item => item._id === 'kislik') || { _id: 'kislik', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 }
+    };
+
     // En başarılı temsilciler (sadece admin için) - Farklı kategorilerde
     let topPerformers = {
       salesCount: [], // Satış adeti liderleri
@@ -156,7 +179,7 @@ router.get('/dashboard', auth, async (req, res) => {
     };
 
     if (req.user.role === 'admin') {
-      const baseQuery = { status: 'aktif', saleType: 'satis' }; // Sadece normal satışlar
+      const baseQuery = { ...query, status: 'aktif' }; // Tüm satış türleri dahil
       
       // Satış adeti liderleri
       const salesCountLeaders = await Sale.aggregate([
@@ -170,6 +193,8 @@ router.get('/dashboard', auth, async (req, res) => {
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
+        // Eski satış temsilcisini filtrele
+        { $match: { 'user.email': { $ne: 'eski.satis@legacy.system' } } },
         { $project: { 
           name: '$user.name', 
           email: '$user.email',
@@ -195,6 +220,8 @@ router.get('/dashboard', auth, async (req, res) => {
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
+        // Eski satış temsilcisini filtrele
+        { $match: { 'user.email': { $ne: 'eski.satis@legacy.system' } } },
         { $project: { 
           name: '$user.name', 
           email: '$user.email',
@@ -220,6 +247,8 @@ router.get('/dashboard', auth, async (req, res) => {
         } },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
+        // Eski satış temsilcisini filtrele
+        { $match: { 'user.email': { $ne: 'eski.satis@legacy.system' } } },
         { $project: { 
           name: '$user.name', 
           email: '$user.email',
@@ -248,7 +277,8 @@ router.get('/dashboard', auth, async (req, res) => {
       thisMonthSales,
       paidPrims,
       unpaidPrims,
-      topPerformers
+      topPerformers,
+      saleTypesStats // Satış türleri istatistikleri
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -932,7 +962,7 @@ router.get('/cancellation-performance', auth, async (req, res) => {
 // @access  Private
 router.get('/detailed-report', auth, async (req, res) => {
   try {
-    const { startDate, endDate, salesperson, status = 'aktif', period } = req.query;
+    const { startDate, endDate, salesperson, status = 'aktif', period, saleType } = req.query;
     
     let query = { status };
     
@@ -952,6 +982,11 @@ router.get('/detailed-report', auth, async (req, res) => {
     // Dönem filtresi
     if (period) {
       query.primPeriod = new mongoose.Types.ObjectId(period);
+    }
+
+    // Satış türü filtresi
+    if (saleType && saleType !== '') {
+      query.saleType = saleType;
     }
 
     const detailedReport = await Sale.find(query)
