@@ -62,8 +62,22 @@ const BulkPrimStatusManagement = () => {
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getUsersForFilters();
-      setUsers(response.data || []);
-      console.log(`✅ Loaded ${(response.data || []).length} users`);
+      
+      // Geçerli ObjectId'li user'ları filtrele (24 karakter hex string)
+      const validUsers = (response.data || []).filter(user => {
+        const isValid = user._id && 
+                       typeof user._id === 'string' && 
+                       user._id.length === 24 && 
+                       /^[0-9a-fA-F]{24}$/.test(user._id);
+        
+        if (!isValid) {
+          console.warn('⚠️ Invalid user ID filtered out:', user._id, user.name);
+        }
+        return isValid;
+      });
+      
+      setUsers(validUsers);
+      console.log(`✅ Loaded ${validUsers.length} valid users (filtered ${(response.data || []).length - validUsers.length} invalid)`);
     } catch (error) {
       console.error('Users fetch error:', error);
     }
