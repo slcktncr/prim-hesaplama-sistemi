@@ -78,7 +78,11 @@ const BulkPrimStatusManagement = () => {
         year: selectedYear
       };
 
+      console.log('Preview filters:', filters);
+      console.log('Preview primStatus:', newStatus);
+      
       const response = await salesAPI.previewBulkPrimStatus(newStatus, filters);
+      console.log('Preview response:', response.data);
       setPreviewData(response.data.summary);
       
     } catch (error) {
@@ -118,7 +122,11 @@ const BulkPrimStatusManagement = () => {
         year: selectedYear
       };
 
+      console.log('Update filters:', filters);
+      console.log('Update primStatus:', newStatus);
+      
       const response = await salesAPI.bulkUpdatePrimStatus(newStatus, filters);
+      console.log('Update response:', response.data);
       
       if (response.data.success) {
         toast.success(response.data.message);
