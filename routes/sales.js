@@ -1764,4 +1764,127 @@ router.put('/:id/modify', [
 });
 
 
+// @route   PUT /api/sales/bulk-prim-status
+// @desc    Toplu prim durumu değiştir (Admin only)
+// @access  Private (Admin only)
+router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
+  try {
+    const { 
+      primStatus, // 'ödendi' veya 'ödenmedi'
+      filters // { period, salesperson, month, year, startDate, endDate }
+    } = req.body;
+
+    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      return res.status(400).json({ 
+        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    // Filtre oluştur
+    let query = { saleType: 'satis' }; // Sadece satışlar, kapora değil
+
+    // Dönem filtresi
+    if (filters.period) {
+      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+    }
+
+    // Temsilci filtresi
+    if (filters.salesperson) {
+      query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+    }
+
+    // Ay/Yıl filtresi (saleDate bazında)
+    if (filters.month && filters.year) {
+      const startDate = new Date(filters.year, filters.month - 1, 1);
+      const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.year) {
+      const startDate = new Date(filters.year, 0, 1);
+      const endDate = new Date(filters.year, 11, 31, 23, 59, 59);
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    }
+
+    // Tarih aralığı filtresi
+    if (filters.startDate && filters.endDate) {
+      query.saleDate = {
+        $gte: new Date(filters.startDate),
+        $lte: new Date(filters.endDate + 'T23:59:59.999Z')
+      };
+    } else if (filters.startDate) {
+      query.saleDate = { $gte: new Date(filters.startDate) };
+    } else if (filters.endDate) {
+      query.saleDate = { $lte: new Date(filters.endDate + 'T23:59:59.999Z') };
+    }
+
+    console.log('🔄 Bulk prim status update query:', query);
+    console.log('📊 New status:', primStatus);
+
+    // Önce kaç kayıt etkileneceğini kontrol et
+    const affectedSales = await Sale.find(query)
+      .populate('salesperson', 'name')
+      .populate('primPeriod', 'name')
+      .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate');
+
+    if (affectedSales.length === 0) {
+      return res.status(404).json({ 
+        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
+      });
+    }
+
+    // Güncelleme işlemini gerçekleştir
+    const updateResult = await Sale.updateMany(
+      query,
+      { 
+        $set: { 
+          primStatus,
+          primStatusUpdatedAt: new Date(),
+          primStatusUpdatedBy: req.user._id
+        }
+      }
+    );
+
+    // Özet bilgi hazırla
+    const summary = {
+      totalUpdated: updateResult.modifiedCount,
+      newStatus: primStatus,
+      affectedSales: affectedSales.map(sale => ({
+        id: sale._id,
+        customerName: sale.customerName,
+        contractNo: sale.contractNo,
+        primAmount: sale.primAmount,
+        oldStatus: sale.primStatus,
+        salesperson: sale.salesperson?.name,
+        period: sale.primPeriod?.name,
+        saleDate: sale.saleDate
+      }))
+    };
+
+    // Activity log ekle
+    const ActivityLog = require('../models/ActivityLog');
+    await ActivityLog.create({
+      user: req.user._id,
+      action: 'bulk_prim_status_update',
+      details: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
+      metadata: {
+        filters,
+        primStatus,
+        affectedCount: updateResult.modifiedCount
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
+      summary
+    });
+
+  } catch (error) {
+    console.error('Bulk prim status update error:', error);
+    res.status(500).json({ 
+      message: 'Toplu prim durumu güncellenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;

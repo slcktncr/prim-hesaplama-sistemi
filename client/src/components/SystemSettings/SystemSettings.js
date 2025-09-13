@@ -34,6 +34,7 @@ import SalesImport from './SalesImport';
 import LegacyUserManagement from './LegacyUserManagement';
 import BackupManagement from '../Admin/BackupManagement';
 import RoleManagement from '../Admin/RoleManagement';
+import BulkPrimStatusManagement from '../Admin/BulkPrimStatusManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -148,6 +149,12 @@ const SystemSettings = () => {
                   Yedek Yönetimi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="bulk-prim-status">
+                  <FiPercent className="me-2" />
+                  Toplu Prim Durumu
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -196,6 +203,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="backup-management">
                   <BackupManagement />
+                </Tab.Pane>
+                <Tab.Pane eventKey="bulk-prim-status">
+                  <BulkPrimStatusManagement />
                 </Tab.Pane>
               </Tab.Content>
             </div>

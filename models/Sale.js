@@ -185,6 +185,13 @@ const saleSchema = new mongoose.Schema({
     enum: ['ödenmedi', 'ödendi'],
     default: 'ödenmedi'
   },
+  primStatusUpdatedAt: {
+    type: Date
+  },
+  primStatusUpdatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   
   // İlişkiler
   salesperson: {
