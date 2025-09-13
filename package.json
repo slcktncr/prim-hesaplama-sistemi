@@ -15,7 +15,8 @@
     "list:users": "node scripts/listActiveUsers.js",
     "backup:manager": "node scripts/backupManager.js",
     "create:test-backup": "node scripts/createTestBackup.js",
-    "fix:prim-periods": "node scripts/fixPrimPeriodBySaleDate.js"
+    "fix:prim-periods": "node scripts/fixPrimPeriodBySaleDate.js",
+    "create:default-roles": "node scripts/createDefaultRoles.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -937,12 +937,23 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
     } else if (type === 'communications') {
       // İletişim kayıtlarını al
       const CommunicationRecord = require('../models/CommunicationRecord');
+      
+      // Önce toplam sayıyı kontrol et
+      const totalCount = await CommunicationRecord.countDocuments();
+      console.log(`📊 Total communication records in DB: ${totalCount}`);
+      
+      // Tüm kayıtları al (populate olmadan önce)
       data = await CommunicationRecord.find({})
-        .populate('salesperson', 'name email')
-        .sort({ date: -1 });
+        .populate({
+          path: 'salesperson',
+          select: 'name email',
+          options: { strictPopulate: false } // Silinmiş kullanıcılar için
+        })
+        .sort({ date: -1 })
+        .lean(); // Performance için
       
       backupDescription = `Manuel iletişim yedeği - ${backupDescription}`;
-      console.log(`📊 Found ${data.length} communication records for backup`);
+      console.log(`📊 Found ${data.length} communication records for backup (Total in DB: ${totalCount})`);
       
     } else {
       return res.status(400).json({
@@ -995,7 +1006,7 @@ router.get('/download/:filename', [auth, adminAuth], (req, res) => {
     const backupPath = path.join(__dirname, '../backups', filename);
     
     // Dosya güvenlik kontrolü
-    if (!filename.includes('backup_') || filename.includes('..')) {
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return res.status(400).json({
         success: false,
         message: 'Geçersiz dosya adı'

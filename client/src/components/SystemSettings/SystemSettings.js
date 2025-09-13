@@ -33,6 +33,7 @@ import HistoricalDataMigration from './HistoricalDataMigration';
 import SalesImport from './SalesImport';
 import LegacyUserManagement from './LegacyUserManagement';
 import BackupManagement from '../Admin/BackupManagement';
+import RoleManagement from '../Admin/RoleManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -97,6 +98,12 @@ const SystemSettings = () => {
                 <Nav.Link eventKey="permissions">
                   <FiShield className="me-2" />
                   Kullanıcı Yetkileri
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="role-management">
+                  <FiShield className="me-2" />
+                  Rol Yönetimi
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -165,6 +172,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="permissions">
                   <UserPermissions />
+                </Tab.Pane>
+                <Tab.Pane eventKey="role-management">
+                  <RoleManagement />
                 </Tab.Pane>
                 <Tab.Pane eventKey="communication-requirements">
                   <CommunicationRequirements />

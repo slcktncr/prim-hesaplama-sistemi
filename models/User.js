@@ -32,7 +32,13 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'salesperson', 'visitor'],
     default: 'salesperson'
   },
-  // Yetkilendirme sistemi
+  // Yeni rol sistemi (Role modeli referansı)
+  customRole: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+    default: null
+  },
+  // Eski yetkilendirme sistemi (geriye uyumluluk için)
   permissions: {
     canViewAllSales: { type: Boolean, default: false },
     canViewAllReports: { type: Boolean, default: false },

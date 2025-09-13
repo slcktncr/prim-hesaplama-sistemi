@@ -218,4 +218,15 @@ export const salesImportAPI = {
   downloadBackup: (filename) => API.get(`/sales-import/download/${filename}`, { responseType: 'blob' })
 };
 
+// Roles API
+export const rolesAPI = {
+  getAllRoles: () => API.get('/roles'),
+  getRoleById: (id) => API.get(`/roles/${id}`),
+  createRole: (roleData) => API.post('/roles', roleData),
+  updateRole: (id, roleData) => API.put(`/roles/${id}`, roleData),
+  deleteRole: (id) => API.delete(`/roles/${id}`),
+  getPermissionsList: () => API.get('/roles/permissions/list'),
+  toggleRoleStatus: (id) => API.post(`/roles/${id}/toggle-status`)
+};
+
 export default API;
