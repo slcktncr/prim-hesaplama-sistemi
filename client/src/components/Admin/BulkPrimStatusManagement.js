@@ -131,6 +131,55 @@ const BulkPrimStatusManagement = () => {
     }
   };
 
+  const handleDirectUpdate = async () => {
+    // Boş filtre kontrolü
+    if (isFilterEmpty()) {
+      const confirmed = window.confirm(
+        '⚠️ UYARI: Hiçbir filtre seçilmedi!\n\n' +
+        'Bu durumda TÜM satışların prim durumu değiştirilecek.\n\n' +
+        'Devam etmek istediğinizden emin misiniz?'
+      );
+      if (!confirmed) return;
+    } else {
+      const confirmed = window.confirm(
+        `Seçili kriterlere göre prim durumlarını "${primStatus}" olarak değiştirmek istediğinizden emin misiniz?\n\n` +
+        `Kriterler: ${getFilterDescription()}\n\n` +
+        'Bu işlem geri alınamaz!'
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const response = await salesAPI.bulkUpdatePrimStatus(primStatus, filters);
+      
+      if (response.data.success) {
+        toast.success(response.data.message);
+        
+        // Filtreleri temizle
+        setFilters({
+          period: '',
+          salesperson: '',
+          month: '',
+          year: new Date().getFullYear(),
+          startDate: '',
+          endDate: ''
+        });
+      }
+      
+    } catch (error) {
+      console.error('Direct update error:', error);
+      if (error.response?.status === 404) {
+        toast.warning('Belirtilen kriterlere uygun satış bulunamadı');
+      } else {
+        toast.error(error.response?.data?.message || 'Toplu güncelleme sırasında hata oluştu');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBulkUpdate = async () => {
     try {
       setLoading(true);
@@ -307,7 +356,7 @@ const BulkPrimStatusManagement = () => {
                       <Button
                         variant="info"
                         onClick={handlePreview}
-                        disabled={previewLoading}
+                        disabled={previewLoading || loading}
                       >
                         {previewLoading ? (
                           <>
@@ -318,6 +367,24 @@ const BulkPrimStatusManagement = () => {
                           <>
                             <FaInfoCircle className="me-2" />
                             Önizleme
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="success"
+                        onClick={handleDirectUpdate}
+                        disabled={loading || previewLoading}
+                      >
+                        {loading ? (
+                          <>
+                            <Spinner as="span" animation="border" size="sm" className="me-2" />
+                            Uygulanıyor...
+                          </>
+                        ) : (
+                          <>
+                            <FaCheck className="me-2" />
+                            Uygula
                           </>
                         )}
                       </Button>
@@ -332,6 +399,7 @@ const BulkPrimStatusManagement = () => {
                           startDate: '',
                           endDate: ''
                         })}
+                        disabled={loading || previewLoading}
                       >
                         Temizle
                       </Button>
