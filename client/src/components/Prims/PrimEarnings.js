@@ -84,15 +84,11 @@ const PrimEarnings = () => {
     try {
       setLoading(true);
       
-      console.log('🔍 PrimEarnings fetchEarnings filters:', filters);
-      
       // Backend'e sadece temsilci filtresi gönder, dönem filtresi frontend'de uygulanacak
       const backendFilters = {
         salesperson: filters.salesperson
         // period filtresi backend'e gönderilmiyor
       };
-      
-      console.log('🔍 Backend filters (without period):', backendFilters);
       
       // Hem earnings hem de deductions getir
       const [earningsResponse, deductionsResponse] = await Promise.all([
@@ -103,35 +99,22 @@ const PrimEarnings = () => {
       // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
       let filteredEarnings = earningsResponse.data || [];
       
-      console.log('🔍 Backend earnings response:', {
-        status: earningsResponse.status,
-        dataLength: filteredEarnings.length,
-        sampleData: filteredEarnings.slice(0, 2),
-        filters: filters,
-        fullResponse: earningsResponse
-      });
-      
-      // Detaylı dönem bilgisi debug
-      if (filteredEarnings.length > 0) {
-        console.log('📅 Detailed period info:', filteredEarnings.map(earning => ({
-          salesperson: earning.salesperson?.name,
-          period: earning.primPeriod?.name,
-          year: earning.primPeriod?.year,
-          month: earning.primPeriod?.month,
-          transactionCount: earning.transactionCount,
-          totalEarnings: earning.totalEarnings
-        })));
-      }
+      // Backend'den gelen format kontrol et
+      console.log('🔍 Backend earnings sample:', filteredEarnings[0]);
       
       // Dönem filtresi varsa uygula
       if (filters.period && filters.period !== '') {
         const selectedPeriod = periods.find(p => p._id === filters.period);
+        console.log('🔍 Selected period:', selectedPeriod);
+        
         if (selectedPeriod) {
-          filteredEarnings = filteredEarnings.filter(earning => 
-            earning.primPeriod?.year === selectedPeriod.year &&
-            earning.primPeriod?.month === selectedPeriod.month
-          );
-          console.log('📅 Frontend period filter applied:', selectedPeriod.name, 'Results:', filteredEarnings.length);
+          console.log('🔍 Before filter:', filteredEarnings.length);
+          filteredEarnings = filteredEarnings.filter(earning => {
+            console.log('🔍 Earning primPeriod:', earning.primPeriod);
+            return earning.primPeriod?.year === selectedPeriod.year &&
+                   earning.primPeriod?.month === selectedPeriod.month;
+          });
+          console.log('🔍 After filter:', filteredEarnings.length);
         }
       }
       
