@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Dropdown, Modal, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FiUsers, FiUser, FiShield, FiMoreVertical, FiEdit, FiCheck, FiX, FiEye } from 'react-icons/fi';
-import { usersAPI } from '../../utils/api';
+import { usersAPI, rolesAPI } from '../../utils/api';
 
 const ActiveUsers = () => {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
@@ -15,11 +16,13 @@ const ActiveUsers = () => {
     lastName: '',
     email: '',
     role: 'salesperson',
+    customRole: null,
     isActive: true
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, []);
 
   const fetchUsers = async () => {
@@ -34,23 +37,53 @@ const ActiveUsers = () => {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const response = await rolesAPI.getAllRoles();
+      setRoles(response.data || []);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
   const handleRoleChange = async (userId, newRole) => {
     const user = users.find(u => u._id === userId);
     const roleText = newRole === 'admin' ? 'Admin' : 
                      newRole === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi';
     
-    if (!window.confirm(`${user.name} kullanıcısının rolünü "${roleText}" olarak değiştirmek istediğinizden emin misiniz?`)) {
+    if (!window.confirm(`${user.name} kullanıcısının sistem rolünü "${roleText}" olarak değiştirmek istediğinizden emin misiniz?`)) {
       return;
     }
 
     setActionLoading(prev => ({ ...prev, [userId]: 'role' }));
     try {
       await usersAPI.changeRole(userId, newRole);
-      toast.success(`Kullanıcı rolü ${roleText} olarak güncellendi`);
+      toast.success(`Kullanıcı sistem rolü ${roleText} olarak güncellendi`);
       fetchUsers();
     } catch (error) {
       console.error('Role change error:', error);
       toast.error(error.response?.data?.message || 'Rol değiştirme sırasında hata oluştu');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }));
+    }
+  };
+
+  const handleCustomRoleChange = async (userId, customRoleId) => {
+    const user = users.find(u => u._id === userId);
+    const role = roles.find(r => r._id === customRoleId);
+    
+    if (!window.confirm(`${user.name} kullanıcısına "${role.displayName}" rolünü atamak istediğinizden emin misiniz?`)) {
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [userId]: 'role' }));
+    try {
+      await usersAPI.changeRole(userId, null, customRoleId);
+      toast.success(`Kullanıcıya "${role.displayName}" rolü atandı`);
+      fetchUsers();
+    } catch (error) {
+      console.error('Custom role change error:', error);
+      toast.error(error.response?.data?.message || 'Rol atama sırasında hata oluştu');
     } finally {
       setActionLoading(prev => ({ ...prev, [userId]: null }));
     }
@@ -155,13 +188,20 @@ const ActiveUsers = () => {
                           </td>
                           <td>{user.email}</td>
                           <td>
-                            <Badge bg={
-                              user.role === 'admin' ? 'danger' : 
-                              user.role === 'visitor' ? 'secondary' : 'primary'
-                            }>
-                              {user.role === 'admin' ? 'Admin' : 
-                               user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
-                            </Badge>
+                            <div className="d-flex flex-column gap-1">
+                              <Badge bg={
+                                user.role === 'admin' ? 'danger' : 
+                                user.role === 'visitor' ? 'secondary' : 'primary'
+                              }>
+                                {user.role === 'admin' ? 'Admin' : 
+                                 user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
+                              </Badge>
+                              {user.customRole && (
+                                <Badge bg="info" className="small">
+                                  {user.customRole.displayName}
+                                </Badge>
+                              )}
+                            </div>
                           </td>
                           <td>{formatDate(user.createdAt)}</td>
                           <td>
@@ -187,7 +227,7 @@ const ActiveUsers = () => {
                                 </Dropdown.Item>
                                 
                                 <Dropdown.Divider />
-                                <Dropdown.Header>Rol Değiştir</Dropdown.Header>
+                                <Dropdown.Header>Sistem Rolleri</Dropdown.Header>
                                 
                                 {user.role !== 'admin' && (
                                   <Dropdown.Item 
@@ -198,7 +238,7 @@ const ActiveUsers = () => {
                                   </Dropdown.Item>
                                 )}
                                 
-                                {user.role !== 'salesperson' && (
+                                {(user.role !== 'salesperson' || user.customRole) && (
                                   <Dropdown.Item 
                                     onClick={() => handleRoleChange(user._id, 'salesperson')}
                                   >
@@ -214,6 +254,26 @@ const ActiveUsers = () => {
                                     <FiEye className="me-2" />
                                     Ziyaretçi Yap
                                   </Dropdown.Item>
+                                )}
+
+                                {roles.length > 0 && (
+                                  <>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Header>Özel Roller</Dropdown.Header>
+                                    {roles.filter(role => role.isActive).map(role => (
+                                      <Dropdown.Item
+                                        key={role._id}
+                                        onClick={() => handleCustomRoleChange(user._id, role._id)}
+                                        disabled={user.customRole?._id === role._id}
+                                      >
+                                        <FiShield className="me-2" />
+                                        {role.displayName}
+                                        {user.customRole?._id === role._id && (
+                                          <Badge bg="success" className="ms-2">Mevcut</Badge>
+                                        )}
+                                      </Dropdown.Item>
+                                    ))}
+                                  </>
                                 )}
                               </Dropdown.Menu>
                             </Dropdown>

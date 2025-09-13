@@ -11,7 +11,8 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('name email role createdAt permissions')
+      .select('name email role createdAt permissions customRole')
+      .populate('customRole', 'name displayName')
       .sort({ name: 1 });
 
     res.json(users);
@@ -56,6 +57,25 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
     res.json(users);
   } catch (error) {
     console.error('Get all users error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   GET /api/users/for-filters
+// @desc    Get all active users for filtering (accessible to all users)
+// @access  Private (All authenticated users)
+router.get('/for-filters', auth, async (req, res) => {
+  try {
+    const users = await User.find({ 
+      isActive: true,
+      isApproved: true
+    })
+      .select('name email role')
+      .sort({ name: 1 });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Get users for filters error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
@@ -137,16 +157,12 @@ router.delete('/:id/reject', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   PUT /api/users/:id/role
-// @desc    Change user role (admin only)
+// @desc    Change user role (supports both system roles and custom roles)
 // @access  Private (Admin only)
 router.put('/:id/role', [auth, adminAuth], async (req, res) => {
   try {
-    const { role } = req.body;
+    const { role, customRole } = req.body;
     
-    if (!['admin', 'salesperson', 'visitor'].includes(role)) {
-      return res.status(400).json({ message: 'Geçersiz rol' });
-    }
-
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
@@ -157,16 +173,50 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Kendi rolünüzü değiştiremezsiniz' });
     }
 
-    user.role = role;
-    await user.save();
+    // Sistem rolü değiştiriliyorsa
+    if (role) {
+      if (!['admin', 'salesperson', 'visitor'].includes(role)) {
+        return res.status(400).json({ message: 'Geçersiz sistem rolü' });
+      }
 
-    const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role isActive isApproved');
+      user.role = role;
+      user.customRole = null; // Sistem rolü seçildiğinde özel rolü temizle
+      await user.save();
 
-    res.json({
-      message: `Kullanıcı rolü ${role === 'admin' ? 'Admin' : 'Satış Temsilcisi'} olarak güncellendi`,
-      user: updatedUser
-    });
+      const updatedUser = await User.findById(user._id)
+        .select('firstName lastName name email role isActive isApproved customRole')
+        .populate('customRole', 'name displayName');
+
+      return res.json({
+        message: `Kullanıcı sistem rolü ${role === 'admin' ? 'Admin' : role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'} olarak güncellendi`,
+        user: updatedUser
+      });
+    }
+
+    // Özel rol atanıyorsa
+    if (customRole) {
+      const Role = require('../models/Role');
+      const roleExists = await Role.findById(customRole);
+      
+      if (!roleExists) {
+        return res.status(400).json({ message: 'Geçersiz özel rol' });
+      }
+
+      user.customRole = customRole;
+      user.role = 'salesperson'; // Özel rol atanırken sistem rolü salesperson yap
+      await user.save();
+
+      const updatedUser = await User.findById(user._id)
+        .select('firstName lastName name email role isActive isApproved customRole')
+        .populate('customRole', 'name displayName');
+
+      return res.json({
+        message: `Kullanıcıya "${roleExists.displayName}" rolü atandı`,
+        user: updatedUser
+      });
+    }
+
+    return res.status(400).json({ message: 'Rol veya özel rol belirtilmeli' });
   } catch (error) {
     console.error('Update user role error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });

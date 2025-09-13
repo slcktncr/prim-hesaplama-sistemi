@@ -140,7 +140,7 @@ const SalesList = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getAllUsers();
+      const response = await usersAPI.getUsersForFilters(); // Tüm kullanıcılar erişebilir
       setUsers(response.data || []);
     } catch (error) {
       console.error('Users fetch error:', error);
