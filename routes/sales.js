@@ -1305,20 +1305,25 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Temsilci filtresi
     if (filters.salesperson) {
-      const User = require('../models/User');
-      const user = await User.findOne({ 
-        name: filters.salesperson,
-        isActive: true,
-        isApproved: true
-      });
-      
-      if (!user) {
-        return res.status(404).json({ 
-          message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
+      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      } else {
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          name: filters.salesperson,
+          isActive: true,
+          isApproved: true
         });
+        
+        if (!user) {
+          return res.status(404).json({ 
+            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+          });
+        }
+        
+        query.salesperson = user._id;
       }
-      
-      query.salesperson = user._id;
     }
 
     // Tarih filtresi
@@ -1409,20 +1414,25 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     }
 
     if (filters.salesperson) {
-      const User = require('../models/User');
-      const user = await User.findOne({ 
-        name: filters.salesperson,
-        isActive: true,
-        isApproved: true
-      });
-      
-      if (!user) {
-        return res.status(404).json({ 
-          message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
+      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      } else {
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          name: filters.salesperson,
+          isActive: true,
+          isApproved: true
         });
+        
+        if (!user) {
+          return res.status(404).json({ 
+            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+          });
+        }
+        
+        query.salesperson = user._id;
       }
-      
-      query.salesperson = user._id;
     }
 
     if (filters.startDate && filters.endDate) {

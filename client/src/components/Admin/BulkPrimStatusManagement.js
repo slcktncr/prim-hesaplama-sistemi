@@ -7,242 +7,149 @@ import {
   Button, 
   Form, 
   Alert, 
-  Modal, 
   Table,
   Badge,
   Spinner
 } from 'react-bootstrap';
 import { 
-  FaEdit, 
-  FaCheck, 
-  FaTimes, 
-  FaUsers, 
-  FaCalendarAlt, 
   FaMoneyBillWave,
-  FaExclamationTriangle,
+  FaCheck,
+  FaTimes,
   FaInfoCircle
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { salesAPI, primsAPI, usersAPI } from '../../utils/api';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { salesAPI, usersAPI } from '../../utils/api';
 
 const BulkPrimStatusManagement = () => {
-  const [periods, setPeriods] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   
-  const [filters, setFilters] = useState({
-    period: '',
-    salesperson: '',
-    month: '',
-    year: new Date().getFullYear(),
-    startDate: '',
-    endDate: ''
-  });
-  
-  const [primStatus, setPrimStatus] = useState('ödendi');
+  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [newStatus, setNewStatus] = useState('ödendi');
+
+  const months = [
+    { value: 1, label: 'Ocak' },
+    { value: 2, label: 'Şubat' },
+    { value: 3, label: 'Mart' },
+    { value: 4, label: 'Nisan' },
+    { value: 5, label: 'Mayıs' },
+    { value: 6, label: 'Haziran' },
+    { value: 7, label: 'Temmuz' },
+    { value: 8, label: 'Ağustos' },
+    { value: 9, label: 'Eylül' },
+    { value: 10, label: 'Ekim' },
+    { value: 11, label: 'Kasım' },
+    { value: 12, label: 'Aralık' }
+  ];
 
   useEffect(() => {
-    fetchPeriods();
     fetchUsers();
   }, []);
 
-  const fetchPeriods = async () => {
-    try {
-      const response = await primsAPI.getPeriods();
-      setPeriods(response.data || []);
-    } catch (error) {
-      console.error('Periods fetch error:', error);
-    }
-  };
-
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getUsersForFilters();
-      
-      // Geçerli ObjectId'li user'ları filtrele (24 karakter hex string)
-      const validUsers = (response.data || []).filter(user => {
-        const isValid = user._id && 
-                       typeof user._id === 'string' && 
-                       user._id.length === 24 && 
-                       /^[0-9a-fA-F]{24}$/.test(user._id);
-        
-        if (!isValid) {
-          console.warn('⚠️ Invalid user ID filtered out:', user._id, user.name);
-        }
-        return isValid;
-      });
-      
-      setUsers(validUsers);
-      console.log(`✅ Loaded ${validUsers.length} valid users (filtered ${(response.data || []).length - validUsers.length} invalid)`);
+      const response = await usersAPI.getAllUsers();
+      // Sadece satış temsilcilerini göster
+      const salespeople = response.data.filter(user => 
+        user.role === 'salesperson' && user.isActive && user.isApproved
+      );
+      setUsers(salespeople);
     } catch (error) {
       console.error('Users fetch error:', error);
+      toast.error('Kullanıcılar yüklenirken hata oluştu');
     }
-  };
-
-  const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const getFilterDescription = () => {
-    const descriptions = [];
-    
-    if (filters.period) {
-      const period = periods.find(p => p._id === filters.period);
-      descriptions.push(`Dönem: ${period?.name}`);
-    }
-    
-    if (filters.salesperson) {
-      // Artık filters.salesperson user name olduğu için direkt kullan
-      descriptions.push(`Temsilci: ${filters.salesperson}`);
-    }
-    
-    if (filters.month && filters.year) {
-      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-      descriptions.push(`Ay: ${monthNames[filters.month - 1]} ${filters.year}`);
-    } else if (filters.year) {
-      descriptions.push(`Yıl: ${filters.year}`);
-    }
-    
-    if (filters.startDate && filters.endDate) {
-      descriptions.push(`Tarih: ${formatDate(filters.startDate)} - ${formatDate(filters.endDate)}`);
-    } else if (filters.startDate) {
-      descriptions.push(`Başlangıç: ${formatDate(filters.startDate)}`);
-    } else if (filters.endDate) {
-      descriptions.push(`Bitiş: ${formatDate(filters.endDate)}`);
-    }
-    
-    return descriptions.length > 0 ? descriptions.join(', ') : 'Tüm satışlar';
   };
 
   const handlePreview = async () => {
+    if (!selectedUser) {
+      toast.warning('Lütfen bir temsilci seçin');
+      return;
+    }
+
     try {
-      setPreviewLoading(true);
+      setLoading(true);
       
-      // Debug: Gönderilen değerleri logla
-      console.log('🔍 Frontend Preview Debug:');
-      console.log('📊 primStatus:', primStatus);
-      console.log('📊 filters:', filters);
-      
-      // Önizleme için özel endpoint kullan
-      const response = await salesAPI.previewBulkPrimStatus(primStatus, filters);
-      
+      const filters = {
+        salesperson: selectedUser,
+        month: selectedMonth,
+        year: selectedYear
+      };
+
+      const response = await salesAPI.previewBulkPrimStatus(newStatus, filters);
       setPreviewData(response.data.summary);
-      setShowPreviewModal(true);
       
     } catch (error) {
       console.error('Preview error:', error);
-      console.log('📊 Error response data:', error.response?.data);
-      console.log('📊 Error status:', error.response?.status);
-      
       if (error.response?.status === 404) {
-        toast.warning('Belirtilen kriterlere uygun satış bulunamadı');
-      } else if (error.response?.status === 400) {
-        const message = error.response?.data?.message || 'Geçersiz veri formatı';
-        toast.error('Validation hatası: ' + message);
+        toast.warning('Seçilen kriterlere uygun satış bulunamadı');
+        setPreviewData(null);
       } else {
         toast.error('Önizleme yüklenirken hata oluştu');
       }
     } finally {
-      setPreviewLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleDirectUpdate = async () => {
-    // Boş filtre kontrolü
-    if (isFilterEmpty()) {
-      const confirmed = window.confirm(
-        '⚠️ UYARI: Hiçbir filtre seçilmedi!\n\n' +
-        'Bu durumda TÜM satışların prim durumu değiştirilecek.\n\n' +
-        'Devam etmek istediğinizden emin misiniz?'
-      );
-      if (!confirmed) return;
-    } else {
-      const confirmed = window.confirm(
-        `Seçili kriterlere göre prim durumlarını "${primStatus}" olarak değiştirmek istediğinizden emin misiniz?\n\n` +
-        `Kriterler: ${getFilterDescription()}\n\n` +
-        'Bu işlem geri alınamaz!'
-      );
-      if (!confirmed) return;
+  const handleUpdate = async () => {
+    if (!selectedUser) {
+      toast.warning('Lütfen bir temsilci seçin');
+      return;
     }
+
+    const selectedUserName = users.find(u => u._id === selectedUser)?.name || 'Bilinmeyen';
+    const monthName = months.find(m => m.value === selectedMonth)?.label || 'Bilinmeyen';
+    
+    const confirmed = window.confirm(
+      `${selectedUserName} temsilcisinin ${monthName} ${selectedYear} ayındaki tüm satışlarının prim durumunu "${newStatus}" olarak değiştirmek istediğinizden emin misiniz?`
+    );
+    
+    if (!confirmed) return;
 
     try {
       setLoading(true);
       
-      console.log('🔄 Direct update starting...');
-      console.log('📊 primStatus:', primStatus);
-      console.log('📊 filters:', filters);
-      
-      const response = await salesAPI.bulkUpdatePrimStatus(primStatus, filters);
+      const filters = {
+        salesperson: selectedUser,
+        month: selectedMonth,
+        year: selectedYear
+      };
+
+      const response = await salesAPI.bulkUpdatePrimStatus(newStatus, filters);
       
       if (response.data.success) {
         toast.success(response.data.message);
-        
-        // Filtreleri temizle
-        setFilters({
-          period: '',
-          salesperson: '',
-          month: '',
-          year: new Date().getFullYear(),
-          startDate: '',
-          endDate: ''
-        });
+        setPreviewData(null);
+        // Formu sıfırla
+        setSelectedUser('');
+        setSelectedMonth(new Date().getMonth() + 1);
+        setSelectedYear(new Date().getFullYear());
+        setNewStatus('ödendi');
       }
       
     } catch (error) {
-      console.error('Direct update error:', error);
+      console.error('Update error:', error);
       if (error.response?.status === 404) {
-        toast.warning('Belirtilen kriterlere uygun satış bulunamadı');
+        toast.warning('Seçilen kriterlere uygun satış bulunamadı');
       } else {
-        toast.error(error.response?.data?.message || 'Toplu güncelleme sırasında hata oluştu');
+        toast.error(error.response?.data?.message || 'Güncelleme sırasında hata oluştu');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBulkUpdate = async () => {
-    try {
-      setLoading(true);
-      
-      const response = await salesAPI.bulkUpdatePrimStatus(primStatus, filters);
-      
-      if (response.data.success) {
-        toast.success(response.data.message);
-        setShowPreviewModal(false);
-        
-        // Filtreleri temizle
-        setFilters({
-          period: '',
-          salesperson: '',
-          month: '',
-          year: new Date().getFullYear(),
-          startDate: '',
-          endDate: ''
-        });
-      }
-      
-    } catch (error) {
-      console.error('Bulk update error:', error);
-      toast.error(error.response?.data?.message || 'Toplu güncelleme sırasında hata oluştu');
-    } finally {
-      setLoading(false);
-    }
+  const getSelectedUserName = () => {
+    const user = users.find(u => u._id === selectedUser);
+    return user ? user.name : '';
   };
 
-  const isFilterEmpty = () => {
-    return !filters.period && 
-           !filters.salesperson && 
-           !filters.month && 
-           !filters.startDate && 
-           !filters.endDate;
+  const getSelectedMonthName = () => {
+    const month = months.find(m => m.value === selectedMonth);
+    return month ? month.label : '';
   };
 
   return (
@@ -256,7 +163,7 @@ const BulkPrimStatusManagement = () => {
                 Toplu Prim Durumu Yönetimi
               </h2>
               <p className="text-muted mb-0">
-                Seçili kriterlere göre prim durumlarını toplu olarak değiştirin
+                Temsilci ve aya göre prim durumlarını toplu olarak değiştirin
               </p>
             </div>
           </div>
@@ -264,132 +171,86 @@ const BulkPrimStatusManagement = () => {
           <Card>
             <Card.Header>
               <h5 className="mb-0">
-                <FaEdit className="me-2" />
-                Filtreler ve Ayarlar
+                <FaInfoCircle className="me-2" />
+                Filtreler
               </h5>
             </Card.Header>
             <Card.Body>
-              <Form>
-                <Row>
-                  <Col md={3}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Prim Dönem</Form.Label>
-                      <Form.Select
-                        value={filters.period}
-                        onChange={(e) => handleFilterChange('period', e.target.value)}
-                      >
-                        <option value="">Tüm Dönemler</option>
-                        {periods.map(period => (
-                          <option key={period._id} value={period._id}>
-                            {period.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  
-                  <Col md={3}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Temsilci</Form.Label>
-                      <Form.Select
-                        value={filters.salesperson}
-                        onChange={(e) => handleFilterChange('salesperson', e.target.value)}
-                      >
-                        <option value="">Tüm Temsilciler</option>
-                        {users.map(user => (
-                          <option key={user._id} value={user.name}>
-                            {user.name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
+              <Row>
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Temsilci *</Form.Label>
+                    <Form.Select
+                      value={selectedUser}
+                      onChange={(e) => setSelectedUser(e.target.value)}
+                      required
+                    >
+                      <option value="">Temsilci Seçin</option>
+                      {users.map(user => (
+                        <option key={user._id} value={user._id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
 
-                  <Col md={2}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Ay</Form.Label>
-                      <Form.Select
-                        value={filters.month}
-                        onChange={(e) => handleFilterChange('month', e.target.value)}
-                      >
-                        <option value="">Tüm Aylar</option>
-                        <option value="1">Ocak</option>
-                        <option value="2">Şubat</option>
-                        <option value="3">Mart</option>
-                        <option value="4">Nisan</option>
-                        <option value="5">Mayıs</option>
-                        <option value="6">Haziran</option>
-                        <option value="7">Temmuz</option>
-                        <option value="8">Ağustos</option>
-                        <option value="9">Eylül</option>
-                        <option value="10">Ekim</option>
-                        <option value="11">Kasım</option>
-                        <option value="12">Aralık</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
+                <Col md={2}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Ay *</Form.Label>
+                    <Form.Select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    >
+                      {months.map(month => (
+                        <option key={month.value} value={month.value}>
+                          {month.label}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
 
-                  <Col md={2}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Yıl</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={filters.year}
-                        onChange={(e) => handleFilterChange('year', e.target.value)}
-                        min="2020"
-                        max="2030"
-                      />
-                    </Form.Group>
-                  </Col>
+                <Col md={2}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Yıl *</Form.Label>
+                    <Form.Select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    >
+                      <option value={2024}>2024</option>
+                      <option value={2025}>2025</option>
+                      <option value={2026}>2026</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
 
-                  <Col md={2}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Yeni Durum</Form.Label>
-                      <Form.Select
-                        value={primStatus}
-                        onChange={(e) => setPrimStatus(e.target.value)}
-                      >
-                        <option value="ödendi">Ödendi</option>
-                        <option value="ödenmedi">Ödenmedi</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <Col md={2}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Yeni Durum *</Form.Label>
+                    <Form.Select
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value)}
+                    >
+                      <option value="ödendi">Ödendi</option>
+                      <option value="ödenmedi">Ödenmedi</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
 
-                <Row>
-                  <Col md={3}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Başlangıç Tarihi</Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={filters.startDate}
-                        onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={3}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Bitiş Tarihi</Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={filters.endDate}
-                        onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6} className="d-flex align-items-end">
-                    <div className="d-flex gap-2 mb-3">
-                      <Button
-                        variant="info"
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>&nbsp;</Form.Label>
+                    <div className="d-grid gap-2">
+                      <Button 
+                        variant="info" 
                         onClick={handlePreview}
-                        disabled={previewLoading || loading}
+                        disabled={loading || !selectedUser}
                       >
-                        {previewLoading ? (
+                        {loading ? (
                           <>
                             <Spinner as="span" animation="border" size="sm" className="me-2" />
-                            Kontrol Ediliyor...
+                            Yükleniyor...
                           </>
                         ) : (
                           <>
@@ -398,191 +259,109 @@ const BulkPrimStatusManagement = () => {
                           </>
                         )}
                       </Button>
-
-                      <Button
-                        variant="warning"
-                        onClick={async () => {
-                          try {
-                            setLoading(true);
-                            console.log('🧪 Debug test starting...');
-                            const response = await salesAPI.debugBulkPrimStatus(primStatus, filters);
-                            console.log('✅ Debug response:', response.data);
-                            toast.success('Debug test başarılı - Console\'u kontrol et');
-                          } catch (error) {
-                            console.error('❌ Debug test error:', error);
-                            toast.error('Debug test hatası: ' + (error.response?.data?.message || error.message));
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        disabled={loading || previewLoading}
-                        className="me-2"
-                      >
-                        🧪 Debug Test
-                      </Button>
-
-                      <Button
-                        variant="success"
-                        onClick={handleDirectUpdate}
-                        disabled={loading || previewLoading}
-                      >
-                        {loading ? (
-                          <>
-                            <Spinner as="span" animation="border" size="sm" className="me-2" />
-                            Uygulanıyor...
-                          </>
-                        ) : (
-                          <>
-                            <FaCheck className="me-2" />
-                            Uygula
-                          </>
-                        )}
-                      </Button>
-                      
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => setFilters({
-                          period: '',
-                          salesperson: '',
-                          month: '',
-                          year: new Date().getFullYear(),
-                          startDate: '',
-                          endDate: ''
-                        })}
-                        disabled={loading || previewLoading}
-                      >
-                        Temizle
-                      </Button>
-
-                      <Button
-                        variant="outline-warning"
-                        onClick={async () => {
-                          try {
-                            const response = await salesAPI.testBulk({ test: 'data', primStatus, filters });
-                            toast.success('Test başarılı: ' + response.data.message);
-                          } catch (error) {
-                            toast.error('Test hatası: ' + error.message);
-                          }
-                        }}
-                        disabled={loading || previewLoading}
-                      >
-                        Test
-                      </Button>
                     </div>
-                  </Col>
-                </Row>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-                <Alert variant="info" className="mb-0">
-                  <FaInfoCircle className="me-2" />
-                  <strong>Seçili Kriterler:</strong> {getFilterDescription()}
-                  <br />
-                  <strong>Yeni Durum:</strong> <Badge bg={primStatus === 'ödendi' ? 'success' : 'warning'}>
-                    {primStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi'}
-                  </Badge>
-                  {isFilterEmpty() && (
-                    <div className="mt-2">
-                      <FaExclamationTriangle className="me-2 text-warning" />
-                      <strong>Uyarı:</strong> Hiçbir filtre seçilmedi. Bu durumda TÜM satışlar etkilenecek!
-                    </div>
-                  )}
+              {selectedUser && (
+                <Alert variant="info" className="mt-3">
+                  <strong>Seçili Kriterler:</strong><br />
+                  Temsilci: {getSelectedUserName()}<br />
+                  Dönem: {getSelectedMonthName()} {selectedYear}<br />
+                  Yeni Durum: <Badge bg={newStatus === 'ödendi' ? 'success' : 'warning'}>{newStatus}</Badge>
                 </Alert>
-              </Form>
+              )}
             </Card.Body>
           </Card>
+
+          {previewData && (
+            <Card className="mt-4">
+              <Card.Header className="d-flex justify-content-between align-items-center">
+                <h5 className="mb-0">
+                  <FaInfoCircle className="me-2" />
+                  Önizleme Sonucu
+                </h5>
+                <Badge bg="primary">{previewData.totalUpdated} satış bulundu</Badge>
+              </Card.Header>
+              <Card.Body>
+                <Alert variant="warning" className="mb-3">
+                  <FaInfoCircle className="me-2" />
+                  <strong>{previewData.totalUpdated}</strong> adet satışın prim durumu 
+                  <strong> "{previewData.newStatus}"</strong> olarak değiştirilecek.
+                </Alert>
+
+                {previewData.affectedSales && previewData.affectedSales.length > 0 && (
+                  <div>
+                    <h6>Etkilenecek Satışlar (İlk 10 tanesi):</h6>
+                    <Table striped hover size="sm">
+                      <thead>
+                        <tr>
+                          <th>Müşteri</th>
+                          <th>Sözleşme No</th>
+                          <th>Prim Tutarı</th>
+                          <th>Mevcut Durum</th>
+                          <th>Satış Tarihi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewData.affectedSales.slice(0, 10).map((sale, index) => (
+                          <tr key={index}>
+                            <td>{sale.customerName}</td>
+                            <td>{sale.contractNo}</td>
+                            <td>{sale.primAmount?.toLocaleString('tr-TR')} ₺</td>
+                            <td>
+                              <Badge bg={sale.oldStatus === 'ödendi' ? 'success' : 'warning'}>
+                                {sale.oldStatus}
+                              </Badge>
+                            </td>
+                            <td>{new Date(sale.saleDate).toLocaleDateString('tr-TR')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                    
+                    {previewData.affectedSales.length > 10 && (
+                      <Alert variant="info" className="mt-2">
+                        <FaInfoCircle className="me-2" />
+                        Sadece ilk 10 kayıt gösteriliyor. Toplam {previewData.totalUpdated} kayıt etkilenecek.
+                      </Alert>
+                    )}
+                  </div>
+                )}
+
+                <div className="d-flex gap-2 mt-3">
+                  <Button 
+                    variant="success" 
+                    onClick={handleUpdate}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner as="span" animation="border" size="sm" className="me-2" />
+                        Güncelleniyor...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck className="me-2" />
+                        Onayla ve Güncelle
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => setPreviewData(null)}
+                  >
+                    <FaTimes className="me-2" />
+                    İptal
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          )}
         </Col>
       </Row>
-
-      {/* Önizleme Modal */}
-      <Modal show={showPreviewModal} onHide={() => setShowPreviewModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FaInfoCircle className="me-2 text-info" />
-            Toplu Güncelleme Önizlemesi
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {previewData && (
-            <>
-              <Alert variant="warning">
-                <FaExclamationTriangle className="me-2" />
-                <strong>DİKKAT!</strong> Bu işlem geri alınamaz!
-                <br />
-                <strong>{previewData.totalUpdated}</strong> satışın prim durumu 
-                "<strong>{previewData.newStatus}</strong>" olarak değiştirilecek.
-              </Alert>
-
-              <div className="mb-3">
-                <h6>Etkilenecek Satışlar:</h6>
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>Müşteri</th>
-                        <th>Sözleşme No</th>
-                        <th>Temsilci</th>
-                        <th>Dönem</th>
-                        <th>Prim Tutarı</th>
-                        <th>Mevcut Durum</th>
-                        <th>Yeni Durum</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {previewData.affectedSales.slice(0, 50).map((sale, index) => (
-                        <tr key={index}>
-                          <td>{sale.customerName}</td>
-                          <td>{sale.contractNo || '-'}</td>
-                          <td>{sale.salesperson}</td>
-                          <td>{sale.period}</td>
-                          <td>{formatCurrency(sale.primAmount)}</td>
-                          <td>
-                            <Badge bg={sale.oldStatus === 'ödendi' ? 'success' : 'warning'}>
-                              {sale.oldStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi'}
-                            </Badge>
-                          </td>
-                          <td>
-                            <Badge bg={previewData.newStatus === 'ödendi' ? 'success' : 'warning'}>
-                              {previewData.newStatus === 'ödendi' ? 'Ödendi' : 'Ödenmedi'}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  {previewData.affectedSales.length > 50 && (
-                    <Alert variant="info" className="mt-2">
-                      <FaInfoCircle className="me-2" />
-                      Sadece ilk 50 kayıt gösteriliyor. Toplam {previewData.totalUpdated} kayıt etkilenecek.
-                    </Alert>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPreviewModal(false)}>
-            <FaTimes className="me-2" />
-            İptal
-          </Button>
-          <Button 
-            variant="danger" 
-            onClick={handleBulkUpdate}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Spinner as="span" animation="border" size="sm" className="me-2" />
-                Güncelleniyor...
-              </>
-            ) : (
-              <>
-                <FaCheck className="me-2" />
-                Onayla ve Güncelle
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 };
