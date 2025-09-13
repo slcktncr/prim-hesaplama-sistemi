@@ -63,6 +63,7 @@ const BulkPrimStatusManagement = () => {
     try {
       const response = await usersAPI.getUsersForFilters();
       setUsers(response.data || []);
+      console.log(`✅ Loaded ${(response.data || []).length} users`);
     } catch (error) {
       console.error('Users fetch error:', error);
     }

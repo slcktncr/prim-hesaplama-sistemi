@@ -1817,12 +1817,13 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
+        // ObjectId'ye çevirmeyi dene
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
         console.log('✅ Salesperson filter added:', filters.salesperson);
       } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson);
+        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson, 'Error:', error.message);
         return res.status(400).json({ 
-          message: 'Geçersiz temsilci ID formatı' 
+          message: `Geçersiz temsilci ID formatı: ${filters.salesperson}` 
         });
       }
     } else {
@@ -1984,12 +1985,13 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
+        // ObjectId'ye çevirmeyi dene
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
         console.log('✅ Salesperson filter added:', filters.salesperson);
       } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson);
+        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson, 'Error:', error.message);
         return res.status(400).json({ 
-          message: 'Geçersiz temsilci ID formatı' 
+          message: `Geçersiz temsilci ID formatı: ${filters.salesperson}` 
         });
       }
     } else {

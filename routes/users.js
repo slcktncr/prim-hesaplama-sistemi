@@ -73,6 +73,7 @@ router.get('/for-filters', auth, async (req, res) => {
       .select('name email role')
       .sort({ name: 1 });
 
+    console.log(`✅ Returning ${users.length} users for filters`);
     res.json(users);
   } catch (error) {
     console.error('Get users for filters error:', error);
