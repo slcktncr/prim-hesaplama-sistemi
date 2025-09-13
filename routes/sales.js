@@ -1800,7 +1800,7 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     let query = { saleType: 'satis' }; // Sadece satışlar, kapora değil
 
     // Dönem filtresi
-    if (filters.period) {
+    if (filters.period && filters.period.trim() !== '') {
       try {
         query.primPeriod = new mongoose.Types.ObjectId(filters.period);
         console.log('✅ Period filter added:', filters.period);
@@ -1810,10 +1810,12 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
           message: 'Geçersiz dönem ID formatı' 
         });
       }
+    } else {
+      console.log('ℹ️ Period filter skipped (empty value)');
     }
 
     // Temsilci filtresi
-    if (filters.salesperson) {
+    if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
         console.log('✅ Salesperson filter added:', filters.salesperson);
@@ -1823,6 +1825,8 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
           message: 'Geçersiz temsilci ID formatı' 
         });
       }
+    } else {
+      console.log('ℹ️ Salesperson filter skipped (empty value)');
     }
 
     // Ay/Yıl filtresi (saleDate bazında)
@@ -1963,7 +1967,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     let query = { saleType: 'satis' }; // Sadece satışlar, kapora değil
 
     // Dönem filtresi
-    if (filters.period) {
+    if (filters.period && filters.period.trim() !== '') {
       try {
         query.primPeriod = new mongoose.Types.ObjectId(filters.period);
         console.log('✅ Period filter added:', filters.period);
@@ -1973,10 +1977,12 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
           message: 'Geçersiz dönem ID formatı' 
         });
       }
+    } else {
+      console.log('ℹ️ Period filter skipped (empty value)');
     }
 
     // Temsilci filtresi
-    if (filters.salesperson) {
+    if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
         console.log('✅ Salesperson filter added:', filters.salesperson);
@@ -1986,6 +1992,8 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
           message: 'Geçersiz temsilci ID formatı' 
         });
       }
+    } else {
+      console.log('ℹ️ Salesperson filter skipped (empty value)');
     }
 
     // Ay/Yıl filtresi (saleDate bazında)
