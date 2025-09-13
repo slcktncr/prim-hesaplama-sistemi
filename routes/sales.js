@@ -2147,6 +2147,7 @@ router.post('/debug-bulk', [auth, adminAuth], async (req, res) => {
     const { primStatus, filters } = req.body;
     
     // User lookup test
+    let userFound = null;
     if (filters.salesperson) {
       const User = require('../models/User');
       const user = await User.findOne({ 
@@ -2155,18 +2156,32 @@ router.post('/debug-bulk', [auth, adminAuth], async (req, res) => {
         isApproved: true
       });
       console.log('👤 User lookup result:', user ? user.name : 'NOT FOUND');
+      userFound = user;
     }
     
-    // Query building test
+    // Query building test (tam olarak asıl endpoint gibi)
     let query = { saleType: 'satis' };
+    
+    // Temsilci filtresi ekle
+    if (userFound) {
+      query.salesperson = userFound._id;
+      console.log('✅ Salesperson added to query:', userFound.name, '→', userFound._id);
+    }
+    
+    // Tarih filtresi ekle
     if (filters.month && filters.year) {
       const startDate = new Date(filters.year, filters.month - 1, 1);
       const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
       query.saleDate = { $gte: startDate, $lte: endDate };
-      console.log('📅 Date range:', startDate, 'to', endDate);
+      console.log('📅 Date range added:', startDate, 'to', endDate);
     }
     
-    console.log('🔍 Query would be:', query);
+    console.log('🔍 Final query:', query);
+    
+    // Test query ile kaç satış bulunacağını kontrol et
+    const Sale = require('../models/Sale');
+    const testCount = await Sale.countDocuments(query);
+    console.log('📊 Sales found with this query:', testCount);
     
     res.json({
       success: true,
