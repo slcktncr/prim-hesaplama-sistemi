@@ -19,11 +19,17 @@ const getOrCreatePrimPeriod = async (saleDate, createdBy) => {
   let period = await PrimPeriod.findOne({ name: periodName });
   
   if (!period) {
+    // createdBy ID'sini düzelt (23 karakter ise başına 0 ekle)
+    let createdById = createdBy;
+    if (typeof createdBy === 'string' && createdBy.length === 23 && /^[0-9a-fA-F]{23}$/.test(createdBy)) {
+      createdById = '0' + createdBy;
+    }
+    
     period = new PrimPeriod({
       name: periodName,
       month,
       year,
-      createdBy
+      createdBy: new mongoose.Types.ObjectId(createdById)
     });
     await period.save();
     console.log(`📅 Yeni dönem oluşturuldu: ${periodName}`);
@@ -49,8 +55,15 @@ async function fixPrimPeriods() {
     
     for (const sale of sales) {
       try {
+        // Salesperson ID'sini düzelt (23 karakter ise başına 0 ekle)
+        let salespersonId = sale.salesperson.toString();
+        if (salespersonId.length === 23 && /^[0-9a-fA-F]{23}$/.test(salespersonId)) {
+          salespersonId = '0' + salespersonId;
+          console.log(`🔧 Salesperson ID düzeltildi: ${sale.salesperson} → ${salespersonId}`);
+        }
+        
         // saleDate'e göre doğru prim dönemini bul/oluştur
-        const correctPrimPeriodId = await getOrCreatePrimPeriod(sale.saleDate, sale.salesperson);
+        const correctPrimPeriodId = await getOrCreatePrimPeriod(sale.saleDate, salespersonId);
         
         // Mevcut prim dönemi ile karşılaştır
         if (sale.primPeriod._id.toString() !== correctPrimPeriodId.toString()) {

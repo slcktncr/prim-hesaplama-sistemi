@@ -1818,10 +1818,12 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       let salespersonId = filters.salesperson.trim();
       
+      console.log('🔍 Original salesperson ID:', salespersonId, 'Length:', salespersonId.length);
+      
       // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
-      if (salespersonId.length === 23 && /^[0-9a-fA-F]{23}$/.test(salespersonId)) {
+      if (salespersonId.length === 23) {
         salespersonId = '0' + salespersonId;
-        console.log('ℹ️ Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
+        console.log('🔧 Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
       }
       
       try {
@@ -1831,7 +1833,7 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
       } catch (error) {
         console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
         return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${salespersonId}` 
+          message: `Geçersiz temsilci ID formatı: ${salespersonId} (Length: ${salespersonId.length})` 
         });
       }
     } else {
@@ -1994,10 +1996,12 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       let salespersonId = filters.salesperson.trim();
       
+      console.log('🔍 Original salesperson ID:', salespersonId, 'Length:', salespersonId.length);
+      
       // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
-      if (salespersonId.length === 23 && /^[0-9a-fA-F]{23}$/.test(salespersonId)) {
+      if (salespersonId.length === 23) {
         salespersonId = '0' + salespersonId;
-        console.log('ℹ️ Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
+        console.log('🔧 Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
       }
       
       try {
@@ -2007,7 +2011,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
       } catch (error) {
         console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
         return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${salespersonId}` 
+          message: `Geçersiz temsilci ID formatı: ${salespersonId} (Length: ${salespersonId.length})` 
         });
       }
     } else {
