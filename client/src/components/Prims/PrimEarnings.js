@@ -57,12 +57,27 @@ const PrimEarnings = () => {
     fetchPeriods();
     if (isAdmin) {
       fetchUsers();
+    } else {
+      // Admin değilse direkt fetch et
+      const debouncedFetch = debounce(fetchEarnings, 300);
+      debouncedFetch();
     }
   }, [isAdmin]);
 
   useEffect(() => {
-    const debouncedFetch = debounce(fetchEarnings, 300);
-    debouncedFetch();
+    // Admin ise users yüklendikten sonra fetch et
+    if (isAdmin && users.length > 0) {
+      const debouncedFetch = debounce(fetchEarnings, 300);
+      debouncedFetch();
+    }
+  }, [users]);
+
+  useEffect(() => {
+    // Filtre değişikliklerinde fetch et
+    if (!isAdmin || users.length > 0) {
+      const debouncedFetch = debounce(fetchEarnings, 300);
+      debouncedFetch();
+    }
   }, [filters]);
 
   const fetchEarnings = async () => {
