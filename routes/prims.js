@@ -652,7 +652,23 @@ router.get('/deductions', auth, async (req, res) => {
     if (req.user.role !== 'admin') {
       query.salesperson = req.user._id;
     } else if (salesperson && salesperson !== '') {
-      query.salesperson = new mongoose.Types.ObjectId(salesperson);
+      // User name ile lookup yap (earnings endpoint'i gibi)
+      const User = require('../models/User');
+      const user = await User.findOne({ 
+        name: salesperson,
+        isActive: true,
+        isApproved: true
+      });
+      
+      if (user) {
+        query.salesperson = user._id;
+        console.log('✅ Salesperson found for deductions:', user.name, '→', user._id);
+      } else {
+        console.log('❌ Salesperson not found for deductions:', salesperson);
+        return res.status(400).json({ 
+          message: `Temsilci bulunamadı: ${salesperson}` 
+        });
+      }
     }
     
     // Dönem filtresi
