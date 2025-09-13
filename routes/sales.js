@@ -76,6 +76,13 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
       const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
       
       query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.year && !filters.month) {
+      // Sadece yıl seçilmişse tüm yıl
+      const year = parseInt(filters.year);
+      const startDate = new Date(year, 0, 1); // 1 Ocak
+      const endDate = new Date(year, 11, 31, 23, 59, 59, 999); // 31 Aralık
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
     }
 
     // Güncelleme işlemi
@@ -182,6 +189,13 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
       
       const startDate = new Date(year, month, 1);
       const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.year && !filters.month) {
+      // Sadece yıl seçilmişse tüm yıl
+      const year = parseInt(filters.year);
+      const startDate = new Date(year, 0, 1); // 1 Ocak
+      const endDate = new Date(year, 11, 31, 23, 59, 59, 999); // 31 Aralık
       
       query.saleDate = { $gte: startDate, $lte: endDate };
     }

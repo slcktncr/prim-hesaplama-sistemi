@@ -26,11 +26,12 @@ const BulkPrimStatusManagement = () => {
   const [previewData, setPreviewData] = useState(null);
   
   const [selectedUser, setSelectedUser] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [newStatus, setNewStatus] = useState('ödendi');
 
   const months = [
+    { value: '', label: 'Tüm Yıl' },
     { value: 1, label: 'Ocak' },
     { value: 2, label: 'Şubat' },
     { value: 3, label: 'Mart' },
@@ -43,6 +44,10 @@ const BulkPrimStatusManagement = () => {
     { value: 10, label: 'Ekim' },
     { value: 11, label: 'Kasım' },
     { value: 12, label: 'Aralık' }
+  ];
+
+  const years = [
+    2021, 2022, 2023, 2024, 2025, 2026
   ];
 
   useEffect(() => {
@@ -74,9 +79,13 @@ const BulkPrimStatusManagement = () => {
       
       const filters = {
         salesperson: selectedUser,
-        month: selectedMonth,
         year: selectedYear
       };
+
+      // Ay seçilmişse ekle
+      if (selectedMonth) {
+        filters.month = selectedMonth;
+      }
 
       const response = await salesAPI.previewBulkPrimStatus(newStatus, filters);
       setPreviewData(response.data.summary);
@@ -101,10 +110,12 @@ const BulkPrimStatusManagement = () => {
     }
 
     const selectedUserName = users.find(u => u._id === selectedUser)?.name || 'Bilinmeyen';
-    const monthName = months.find(m => m.value === selectedMonth)?.label || 'Bilinmeyen';
+    const monthName = months.find(m => m.value === selectedMonth)?.label || 'Tüm Yıl';
+    
+    const periodText = selectedMonth ? `${monthName} ${selectedYear} ayındaki` : `${selectedYear} yılındaki tüm`;
     
     const confirmed = window.confirm(
-      `${selectedUserName} temsilcisinin ${monthName} ${selectedYear} ayındaki tüm satışlarının prim durumunu "${newStatus}" olarak değiştirmek istediğinizden emin misiniz?`
+      `${selectedUserName} temsilcisinin ${periodText} satışlarının prim durumunu "${newStatus}" olarak değiştirmek istediğinizden emin misiniz?`
     );
     
     if (!confirmed) return;
@@ -114,9 +125,13 @@ const BulkPrimStatusManagement = () => {
       
       const filters = {
         salesperson: selectedUser,
-        month: selectedMonth,
         year: selectedYear
       };
+
+      // Ay seçilmişse ekle
+      if (selectedMonth) {
+        filters.month = selectedMonth;
+      }
 
       const response = await salesAPI.bulkUpdatePrimStatus(newStatus, filters);
       
@@ -125,7 +140,7 @@ const BulkPrimStatusManagement = () => {
         setPreviewData(null);
         // Formu sıfırla
         setSelectedUser('');
-        setSelectedMonth(new Date().getMonth() + 1);
+        setSelectedMonth('');
         setSelectedYear(new Date().getFullYear());
         setNewStatus('ödendi');
       }
@@ -197,10 +212,10 @@ const BulkPrimStatusManagement = () => {
 
                 <Col md={2}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Ay *</Form.Label>
+                    <Form.Label>Ay</Form.Label>
                     <Form.Select
                       value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                      onChange={(e) => setSelectedMonth(e.target.value === '' ? '' : parseInt(e.target.value))}
                     >
                       {months.map(month => (
                         <option key={month.value} value={month.value}>
@@ -218,9 +233,11 @@ const BulkPrimStatusManagement = () => {
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                     >
-                      <option value={2024}>2024</option>
-                      <option value={2025}>2025</option>
-                      <option value={2026}>2026</option>
+                      {years.map(year => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
                     </Form.Select>
                   </Form.Group>
                 </Col>
@@ -268,7 +285,7 @@ const BulkPrimStatusManagement = () => {
                 <Alert variant="info" className="mt-3">
                   <strong>Seçili Kriterler:</strong><br />
                   Temsilci: {getSelectedUserName()}<br />
-                  Dönem: {getSelectedMonthName()} {selectedYear}<br />
+                  Dönem: {selectedMonth ? `${getSelectedMonthName()} ${selectedYear}` : `${selectedYear} (Tüm Yıl)`}<br />
                   Yeni Durum: <Badge bg={newStatus === 'ödendi' ? 'success' : 'warning'}>{newStatus}</Badge>
                 </Alert>
               )}
