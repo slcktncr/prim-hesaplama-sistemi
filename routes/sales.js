@@ -1769,14 +1769,26 @@ router.put('/:id/modify', [
 // @access  Private (Admin only)
 router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
   try {
+    console.log('🔄 Bulk prim status preview started');
+    console.log('📊 Request body:', req.body);
+    console.log('👤 User:', req.user?.name, req.user?.role);
+    
     const { 
       primStatus, // 'ödendi' veya 'ödenmedi'
       filters // { period, salesperson, month, year, startDate, endDate }
     } = req.body;
 
     if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      console.log('❌ Invalid prim status:', primStatus);
       return res.status(400).json({ 
         message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    if (!filters) {
+      console.log('❌ No filters provided');
+      return res.status(400).json({ 
+        message: 'Filtreler belirtilmeli' 
       });
     }
 
@@ -1785,23 +1797,65 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
 
     // Dönem filtresi
     if (filters.period) {
-      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+      try {
+        query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+        console.log('✅ Period filter added:', filters.period);
+      } catch (error) {
+        console.log('❌ Invalid period ObjectId:', filters.period);
+        return res.status(400).json({ 
+          message: 'Geçersiz dönem ID formatı' 
+        });
+      }
     }
 
     // Temsilci filtresi
     if (filters.salesperson) {
-      query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      try {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+        console.log('✅ Salesperson filter added:', filters.salesperson);
+      } catch (error) {
+        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson);
+        return res.status(400).json({ 
+          message: 'Geçersiz temsilci ID formatı' 
+        });
+      }
     }
 
     // Ay/Yıl filtresi (saleDate bazında)
     if (filters.month && filters.year) {
-      const startDate = new Date(filters.year, filters.month - 1, 1);
-      const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
-      query.saleDate = { $gte: startDate, $lte: endDate };
+      try {
+        const startDate = new Date(filters.year, filters.month - 1, 1);
+        const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
+        
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+        
+        query.saleDate = { $gte: startDate, $lte: endDate };
+        console.log('✅ Month/Year filter added:', { month: filters.month, year: filters.year });
+      } catch (error) {
+        console.log('❌ Invalid month/year:', filters.month, filters.year);
+        return res.status(400).json({ 
+          message: 'Geçersiz ay/yıl formatı' 
+        });
+      }
     } else if (filters.year) {
-      const startDate = new Date(filters.year, 0, 1);
-      const endDate = new Date(filters.year, 11, 31, 23, 59, 59);
-      query.saleDate = { $gte: startDate, $lte: endDate };
+      try {
+        const startDate = new Date(filters.year, 0, 1);
+        const endDate = new Date(filters.year, 11, 31, 23, 59, 59);
+        
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+        
+        query.saleDate = { $gte: startDate, $lte: endDate };
+        console.log('✅ Year filter added:', filters.year);
+      } catch (error) {
+        console.log('❌ Invalid year:', filters.year);
+        return res.status(400).json({ 
+          message: 'Geçersiz yıl formatı' 
+        });
+      }
     }
 
     // Tarih aralığı filtresi
@@ -1819,22 +1873,29 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     console.log('🔍 Preview query:', query);
 
     // Sadece önizleme - güncelleme yapmıyoruz
+    console.log('🔄 Starting database query...');
     const affectedSales = await Sale.find(query)
       .populate('salesperson', 'name')
       .populate('primPeriod', 'name')
       .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
       .limit(100); // Performans için limit
+    
+    console.log('✅ Query completed, found:', affectedSales.length, 'sales');
 
     if (affectedSales.length === 0) {
+      console.log('❌ No sales found with current filters');
       return res.status(404).json({ 
         message: 'Belirtilen kriterlere uygun satış bulunamadı' 
       });
     }
 
     // Toplam sayıyı da al
+    console.log('🔄 Getting total count...');
     const totalCount = await Sale.countDocuments(query);
+    console.log('✅ Total count:', totalCount);
 
     // Özet bilgi hazırla
+    console.log('🔄 Preparing response summary...');
     const summary = {
       totalUpdated: totalCount,
       newStatus: primStatus,
@@ -1850,6 +1911,7 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
       }))
     };
 
+    console.log('✅ Preview completed successfully');
     res.json({
       success: true,
       message: `${totalCount} satış etkilenecek`,
