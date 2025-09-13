@@ -2047,10 +2047,12 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     console.log('📊 New status:', primStatus);
 
     // Önce kaç kayıt etkileneceğini kontrol et
+    console.log('🔍 Finding affected sales with query:', query);
     const affectedSales = await Sale.find(query)
       .populate('salesperson', 'name')
       .populate('primPeriod', 'name')
       .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate');
+    console.log('✅ Found affected sales:', affectedSales.length);
 
     if (affectedSales.length === 0) {
       return res.status(404).json({ 
@@ -2060,6 +2062,12 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Güncelleme işlemini gerçekleştir
     console.log('🔄 Starting updateMany operation...');
+    console.log('🔄 Update query:', query);
+    console.log('🔄 Update data:', { 
+      primStatus,
+      primStatusUpdatedAt: new Date(),
+      primStatusUpdatedBy: req.user._id
+    });
     const updateResult = await Sale.updateMany(
       query,
       { 
@@ -2090,6 +2098,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Activity log ekle
     try {
+      console.log('🔄 Creating activity log...');
       const ActivityLog = require('../models/ActivityLog');
       await ActivityLog.create({
         user: req.user._id,
@@ -2104,6 +2113,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
       console.log('✅ Activity log created');
     } catch (logError) {
       console.log('⚠️ Activity log failed (non-critical):', logError.message);
+      console.log('⚠️ Activity log error stack:', logError.stack);
       // Activity log hatası kritik değil, devam et
     }
 
@@ -2115,6 +2125,9 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
   } catch (error) {
     console.error('Bulk prim status update error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
     res.status(500).json({ 
       message: 'Toplu prim durumu güncellenirken hata oluştu',
       error: error.message 

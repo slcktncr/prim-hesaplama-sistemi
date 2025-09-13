@@ -69,6 +69,8 @@ const PrimEarnings = () => {
     try {
       setLoading(true);
       
+      console.log('🔍 PrimEarnings fetchEarnings filters:', filters);
+      
       // Hem earnings hem de deductions getir
       const [earningsResponse, deductionsResponse] = await Promise.all([
         primsAPI.getEarnings(filters),
@@ -243,7 +245,7 @@ const PrimEarnings = () => {
                 >
                   <option value="">Tüm Temsilciler</option>
                   {users.map(user => (
-                    <option key={user._id} value={user._id}>
+                    <option key={user._id} value={user.name}>
                       {user.name} {user.role === 'admin' && '(Admin)'}
                     </option>
                   ))}

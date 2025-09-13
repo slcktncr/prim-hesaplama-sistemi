@@ -230,6 +230,7 @@ router.get('/earnings', auth, async (req, res) => {
     
     const { period, salesperson } = req.query;
     console.log('🔍 Earnings request:', { period, salesperson, userRole: req.user.role });
+    console.log('🔍 Full req.query:', req.query);
     
     let query = {};
     
