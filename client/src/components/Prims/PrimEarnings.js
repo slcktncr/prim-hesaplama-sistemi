@@ -86,10 +86,18 @@ const PrimEarnings = () => {
       
       console.log('🔍 PrimEarnings fetchEarnings filters:', filters);
       
+      // Backend'e sadece temsilci filtresi gönder, dönem filtresi frontend'de uygulanacak
+      const backendFilters = {
+        salesperson: filters.salesperson
+        // period filtresi backend'e gönderilmiyor
+      };
+      
+      console.log('🔍 Backend filters (without period):', backendFilters);
+      
       // Hem earnings hem de deductions getir
       const [earningsResponse, deductionsResponse] = await Promise.all([
-        primsAPI.getEarnings(filters),
-        primsAPI.getDeductions(filters)
+        primsAPI.getEarnings(backendFilters),
+        primsAPI.getDeductions(backendFilters)
       ]);
       
       // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
