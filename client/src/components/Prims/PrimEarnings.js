@@ -99,8 +99,9 @@ const PrimEarnings = () => {
       // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
       let filteredEarnings = earningsResponse.data || [];
       
-      // Backend'den gelen format kontrol et
-      console.log('🔍 Backend earnings sample:', filteredEarnings[0]);
+       // Backend'den gelen format kontrol et
+       console.log('🔍 Backend earnings sample:', filteredEarnings[0]);
+       console.log('🔍 All backend fields:', Object.keys(filteredEarnings[0] || {}));
       
       // Dönem filtresi varsa uygula
       if (filters.period && filters.period !== '') {
