@@ -145,92 +145,6 @@ router.post('/periods', [auth, adminAuth], [
   }
 });
 
-// @route   POST /api/prims/periods/bulk
-// @desc    Toplu prim dönemi oluştur
-// @access  Private (Admin only)
-router.post('/periods/bulk', [auth, adminAuth], [
-  body('periods').isArray({ min: 1 }).withMessage('En az bir dönem seçilmelidir'),
-  body('periods.*.month').isInt({ min: 1, max: 12 }).withMessage('Ay 1-12 arasında olmalıdır'),
-  body('periods.*.year').isInt({ min: 2020, max: 2050 }).withMessage('Geçerli bir yıl giriniz')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { periods } = req.body;
-
-    // Ay adları
-    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-
-    // Dönem adlarını oluştur ve mevcut dönemleri kontrol et
-    const periodData = periods.map(p => ({
-      name: `${monthNames[p.month - 1]} ${p.year}`,
-      month: parseInt(p.month),
-      year: parseInt(p.year),
-      createdBy: req.user._id
-    }));
-
-    // Mevcut dönemleri kontrol et
-    const existingPeriods = await PrimPeriod.find({
-      name: { $in: periodData.map(p => p.name) }
-    }).select('name');
-
-    const existingNames = existingPeriods.map(p => p.name);
-    const newPeriods = periodData.filter(p => !existingNames.includes(p.name));
-    const skippedPeriods = periodData.filter(p => existingNames.includes(p.name));
-
-    console.log(`🔄 Toplu dönem oluşturma:`, {
-      requested: periodData.length,
-      existing: skippedPeriods.length,
-      toCreate: newPeriods.length
-    });
-
-    let createdPeriods = [];
-    
-    if (newPeriods.length > 0) {
-      // Yeni dönemleri toplu oluştur
-      const insertedPeriods = await PrimPeriod.insertMany(newPeriods);
-      
-      // Populate edilmiş versiyonları al
-      createdPeriods = await PrimPeriod.find({
-        _id: { $in: insertedPeriods.map(p => p._id) }
-      }).populate('createdBy', 'name').sort({ year: -1, month: -1 });
-    }
-
-    const summary = {
-      total: periodData.length,
-      created: createdPeriods.length,
-      skipped: skippedPeriods.length,
-      createdPeriods: createdPeriods,
-      skippedPeriods: skippedPeriods.map(p => p.name)
-    };
-
-    console.log(`✅ Toplu dönem oluşturma tamamlandı:`, summary);
-
-    if (createdPeriods.length === 0) {
-      return res.status(200).json({
-        message: 'Seçilen tüm dönemler zaten mevcut',
-        summary
-      });
-    }
-
-    const message = skippedPeriods.length > 0 
-      ? `${createdPeriods.length} dönem oluşturuldu, ${skippedPeriods.length} dönem zaten mevcuttu`
-      : `${createdPeriods.length} dönem başarıyla oluşturuldu`;
-
-    res.status(201).json({
-      message,
-      summary
-    });
-  } catch (error) {
-    console.error('Bulk create periods error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
-  }
-});
-
 // @route   GET /api/prims/transactions
 // @desc    Prim işlemlerini listele
 // @access  Private
@@ -279,11 +193,10 @@ router.get('/transactions', auth, async (req, res) => {
 });
 
 // @route   GET /api/prims/earnings
-// @desc    Temsilci prim hakedişlerini getir (satış tarihine göre)
+// @desc    Temsilci prim hakedişlerini getir
 // @access  Private
 router.get('/earnings', auth, async (req, res) => {
   try {
-    console.log('🔍 Earnings endpoint called');
     // Mevcut kesintilerin deductionStatus'unu güncelle (migration)
     const updateResult = await PrimTransaction.updateMany(
       { 
@@ -332,48 +245,28 @@ router.get('/earnings', auth, async (req, res) => {
     
     console.log('📊 Final query:', query);
 
-    // Satışları doğrudan saleDate'e göre gruplamak için yeni yaklaşım
-    console.log('🔄 Earnings calculation - Using saleDate-based grouping');
-    
-    // Basit yaklaşım: Satışları saleDate'e göre grupla
-    const earnings = await Sale.aggregate([
-      { 
-        $match: { 
-          status: 'aktif',
-          saleType: { $ne: 'kapora' }, // Kapora hariç
-          ...(req.user.role !== 'admin' ? { salesperson: req.user._id } : {}),
-          ...(salesperson ? { salesperson: new mongoose.Types.ObjectId(salesperson) } : {}),
-          ...(period ? { 
-            $expr: {
-              $and: [
-                { $eq: [{ $year: '$saleDate' }, { $year: { $dateFromString: { dateString: period } } }] },
-                { $eq: [{ $month: '$saleDate' }, { $month: { $dateFromString: { dateString: period } } }] }
-              ]
-            }
-          } : {})
-        }
-      },
-      {
-        $addFields: {
-          saleDateYear: { $year: '$saleDate' },
-          saleDateMonth: { $month: '$saleDate' }
-        }
-      },
+    // Aggregate pipeline ile hakedişleri hesapla
+    const earnings = await PrimTransaction.aggregate([
+      { $match: query },
       {
         $group: {
           _id: {
             salesperson: '$salesperson',
-            year: '$saleDateYear',
-            month: '$saleDateMonth'
+            primPeriod: '$primPeriod'
           },
-          sales: { $push: '$$ROOT' },
-          totalSales: { $sum: 1 },
-          totalPrimAmount: { $sum: '$primAmount' },
-          paidAmount: {
-            $sum: { $cond: [{ $eq: ['$primStatus', 'ödendi'] }, '$primAmount', 0] }
+          totalEarnings: { $sum: '$amount' },
+          transactionCount: { $sum: 1 },
+          kazancCount: {
+            $sum: { $cond: [{ $eq: ['$transactionType', 'kazanç'] }, 1, 0] }
           },
-          unpaidAmount: {
-            $sum: { $cond: [{ $eq: ['$primStatus', 'ödenmedi'] }, '$primAmount', 0] }
+          kesintiCount: {
+            $sum: { $cond: [{ $eq: ['$transactionType', 'kesinti'] }, 1, 0] }
+          },
+          transferGelenCount: {
+            $sum: { $cond: [{ $eq: ['$transactionType', 'transfer_gelen'] }, 1, 0] }
+          },
+          transferGidenCount: {
+            $sum: { $cond: [{ $eq: ['$transactionType', 'transfer_giden'] }, 1, 0] }
           }
         }
       },
@@ -386,28 +279,20 @@ router.get('/earnings', auth, async (req, res) => {
         }
       },
       {
-        $addFields: {
-          periodName: {
-            $concat: [
-              { $arrayElemAt: [
-                ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-                 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-                { $subtract: ['$_id.month', 1] }
-              ]},
-              ' ',
-              { $toString: '$_id.year' }
-            ]
-          }
+        $lookup: {
+          from: 'primperiods',
+          localField: '_id.primPeriod',
+          foreignField: '_id',
+          as: 'primPeriod'
         }
       },
-      // Kesintileri de ekle (tüm dönemlerden)
+      // Satış bilgilerini de ekle
       {
         $lookup: {
-          from: 'primtransactions',
+          from: 'sales',
           let: { 
-            salespersonId: '$_id.salesperson',
-            currentYear: '$_id.year',
-            currentMonth: '$_id.month'
+            salespersonId: '$_id.salesperson', 
+            periodId: '$_id.primPeriod' 
           },
           pipeline: [
             {
@@ -415,81 +300,14 @@ router.get('/earnings', auth, async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ['$salesperson', '$$salespersonId'] },
-                    { $eq: ['$transactionType', 'kesinti'] },
-                    {
-                      $or: [
-                        { $eq: ['$deductionStatus', 'yapıldı'] },
-                        { $and: [
-                          { $eq: ['$deductionStatus', null] },
-                          { $lt: ['$createdAt', new Date('2024-01-01')] }
-                        ]}
-                      ]
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              $lookup: {
-                from: 'sales',
-                localField: 'sale',
-                foreignField: '_id',
-                as: 'saleDetails'
-              }
-            },
-            {
-              $lookup: {
-                from: 'primperiods',
-                localField: 'primPeriod',
-                foreignField: '_id',
-                as: 'deductionPeriod'
-              }
-            },
-            {
-              $addFields: {
-                saleDetails: { $arrayElemAt: ['$saleDetails', 0] },
-                deductionPeriod: { $arrayElemAt: ['$deductionPeriod', 0] },
-                isCurrentPeriodDeduction: {
-                  $and: [
-                    { $eq: [{ $year: { $ifNull: [{ $dateFromString: { dateString: { $arrayElemAt: ['$deductionPeriod.name', 0] } } }, new Date()] } }, '$$currentYear'] },
-                    { $eq: [{ $month: { $ifNull: [{ $dateFromString: { dateString: { $arrayElemAt: ['$deductionPeriod.name', 0] } } }, new Date()] } }, '$$currentMonth'] }
+                    { $eq: ['$primPeriod', '$$periodId'] },
+                    { $eq: ['$saleType', 'satis'] }
                   ]
                 }
               }
             }
           ],
-          as: 'deductionTransactions'
-        }
-      },
-      // Bekleyen kesintileri de ekle
-      {
-        $lookup: {
-          from: 'primtransactions',
-          let: { 
-            salespersonId: '$_id.salesperson'
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$salesperson', '$$salespersonId'] },
-                    { $eq: ['$transactionType', 'kesinti'] },
-                    { $eq: ['$deductionStatus', 'beklemede'] }
-                  ]
-                }
-              }
-            },
-            {
-              $lookup: {
-                from: 'sales',
-                localField: 'sale',
-                foreignField: '_id',
-                as: 'saleDetails'
-              }
-            }
-          ],
-          as: 'pendingDeductions'
+          as: 'sales'
         }
       },
       // Kesinti transaction'larını da getir (tüm dönemlerden)
@@ -604,8 +422,25 @@ router.get('/earnings', auth, async (req, res) => {
       },
       {
         $addFields: {
-          salesCount: '$totalSales', // Zaten hesaplandı
-          // paidAmount ve unpaidAmount zaten hesaplandı
+          salesCount: { $size: '$sales' },
+          paidAmount: {
+            $sum: {
+              $map: {
+                input: '$sales',
+                as: 'sale',
+                in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödendi'] }, '$$sale.primAmount', 0] }
+              }
+            }
+          },
+          unpaidAmount: {
+            $sum: {
+              $map: {
+                input: '$sales',
+                as: 'sale',
+                in: { $cond: [{ $eq: ['$$sale.primStatus', 'ödenmedi'] }, '$$sale.primAmount', 0] }
+              }
+            }
+          },
           totalDeductions: {
             $sum: '$deductionTransactions.amount'
           },
@@ -743,10 +578,8 @@ router.get('/earnings', auth, async (req, res) => {
 
     res.json(earnings);
   } catch (error) {
-    console.error('❌ Get prim earnings error:', error);
-    console.error('❌ Error stack:', error.stack);
-    console.error('❌ Error message:', error.message);
-    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+    console.error('Get prim earnings error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 
