@@ -2183,6 +2183,26 @@ router.post('/debug-bulk', [auth, adminAuth], async (req, res) => {
     const testCount = await Sale.countDocuments(query);
     console.log('📊 Sales found with this query:', testCount);
     
+    // Populate test (asıl endpoint gibi)
+    if (testCount > 0) {
+      console.log('🔍 Testing Sale.find() with populate...');
+      try {
+        const testSales = await Sale.find(query)
+          .populate('salesperson', 'name')
+          .populate('primPeriod', 'name')
+          .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
+          .limit(3); // Sadece 3 tane test için
+        console.log('✅ Populate test successful, sample:', testSales.length, 'sales');
+        console.log('📋 Sample sale:', testSales[0] ? {
+          customer: testSales[0].customerName,
+          salesperson: testSales[0].salesperson?.name,
+          period: testSales[0].primPeriod?.name
+        } : 'No sales');
+      } catch (populateError) {
+        console.error('❌ Populate test failed:', populateError.message);
+      }
+    }
+    
     res.json({
       success: true,
       message: 'Debug endpoint çalışıyor',
