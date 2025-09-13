@@ -99,23 +99,14 @@ const PrimEarnings = () => {
       // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
       let filteredEarnings = earningsResponse.data || [];
       
-       // Backend'den gelen format kontrol et
-       console.log('🔍 Backend earnings sample:', filteredEarnings[0]);
-       console.log('🔍 All backend fields:', Object.keys(filteredEarnings[0] || {}));
-      
       // Dönem filtresi varsa uygula
       if (filters.period && filters.period !== '') {
         const selectedPeriod = periods.find(p => p._id === filters.period);
-        console.log('🔍 Selected period:', selectedPeriod);
-        
         if (selectedPeriod) {
-          console.log('🔍 Before filter:', filteredEarnings.length);
-          filteredEarnings = filteredEarnings.filter(earning => {
-            console.log('🔍 Earning primPeriod:', earning.primPeriod);
-            return earning.primPeriod?.year === selectedPeriod.year &&
-                   earning.primPeriod?.month === selectedPeriod.month;
-          });
-          console.log('🔍 After filter:', filteredEarnings.length);
+          filteredEarnings = filteredEarnings.filter(earning => 
+            earning.primPeriod?.year === selectedPeriod.year &&
+            earning.primPeriod?.month === selectedPeriod.month
+          );
         }
       }
       
@@ -455,7 +446,7 @@ const PrimEarnings = () => {
                             Ödenen:
                           </span>
                           <span className="fw-bold text-success">
-                            {formatCurrency(earning.paidAmount || 0)}
+                            {earning.paidCount || 0} adet
                           </span>
                         </div>
                         <div className="d-flex justify-content-between mb-1">
@@ -463,7 +454,7 @@ const PrimEarnings = () => {
                             Ödenmemiş:
                           </span>
                           <span className="fw-bold text-warning">
-                            {formatCurrency(earning.unpaidAmount || 0)}
+                            {earning.unpaidCount || 0} adet
                           </span>
                         </div>
                         {(earning.totalDeductions < 0 || earning.deductionsCount > 0 || earning.pendingDeductionsCount > 0) && (
