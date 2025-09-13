@@ -283,6 +283,7 @@ router.get('/transactions', auth, async (req, res) => {
 // @access  Private
 router.get('/earnings', auth, async (req, res) => {
   try {
+    console.log('🔍 Earnings endpoint called');
     // Mevcut kesintilerin deductionStatus'unu güncelle (migration)
     const updateResult = await PrimTransaction.updateMany(
       { 
@@ -742,8 +743,10 @@ router.get('/earnings', auth, async (req, res) => {
 
     res.json(earnings);
   } catch (error) {
-    console.error('Get prim earnings error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Get prim earnings error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error message:', error.message);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
   }
 });
 
