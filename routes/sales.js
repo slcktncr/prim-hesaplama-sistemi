@@ -12,6 +12,228 @@ const PaymentType = require('../models/PaymentType');
 
 const router = express.Router();
 
+// ============================================================================
+// BULK OPERATIONS - Bu route'lar /:id route'larından önce tanımlanmalı
+// ============================================================================
+
+// @route   PUT /api/sales/bulk-prim-status
+// @desc    Toplu prim durumu güncelle
+// @access  Private (Admin only)
+router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
+  try {
+    const { primStatus, filters } = req.body;
+
+    // Validasyon
+    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      return res.status(400).json({ 
+        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    // Query oluştur
+    let query = { saleType: 'satis' }; // Sadece satışlar
+
+    // Dönem filtresi
+    if (filters.period) {
+        query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+    }
+
+    // Temsilci filtresi
+    if (filters.salesperson) {
+      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
+      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      } else {
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          name: filters.salesperson,
+          isActive: true,
+          isApproved: true
+        });
+        
+        if (!user) {
+          return res.status(404).json({ 
+            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+          });
+        }
+        
+        query.salesperson = user._id;
+      }
+    }
+
+    // Tarih filtresi
+    if (filters.startDate && filters.endDate) {
+      const startDate = new Date(filters.startDate);
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.month && filters.year) {
+      const year = parseInt(filters.year);
+      const month = parseInt(filters.month) - 1;
+      
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    }
+
+    // Güncelleme işlemi
+    const updateResult = await Sale.updateMany(
+      query,
+      { 
+        $set: { 
+          primStatus,
+          primStatusUpdatedAt: new Date(),
+          primStatusUpdatedBy: req.user._id
+        }
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(404).json({ 
+        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
+      });
+    }
+
+    // Activity log
+    try {
+      const ActivityLog = require('../models/ActivityLog');
+      await ActivityLog.create({
+        user: req.user._id,
+        action: 'bulk_prim_status_update',
+        details: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
+        metadata: { filters, primStatus, affectedCount: updateResult.modifiedCount }
+      });
+    } catch (logError) {
+      // Log hatası kritik değil
+    }
+
+    res.json({
+      success: true,
+      message: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
+      summary: {
+        totalUpdated: updateResult.modifiedCount,
+        newStatus: primStatus
+      }
+    });
+
+  } catch (error) {
+    console.error('Bulk prim status update error:', error);
+    res.status(500).json({ 
+      message: 'Toplu prim durumu güncellenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
+// @route   POST /api/sales/bulk-prim-status/preview
+// @desc    Toplu prim durumu önizleme
+// @access  Private (Admin only)
+router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
+  try {
+    const { primStatus, filters } = req.body;
+    
+    // Validasyon
+    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      return res.status(400).json({ 
+        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    // Query oluştur (aynı mantık)
+    let query = { saleType: 'satis' };
+
+    if (filters.period) {
+      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+    }
+
+    if (filters.salesperson) {
+      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
+      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      } else {
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          name: filters.salesperson,
+          isActive: true,
+          isApproved: true
+        });
+        
+        if (!user) {
+          return res.status(404).json({ 
+            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
+          });
+        }
+        
+        query.salesperson = user._id;
+      }
+    }
+
+    if (filters.startDate && filters.endDate) {
+      const startDate = new Date(filters.startDate);
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.month && filters.year) {
+      const year = parseInt(filters.year);
+      const month = parseInt(filters.month) - 1;
+      
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+      
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    }
+
+    // Etkilenecek satışları bul
+    const totalCount = await Sale.countDocuments(query);
+    
+    if (totalCount === 0) {
+      return res.status(404).json({ 
+        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
+      });
+    }
+
+    const sampleSales = await Sale.find(query)
+          .populate('salesperson', 'name')
+          .populate('primPeriod', 'name')
+          .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
+      .limit(50)
+      .sort({ saleDate: -1 });
+    
+    res.json({
+      success: true,
+      message: `${totalCount} satış etkilenecek`,
+      summary: {
+        totalUpdated: totalCount,
+        newStatus: primStatus,
+        affectedSales: sampleSales.map(sale => ({
+          id: sale._id,
+          customerName: sale.customerName,
+          contractNo: sale.contractNo,
+          primAmount: sale.primAmount,
+          oldStatus: sale.primStatus,
+          salesperson: sale.salesperson?.name,
+          period: sale.primPeriod?.name,
+          saleDate: sale.saleDate
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Preview error:', error);
+    res.status(500).json({ 
+      message: 'Önizleme yüklenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 // Helper functions
 const isKaporaType = (saleType) => {
   return saleType === 'kapora';
@@ -1281,218 +1503,5 @@ router.put('/:id/modify', [
   }
 });
 
-// @route   PUT /api/sales/bulk-prim-status
-// @desc    Toplu prim durumu güncelle
-// @access  Private (Admin only)
-router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
-  try {
-    const { primStatus, filters } = req.body;
-
-    // Validasyon
-    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
-      return res.status(400).json({ 
-        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
-      });
-    }
-
-    // Query oluştur
-    let query = { saleType: 'satis' }; // Sadece satışlar
-
-    // Dönem filtresi
-    if (filters.period) {
-        query.primPeriod = new mongoose.Types.ObjectId(filters.period);
-    }
-
-    // Temsilci filtresi
-    if (filters.salesperson) {
-      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
-      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
-        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-      } else {
-        const User = require('../models/User');
-        const user = await User.findOne({ 
-          name: filters.salesperson,
-          isActive: true,
-          isApproved: true
-        });
-        
-        if (!user) {
-          return res.status(404).json({ 
-            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
-          });
-        }
-        
-        query.salesperson = user._id;
-      }
-    }
-
-    // Tarih filtresi
-    if (filters.startDate && filters.endDate) {
-      const startDate = new Date(filters.startDate);
-      const endDate = new Date(filters.endDate);
-      endDate.setHours(23, 59, 59, 999);
-      
-      query.saleDate = { $gte: startDate, $lte: endDate };
-    } else if (filters.month && filters.year) {
-      const year = parseInt(filters.year);
-      const month = parseInt(filters.month) - 1;
-      
-      const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
-      
-      query.saleDate = { $gte: startDate, $lte: endDate };
-    }
-
-    // Güncelleme işlemi
-    const updateResult = await Sale.updateMany(
-      query,
-      { 
-        $set: { 
-          primStatus,
-          primStatusUpdatedAt: new Date(),
-          primStatusUpdatedBy: req.user._id
-        }
-      }
-    );
-
-    if (updateResult.modifiedCount === 0) {
-      return res.status(404).json({ 
-        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
-      });
-    }
-
-    // Activity log
-    try {
-      const ActivityLog = require('../models/ActivityLog');
-      await ActivityLog.create({
-        user: req.user._id,
-        action: 'bulk_prim_status_update',
-        details: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
-        metadata: { filters, primStatus, affectedCount: updateResult.modifiedCount }
-      });
-    } catch (logError) {
-      // Log hatası kritik değil
-    }
-
-    res.json({
-      success: true,
-      message: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
-      summary: {
-        totalUpdated: updateResult.modifiedCount,
-        newStatus: primStatus
-      }
-    });
-
-  } catch (error) {
-    console.error('Bulk prim status update error:', error);
-    res.status(500).json({ 
-      message: 'Toplu prim durumu güncellenirken hata oluştu',
-      error: error.message 
-    });
-  }
-});
-
-// @route   POST /api/sales/bulk-prim-status/preview
-// @desc    Toplu prim durumu önizleme
-// @access  Private (Admin only)
-router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
-  try {
-    const { primStatus, filters } = req.body;
-    
-    // Validasyon
-    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
-      return res.status(400).json({ 
-        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
-      });
-    }
-
-    // Query oluştur (aynı mantık)
-    let query = { saleType: 'satis' };
-
-    if (filters.period) {
-      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
-    }
-
-    if (filters.salesperson) {
-      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
-      if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
-        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-      } else {
-        const User = require('../models/User');
-        const user = await User.findOne({ 
-          name: filters.salesperson,
-          isActive: true,
-          isApproved: true
-        });
-        
-        if (!user) {
-          return res.status(404).json({ 
-            message: `"${filters.salesperson}" isimli temsilci bulunamadı` 
-          });
-        }
-        
-        query.salesperson = user._id;
-      }
-    }
-
-    if (filters.startDate && filters.endDate) {
-      const startDate = new Date(filters.startDate);
-      const endDate = new Date(filters.endDate);
-      endDate.setHours(23, 59, 59, 999);
-      
-      query.saleDate = { $gte: startDate, $lte: endDate };
-    } else if (filters.month && filters.year) {
-      const year = parseInt(filters.year);
-      const month = parseInt(filters.month) - 1;
-      
-      const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
-      
-      query.saleDate = { $gte: startDate, $lte: endDate };
-    }
-
-    // Etkilenecek satışları bul
-    const totalCount = await Sale.countDocuments(query);
-    
-    if (totalCount === 0) {
-      return res.status(404).json({ 
-        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
-      });
-    }
-
-    const sampleSales = await Sale.find(query)
-          .populate('salesperson', 'name')
-          .populate('primPeriod', 'name')
-          .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
-      .limit(50)
-      .sort({ saleDate: -1 });
-    
-    res.json({
-      success: true,
-      message: `${totalCount} satış etkilenecek`,
-      summary: {
-        totalUpdated: totalCount,
-        newStatus: primStatus,
-        affectedSales: sampleSales.map(sale => ({
-          id: sale._id,
-          customerName: sale.customerName,
-          contractNo: sale.contractNo,
-          primAmount: sale.primAmount,
-          oldStatus: sale.primStatus,
-          salesperson: sale.salesperson?.name,
-          period: sale.primPeriod?.name,
-          saleDate: sale.saleDate
-        }))
-      }
-    });
-
-  } catch (error) {
-    console.error('Preview error:', error);
-    res.status(500).json({ 
-      message: 'Önizleme yüklenirken hata oluştu',
-      error: error.message 
-    });
-  }
-});
 
 module.exports = router;
