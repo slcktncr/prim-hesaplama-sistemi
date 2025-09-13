@@ -99,7 +99,7 @@ export const usersAPI = {
   rejectUser: (id) => API.delete(`/users/${id}/reject`),
   getSalespeople: () => API.get('/users/salespeople'),
   getAllUsers: () => API.get('/users/all-users'),
-  getUsersForFilters: () => API.get('/users/for-filters'), // Yeni endpoint - tüm kullanıcılar erişebilir
+  getUsersForFilters: () => API.get('/users/for-filters'),
   changeRole: (id, role, customRole = null) => API.put(`/users/${id}/role`, { role, customRole }),
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
   updateUser: (id, userData) => API.put(`/users/${id}`, userData),

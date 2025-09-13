@@ -51,10 +51,10 @@ const BulkPrimStatusManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getAllUsers();
+      const response = await usersAPI.getUsersForFilters();
       // Sadece satış temsilcilerini göster
       const salespeople = response.data.filter(user => 
-        user.role === 'salesperson' && user.isActive && user.isApproved
+        user.role === 'salesperson'
       );
       setUsers(salespeople);
     } catch (error) {
