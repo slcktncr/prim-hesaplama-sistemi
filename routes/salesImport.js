@@ -986,6 +986,50 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   GET /api/sales-import/download/:filename
+// @desc    Yedek dosyasını indir
+// @access  Admin only
+router.get('/download/:filename', [auth, adminAuth], (req, res) => {
+  try {
+    const { filename } = req.params;
+    const backupPath = path.join(__dirname, '../backups', filename);
+    
+    // Dosya güvenlik kontrolü
+    if (!filename.includes('backup_') || filename.includes('..')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçersiz dosya adı'
+      });
+    }
+    
+    // Dosya varlık kontrolü
+    if (!fs.existsSync(backupPath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Yedek dosyası bulunamadı'
+      });
+    }
+    
+    // Dosyayı indir
+    res.download(backupPath, filename, (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        res.status(500).json({
+          success: false,
+          message: 'Dosya indirilemedi'
+        });
+      }
+    });
+    
+  } catch (error) {
+    console.error('Download backup error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Dosya indirme hatası: ' + error.message
+    });
+  }
+});
+
 // @route   GET /api/sales-import/template
 // @desc    Excel şablon dosyasını indir
 // @access  Admin only

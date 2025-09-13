@@ -77,6 +77,29 @@ const BackupManagement = () => {
     }
   };
 
+  const handleDownload = async (backup) => {
+    try {
+      setError('');
+      
+      const response = await salesImportAPI.downloadBackup(backup.filename);
+      
+      // Blob'u dosya olarak indir
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', backup.filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      setSuccess(`✅ ${backup.filename} başarıyla indirildi`);
+    } catch (error) {
+      console.error('Download error:', error);
+      setError('İndirme hatası: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const handleCreateBackup = async (type) => {
     try {
       setCreatingBackup(true);
@@ -321,6 +344,15 @@ const BackupManagement = () => {
                           </td>
                           <td>
                             <div className="d-flex gap-2">
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleDownload(backup)}
+                                title="Yedek dosyasını bilgisayarınıza indirin"
+                              >
+                                <FaDownload className="me-1" />
+                                İndir
+                              </Button>
                               <Button
                                 variant="success"
                                 size="sm"

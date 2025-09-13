@@ -20,9 +20,6 @@ const Navbar = () => {
     navigate('/profile');
   };
 
-  const handleSettingsClick = () => {
-    navigate('/profile');
-  };
 
   const getUserInitials = (name) => {
     if (!name) return 'U';
@@ -100,11 +97,6 @@ const Navbar = () => {
               <Dropdown.Item onClick={handleProfileClick}>
                 <FiUser className="me-2" />
                 Profil Ayarları
-              </Dropdown.Item>
-              
-              <Dropdown.Item onClick={handleSettingsClick}>
-                <FiSettings className="me-2" />
-                Hesap Ayarları
               </Dropdown.Item>
               
               {user?.role === 'admin' && (

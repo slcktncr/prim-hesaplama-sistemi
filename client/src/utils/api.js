@@ -214,7 +214,8 @@ export const salesImportAPI = {
   // Backup Management
   getBackups: () => API.get('/sales-import/backups'),
   restoreFromBackup: (filename, confirmRestore = true) => API.post(`/sales-import/restore/${filename}`, { confirmRestore }),
-  createManualBackup: (type, description) => API.post('/sales-import/create-backup', { type, description })
+  createManualBackup: (type, description) => API.post('/sales-import/create-backup', { type, description }),
+  downloadBackup: (filename) => API.get(`/sales-import/download/${filename}`, { responseType: 'blob' })
 };
 
 export default API;
