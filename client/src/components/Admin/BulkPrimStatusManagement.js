@@ -400,6 +400,28 @@ const BulkPrimStatusManagement = () => {
                       </Button>
 
                       <Button
+                        variant="warning"
+                        onClick={async () => {
+                          try {
+                            setLoading(true);
+                            console.log('🧪 Debug test starting...');
+                            const response = await salesAPI.debugBulkPrimStatus(primStatus, filters);
+                            console.log('✅ Debug response:', response.data);
+                            toast.success('Debug test başarılı - Console\'u kontrol et');
+                          } catch (error) {
+                            console.error('❌ Debug test error:', error);
+                            toast.error('Debug test hatası: ' + (error.response?.data?.message || error.message));
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading || previewLoading}
+                        className="me-2"
+                      >
+                        🧪 Debug Test
+                      </Button>
+
+                      <Button
                         variant="success"
                         onClick={handleDirectUpdate}
                         disabled={loading || previewLoading}

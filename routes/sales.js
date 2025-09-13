@@ -2135,6 +2135,55 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   POST /api/sales/debug-bulk
+// @desc    Debug bulk prim status update
+// @access  Private (Admin only)
+router.post('/debug-bulk', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🧪 Debug bulk endpoint hit');
+    console.log('📊 Request body:', req.body);
+    console.log('👤 User:', req.user?.name, req.user?.role);
+    
+    const { primStatus, filters } = req.body;
+    
+    // User lookup test
+    if (filters.salesperson) {
+      const User = require('../models/User');
+      const user = await User.findOne({ 
+        name: filters.salesperson,
+        isActive: true,
+        isApproved: true
+      });
+      console.log('👤 User lookup result:', user ? user.name : 'NOT FOUND');
+    }
+    
+    // Query building test
+    let query = { saleType: 'satis' };
+    if (filters.month && filters.year) {
+      const startDate = new Date(filters.year, filters.month - 1, 1);
+      const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
+      query.saleDate = { $gte: startDate, $lte: endDate };
+      console.log('📅 Date range:', startDate, 'to', endDate);
+    }
+    
+    console.log('🔍 Query would be:', query);
+    
+    res.json({
+      success: true,
+      message: 'Debug endpoint çalışıyor',
+      user: req.user?.name,
+      body: req.body,
+      query: query
+    });
+  } catch (error) {
+    console.error('❌ Debug bulk error:', error);
+    res.status(500).json({ 
+      message: 'Debug endpoint hatası',
+      error: error.message 
+    });
+  }
+});
+
 // @route   POST /api/sales/test-bulk
 // @desc    Test endpoint for bulk operations
 // @access  Private (Admin only)
