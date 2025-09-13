@@ -58,7 +58,8 @@ export const salesAPI = {
   updateTransactionPeriod: (transactionId, newPeriodId) => 
     API.put(`/sales/transaction/${transactionId}/period`, { newPeriodId }),
   getUpcomingEntries: (days = 7) => API.get(`/sales/upcoming-entries?days=${days}`),
-  bulkUpdatePrimStatus: (primStatus, filters) => API.put('/sales/bulk-prim-status', { primStatus, filters })
+  bulkUpdatePrimStatus: (primStatus, filters) => API.put('/sales/bulk-prim-status', { primStatus, filters }),
+  previewBulkPrimStatus: (primStatus, filters) => API.post('/sales/bulk-prim-status/preview', { primStatus, filters })
 };
 
 // Prims API calls

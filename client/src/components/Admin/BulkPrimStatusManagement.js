@@ -111,11 +111,9 @@ const BulkPrimStatusManagement = () => {
     try {
       setPreviewLoading(true);
       
-      // Önizleme için backend'e istek at (sadece etkilenecek kayıtları görmek için)
-      const response = await salesAPI.bulkUpdatePrimStatus(primStatus, filters);
+      // Önizleme için özel endpoint kullan
+      const response = await salesAPI.previewBulkPrimStatus(primStatus, filters);
       
-      // Bu gerçek güncelleme yapmayacak, sadece önizleme için mock data
-      // Gerçek implementasyonda backend'de preview endpoint'i olabilir
       setPreviewData(response.data.summary);
       setShowPreviewModal(true);
       

@@ -34,15 +34,26 @@ const NotificationDropdown = () => {
 
   const fetchNotificationCounts = async () => {
     try {
-      const [announcementCountRes, activityCountRes] = await Promise.all([
-        announcementsAPI.getUnreadCount(),
-        activitiesAPI.getUnreadCount()
+      // Timeout ile Promise.all kullan
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 10000) // 10 saniye timeout
+      );
+      
+      const [announcementCountRes, activityCountRes] = await Promise.race([
+        Promise.all([
+          announcementsAPI.getUnreadCount(),
+          activitiesAPI.getUnreadCount()
+        ]),
+        timeoutPromise
       ]);
       
-      setUnreadAnnouncementCount(announcementCountRes.data.count);
-      setUnreadActivityCount(activityCountRes.data.count);
+      setUnreadAnnouncementCount(announcementCountRes.data.count || 0);
+      setUnreadActivityCount(activityCountRes.data.count || 0);
     } catch (error) {
       console.error('Error fetching notification counts:', error);
+      // Hata durumunda 0 olarak ayarla
+      setUnreadAnnouncementCount(0);
+      setUnreadActivityCount(0);
     }
   };
 

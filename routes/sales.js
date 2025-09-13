@@ -1764,6 +1764,107 @@ router.put('/:id/modify', [
 });
 
 
+// @route   POST /api/sales/bulk-prim-status/preview
+// @desc    Toplu prim durumu önizleme (Admin only)
+// @access  Private (Admin only)
+router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
+  try {
+    const { 
+      primStatus, // 'ödendi' veya 'ödenmedi'
+      filters // { period, salesperson, month, year, startDate, endDate }
+    } = req.body;
+
+    if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      return res.status(400).json({ 
+        message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    // Filtre oluştur (aynı logic)
+    let query = { saleType: 'satis' }; // Sadece satışlar, kapora değil
+
+    // Dönem filtresi
+    if (filters.period) {
+      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+    }
+
+    // Temsilci filtresi
+    if (filters.salesperson) {
+      query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+    }
+
+    // Ay/Yıl filtresi (saleDate bazında)
+    if (filters.month && filters.year) {
+      const startDate = new Date(filters.year, filters.month - 1, 1);
+      const endDate = new Date(filters.year, filters.month, 0, 23, 59, 59);
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    } else if (filters.year) {
+      const startDate = new Date(filters.year, 0, 1);
+      const endDate = new Date(filters.year, 11, 31, 23, 59, 59);
+      query.saleDate = { $gte: startDate, $lte: endDate };
+    }
+
+    // Tarih aralığı filtresi
+    if (filters.startDate && filters.endDate) {
+      query.saleDate = {
+        $gte: new Date(filters.startDate),
+        $lte: new Date(filters.endDate + 'T23:59:59.999Z')
+      };
+    } else if (filters.startDate) {
+      query.saleDate = { $gte: new Date(filters.startDate) };
+    } else if (filters.endDate) {
+      query.saleDate = { $lte: new Date(filters.endDate + 'T23:59:59.999Z') };
+    }
+
+    console.log('🔍 Preview query:', query);
+
+    // Sadece önizleme - güncelleme yapmıyoruz
+    const affectedSales = await Sale.find(query)
+      .populate('salesperson', 'name')
+      .populate('primPeriod', 'name')
+      .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
+      .limit(100); // Performans için limit
+
+    if (affectedSales.length === 0) {
+      return res.status(404).json({ 
+        message: 'Belirtilen kriterlere uygun satış bulunamadı' 
+      });
+    }
+
+    // Toplam sayıyı da al
+    const totalCount = await Sale.countDocuments(query);
+
+    // Özet bilgi hazırla
+    const summary = {
+      totalUpdated: totalCount,
+      newStatus: primStatus,
+      affectedSales: affectedSales.map(sale => ({
+        id: sale._id,
+        customerName: sale.customerName,
+        contractNo: sale.contractNo,
+        primAmount: sale.primAmount,
+        oldStatus: sale.primStatus,
+        salesperson: sale.salesperson?.name,
+        period: sale.primPeriod?.name,
+        saleDate: sale.saleDate
+      }))
+    };
+
+    res.json({
+      success: true,
+      message: `${totalCount} satış etkilenecek`,
+      summary
+    });
+
+  } catch (error) {
+    console.error('Preview error:', error);
+    res.status(500).json({ 
+      message: 'Önizleme yüklenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
 // @route   PUT /api/sales/bulk-prim-status
 // @desc    Toplu prim durumu değiştir (Admin only)
 // @access  Private (Admin only)
