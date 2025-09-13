@@ -189,16 +189,19 @@ const ActiveUsers = () => {
                           <td>{user.email}</td>
                           <td>
                             <div className="d-flex flex-column gap-1">
-                              <Badge bg={
-                                user.role === 'admin' ? 'danger' : 
-                                user.role === 'visitor' ? 'secondary' : 'primary'
-                              }>
-                                {user.role === 'admin' ? 'Admin' : 
-                                 user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
-                              </Badge>
-                              {user.customRole && (
-                                <Badge bg="info" className="small">
+                              {user.customRole ? (
+                                // Özel rol varsa sadece onu göster
+                                <Badge bg="info">
                                   {user.customRole.displayName}
+                                </Badge>
+                              ) : (
+                                // Özel rol yoksa sistem rolünü göster
+                                <Badge bg={
+                                  user.role === 'admin' ? 'danger' : 
+                                  user.role === 'visitor' ? 'secondary' : 'primary'
+                                }>
+                                  {user.role === 'admin' ? 'Admin' : 
+                                   user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
                                 </Badge>
                               )}
                             </div>
@@ -229,7 +232,7 @@ const ActiveUsers = () => {
                                 <Dropdown.Divider />
                                 <Dropdown.Header>Sistem Rolleri</Dropdown.Header>
                                 
-                                {user.role !== 'admin' && (
+                                {user.role !== 'admin' && !user.customRole && (
                                   <Dropdown.Item 
                                     onClick={() => handleRoleChange(user._id, 'admin')}
                                   >
@@ -243,11 +246,11 @@ const ActiveUsers = () => {
                                     onClick={() => handleRoleChange(user._id, 'salesperson')}
                                   >
                                     <FiUser className="me-2" />
-                                    Satış Temsilcisi Yap
+                                    {user.customRole ? 'Satış Temsilcisi Yap (Özel Rolden Çık)' : 'Satış Temsilcisi Yap'}
                                   </Dropdown.Item>
                                 )}
                                 
-                                {user.role !== 'visitor' && (
+                                {user.role !== 'visitor' && !user.customRole && (
                                   <Dropdown.Item 
                                     onClick={() => handleRoleChange(user._id, 'visitor')}
                                   >

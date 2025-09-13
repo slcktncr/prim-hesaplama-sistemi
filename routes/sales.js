@@ -770,6 +770,11 @@ router.get('/:id', auth, async (req, res) => {
     console.log('User:', req.user?.email);
     console.log('Sale ID:', req.params.id);
     
+    // ObjectId kontrolü - bulk route'ları ile çakışmayı önle
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Geçersiz satış ID formatı' });
+    }
+    
     const sale = await Sale.findById(req.params.id)
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
@@ -842,6 +847,11 @@ router.put('/:id', auth, [
     console.log('🔍 Sale UPDATE request received');
     console.log('User:', req.user?.email);
     console.log('Sale ID:', req.params.id);
+    
+    // ObjectId kontrolü - bulk route'ları ile çakışmayı önle
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Geçersiz satış ID formatı' });
+    }
     console.log('Body:', req.body);
     
     const errors = validationResult(req);
@@ -1336,6 +1346,11 @@ router.put('/:id/prim-status', [auth, adminAuth], [
 // @access  Private (Admin only)
 router.delete('/:id', [auth, adminAuth], async (req, res) => {
   try {
+    // ObjectId kontrolü - bulk route'ları ile çakışmayı önle
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Geçersiz satış ID formatı' });
+    }
+    
     const sale = await Sale.findById(req.params.id);
     if (!sale) {
       return res.status(404).json({ message: 'Satış bulunamadı' });
