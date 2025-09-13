@@ -2,8 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 
-const auth = require('../middleware/auth');
-const adminAuth = require('../middleware/adminAuth');
+const { auth, adminAuth } = require('../middleware/auth');
 const Sale = require('../models/Sale');
 const User = require('../models/User');
 const PrimRate = require('../models/PrimRate');
