@@ -286,7 +286,7 @@ router.get('/earnings', auth, async (req, res) => {
           as: 'primPeriod'
         }
       },
-      // Satış bilgilerini de ekle
+      // Satış bilgilerini de ekle (satış tarihine göre)
       {
         $lookup: {
           from: 'sales',
@@ -296,11 +296,31 @@ router.get('/earnings', auth, async (req, res) => {
           },
           pipeline: [
             {
+              $addFields: {
+                saleDateYear: { $year: '$saleDate' },
+                saleDateMonth: { $month: '$saleDate' }
+              }
+            },
+            {
+              $lookup: {
+                from: 'primperiods',
+                localField: 'primPeriod',
+                foreignField: '_id',
+                as: 'currentPrimPeriod'
+              }
+            },
+            {
+              $addFields: {
+                currentPrimPeriod: { $arrayElemAt: ['$currentPrimPeriod', 0] }
+              }
+            },
+            {
               $match: {
                 $expr: {
                   $and: [
                     { $eq: ['$salesperson', '$$salespersonId'] },
-                    { $eq: ['$primPeriod', '$$periodId'] },
+                    { $eq: ['$saleDateYear', '$currentPrimPeriod.year'] },
+                    { $eq: ['$saleDateMonth', '$currentPrimPeriod.month'] },
                     { $eq: ['$saleType', 'satis'] }
                   ]
                 }

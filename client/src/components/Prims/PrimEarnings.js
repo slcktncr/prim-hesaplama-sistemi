@@ -234,25 +234,23 @@ const PrimEarnings = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            {isAdmin && (
-              <Col md={4}>
-                <Form.Group>
-                  <Form.Label>Temsilci</Form.Label>
-                  <Form.Select
-                    value={filters.salesperson}
-                    onChange={(e) => handleFilterChange('salesperson', e.target.value)}
-                  >
-                    <option value="">Tüm Temsilciler</option>
-                    {users.map(user => (
-                      <option key={user._id} value={user._id}>
-                        {user.name} {user.role === 'admin' && '(Admin)'}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            )}
-            <Col md={isAdmin ? 4 : 6}>
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label>Temsilci</Form.Label>
+                <Form.Select
+                  value={filters.salesperson}
+                  onChange={(e) => handleFilterChange('salesperson', e.target.value)}
+                >
+                  <option value="">Tüm Temsilciler</option>
+                  {users.map(user => (
+                    <option key={user._id} value={user._id}>
+                      {user.name} {user.role === 'admin' && '(Admin)'}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
               <Form.Group>
                 <Form.Label>&nbsp;</Form.Label>
                 <div className="d-flex gap-2">

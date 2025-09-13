@@ -350,7 +350,7 @@ const PrimTransactions = () => {
                     <th>Açıklama</th>
                     <th>Satış</th>
                     <th>Dönem</th>
-                    {isAdmin && <th>Temsilci</th>}
+                    <th>Temsilci</th>
                     <th>Tutar</th>
                     {isAdmin && <th>İşlemler</th>}
                   </tr>
@@ -396,14 +396,12 @@ const PrimTransactions = () => {
                           <small>{transaction.primPeriod?.name || '-'}</small>
                         </div>
                       </td>
-                      {isAdmin && (
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <FiUser className="me-2 text-muted" size={14} />
-                            <small>{transaction.salesperson?.name}</small>
-                          </div>
-                        </td>
-                      )}
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <FiUser className="me-2 text-muted" size={14} />
+                          <small>{transaction.salesperson?.name}</small>
+                        </div>
+                      </td>
                       <td>
                         <div className={`fw-bold ${transaction.amount >= 0 ? 'text-success' : 'text-danger'}`}>
                           {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
