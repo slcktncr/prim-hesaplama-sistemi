@@ -109,13 +109,14 @@ const BulkPrimStatusManagement = () => {
       return;
     }
 
-    const selectedUserName = users.find(u => u._id === selectedUser)?.name || 'Bilinmeyen';
+    const selectedUserName = getSelectedUserName();
     const monthName = months.find(m => m.value === selectedMonth)?.label || 'Tüm Yıl';
     
     const periodText = selectedMonth ? `${monthName} ${selectedYear} ayındaki` : `${selectedYear} yılındaki tüm`;
+    const userText = selectedUser === 'ALL_SALESPEOPLE' ? 'tüm satış temsilcilerinin' : `${selectedUserName} temsilcisinin`;
     
     const confirmed = window.confirm(
-      `${selectedUserName} temsilcisinin ${periodText} satışlarının prim durumunu "${newStatus}" olarak değiştirmek istediğinizden emin misiniz?`
+      `${userText} ${periodText} satışlarının prim durumunu "${newStatus}" olarak değiştirmek istediğinizden emin misiniz?`
     );
     
     if (!confirmed) return;
@@ -158,6 +159,9 @@ const BulkPrimStatusManagement = () => {
   };
 
   const getSelectedUserName = () => {
+    if (selectedUser === 'ALL_SALESPEOPLE') {
+      return 'Tüm Satış Temsilcileri';
+    }
     const user = users.find(u => u._id === selectedUser);
     return user ? user.name : '';
   };
@@ -201,6 +205,7 @@ const BulkPrimStatusManagement = () => {
                       required
                     >
                       <option value="">Temsilci Seçin</option>
+                      <option value="ALL_SALESPEOPLE">🎯 Tüm Satış Temsilcileri</option>
                       {users.map(user => (
                         <option key={user._id} value={user._id}>
                           {user.name}
@@ -306,6 +311,9 @@ const BulkPrimStatusManagement = () => {
                   <FaInfoCircle className="me-2" />
                   <strong>{previewData.totalUpdated}</strong> adet satışın prim durumu 
                   <strong> "{previewData.newStatus}"</strong> olarak değiştirilecek.
+                  {selectedUser === 'ALL_SALESPEOPLE' && (
+                    <><br /><strong>⚠️ Bu işlem TÜM SATIŞ TEMSİLCİLERİNİ etkileyecek!</strong></>
+                  )}
                 </Alert>
 
                 {previewData.affectedSales && previewData.affectedSales.length > 0 && (
@@ -316,6 +324,7 @@ const BulkPrimStatusManagement = () => {
                         <tr>
                           <th>Müşteri</th>
                           <th>Sözleşme No</th>
+                          {selectedUser === 'ALL_SALESPEOPLE' && <th>Temsilci</th>}
                           <th>Prim Tutarı</th>
                           <th>Mevcut Durum</th>
                           <th>Satış Tarihi</th>
@@ -326,6 +335,7 @@ const BulkPrimStatusManagement = () => {
                           <tr key={index}>
                             <td>{sale.customerName}</td>
                             <td>{sale.contractNo}</td>
+                            {selectedUser === 'ALL_SALESPEOPLE' && <td>{sale.salesperson}</td>}
                             <td>{sale.primAmount?.toLocaleString('tr-TR')} ₺</td>
                             <td>
                               <Badge bg={sale.oldStatus === 'ödendi' ? 'success' : 'warning'}>

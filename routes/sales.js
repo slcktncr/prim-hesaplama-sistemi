@@ -39,7 +39,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     }
 
     // Temsilci filtresi
-    if (filters.salesperson) {
+    if (filters.salesperson && filters.salesperson !== 'ALL_SALESPEOPLE') {
       // Eğer ObjectId ise direkt kullan, değilse isim ile ara
       if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
@@ -60,6 +60,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
         query.salesperson = user._id;
       }
     }
+    // ALL_SALESPEOPLE seçilmişse temsilci filtresi ekleme (tüm temsilciler)
 
     // Tarih filtresi
     if (filters.startDate && filters.endDate) {

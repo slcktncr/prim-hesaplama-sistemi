@@ -28,6 +28,7 @@ const ActiveUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getAllUsers();
+      console.log('Fetched users:', response.data);
       setUsers(response.data);
     } catch (error) {
       console.error('Users fetch error:', error);
@@ -78,7 +79,8 @@ const ActiveUsers = () => {
 
     setActionLoading(prev => ({ ...prev, [userId]: 'role' }));
     try {
-      await usersAPI.changeRole(userId, null, customRoleId);
+      const response = await usersAPI.changeRole(userId, null, customRoleId);
+      console.log('Role change response:', response.data);
       toast.success(`Kullanıcıya "${role.displayName}" rolü atandı`);
       fetchUsers();
     } catch (error) {
@@ -132,7 +134,18 @@ const ActiveUsers = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
+    if (!dateString) {
+      console.log('Date is null/undefined:', dateString);
+      return 'Tarih Yok';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.log('Invalid date:', dateString);
+      return 'Geçersiz Tarih';
+    }
+    
+    return date.toLocaleDateString('tr-TR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
