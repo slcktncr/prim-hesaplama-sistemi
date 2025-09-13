@@ -176,6 +176,10 @@ const BulkPrimStatusManagement = () => {
     try {
       setLoading(true);
       
+      console.log('🔄 Direct update starting...');
+      console.log('📊 primStatus:', primStatus);
+      console.log('📊 filters:', filters);
+      
       const response = await salesAPI.bulkUpdatePrimStatus(primStatus, filters);
       
       if (response.data.success) {
