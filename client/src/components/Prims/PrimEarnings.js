@@ -103,6 +103,18 @@ const PrimEarnings = () => {
         fullResponse: earningsResponse
       });
       
+      // Detaylı dönem bilgisi debug
+      if (filteredEarnings.length > 0) {
+        console.log('📅 Detailed period info:', filteredEarnings.map(earning => ({
+          salesperson: earning.salesperson?.name,
+          period: earning.primPeriod?.name,
+          year: earning.primPeriod?.year,
+          month: earning.primPeriod?.month,
+          transactionCount: earning.transactionCount,
+          totalEarnings: earning.totalEarnings
+        })));
+      }
+      
       // Dönem filtresi varsa uygula
       if (filters.period && filters.period !== '') {
         const selectedPeriod = periods.find(p => p._id === filters.period);
