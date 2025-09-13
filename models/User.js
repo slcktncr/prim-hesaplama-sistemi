@@ -104,6 +104,8 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true // Bu, createdAt ve updatedAt'i otomatik ekler
 });
 
 // Name field'ini otomatik oluştur
