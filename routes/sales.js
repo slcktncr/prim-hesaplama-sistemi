@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const PrimRate = require('../models/PrimRate');
 const PrimPeriod = require('../models/PrimPeriod');
