@@ -4,7 +4,33 @@ require('../config/db')();
 const Sale = require('../models/Sale');
 const PrimPeriod = require('../models/PrimPeriod');
 const PrimTransaction = require('../models/PrimTransaction');
-const { getOrCreatePrimPeriod } = require('../routes/sales');
+
+// getOrCreatePrimPeriod fonksiyonunu doğrudan kopyala
+const getOrCreatePrimPeriod = async (saleDate, createdBy) => {
+  const date = new Date(saleDate);
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  
+  const periodName = `${monthNames[month - 1]} ${year}`;
+  
+  let period = await PrimPeriod.findOne({ name: periodName });
+  
+  if (!period) {
+    period = new PrimPeriod({
+      name: periodName,
+      month,
+      year,
+      createdBy
+    });
+    await period.save();
+    console.log(`📅 Yeni dönem oluşturuldu: ${periodName}`);
+  }
+  
+  return period._id;
+};
 
 async function fixPrimPeriods() {
   try {
