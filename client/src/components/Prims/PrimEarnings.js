@@ -77,7 +77,22 @@ const PrimEarnings = () => {
         primsAPI.getDeductions(filters)
       ]);
       
-      setEarnings(earningsResponse.data || []);
+      // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
+      let filteredEarnings = earningsResponse.data || [];
+      
+      // Dönem filtresi varsa uygula
+      if (filters.period && filters.period !== '') {
+        const selectedPeriod = periods.find(p => p._id === filters.period);
+        if (selectedPeriod) {
+          filteredEarnings = filteredEarnings.filter(earning => 
+            earning.primPeriod?.year === selectedPeriod.year &&
+            earning.primPeriod?.month === selectedPeriod.month
+          );
+          console.log('📅 Frontend period filter applied:', selectedPeriod.name, 'Results:', filteredEarnings.length);
+        }
+      }
+      
+      setEarnings(filteredEarnings);
       setDeductions(deductionsResponse.data || []);
       setError(null);
     } catch (error) {

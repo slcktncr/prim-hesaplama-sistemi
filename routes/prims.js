@@ -258,29 +258,37 @@ router.get('/earnings', auth, async (req, res) => {
     // Sale kayıtlarını saleDate'e göre gruplama yap
     const Sale = require('../models/Sale');
     
-    // Dönem filtresi için PrimPeriod bilgisini al
-    let periodFilter = {};
-    if (period && period !== '') {
-      const PrimPeriod = require('../models/PrimPeriod');
-      const selectedPeriod = await PrimPeriod.findById(period);
-      if (selectedPeriod) {
-        // Seçilen dönemin ay/yılına göre saleDate filtresi ekle
-        const startDate = new Date(selectedPeriod.year, selectedPeriod.month - 1, 1);
-        const endDate = new Date(selectedPeriod.year, selectedPeriod.month, 0, 23, 59, 59);
-        periodFilter.saleDate = { $gte: startDate, $lte: endDate };
-        console.log('📅 Period filter applied:', selectedPeriod.name, startDate, endDate);
-      }
-    }
-    
+    // Backend'de tüm satışları getir, dönem filtresi frontend'de uygulanacak
     const salesQuery = {
       status: 'aktif',
       saleType: 'satis', // Sadece satışlar, kapora değil
       saleDate: { $exists: true, $ne: null },
-      ...salespersonFilter,
-      ...periodFilter
+      ...salespersonFilter
+      // periodFilter kaldırıldı - tüm satışları getir
     };
     
+    console.log('📅 Period filter removed - getting all sales, period filter will be applied on frontend');
+    if (period && period !== '') {
+      console.log('📅 Selected period (for frontend filtering):', period);
+    }
+    
     console.log('📊 Sales query for earnings:', salesQuery);
+    
+    // Debug: Önce kaç satış var kontrol et
+    const totalSalesCount = await Sale.countDocuments(salesQuery);
+    console.log('🔢 Total sales matching query:', totalSalesCount);
+    
+    // Debug: İlk 5 satışı kontrol et
+    const sampleSales = await Sale.find(salesQuery)
+      .select('customerName saleDate primAmount salesperson')
+      .populate('salesperson', 'name')
+      .limit(5);
+    console.log('📋 Sample sales:', sampleSales.map(s => ({
+      customer: s.customerName,
+      saleDate: s.saleDate,
+      primAmount: s.primAmount,
+      salesperson: s.salesperson?.name
+    })));
     
     // Sale kayıtlarını saleDate'e göre grupla
     const earnings = await Sale.aggregate([
@@ -365,6 +373,20 @@ router.get('/earnings', auth, async (req, res) => {
     
     console.log('✅ Earnings result count:', earnings.length);
     console.log('📊 Sample earnings:', earnings.slice(0, 2));
+    
+    // Debug: Her dönem için detay
+    earnings.forEach((earning, index) => {
+      if (index < 3) { // İlk 3 sonucu detaylı göster
+        console.log(`📈 Earning ${index + 1}:`, {
+          salesperson: earning.salesperson?.name,
+          period: earning.primPeriod?.name,
+          transactionCount: earning.transactionCount,
+          totalEarnings: earning.totalEarnings,
+          year: earning.primPeriod?.year,
+          month: earning.primPeriod?.month
+        });
+      }
+    });
 
     res.json(earnings);
   } catch (error) {
