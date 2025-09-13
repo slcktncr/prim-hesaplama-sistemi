@@ -65,18 +65,18 @@ const validatePaymentType = async (value, { req }) => {
 // Prim dönemini al veya oluştur
 const getOrCreatePrimPeriod = async (saleDate, userId) => {
   try {
-    const date = new Date(saleDate);
+  const date = new Date(saleDate);
     const month = date.getMonth() + 1; // JavaScript months are 0-indexed
-    const year = date.getFullYear();
-    
+  const year = date.getFullYear();
+  
     // Türkçe ay isimleri
     const monthNames = [
       'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
       'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
     ];
-    
-    const periodName = `${monthNames[month - 1]} ${year}`;
-    
+  
+  const periodName = `${monthNames[month - 1]} ${year}`;
+  
     // Mevcut dönemi bul
     let period = await PrimPeriod.findOne({
       month: month,
@@ -84,18 +84,17 @@ const getOrCreatePrimPeriod = async (saleDate, userId) => {
     });
     
     // Yoksa oluştur
-    if (!period) {
-      period = new PrimPeriod({
-        name: periodName,
+  if (!period) {
+    period = new PrimPeriod({
+      name: periodName,
         month: month,
         year: year,
         createdBy: userId
-      });
-      await period.save();
-      console.log(`✅ Yeni prim dönemi oluşturuldu: ${periodName}`);
-    }
-    
-    return period._id;
+    });
+    await period.save();
+  }
+  
+  return period._id;
   } catch (error) {
     console.error('Prim dönemi oluşturma hatası:', error);
     throw error;
@@ -182,21 +181,11 @@ router.post('/', auth, [
 
     // Kapora değilse prim hesapla
     if (!isKaporaType(saleType)) {
-    
-    // originalListPrice eksikse listPrice'dan al
-    if (!originalListPrice && listPrice) {
-      console.log('⚠️ originalListPrice eksik, listPrice kullanılıyor:', listPrice);
-    }
-      
       // Aktif prim oranını al
       currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
       if (!currentPrimRate) {
-        console.log('❌ Aktif prim oranı bulunamadı');
         return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
       }
-      console.log('✅ Prim oranı bulundu:', currentPrimRate.rate);
-      console.log('🔍 Prim oranı tipi:', typeof currentPrimRate.rate);
-      console.log('🔍 Prim oranı * 100:', currentPrimRate.rate * 100);
 
       // Prim dönemini belirle
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
@@ -204,17 +193,15 @@ router.post('/', auth, [
       // İndirim hesaplama
       if (discountRateNum > 0 && originalListPriceNum > 0) {
         discountedListPriceNum = parseFloat(discountedListPrice) || (originalListPriceNum * (1 - discountRateNum / 100));
-        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
         
         // NaN veya Infinity kontrolü
         if (!isFinite(discountedListPriceNum) || discountedListPriceNum < 0) {
-          console.log('❌ İndirimli fiyat hesaplama hatası:', discountedListPriceNum);
           return res.status(400).json({ message: 'İndirimli fiyat hesaplamasında hata oluştu' });
         }
       }
 
       // Yeni prim hesaplama mantığı - 3 fiyat arasından en düşüğü
-      activitySalePriceNum = parseFloat(activitySalePrice) || 0;
+      const activitySalePriceNum = parseFloat(activitySalePrice) || 0;
       
       const validPrices = [];
       
@@ -236,16 +223,9 @@ router.post('/', auth, [
       // En düşük fiyat üzerinden prim hesapla
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
       const primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
-
-      console.log('💰 Prim hesaplama detayları:');
-      console.log('  - Geçerli fiyatlar:', validPrices);
-      console.log('  - En düşük fiyat (basePrimPrice):', basePrimPrice);
-      console.log('  - Prim oranı:', currentPrimRate.rate, '%');
-      console.log('  - Hesaplanan prim:', primAmount, 'TL');
-
+      
       // Prim tutarı kontrolü
       if (!isFinite(primAmount) || primAmount < 0) {
-        console.log('❌ Prim hesaplama hatası:', primAmount);
         return res.status(400).json({ message: 'Prim hesaplamasında hata oluştu' });
       }
     }
@@ -288,16 +268,15 @@ router.post('/', auth, [
       saleData.primPeriod = primPeriodId;
       saleData.primStatus = 'ödenmedi';
     }
-
+    
     const sale = new Sale(saleData);
-    await sale.save();
+      await sale.save();
 
     // Populate edilmiş satışı döndür
     const populatedSale = await Sale.findById(sale._id)
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('✅ Satış başarıyla oluşturuldu:', sale._id);
 
     res.status(201).json({
       message: 'Satış başarıyla eklendi',
@@ -335,7 +314,7 @@ router.get('/upcoming-entries', auth, async (req, res) => {
     futureDate.setDate(today.getDate() + daysNum);
 
     // Kullanıcı rolüne göre sorgu oluştur
-    let query = {
+    let query = { 
       saleType: 'kapora',
       kaporaDate: {
         $gte: today,
@@ -363,7 +342,7 @@ router.get('/upcoming-entries', auth, async (req, res) => {
       }
       groupedEntries[dateKey].push(sale);
     });
-
+    
     res.json({
       entries: upcomingEntries,
       groupedEntries,
@@ -374,7 +353,7 @@ router.get('/upcoming-entries', auth, async (req, res) => {
         days: daysNum
       }
     });
-
+    
   } catch (error) {
     console.error('Upcoming entries error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
@@ -386,9 +365,6 @@ router.get('/upcoming-entries', auth, async (req, res) => {
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    console.log('🔍 Sales GET request received');
-    console.log('User:', req.user?.email);
-    console.log('Query params:', req.query);
 
     const { 
       page = 1, 
@@ -403,7 +379,7 @@ router.get('/', auth, async (req, res) => {
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
-
+    
     // Sayfa ve limit kontrolü
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
@@ -421,7 +397,7 @@ router.get('/', auth, async (req, res) => {
       // Normal kullanıcı sadece kendi satışlarını görebilir
       query.salesperson = req.user._id;
     }
-
+    
     // Arama filtresi
     if (search) {
       const searchRegex = new RegExp(search, 'i');
@@ -437,7 +413,7 @@ router.get('/', auth, async (req, res) => {
     if (saleType) {
       query.saleType = saleType;
     }
-
+    
     // Prim durumu filtresi
     if (primStatus) {
       query.primStatus = primStatus;
@@ -447,7 +423,7 @@ router.get('/', auth, async (req, res) => {
     if (salesperson && req.user.role === 'admin') {
       query.salesperson = salesperson;
     }
-
+    
     // Tarih aralığı filtresi
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -482,14 +458,11 @@ router.get('/', auth, async (req, res) => {
     const sortDirection = sortOrder === 'asc' ? 1 : -1;
     sortOptions[sortField] = sortDirection;
 
-    console.log('🔍 Final query:', JSON.stringify(query, null, 2));
-    console.log('📊 Sort options:', sortOptions);
-    console.log('📄 Pagination:', { page: pageNum, limit: limitNum, skip });
 
     // Satışları getir
     const salesQuery = Sale.find(query)
-      .populate('salesperson', 'name email')
-      .populate('primPeriod', 'name')
+        .populate('salesperson', 'name email')
+        .populate('primPeriod', 'name')
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNum);
@@ -556,9 +529,6 @@ router.get('/', auth, async (req, res) => {
 // @access  Private
 router.get('/:id', auth, async (req, res) => {
   try {
-    console.log('🔍 Sale GET by ID request received');
-    console.log('User:', req.user?.email);
-    console.log('Sale ID:', req.params.id);
     
     // ObjectId kontrolü - bulk route'ları ile çakışmayı önle
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -578,7 +548,7 @@ router.get('/:id', auth, async (req, res) => {
         sale.salesperson._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışa erişim yetkiniz yok' });
     }
-
+    
     res.json(sale);
   } catch (error) {
     console.error('Get sale by ID error:', error);
@@ -644,19 +614,18 @@ router.put('/:id', auth, [
   body('paymentType').optional().custom(validatePaymentType)
 ], async (req, res) => {
   try {
-    console.log('🔍 Sale UPDATE request received');
-    console.log('User:', req.user?.email);
-    console.log('Sale ID:', req.params.id);
+    // console.log('🔍 Sale UPDATE request received');
+    // console.log('User:', req.user?.email);
     
     // ObjectId kontrolü - bulk route'ları ile çakışmayı önle
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(404).json({ message: 'Geçersiz satış ID formatı' });
     }
-    console.log('Body:', req.body);
+    // console.log('Body:', req.body);
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ Validation errors:', errors.array());
+      // console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -692,15 +661,15 @@ router.put('/:id', auth, [
           
           // Prim hesaplamasını etkileyen alanlar değişti mi?
           if (primAffectingFields.includes(field)) {
-            needsPrimRecalculation = true;
-          }
-        }
+        needsPrimRecalculation = true;
+      }
+    }
       }
     });
 
     // Prim yeniden hesaplama
     if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
-      console.log('💰 Prim yeniden hesaplanıyor...');
+      // console.log('💰 Prim yeniden hesaplanıyor...');
       
       // Aktif prim oranını al
       const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
@@ -716,7 +685,7 @@ router.put('/:id', auth, [
       if (discountRateNum > 0 && originalListPriceNum > 0) {
         discountedListPriceNum = originalListPriceNum * (1 - discountRateNum / 100);
         sale.discountedListPrice = discountedListPriceNum;
-        console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
+        // console.log(`💸 İndirim uygulandı: %${discountRateNum} - ${originalListPriceNum} TL → ${discountedListPriceNum} TL`);
       }
 
       // Yeni prim hesaplama mantığı - 3 fiyat arasından en düşüğü
@@ -747,11 +716,11 @@ router.put('/:id', auth, [
       sale.basePrimPrice = basePrimPrice;
       sale.primAmount = primAmount;
 
-      console.log('💰 Yeni prim hesaplama:');
-      console.log('  - Geçerli fiyatlar:', validPrices);
-      console.log('  - En düşük fiyat:', basePrimPrice);
-      console.log('  - Prim oranı:', currentPrimRate.rate, '%');
-      console.log('  - Yeni prim tutarı:', primAmount, 'TL');
+      // console.log('💰 Yeni prim hesaplama:');
+      // console.log('  - Geçerli fiyatlar:', validPrices);
+      // console.log('  - En düşük fiyat:', basePrimPrice);
+      // console.log('  - Prim oranı:', currentPrimRate.rate, '%');
+      // console.log('  - Yeni prim tutarı:', primAmount, 'TL');
     }
 
     // Güncelleme işlemi
@@ -767,7 +736,7 @@ router.put('/:id', auth, [
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('✅ Satış başarıyla güncellendi:', sale._id);
+    // console.log('✅ Satış başarıyla güncellendi:', sale._id);
 
     res.json({
       message: 'Satış başarıyla güncellendi',
@@ -820,7 +789,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
       .populate('cancelledBy', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('🚫 Satış iptal edildi:', req.user.email, 'Sale ID:', req.params.id);
+    // console.log('🚫 Satış iptal edildi:', req.user.email, 'Sale ID:', req.params.id);
 
     res.json({
       message: 'Satış başarıyla iptal edildi',
@@ -864,7 +833,7 @@ router.put('/:id/restore', auth, async (req, res) => {
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('♻️ Satış geri alındı:', req.user.email, 'Sale ID:', req.params.id);
+    // console.log('♻️ Satış geri alındı:', req.user.email, 'Sale ID:', req.params.id);
 
     res.json({
       message: 'Satış başarıyla geri alındı',
@@ -933,13 +902,6 @@ router.put('/:id/transfer', [auth, adminAuth], [
       .populate('transferHistory.toSalesperson', 'name email')
       .populate('transferHistory.transferredBy', 'name email');
 
-    console.log('🔄 Satış transfer edildi:', {
-      admin: req.user.email,
-      saleId: req.params.id,
-      from: oldSalesperson.name,
-      to: newSalesperson.name,
-      reason: transferReason
-    });
 
     res.json({
       message: `Satış ${oldSalesperson.name} temsilcisinden ${newSalesperson.name} temsilcisine transfer edildi`,
@@ -1003,7 +965,7 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
 
-    console.log('🗑️ Admin satış siliyor:', req.user.email, 'Sale ID:', req.params.id);
+    // console.log('🗑️ Admin satış siliyor:', req.user.email, 'Sale ID:', req.params.id);
 
     // Soft delete yerine hard delete
     await Sale.findByIdAndDelete(req.params.id);
@@ -1156,7 +1118,7 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('🔄 Kapora satışa çevrildi:', req.user.email, 'Sale ID:', req.params.id);
+    // console.log('🔄 Kapora satışa çevrildi:', req.user.email, 'Sale ID:', req.params.id);
 
     res.json({
       message: 'Kapora başarıyla satışa çevrildi',
@@ -1211,12 +1173,6 @@ router.put('/transaction/:transactionId/period', [auth, adminAuth], [
       .populate('salesperson', 'name email')
       .populate('primPeriod', 'name');
 
-    console.log('📅 Prim dönemi güncellendi:', {
-      admin: req.user.email,
-      saleId: transactionId,
-      oldPeriod: oldPeriod?.name,
-      newPeriod: newPeriod.name
-    });
 
     res.json({
       message: `Prim dönemi "${oldPeriod?.name || 'Belirsiz'}" döneminden "${newPeriod.name}" dönemine güncellendi`,
@@ -1314,14 +1270,6 @@ router.put('/:id/modify', [
       .populate('primPeriod', 'name')
       .populate('modificationHistory.modifiedBy', 'name email');
 
-    console.log('🔧 Satış modifiye edildi:', {
-      user: req.user.email,
-      saleId: req.params.id,
-      type: modificationType,
-      oldPrice: oldListPrice,
-      newPrice: newListPrice,
-      reason: modificationReason
-    });
 
     res.json({
       message: 'Satış başarıyla modifiye edildi',
@@ -1353,7 +1301,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Dönem filtresi
     if (filters.period) {
-      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+        query.primPeriod = new mongoose.Types.ObjectId(filters.period);
     }
 
     // Temsilci filtresi
@@ -1446,7 +1394,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
   try {
     const { primStatus, filters } = req.body;
-
+    
     // Validasyon
     if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
       return res.status(400).json({ 
@@ -1504,12 +1452,12 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     }
 
     const sampleSales = await Sale.find(query)
-      .populate('salesperson', 'name')
-      .populate('primPeriod', 'name')
-      .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
+          .populate('salesperson', 'name')
+          .populate('primPeriod', 'name')
+          .select('customerName contractNo primAmount primStatus salesperson primPeriod saleDate')
       .limit(50)
       .sort({ saleDate: -1 });
-
+    
     res.json({
       success: true,
       message: `${totalCount} satış etkilenecek`,
