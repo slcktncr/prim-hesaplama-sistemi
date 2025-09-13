@@ -247,8 +247,12 @@ router.get('/earnings', auth, async (req, res) => {
       if (user) {
         salespersonFilter.salesperson = user._id;
         console.log('✅ Salesperson found for earnings:', user.name, '→', user._id);
+        console.log('✅ Salesperson ObjectId type:', typeof user._id, user._id.constructor.name);
       } else {
         console.log('❌ Salesperson not found for earnings:', salesperson);
+        console.log('❌ Available users in database:');
+        const allUsers = await User.find({ isActive: true, isApproved: true }).select('name');
+        console.log('❌ Users:', allUsers.map(u => u.name));
         return res.status(400).json({ 
           message: `Temsilci bulunamadı: ${salesperson}` 
         });
@@ -291,6 +295,17 @@ router.get('/earnings', auth, async (req, res) => {
     })));
     
     // Sale kayıtlarını saleDate'e göre grupla
+    console.log('🔄 Starting aggregation...');
+    
+    // Önce basit match test et
+    const matchTest = await Sale.aggregate([
+      { 
+        $match: salesQuery
+      },
+      { $limit: 1 }
+    ]);
+    console.log('✅ Match test passed, sample:', matchTest[0]);
+    
     const earnings = await Sale.aggregate([
       { 
         $match: salesQuery
@@ -391,7 +406,14 @@ router.get('/earnings', auth, async (req, res) => {
     res.json(earnings);
   } catch (error) {
     console.error('Get prim earnings error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
