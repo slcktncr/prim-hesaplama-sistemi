@@ -1814,26 +1814,27 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
       console.log('ℹ️ Period filter skipped (empty value)');
     }
 
-    // Temsilci filtresi
+    // Temsilci filtresi (user name ile)
     if (filters.salesperson && filters.salesperson.trim() !== '') {
-      let salespersonId = filters.salesperson.trim();
+      const salespersonName = filters.salesperson.trim();
       
-      console.log('🔍 Original salesperson ID:', salespersonId, 'Length:', salespersonId.length);
+      console.log('🔍 Looking for salesperson by name:', salespersonName);
       
-      // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
-      if (salespersonId.length === 23) {
-        salespersonId = '0' + salespersonId;
-        console.log('🔧 Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
-      }
+      // User'ı name ile bul
+      const User = require('../models/User');
+      const user = await User.findOne({ 
+        name: salespersonName,
+        isActive: true,
+        isApproved: true
+      });
       
-      try {
-        // ObjectId olarak dene
-        query.salesperson = new mongoose.Types.ObjectId(salespersonId);
-        console.log('✅ Salesperson filter added:', salespersonId);
-      } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
+      if (user) {
+        query.salesperson = user._id;
+        console.log('✅ Salesperson found:', user.name, '→', user._id);
+      } else {
+        console.log('❌ Salesperson not found:', salespersonName);
         return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${salespersonId} (Length: ${salespersonId.length})` 
+          message: `Temsilci bulunamadı: ${salespersonName}` 
         });
       }
     } else {
@@ -1992,26 +1993,27 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
       console.log('ℹ️ Period filter skipped (empty value)');
     }
 
-    // Temsilci filtresi
+    // Temsilci filtresi (user name ile)
     if (filters.salesperson && filters.salesperson.trim() !== '') {
-      let salespersonId = filters.salesperson.trim();
+      const salespersonName = filters.salesperson.trim();
       
-      console.log('🔍 Original salesperson ID:', salespersonId, 'Length:', salespersonId.length);
+      console.log('🔍 Looking for salesperson by name:', salespersonName);
       
-      // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
-      if (salespersonId.length === 23) {
-        salespersonId = '0' + salespersonId;
-        console.log('🔧 Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
-      }
+      // User'ı name ile bul
+      const User = require('../models/User');
+      const user = await User.findOne({ 
+        name: salespersonName,
+        isActive: true,
+        isApproved: true
+      });
       
-      try {
-        // ObjectId olarak dene
-        query.salesperson = new mongoose.Types.ObjectId(salespersonId);
-        console.log('✅ Salesperson filter added:', salespersonId);
-      } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
+      if (user) {
+        query.salesperson = user._id;
+        console.log('✅ Salesperson found:', user.name, '→', user._id);
+      } else {
+        console.log('❌ Salesperson not found:', salespersonName);
         return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${salespersonId} (Length: ${salespersonId.length})` 
+          message: `Temsilci bulunamadı: ${salespersonName}` 
         });
       }
     } else {

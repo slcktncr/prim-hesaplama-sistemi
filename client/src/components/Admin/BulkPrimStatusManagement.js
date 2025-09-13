@@ -293,7 +293,7 @@ const BulkPrimStatusManagement = () => {
                       >
                         <option value="">Tüm Temsilciler</option>
                         {users.map(user => (
-                          <option key={user._id} value={user._id}>
+                          <option key={user._id} value={user.name}>
                             {user.name}
                           </option>
                         ))}
