@@ -401,6 +401,21 @@ const BulkPrimStatusManagement = () => {
                       >
                         Temizle
                       </Button>
+
+                      <Button
+                        variant="outline-warning"
+                        onClick={async () => {
+                          try {
+                            const response = await salesAPI.testBulk({ test: 'data', primStatus, filters });
+                            toast.success('Test başarılı: ' + response.data.message);
+                          } catch (error) {
+                            toast.error('Test hatası: ' + error.message);
+                          }
+                        }}
+                        disabled={loading || previewLoading}
+                      >
+                        Test
+                      </Button>
                     </div>
                   </Col>
                 </Row>

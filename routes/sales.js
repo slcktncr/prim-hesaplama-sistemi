@@ -1866,18 +1866,30 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
 });
 
 // @route   PUT /api/sales/bulk-prim-status
-// @desc    Toplu prim durumu değiştir (Admin only)
+// @desc    Toplu prim durumu değiştir (Admin only)  
 // @access  Private (Admin only)
 router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
   try {
+    console.log('🔄 Bulk prim status update started');
+    console.log('📊 Request body:', req.body);
+    console.log('👤 User:', req.user.name, req.user.role);
+    
     const { 
       primStatus, // 'ödendi' veya 'ödenmedi'
       filters // { period, salesperson, month, year, startDate, endDate }
     } = req.body;
 
     if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
+      console.log('❌ Invalid prim status:', primStatus);
       return res.status(400).json({ 
         message: 'Geçerli prim durumu belirtilmeli (ödendi/ödenmedi)' 
+      });
+    }
+
+    if (!filters) {
+      console.log('❌ No filters provided');
+      return res.status(400).json({ 
+        message: 'Filtreler belirtilmeli' 
       });
     }
 
@@ -1886,12 +1898,28 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Dönem filtresi
     if (filters.period) {
-      query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+      try {
+        query.primPeriod = new mongoose.Types.ObjectId(filters.period);
+        console.log('✅ Period filter added:', filters.period);
+      } catch (error) {
+        console.log('❌ Invalid period ObjectId:', filters.period);
+        return res.status(400).json({ 
+          message: 'Geçersiz dönem ID formatı' 
+        });
+      }
     }
 
     // Temsilci filtresi
     if (filters.salesperson) {
-      query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+      try {
+        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
+        console.log('✅ Salesperson filter added:', filters.salesperson);
+      } catch (error) {
+        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson);
+        return res.status(400).json({ 
+          message: 'Geçersiz temsilci ID formatı' 
+        });
+      }
     }
 
     // Ay/Yıl filtresi (saleDate bazında)
@@ -1933,6 +1961,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     }
 
     // Güncelleme işlemini gerçekleştir
+    console.log('🔄 Starting updateMany operation...');
     const updateResult = await Sale.updateMany(
       query,
       { 
@@ -1943,6 +1972,7 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
         }
       }
     );
+    console.log('✅ UpdateMany completed:', updateResult);
 
     // Özet bilgi hazırla
     const summary = {
@@ -1961,17 +1991,23 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     };
 
     // Activity log ekle
-    const ActivityLog = require('../models/ActivityLog');
-    await ActivityLog.create({
-      user: req.user._id,
-      action: 'bulk_prim_status_update',
-      details: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
-      metadata: {
-        filters,
-        primStatus,
-        affectedCount: updateResult.modifiedCount
-      }
-    });
+    try {
+      const ActivityLog = require('../models/ActivityLog');
+      await ActivityLog.create({
+        user: req.user._id,
+        action: 'bulk_prim_status_update',
+        details: `${updateResult.modifiedCount} satışın prim durumu "${primStatus}" olarak güncellendi`,
+        metadata: {
+          filters,
+          primStatus,
+          affectedCount: updateResult.modifiedCount
+        }
+      });
+      console.log('✅ Activity log created');
+    } catch (logError) {
+      console.log('⚠️ Activity log failed (non-critical):', logError.message);
+      // Activity log hatası kritik değil, devam et
+    }
 
     res.json({
       success: true,
@@ -1983,6 +2019,30 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     console.error('Bulk prim status update error:', error);
     res.status(500).json({ 
       message: 'Toplu prim durumu güncellenirken hata oluştu',
+      error: error.message 
+    });
+  }
+});
+
+// @route   POST /api/sales/test-bulk
+// @desc    Test endpoint for bulk operations
+// @access  Private (Admin only)
+router.post('/test-bulk', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🧪 Test bulk endpoint hit');
+    console.log('📊 Request body:', req.body);
+    console.log('👤 User:', req.user?.name, req.user?.role);
+    
+    res.json({
+      success: true,
+      message: 'Test endpoint çalışıyor',
+      user: req.user?.name,
+      body: req.body
+    });
+  } catch (error) {
+    console.error('❌ Test bulk error:', error);
+    res.status(500).json({ 
+      message: 'Test endpoint hatası',
       error: error.message 
     });
   }
