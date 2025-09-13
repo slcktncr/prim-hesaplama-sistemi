@@ -442,7 +442,7 @@ const PrimEarnings = () => {
                     <td>
                       <div className="text-center">
                         <div className="h5 mb-1 text-info">
-                          {earning.salesCount || 0}
+                          {earning.transactionCount || 0}
                         </div>
                         <div className="small text-muted">Satış Adedi</div>
                       </div>
