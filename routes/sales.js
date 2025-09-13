@@ -1817,14 +1817,31 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
-        // ObjectId'ye çevirmeyi dene
+        // Önce ObjectId olarak dene
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-        console.log('✅ Salesperson filter added:', filters.salesperson);
+        console.log('✅ Salesperson filter added (ObjectId):', filters.salesperson);
       } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson, 'Error:', error.message);
-        return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${filters.salesperson}` 
+        // ObjectId başarısız olursa, user name ile ara
+        console.log('ℹ️ ObjectId failed, trying user lookup by ID:', filters.salesperson);
+        
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          $or: [
+            { _id: filters.salesperson },
+            { name: filters.salesperson },
+            { email: filters.salesperson }
+          ]
         });
+        
+        if (user) {
+          query.salesperson = user._id;
+          console.log('✅ Salesperson found by lookup:', user.name, user._id);
+        } else {
+          console.log('❌ Salesperson not found:', filters.salesperson);
+          return res.status(400).json({ 
+            message: `Temsilci bulunamadı: ${filters.salesperson}` 
+          });
+        }
       }
     } else {
       console.log('ℹ️ Salesperson filter skipped (empty value)');
@@ -1985,14 +2002,31 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
       try {
-        // ObjectId'ye çevirmeyi dene
+        // Önce ObjectId olarak dene
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-        console.log('✅ Salesperson filter added:', filters.salesperson);
+        console.log('✅ Salesperson filter added (ObjectId):', filters.salesperson);
       } catch (error) {
-        console.log('❌ Invalid salesperson ObjectId:', filters.salesperson, 'Error:', error.message);
-        return res.status(400).json({ 
-          message: `Geçersiz temsilci ID formatı: ${filters.salesperson}` 
+        // ObjectId başarısız olursa, user name ile ara
+        console.log('ℹ️ ObjectId failed, trying user lookup by ID:', filters.salesperson);
+        
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          $or: [
+            { _id: filters.salesperson },
+            { name: filters.salesperson },
+            { email: filters.salesperson }
+          ]
         });
+        
+        if (user) {
+          query.salesperson = user._id;
+          console.log('✅ Salesperson found by lookup:', user.name, user._id);
+        } else {
+          console.log('❌ Salesperson not found:', filters.salesperson);
+          return res.status(400).json({ 
+            message: `Temsilci bulunamadı: ${filters.salesperson}` 
+          });
+        }
       }
     } else {
       console.log('ℹ️ Salesperson filter skipped (empty value)');
