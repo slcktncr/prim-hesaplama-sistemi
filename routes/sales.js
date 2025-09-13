@@ -1816,32 +1816,23 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
 
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
+      let salespersonId = filters.salesperson.trim();
+      
+      // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
+      if (salespersonId.length === 23 && /^[0-9a-fA-F]{23}$/.test(salespersonId)) {
+        salespersonId = '0' + salespersonId;
+        console.log('ℹ️ Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
+      }
+      
       try {
-        // Önce ObjectId olarak dene
-        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-        console.log('✅ Salesperson filter added (ObjectId):', filters.salesperson);
+        // ObjectId olarak dene
+        query.salesperson = new mongoose.Types.ObjectId(salespersonId);
+        console.log('✅ Salesperson filter added:', salespersonId);
       } catch (error) {
-        // ObjectId başarısız olursa, user name ile ara
-        console.log('ℹ️ ObjectId failed, trying user lookup by ID:', filters.salesperson);
-        
-        const User = require('../models/User');
-        const user = await User.findOne({ 
-          $or: [
-            { _id: filters.salesperson },
-            { name: filters.salesperson },
-            { email: filters.salesperson }
-          ]
+        console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
+        return res.status(400).json({ 
+          message: `Geçersiz temsilci ID formatı: ${salespersonId}` 
         });
-        
-        if (user) {
-          query.salesperson = user._id;
-          console.log('✅ Salesperson found by lookup:', user.name, user._id);
-        } else {
-          console.log('❌ Salesperson not found:', filters.salesperson);
-          return res.status(400).json({ 
-            message: `Temsilci bulunamadı: ${filters.salesperson}` 
-          });
-        }
       }
     } else {
       console.log('ℹ️ Salesperson filter skipped (empty value)');
@@ -2001,32 +1992,23 @@ router.put('/bulk-prim-status', [auth, adminAuth], async (req, res) => {
 
     // Temsilci filtresi
     if (filters.salesperson && filters.salesperson.trim() !== '') {
+      let salespersonId = filters.salesperson.trim();
+      
+      // 23 karakterlik ID'yi 24 karaktere tamamla (başına 0 ekle)
+      if (salespersonId.length === 23 && /^[0-9a-fA-F]{23}$/.test(salespersonId)) {
+        salespersonId = '0' + salespersonId;
+        console.log('ℹ️ Padded 23-char ID to 24:', filters.salesperson, '→', salespersonId);
+      }
+      
       try {
-        // Önce ObjectId olarak dene
-        query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-        console.log('✅ Salesperson filter added (ObjectId):', filters.salesperson);
+        // ObjectId olarak dene
+        query.salesperson = new mongoose.Types.ObjectId(salespersonId);
+        console.log('✅ Salesperson filter added:', salespersonId);
       } catch (error) {
-        // ObjectId başarısız olursa, user name ile ara
-        console.log('ℹ️ ObjectId failed, trying user lookup by ID:', filters.salesperson);
-        
-        const User = require('../models/User');
-        const user = await User.findOne({ 
-          $or: [
-            { _id: filters.salesperson },
-            { name: filters.salesperson },
-            { email: filters.salesperson }
-          ]
+        console.log('❌ Invalid salesperson ObjectId:', salespersonId, 'Error:', error.message);
+        return res.status(400).json({ 
+          message: `Geçersiz temsilci ID formatı: ${salespersonId}` 
         });
-        
-        if (user) {
-          query.salesperson = user._id;
-          console.log('✅ Salesperson found by lookup:', user.name, user._id);
-        } else {
-          console.log('❌ Salesperson not found:', filters.salesperson);
-          return res.status(400).json({ 
-            message: `Temsilci bulunamadı: ${filters.salesperson}` 
-          });
-        }
       }
     } else {
       console.log('ℹ️ Salesperson filter skipped (empty value)');
