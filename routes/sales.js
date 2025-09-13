@@ -2259,4 +2259,9 @@ router.post('/test-bulk', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// Test route for debugging
+router.get('/test-bulk', (req, res) => {
+  res.json({ message: 'Bulk test route working', timestamp: new Date() });
+});
+
 module.exports = router;
