@@ -99,8 +99,8 @@ const BulkPrimStatusManagement = () => {
     }
     
     if (filters.salesperson) {
-      const user = users.find(u => u._id === filters.salesperson);
-      descriptions.push(`Temsilci: ${user?.name}`);
+      // Artık filters.salesperson user name olduğu için direkt kullan
+      descriptions.push(`Temsilci: ${filters.salesperson}`);
     }
     
     if (filters.month && filters.year) {
