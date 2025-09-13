@@ -14,6 +14,13 @@ router.get('/', [auth, adminAuth], async (req, res) => {
       .select('name email role createdAt permissions customRole')
       .populate('customRole', 'name displayName')
       .sort({ name: 1 });
+    
+    console.log('Users with customRole populated:', users.map(u => ({ 
+      name: u.name, 
+      role: u.role, 
+      customRole: u.customRole,
+      createdAt: u.createdAt 
+    })));
 
     res.json(users);
   } catch (error) {
