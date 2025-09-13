@@ -505,18 +505,13 @@ const PrimEarnings = () => {
                     <td>
                       <div>
                         <div className="h5 mb-1 text-primary">
-                          {formatCurrency(earning.netUnpaidAmount || earning.unpaidAmount || 0)}
+                          {formatCurrency(earning.totalEarnings || 0)}
                         </div>
                         <div className="small text-muted">
                           Net Prim Hakediş
                         </div>
-                        {earning.totalDeductions < 0 && (
-                          <div className="small text-danger mt-1">
-                            Toplam Kesinti: {formatCurrency(Math.abs(earning.totalDeductions))}
-                          </div>
-                        )}
                         <div className="small text-info">
-                          Brüt: {formatCurrency((earning.paidAmount || 0) + (earning.unpaidAmount || 0))}
+                          Brüt: {formatCurrency(earning.totalEarnings || 0)}
                         </div>
                       </div>
                     </td>
