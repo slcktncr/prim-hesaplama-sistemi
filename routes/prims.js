@@ -233,36 +233,58 @@ router.get('/earnings', auth, async (req, res) => {
     
     let query = {};
     
-    // Tüm kullanıcılar tüm hakedişleri görebilir (sadece görüntüleme için)
+    // Temsilci filtresi (user name ile)
+    let salespersonFilter = {};
     if (salesperson && salesperson !== '') {
-      query.salesperson = new mongoose.Types.ObjectId(salesperson);
+      const User = require('../models/User');
+      const user = await User.findOne({ 
+        name: salesperson,
+        isActive: true,
+        isApproved: true
+      });
+      
+      if (user) {
+        salespersonFilter.salesperson = user._id;
+        console.log('✅ Salesperson found for earnings:', user.name, '→', user._id);
+      } else {
+        console.log('❌ Salesperson not found for earnings:', salesperson);
+        return res.status(400).json({ 
+          message: `Temsilci bulunamadı: ${salesperson}` 
+        });
+      }
     }
     
-    // Dönem filtresi
-    if (period && period !== '') {
-      query.primPeriod = new mongoose.Types.ObjectId(period);
-    }
-    
-    console.log('📊 Final query:', query);
-
     // Sale kayıtlarını saleDate'e göre gruplama yap
     const Sale = require('../models/Sale');
     
-    console.log('📊 Sales query for earnings:', {
+    // Dönem filtresi için PrimPeriod bilgisini al
+    let periodFilter = {};
+    if (period && period !== '') {
+      const PrimPeriod = require('../models/PrimPeriod');
+      const selectedPeriod = await PrimPeriod.findById(period);
+      if (selectedPeriod) {
+        // Seçilen dönemin ay/yılına göre saleDate filtresi ekle
+        const startDate = new Date(selectedPeriod.year, selectedPeriod.month - 1, 1);
+        const endDate = new Date(selectedPeriod.year, selectedPeriod.month, 0, 23, 59, 59);
+        periodFilter.saleDate = { $gte: startDate, $lte: endDate };
+        console.log('📅 Period filter applied:', selectedPeriod.name, startDate, endDate);
+      }
+    }
+    
+    const salesQuery = {
       status: 'aktif',
-      saleType: 'satis',
-      ...(query.salesperson && { salesperson: query.salesperson })
-    });
+      saleType: 'satis', // Sadece satışlar, kapora değil
+      saleDate: { $exists: true, $ne: null },
+      ...salespersonFilter,
+      ...periodFilter
+    };
+    
+    console.log('📊 Sales query for earnings:', salesQuery);
     
     // Sale kayıtlarını saleDate'e göre grupla
     const earnings = await Sale.aggregate([
       { 
-        $match: { 
-          status: 'aktif',
-          saleType: 'satis', // Sadece satışlar, kapora değil
-          saleDate: { $exists: true, $ne: null },
-          ...(query.salesperson && { salesperson: query.salesperson })
-        }
+        $match: salesQuery
       },
       {
         $addFields: {
