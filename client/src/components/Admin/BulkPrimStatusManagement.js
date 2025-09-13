@@ -111,6 +111,11 @@ const BulkPrimStatusManagement = () => {
     try {
       setPreviewLoading(true);
       
+      // Debug: Gönderilen değerleri logla
+      console.log('🔍 Frontend Preview Debug:');
+      console.log('📊 primStatus:', primStatus);
+      console.log('📊 filters:', filters);
+      
       // Önizleme için özel endpoint kullan
       const response = await salesAPI.previewBulkPrimStatus(primStatus, filters);
       
@@ -119,8 +124,14 @@ const BulkPrimStatusManagement = () => {
       
     } catch (error) {
       console.error('Preview error:', error);
+      console.log('📊 Error response data:', error.response?.data);
+      console.log('📊 Error status:', error.response?.status);
+      
       if (error.response?.status === 404) {
         toast.warning('Belirtilen kriterlere uygun satış bulunamadı');
+      } else if (error.response?.status === 400) {
+        const message = error.response?.data?.message || 'Geçersiz veri formatı';
+        toast.error('Validation hatası: ' + message);
       } else {
         toast.error('Önizleme yüklenirken hata oluştu');
       }

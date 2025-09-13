@@ -1770,13 +1770,17 @@ router.put('/:id/modify', [
 router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => {
   try {
     console.log('🔄 Bulk prim status preview started');
-    console.log('📊 Request body:', req.body);
+    console.log('📊 Request body:', JSON.stringify(req.body, null, 2));
     console.log('👤 User:', req.user?.name, req.user?.role);
     
     const { 
       primStatus, // 'ödendi' veya 'ödenmedi'
       filters // { period, salesperson, month, year, startDate, endDate }
     } = req.body;
+    
+    console.log('🔍 Extracted values:');
+    console.log('  - primStatus:', primStatus, typeof primStatus);
+    console.log('  - filters:', filters, typeof filters);
 
     if (!primStatus || !['ödendi', 'ödenmedi'].includes(primStatus)) {
       console.log('❌ Invalid prim status:', primStatus);
