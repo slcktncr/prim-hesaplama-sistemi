@@ -80,6 +80,14 @@ const PrimEarnings = () => {
       // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
       let filteredEarnings = earningsResponse.data || [];
       
+      console.log('🔍 Backend earnings response:', {
+        status: earningsResponse.status,
+        dataLength: filteredEarnings.length,
+        sampleData: filteredEarnings.slice(0, 2),
+        filters: filters,
+        fullResponse: earningsResponse
+      });
+      
       // Dönem filtresi varsa uygula
       if (filters.period && filters.period !== '') {
         const selectedPeriod = periods.find(p => p._id === filters.period);
