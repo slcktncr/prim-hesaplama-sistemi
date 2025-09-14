@@ -3,7 +3,7 @@ import { Row, Col, Card, Alert, Form, Button, Nav, Tab } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FiRefreshCw, FiCalendar, FiBarChart, FiUsers } from 'react-icons/fi';
 import { reportsAPI, primsAPI } from '../../utils/api';
-import { formatCurrency, formatNumber } from '../../utils/helpers';
+import { formatCurrency, formatNumber, getTodayDateString, getDateStringDaysAgo } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
 import StatsCard from './StatsCard';
@@ -17,6 +17,10 @@ const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dateFilters, setDateFilters] = useState({
+    startDate: getTodayDateString(),
+    endDate: getTodayDateString()
+  });
   
   const { user } = useAuth();
 
@@ -28,7 +32,7 @@ const Dashboard = () => {
     if (periods.length > 0) {
       fetchDashboardData();
     }
-  }, [selectedPeriod, periods]);
+  }, [selectedPeriod, periods, dateFilters]);
 
   const fetchPeriods = async () => {
     try {
@@ -43,7 +47,11 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const params = selectedPeriod !== 'all' ? { period: selectedPeriod } : {};
+      const params = {
+        ...(selectedPeriod !== 'all' ? { period: selectedPeriod } : {}),
+        startDate: dateFilters.startDate,
+        endDate: dateFilters.endDate
+      };
       const response = await reportsAPI.getDashboard(params);
       setDashboardData(response.data);
       setError(null);
@@ -123,34 +131,86 @@ const Dashboard = () => {
 
         <Tab.Content>
           <Tab.Pane eventKey="analytics">
-            {/* Dönem Seçici */}
-            <div className="d-flex justify-content-end align-items-center gap-3 mb-4">
-              <div className="d-flex align-items-center">
-                <FiCalendar className="me-2 text-muted" />
-                <Form.Select
-                  value={selectedPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  style={{ minWidth: '200px' }}
-                >
-                  <option value="all">Tüm Dönemler</option>
-                  <option value="current">Güncel Dönem</option>
-                  {periods.map(period => (
-                    <option key={period._id} value={period._id}>
-                      {period.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </div>
-              <Button 
-                variant="outline-primary" 
-                size="sm"
-                onClick={fetchDashboardData}
-                disabled={loading}
-              >
-                <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
-                Yenile
-              </Button>
-            </div>
+            {/* Filtreler */}
+            <Card className="mb-4">
+              <Card.Body>
+                <Row className="align-items-end">
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Başlangıç Tarihi</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={dateFilters.startDate}
+                        onChange={(e) => setDateFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label>Bitiş Tarihi</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={dateFilters.endDate}
+                        onChange={(e) => setDateFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Dönem Seçici</Form.Label>
+                      <Form.Select
+                        value={selectedPeriod}
+                        onChange={(e) => handlePeriodChange(e.target.value)}
+                      >
+                        <option value="all">Tüm Dönemler</option>
+                        <option value="current">Güncel Dönem</option>
+                        {periods.map(period => (
+                          <option key={period._id} value={period._id}>
+                            {period.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={2}>
+                    <Button 
+                      variant="primary" 
+                      onClick={fetchDashboardData}
+                      disabled={loading}
+                      className="w-100"
+                    >
+                      <FiRefreshCw className={`me-1 ${loading ? 'spin' : ''}`} />
+                      Filtrele
+                    </Button>
+                  </Col>
+                  <Col md={3}>
+                    <div className="d-flex gap-2">
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setDateFilters({ startDate: getTodayDateString(), endDate: getTodayDateString() })}
+                      >
+                        Bugün
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setDateFilters({ startDate: getDateStringDaysAgo(7), endDate: getTodayDateString() })}
+                      >
+                        Son 7 Gün
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setDateFilters({ startDate: getDateStringDaysAgo(30), endDate: getTodayDateString() })}
+                      >
+                        Son 30 Gün
+                      </Button>
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
 
       <style>{`
         .spin {

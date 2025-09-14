@@ -1965,4 +1965,183 @@ router.post('/export', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/reports/daily-report
+// @desc    Detaylı günlük rapor - tüm hareketler ve istatistikler
+// @access  Private
+router.get('/daily-report', auth, async (req, res) => {
+  try {
+    const { date = new Date().toISOString().split('T')[0] } = req.query;
+    
+    // Seçilen tarihin başlangıç ve bitiş saatleri
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    console.log(`📊 Daily report for ${date}:`, { startDate, endDate });
+
+    // Satış verileri
+    const salesData = await Sale.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          isDeleted: { $ne: true }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'salesperson'
+        }
+      },
+      {
+        $addFields: {
+          salesperson: { $arrayElemAt: ['$salesperson', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: '$saleType',
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$listPrice' },
+          totalPrim: { $sum: '$primAmount' },
+          sales: {
+            $push: {
+              _id: '$_id',
+              customerName: '$customerName',
+              phone: '$phone',
+              blockNo: '$blockNo',
+              apartmentNo: '$apartmentNo',
+              listPrice: '$listPrice',
+              activitySalePrice: '$activitySalePrice',
+              primAmount: '$primAmount',
+              salesperson: '$salesperson.name',
+              createdAt: '$createdAt',
+              saleType: '$saleType'
+            }
+          }
+        }
+      }
+    ]);
+
+    // İletişim verileri
+    const CommunicationRecord = require('../models/CommunicationRecord');
+    const communicationData = await CommunicationRecord.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $addFields: {
+          user: { $arrayElemAt: ['$user', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: '$user._id',
+          userName: { $first: '$user.name' },
+          totalCalls: { $sum: '$totalCalls' },
+          whatsappCount: { $sum: '$whatsappCount' },
+          totalContacts: { $sum: '$totalContacts' },
+          newCustomers: { $sum: '$newCustomers' },
+          records: {
+            $push: {
+              totalCalls: '$totalCalls',
+              whatsappCount: '$whatsappCount',
+              totalContacts: '$totalContacts',
+              newCustomers: '$newCustomers',
+              date: '$date'
+            }
+          }
+        }
+      }
+    ]);
+
+    // Günlük istatistikler
+    const dailyStats = {
+      totalSales: salesData.reduce((sum, item) => sum + item.count, 0),
+      totalRevenue: salesData.reduce((sum, item) => sum + item.totalAmount, 0),
+      totalPrim: salesData.reduce((sum, item) => sum + item.totalPrim, 0),
+      totalCommunications: communicationData.reduce((sum, item) => sum + item.totalCalls, 0),
+      totalWhatsApp: communicationData.reduce((sum, item) => sum + item.whatsappCount, 0),
+      totalContacts: communicationData.reduce((sum, item) => sum + item.totalContacts, 0),
+      totalNewCustomers: communicationData.reduce((sum, item) => sum + item.newCustomers, 0),
+      activeUsers: communicationData.length
+    };
+
+    // Satış türlerine göre dağılım
+    const salesByType = {};
+    salesData.forEach(item => {
+      salesByType[item._id] = {
+        count: item.count,
+        totalAmount: item.totalAmount,
+        totalPrim: item.totalPrim,
+        sales: item.sales
+      };
+    });
+
+    // En aktif kullanıcılar
+    const topUsers = communicationData
+      .sort((a, b) => (b.totalCalls + b.whatsappCount) - (a.totalCalls + a.whatsappCount))
+      .slice(0, 5);
+
+    // Saatlik dağılım (satışlar)
+    const hourlyDistribution = await Sale.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          isDeleted: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: { $hour: '$createdAt' },
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$listPrice' }
+        }
+      },
+      {
+        $sort: { '_id': 1 }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        date,
+        dailyStats,
+        salesByType,
+        communicationData,
+        topUsers,
+        hourlyDistribution,
+        salesData,
+        summary: {
+          totalTransactions: dailyStats.totalSales + dailyStats.totalCommunications,
+          averageRevenuePerSale: dailyStats.totalSales > 0 ? dailyStats.totalRevenue / dailyStats.totalSales : 0,
+          communicationEfficiency: dailyStats.totalContacts > 0 ? (dailyStats.totalSales / dailyStats.totalContacts * 100) : 0
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Daily report error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Günlük rapor oluşturulurken hata oluştu' 
+    });
+  }
+});
+
 module.exports = router;

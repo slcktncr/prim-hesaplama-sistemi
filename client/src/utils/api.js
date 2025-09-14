@@ -87,6 +87,7 @@ export const reportsAPI = {
   getTopPerformers: (params) => API.get('/reports/top-performers', { params }),
   getCancellationPerformance: (params) => API.get('/reports/cancellation-performance', { params }),
   getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
+  getDailyReport: (params) => API.get('/reports/daily-report', { params }),
   exportReport: (data) => API.post('/reports/export', data),
   exportExcel: (data) => API.post('/reports/export', data, { responseType: 'blob' }),
   exportPDF: (data) => API.post('/reports/export', data, { responseType: 'blob' })

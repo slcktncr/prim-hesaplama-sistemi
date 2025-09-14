@@ -31,6 +31,7 @@ import PeriodComparisonReport from './PeriodComparisonReport';
 import TopPerformersReport from './TopPerformersReport';
 import CancellationPerformanceReport from './CancellationPerformanceReport';
 import DetailedReport from './DetailedReport';
+import DailyReport from './DailyReport';
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('sales-summary');
@@ -264,6 +265,19 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               <CancellationPerformanceReport />
             </Tab>
 
+            {/* Daily Report Tab */}
+            <Tab 
+              eventKey="daily-report" 
+              title={
+                <span>
+                  <FiCalendar className="me-2" />
+                  Günlük Rapor
+                </span>
+              }
+            >
+              <DailyReport />
+            </Tab>
+
             {/* Detailed Report Tab */}
             <Tab 
               eventKey="detailed" 
@@ -327,6 +341,22 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               <div className="h6 mb-1">Dönem Analizi</div>
               <div className="small text-muted">
                 Aylık karşılaştırmalar
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
+          <Card 
+            className="text-center report-card h-100 shadow-sm" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setActiveTab('daily-report')}
+          >
+            <Card.Body className="p-3">
+              <FiCalendar size={24} className="text-danger mb-2" />
+              <div className="h6 mb-1">Günlük Rapor</div>
+              <div className="small text-muted">
+                Detaylı günlük analiz
               </div>
             </Card.Body>
           </Card>

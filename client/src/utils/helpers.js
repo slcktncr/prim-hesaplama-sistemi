@@ -223,6 +223,19 @@ export const getSaleTypeValue = (name) => {
     .substring(0, 20); // Maksimum 20 karakter
 };
 
+// Bugünün tarihini YYYY-MM-DD formatında döndürür
+export const getTodayDateString = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
+// Belirtilen gün kadar önceki tarihi YYYY-MM-DD formatında döndürür
+export const getDateStringDaysAgo = (daysAgo) => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date.toISOString().split('T')[0];
+};
+
 // Quick date filter helpers
 export const getQuickDateFilters = (currentFilters = {}) => {
   const today = new Date();
