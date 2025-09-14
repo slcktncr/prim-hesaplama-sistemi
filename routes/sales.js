@@ -612,7 +612,7 @@ router.get('/', auth, async (req, res) => {
       startDate = '',
       endDate = '',
       primPeriod = '',
-      sortBy = 'saleDate',
+      sortBy = 'effectiveDate',
       sortOrder = 'desc'
     } = req.query;
     
@@ -687,23 +687,74 @@ router.get('/', auth, async (req, res) => {
       query.primPeriod = primPeriod;
     }
 
+    // Sıralama - Karma tarih sıralaması için aggregation pipeline
+    let pipeline = [];
+    
+    // Match stage (query'yi uygula)
+    pipeline.push({ $match: query });
+    
+    // Karma tarih alanı oluştur (saleDate veya kaporaDate'den en son olanı)
+    pipeline.push({
+      $addFields: {
+        effectiveDate: {
+          $cond: {
+            if: { $and: [{ $ne: ["$saleDate", null] }, { $ne: ["$kaporaDate", null] }] },
+            then: { $max: ["$saleDate", "$kaporaDate"] }, // İkisi de varsa en son olanı
+            else: {
+              $cond: {
+                if: { $ne: ["$saleDate", null] },
+                then: "$saleDate",
+                else: "$kaporaDate"
+              }
+            }
+          }
+        }
+      }
+    });
+    
     // Sıralama
-    const sortOptions = {};
-    const validSortFields = ['createdAt', 'saleDate', 'kaporaDate', 'customerName', 'contractNo', 'primAmount'];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'saleDate';
+    const validSortFields = ['createdAt', 'saleDate', 'kaporaDate', 'customerName', 'contractNo', 'primAmount', 'effectiveDate'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'effectiveDate';
     const sortDirection = sortOrder === 'asc' ? 1 : -1;
-    sortOptions[sortField] = sortDirection;
+    
+    const sortStage = {};
+    sortStage[sortField] = sortDirection;
+    pipeline.push({ $sort: sortStage });
+    
+    // Pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limitNum });
+    
+    // Populate işlemleri için lookup'lar
+    pipeline.push({
+      $lookup: {
+        from: 'users',
+        localField: 'salesperson',
+        foreignField: '_id',
+        as: 'salesperson',
+        pipeline: [{ $project: { name: 1, email: 1 } }]
+      }
+    });
+    
+    pipeline.push({
+      $lookup: {
+        from: 'primperiods',
+        localField: 'primPeriod',
+        foreignField: '_id',
+        as: 'primPeriod',
+        pipeline: [{ $project: { name: 1 } }]
+      }
+    });
+    
+    // Array'leri tek objeye çevir
+    pipeline.push({
+      $addFields: {
+        salesperson: { $arrayElemAt: ["$salesperson", 0] },
+        primPeriod: { $arrayElemAt: ["$primPeriod", 0] }
+      }
+    });
 
-
-    // Satışları getir
-    const salesQuery = Sale.find(query)
-        .populate('salesperson', 'name email')
-        .populate('primPeriod', 'name')
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limitNum);
-
-    const sales = await salesQuery;
+    const sales = await Sale.aggregate(pipeline);
 
     // Satış türü adlarını ve renklerini ekle
     const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {
@@ -746,7 +797,13 @@ router.get('/', auth, async (req, res) => {
       return saleObj;
     }));
 
-    const total = await Sale.countDocuments(query);
+    // Total count için ayrı aggregation
+    const totalPipeline = [
+      { $match: query },
+      { $count: "total" }
+    ];
+    const totalResult = await Sale.aggregate(totalPipeline);
+    const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
     res.json({
       sales: salesWithTypeNames,

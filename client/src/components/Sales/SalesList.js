@@ -69,7 +69,7 @@ const SalesList = () => {
     salesperson: '' // temsilci filtresi
   });
   const [sorting, setSorting] = useState({
-    field: 'saleDate', // varsayılan sıralama alanı
+    field: 'effectiveDate', // karma tarih sıralaması (saleDate + kaporaDate)
     direction: 'desc' // 'asc' veya 'desc'
   });
   const [showFilters, setShowFilters] = useState(false);
