@@ -758,7 +758,7 @@ router.get('/', auth, async (req, res) => {
 
     // Satış türü adlarını ve renklerini ekle
     const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {
-      const saleObj = sale.toObject();
+      const saleObj = sale;
       
       // Satış türü adını ve rengini bul
       if (saleObj.saleType === 'kapora') {
