@@ -583,8 +583,17 @@ const SaleForm = () => {
       console.error('Error response data:', error.response?.data);
       console.error('Error response status:', error.response?.status);
       
-      const message = error.response?.data?.message || 
+      let message = error.response?.data?.message || 
         (isEdit ? 'Satış güncellenirken hata oluştu' : 'Satış eklenirken hata oluştu');
+      
+      // Validation errors varsa detayları göster
+      if (error.response?.data?.errors) {
+        const errorDetails = error.response.data.errors.map(err => err.msg).join(', ');
+        message = `${message}: ${errorDetails}`;
+      } else if (error.response?.data?.details) {
+        message = `${message}: ${error.response.data.details}`;
+      }
+      
       toast.error(message);
     } finally {
       setLoading(false);

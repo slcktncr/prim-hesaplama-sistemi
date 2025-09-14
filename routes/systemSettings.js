@@ -201,14 +201,24 @@ router.delete('/sale-types/:id', [auth, adminAuth], async (req, res) => {
 
 // @route   GET /api/system-settings/payment-types
 // @desc    Ödeme tiplerini listele
-// @access  Private (Admin only)
-router.get('/payment-types', [auth, adminAuth], async (req, res) => {
+// @access  Private (All authenticated users)
+router.get('/payment-types', [auth], async (req, res) => {
   try {
-    const paymentTypes = await PaymentType.find()
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
-
-    res.json(paymentTypes);
+    const isAdmin = req.user.role === 'admin';
+    
+    if (isAdmin) {
+      // Admin için tüm ödeme türleri (yönetim paneli için)
+      const paymentTypes = await PaymentType.find()
+        .populate('createdBy', 'name email')
+        .sort({ createdAt: -1 });
+      res.json(paymentTypes);
+    } else {
+      // Temsilciler için sadece aktif ödeme türleri
+      const paymentTypes = await PaymentType.find({ isActive: true })
+        .select('name description isDefault')
+        .sort({ createdAt: -1 });
+      res.json(paymentTypes);
+    }
   } catch (error) {
     console.error('Get payment types error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });

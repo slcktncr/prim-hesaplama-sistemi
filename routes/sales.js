@@ -397,7 +397,12 @@ router.post('/', auth, [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.log('❌ Validation errors:', errors.array());
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: errors.array(),
+        details: errors.array().map(err => `${err.param}: ${err.msg}`).join(', ')
+      });
     }
 
     const {
