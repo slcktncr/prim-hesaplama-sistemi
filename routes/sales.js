@@ -569,30 +569,54 @@ router.get('/upcoming-entries', auth, async (req, res) => {
       .sort({ kaporaDate: 1 })
       .limit(100);
 
-    // Gün gruplarına ayır
-    const groupedEntries = {};
+    // Gün gruplarına ayır ve tarih formatını düzenle
+    const groupedByDate = {};
+    const sortedDates = [];
+    
     upcomingEntries.forEach(sale => {
-      const dateKey = sale.kaporaDate.toISOString().split('T')[0];
-      if (!groupedEntries[dateKey]) {
-        groupedEntries[dateKey] = [];
+      // Tarih formatını DD/MM şeklinde düzenle
+      const date = new Date(sale.kaporaDate);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const dateKey = `${day}/${month}`;
+      
+      if (!groupedByDate[dateKey]) {
+        groupedByDate[dateKey] = [];
+        sortedDates.push(dateKey);
       }
-      groupedEntries[dateKey].push(sale);
+      groupedByDate[dateKey].push(sale);
+    });
+    
+    // Tarihleri sırala
+    sortedDates.sort((a, b) => {
+      const [dayA, monthA] = a.split('/').map(Number);
+      const [dayB, monthB] = b.split('/').map(Number);
+      const dateA = new Date(today.getFullYear(), monthA - 1, dayA);
+      const dateB = new Date(today.getFullYear(), monthB - 1, dayB);
+      return dateA - dateB;
     });
     
     res.json({
-      entries: upcomingEntries,
-      groupedEntries,
-      totalCount: upcomingEntries.length,
-      dateRange: {
-        start: today,
-        end: futureDate,
-        days: daysNum
+      success: true,
+      data: {
+        entries: upcomingEntries,
+        groupedByDate,
+        sortedDates,
+        totalCount: upcomingEntries.length,
+        dateRange: {
+          start: today,
+          end: futureDate,
+          days: daysNum
+        }
       }
     });
     
   } catch (error) {
     console.error('Upcoming entries error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Yaklaşan girişler yüklenirken sunucu hatası oluştu' 
+    });
   }
 });
 
