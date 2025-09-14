@@ -576,10 +576,27 @@ router.get('/upcoming-entries', auth, async (req, res) => {
 
     // Tüm kullanıcılar herkesi görebilir (admin kısıtlaması kaldırıldı)
 
+    console.log('🔍 Upcoming entries query:', JSON.stringify(query, null, 2));
+    console.log('📅 Target dates:', targetDates);
+    
+    // Debug: Tüm entryDate'li kayıtları kontrol et
+    const allEntriesWithDate = await Sale.find({ 
+      entryDate: { $exists: true, $ne: null, $ne: '' },
+      isDeleted: { $ne: true }
+    }).select('customerName entryDate salesperson').populate('salesperson', 'name').limit(10);
+    
+    console.log('🔍 Sample entries with entryDate:', allEntriesWithDate.map(s => ({
+      customer: s.customerName,
+      entryDate: s.entryDate,
+      salesperson: s.salesperson?.name
+    })));
+    
     const upcomingEntries = await Sale.find(query)
       .populate('salesperson', 'name email')
       .sort({ entryDate: 1, customerName: 1 })
       .limit(200);
+      
+    console.log(`📊 Found ${upcomingEntries.length} upcoming entries`);
 
     // Gün gruplarına ayır
     const groupedByDate = {};
