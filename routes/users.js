@@ -61,8 +61,19 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isActive: true,
       isApproved: true
     })
-      .select('name email role permissions')
+      .select('_id name email role createdAt updatedAt permissions customRole firstName lastName')
+      .populate('customRole', 'name displayName')
       .sort({ name: 1 });
+
+    console.log('🔍 ALL-USERS: Total users found:', users.length);
+    console.log('🔍 ALL-USERS: Sample user (first):', users[0]);
+    console.log('🔍 ALL-USERS: Users with customRole:', users.filter(u => u.customRole).map(u => ({ 
+      name: u.name, 
+      role: u.role, 
+      customRole: u.customRole,
+      createdAt: u.createdAt 
+    })));
+    console.log('🔍 ALL-USERS: Users without createdAt:', users.filter(u => !u.createdAt).map(u => u.name));
 
     res.json(users);
   } catch (error) {
