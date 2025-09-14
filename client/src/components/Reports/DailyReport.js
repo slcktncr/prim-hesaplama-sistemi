@@ -20,7 +20,7 @@ import {
   FiPhone, 
   FiMessageSquare,
   FiDollarSign,
-  FiBarChart3,
+  FiBarChart2,
   FiClock,
   FiRefreshCw,
   FiDownload
@@ -250,7 +250,7 @@ const DailyReport = () => {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="analytics">
-                  <FiBarChart3 className="me-2" />
+                  <FiBarChart2 className="me-2" />
                   Analitik
                 </Nav.Link>
               </Nav.Item>
