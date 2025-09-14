@@ -125,11 +125,11 @@ export const systemSettingsAPI = {
   updateSaleType: (id, data) => API.put(`/system-settings/sale-types/${id}`, data),
   deleteSaleType: (id) => API.delete(`/system-settings/sale-types/${id}`),
   
-  // Payment Types
-  getPaymentTypes: () => API.get('/system-settings/payment-types'),
-  createPaymentType: (data) => API.post('/system-settings/payment-types', data),
-  updatePaymentType: (id, data) => API.put(`/system-settings/payment-types/${id}`, data),
-  deletePaymentType: (id) => API.delete(`/system-settings/payment-types/${id}`)
+  // Payment Types (PaymentMethod kullanıyor)
+  getPaymentTypes: () => API.get('/payment-methods/active'),
+  createPaymentType: (data) => API.post('/payment-methods', data),
+  updatePaymentType: (id, data) => API.put(`/payment-methods/${id}`, data),
+  deletePaymentType: (id) => API.delete(`/payment-methods/${id}`)
 };
 
 // Communications API calls

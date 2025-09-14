@@ -8,7 +8,7 @@ const User = require('../models/User');
 const PrimRate = require('../models/PrimRate');
 const PrimPeriod = require('../models/PrimPeriod');
 const SaleType = require('../models/SaleType');
-const PaymentType = require('../models/PaymentType');
+const PaymentMethod = require('../models/PaymentMethod');
 
 const router = express.Router();
 
@@ -285,16 +285,16 @@ const validatePaymentType = async (value, { req }) => {
   if (!value) return true; // Optional field
   
   try {
-    const paymentTypes = await PaymentType.find({ isActive: true });
-    const matchingType = paymentTypes.find(type => type.name === value);
+    const paymentMethods = await PaymentMethod.find({ isActive: true });
+    const matchingMethod = paymentMethods.find(method => method.name === value);
     
-    if (!matchingType) {
-      throw new Error(`Geçersiz ödeme türü: ${value}`);
+    if (!matchingMethod) {
+      throw new Error(`Geçersiz ödeme yöntemi: ${value}`);
     }
     
     return true;
   } catch (error) {
-    throw new Error(`Ödeme türü doğrulama hatası: ${error.message}`);
+    throw new Error(`Ödeme yöntemi doğrulama hatası: ${error.message}`);
   }
 };
 
@@ -551,39 +551,43 @@ router.get('/upcoming-entries', auth, async (req, res) => {
     }
 
     const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysNum);
+    const currentYear = today.getFullYear();
+    
+    // Bugünden itibaren yaklaşan günleri hesapla
+    const targetDates = [];
+    for (let i = 0; i <= daysNum; i++) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + i);
+      const day = targetDate.getDate().toString().padStart(2, '0');
+      const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+      targetDates.push(`${day}/${month}`);
+    }
 
-    // Kullanıcı rolüne göre sorgu oluştur
+    // Tüm satışları getir (entryDate alanı dolu olanlar)
     let query = { 
-      saleType: 'kapora',
-      kaporaDate: {
-        $gte: today,
-        $lte: futureDate
+      entryDate: { 
+        $exists: true, 
+        $ne: null, 
+        $ne: '',
+        $in: targetDates 
       },
       isDeleted: { $ne: true }
     };
 
-    // Admin değilse sadece kendi satışlarını göster
-    if (req.user.role !== 'admin') {
-      query.salesperson = req.user._id;
-    }
+    // Tüm kullanıcılar herkesi görebilir (admin kısıtlaması kaldırıldı)
 
     const upcomingEntries = await Sale.find(query)
       .populate('salesperson', 'name email')
-      .sort({ kaporaDate: 1 })
-      .limit(100);
+      .sort({ entryDate: 1, customerName: 1 })
+      .limit(200);
 
-    // Gün gruplarına ayır ve tarih formatını düzenle
+    // Gün gruplarına ayır
     const groupedByDate = {};
     const sortedDates = [];
     
     upcomingEntries.forEach(sale => {
-      // Tarih formatını DD/MM şeklinde düzenle
-      const date = new Date(sale.kaporaDate);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const dateKey = `${day}/${month}`;
+      // entryDate zaten DD/MM formatında
+      const dateKey = sale.entryDate;
       
       if (!groupedByDate[dateKey]) {
         groupedByDate[dateKey] = [];
@@ -592,12 +596,21 @@ router.get('/upcoming-entries', auth, async (req, res) => {
       groupedByDate[dateKey].push(sale);
     });
     
-    // Tarihleri sırala
+    // Tarihleri sırala (bugüne yakın olanlar önce)
     sortedDates.sort((a, b) => {
       const [dayA, monthA] = a.split('/').map(Number);
       const [dayB, monthB] = b.split('/').map(Number);
-      const dateA = new Date(today.getFullYear(), monthA - 1, dayA);
-      const dateB = new Date(today.getFullYear(), monthB - 1, dayB);
+      const dateA = new Date(currentYear, monthA - 1, dayA);
+      const dateB = new Date(currentYear, monthB - 1, dayB);
+      
+      // Eğer tarih geçmişte kalıyorsa, gelecek yıla ait kabul et
+      if (dateA < today) {
+        dateA.setFullYear(currentYear + 1);
+      }
+      if (dateB < today) {
+        dateB.setFullYear(currentYear + 1);
+      }
+      
       return dateA - dateB;
     });
     
@@ -610,8 +623,8 @@ router.get('/upcoming-entries', auth, async (req, res) => {
         totalCount: upcomingEntries.length,
         dateRange: {
           start: today,
-          end: futureDate,
-          days: daysNum
+          days: daysNum,
+          targetDates: targetDates
         }
       }
     });
