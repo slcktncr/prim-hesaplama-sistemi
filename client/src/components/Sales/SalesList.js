@@ -62,7 +62,7 @@ const SalesList = () => {
     search: '',
     period: '',
     page: 1,
-    limit: 10,
+    limit: 20,
     primStatus: '', // 'ödendi', 'ödenmedi', ''
     startDate: '',
     endDate: '',

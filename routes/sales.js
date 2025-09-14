@@ -612,7 +612,7 @@ router.get('/', auth, async (req, res) => {
       startDate = '',
       endDate = '',
       primPeriod = '',
-      sortBy = 'createdAt',
+      sortBy = 'saleDate',
       sortOrder = 'desc'
     } = req.query;
     
@@ -690,7 +690,7 @@ router.get('/', auth, async (req, res) => {
     // Sıralama
     const sortOptions = {};
     const validSortFields = ['createdAt', 'saleDate', 'kaporaDate', 'customerName', 'contractNo', 'primAmount'];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'saleDate';
     const sortDirection = sortOrder === 'asc' ? 1 : -1;
     sortOptions[sortField] = sortDirection;
 
