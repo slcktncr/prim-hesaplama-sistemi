@@ -355,6 +355,11 @@ router.post('/', auth, [
   body('apartmentNo').trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').custom(async (value, { req }) => {
+    // Kapora için sözleşme no zorunlu değil
+    if (req.body.saleType === 'kapora') {
+      return true;
+    }
+    
     if (!value || value.trim() === '') {
       throw new Error('Sözleşme no gereklidir');
     }
@@ -944,6 +949,11 @@ router.put('/:id', auth, [
   body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').optional().custom(async (value, { req }) => {
+    // Kapora için sözleşme no zorunlu değil
+    if (req.body.saleType === 'kapora') {
+      return true;
+    }
+    
     if (!value || value.trim() === '') {
       throw new Error('Sözleşme no gereklidir');
     }
