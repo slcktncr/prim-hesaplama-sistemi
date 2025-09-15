@@ -190,6 +190,7 @@ const SaleForm = () => {
         });
         return isRequired;
       case 'listPrice':
+        return true; // Liste fiyatı her zaman zorunlu (kapora dahil)
       case 'activitySalePrice':
       case 'paymentType':
         return saleTypeValue !== 'kapora';

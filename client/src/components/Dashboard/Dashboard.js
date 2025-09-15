@@ -271,18 +271,24 @@ const Dashboard = () => {
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
             title={selectedPeriod === 'all' ? "Ödenen Primler" : "Dönem Ödenen Primler"}
-            value={formatNumber(paidPrims)}
+            value={formatCurrency(dashboardData?.primBreakdown?.paid?.totalPrim || 0)}
             icon="check-circle"
             color="success"
           />
+          <div className="mt-2 small text-muted text-center">
+            {formatNumber(dashboardData?.primBreakdown?.paid?.count || 0)} adet
+          </div>
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
             title={selectedPeriod === 'all' ? "Ödenmemiş Primler" : "Dönem Ödenmemiş Primler"}
-            value={formatNumber(unpaidPrims)}
+            value={formatCurrency(dashboardData?.primBreakdown?.unpaid?.totalPrim || 0)}
             icon="clock"
             color="warning"
           />
+          <div className="mt-2 small text-muted text-center">
+            {formatNumber(dashboardData?.primBreakdown?.unpaid?.count || 0)} adet
+          </div>
         </Col>
         <Col lg={3} md={6} className="mb-3">
           <StatsCard
@@ -331,7 +337,10 @@ const Dashboard = () => {
                 color="warning"
               />
               <div className="mt-2 small text-muted text-center">
-                Ciro: {formatCurrency(saleTypesStats.kapora?.totalAmount || 0)}
+                Liste Fiyatı: {formatCurrency(saleTypesStats.kapora?.totalListPrice || 0)}
+              </div>
+              <div className="mt-1 small text-muted text-center">
+                Aktivite: {formatCurrency(saleTypesStats.kapora?.totalAmount || 0)}
               </div>
             </Col>
             <Col lg={3} md={6} className="mb-3">

@@ -126,18 +126,46 @@ router.get('/dashboard', auth, async (req, res) => {
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
+    // Satış türlerine göre ayrıştırılmış istatistikler
+    const salesByType = await Sale.aggregate([
+      { $match: { ...query, status: 'aktif' } },
+      {
+        $group: {
+          _id: '$saleType',
+          count: { $sum: 1 },
+          totalRevenue: { $sum: '$activitySalePrice' }, // Aktivite satış fiyatı
+          totalListPrice: { $sum: '$listPrice' }, // Liste fiyatı
+          totalPrim: { $sum: '$primAmount' }
+        }
+      }
+    ]);
+
     // Genel istatistikler
     const totalSales = await Sale.countDocuments({ ...query, status: 'aktif' });
     const cancelledSales = await Sale.countDocuments({ ...query, status: 'iptal' });
     
+    // Toplam ciro (aktivite satış fiyatı)
     const totalSalesAmount = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
-      { $group: { _id: null, total: { $sum: '$basePrimPrice' } } }
+      { $group: { _id: null, total: { $sum: '$activitySalePrice' } } }
     ]);
     
+    // Toplam prim tutarı
     const totalPrimAmount = await Sale.aggregate([
       { $match: { ...query, status: 'aktif' } },
       { $group: { _id: null, total: { $sum: '$primAmount' } } }
+    ]);
+
+    // Prim durumlarına göre ayrıştırma
+    const primStatusBreakdown = await Sale.aggregate([
+      { $match: { ...query, status: 'aktif' } },
+      {
+        $group: {
+          _id: '$primStatus',
+          count: { $sum: 1 },
+          totalPrim: { $sum: '$primAmount' }
+        }
+      }
     ]);
 
     // Bu ayki satışlar (dönem seçiliyse dönem bazlı, değilse bu ay)
@@ -157,38 +185,30 @@ router.get('/dashboard', auth, async (req, res) => {
       });
     }
 
-    // Prim durumları
-    const paidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödendi' });
-    const unpaidPrims = await Sale.countDocuments({ ...query, status: 'aktif', primStatus: 'ödenmedi' });
+    // Prim durumları (geriye uyumluluk için)
+    const paidPrims = primStatusBreakdown.find(item => item._id === 'ödendi')?.count || 0;
+    const unpaidPrims = primStatusBreakdown.find(item => item._id === 'ödenmedi')?.count || 0;
 
-    // Satış türlerine göre istatistikler
-    const salesByType = await Sale.aggregate([
-      { $match: { ...query, status: 'aktif' } },
-      { 
-        $group: { 
-          _id: '$saleType', 
-          count: { $sum: 1 },
-          totalAmount: { $sum: '$basePrimPrice' },
-          totalPrim: { $sum: '$primAmount' },
-          avgAmount: { $avg: '$basePrimPrice' }
-        } 
-      },
-      { $sort: { count: -1 } }
-    ]);
-
-    // Debug: Gerçek saleType değerlerini logla
-    console.log('🔍 Dashboard - Gerçek saleType değerleri:', salesByType.map(item => item._id));
-
-    // SaleType tablosundan dinamik mapping al
-    const SaleType = require('../models/SaleType');
-    const activeSaleTypes = await SaleType.find({ isActive: true }).select('name');
-    
-    // Satış türlerini dinamik olarak düzenle
+    // Eski format için saleTypesStats (geriye uyumluluk)
     const saleTypesStats = {};
-    
-    // Varsayılan türleri ekle
-    saleTypesStats.satis = salesByType.find(item => item._id === 'satis') || { _id: 'satis', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
-    saleTypesStats.kapora = salesByType.find(item => item._id === 'kapora') || { _id: 'kapora', count: 0, totalAmount: 0, totalPrim: 0, avgAmount: 0 };
+    salesByType.forEach(item => {
+      saleTypesStats[item._id] = {
+        _id: item._id,
+        count: item.count,
+        totalAmount: item.totalRevenue, // Aktivite satış fiyatı
+        totalListPrice: item.totalListPrice, // Liste fiyatı
+        totalPrim: item.totalPrim,
+        avgAmount: item.count > 0 ? item.totalRevenue / item.count : 0
+      };
+    });
+
+    // Varsayılan türleri ekle (yoksa)
+    if (!saleTypesStats.satis) {
+      saleTypesStats.satis = { _id: 'satis', count: 0, totalAmount: 0, totalListPrice: 0, totalPrim: 0, avgAmount: 0 };
+    }
+    if (!saleTypesStats.kapora) {
+      saleTypesStats.kapora = { _id: 'kapora', count: 0, totalAmount: 0, totalListPrice: 0, totalPrim: 0, avgAmount: 0 };
+    }
     
     // Dinamik türleri SaleType tablosundan al
     activeSaleTypes.forEach(saleType => {
@@ -321,6 +341,40 @@ router.get('/dashboard', auth, async (req, res) => {
       };
     }
 
+    // Satış türlerini organize et
+    const salesBreakdown = {
+      regular: { count: 0, totalRevenue: 0, totalListPrice: 0, totalPrim: 0 },
+      kapora: { count: 0, totalRevenue: 0, totalListPrice: 0, totalPrim: 0 },
+      yazlik: { count: 0, totalRevenue: 0, totalListPrice: 0, totalPrim: 0 },
+      kislik: { count: 0, totalRevenue: 0, totalListPrice: 0, totalPrim: 0 }
+    };
+
+    salesByType.forEach(item => {
+      if (item._id === 'satis') {
+        salesBreakdown.regular = item;
+      } else if (item._id === 'kapora') {
+        salesBreakdown.kapora = item;
+      } else if (item._id === 'yazlik') {
+        salesBreakdown.yazlik = item;
+      } else if (item._id === 'kislik') {
+        salesBreakdown.kislik = item;
+      }
+    });
+
+    // Prim durumlarını organize et
+    const primBreakdown = {
+      paid: { count: 0, totalPrim: 0 },
+      unpaid: { count: 0, totalPrim: 0 }
+    };
+
+    primStatusBreakdown.forEach(item => {
+      if (item._id === 'ödendi') {
+        primBreakdown.paid = item;
+      } else if (item._id === 'ödenmedi') {
+        primBreakdown.unpaid = item;
+      }
+    });
+
     res.json({
       totalSales,
       cancelledSales,
@@ -330,7 +384,12 @@ router.get('/dashboard', auth, async (req, res) => {
       paidPrims,
       unpaidPrims,
       topPerformers,
-      saleTypesStats // Satış türleri istatistikleri
+      saleTypesStats, // Eski format (geriye uyumluluk)
+      // Yeni detaylı veriler
+      salesBreakdown,
+      primBreakdown,
+      salesByType, // Ham veri
+      primStatusBreakdown // Ham veri
     });
   } catch (error) {
     console.error('Dashboard error:', error);
