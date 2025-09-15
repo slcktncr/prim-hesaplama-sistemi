@@ -149,51 +149,87 @@ const DailyReport = () => {
         <>
           {/* Özet İstatistikler */}
           <Row className="mb-4">
+            {/* Normal Satış Kartı */}
             <Col lg={3} md={6} className="mb-3">
               <Card className="h-100 border-primary">
                 <Card.Body className="text-center">
                   <FiTrendingUp className="display-4 text-primary mb-2" />
-                  <h3 className="text-primary">{formatNumber(dailyStats.totalSales)}</h3>
-                  <p className="text-muted mb-0">Toplam Satış</p>
+                  <h3 className="text-primary">{formatNumber(dailyStats.salesBreakdown?.regular?.count || 0)}</h3>
+                  <p className="text-muted mb-0">Normal Satış</p>
                   <small className="text-success">
-                    {formatCurrency(dailyStats.totalRevenue)} ciro
+                    {formatCurrency(dailyStats.salesBreakdown?.regular?.totalAmount || 0)} ciro
                   </small>
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Kapora Kartı */}
             <Col lg={3} md={6} className="mb-3">
-              <Card className="h-100 border-info">
+              <Card className="h-100 border-secondary">
                 <Card.Body className="text-center">
-                  <FiPhone className="display-4 text-info mb-2" />
-                  <h3 className="text-info">{formatNumber(dailyStats.totalCommunications)}</h3>
-                  <p className="text-muted mb-0">Toplam Arama</p>
-                  <small className="text-info">
-                    {formatNumber(dailyStats.totalWhatsApp)} WhatsApp
+                  <FiDollarSign className="display-4 text-secondary mb-2" />
+                  <h3 className="text-secondary">{formatNumber(dailyStats.salesBreakdown?.kapora?.count || 0)}</h3>
+                  <p className="text-muted mb-0">Kapora</p>
+                  <small className="text-secondary">
+                    {formatCurrency(dailyStats.salesBreakdown?.kapora?.totalAmount || 0)} tutar
                   </small>
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Detaylı İletişim Kartı */}
             <Col lg={3} md={6} className="mb-3">
               <Card className="h-100 border-warning">
                 <Card.Body className="text-center">
                   <FiUsers className="display-4 text-warning mb-2" />
                   <h3 className="text-warning">{formatNumber(dailyStats.totalContacts)}</h3>
                   <p className="text-muted mb-0">Toplam İletişim</p>
-                  <small className="text-warning">
-                    {formatNumber(dailyStats.totalNewCustomers)} yeni müşteri
-                  </small>
+                  <div className="mt-2">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">📞 Gelen Arama:</small>
+                      <Badge bg="info">{formatNumber(dailyStats.communicationBreakdown?.callIncoming || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">📞 Giden Arama:</small>
+                      <Badge bg="primary">{formatNumber(dailyStats.communicationBreakdown?.callOutgoing || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">💬 WhatsApp:</small>
+                      <Badge bg="success">{formatNumber(dailyStats.communicationBreakdown?.whatsappIncoming || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">👤 Yeni Müşteri:</small>
+                      <Badge bg="warning">{formatNumber(dailyStats.communicationBreakdown?.newCustomerMeetings || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <small className="text-muted">🤝 Satış Sonrası:</small>
+                      <Badge bg="secondary">{formatNumber(dailyStats.communicationBreakdown?.meetingAfterSale || 0)}</Badge>
+                    </div>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Toplam Prim Kartı */}
             <Col lg={3} md={6} className="mb-3">
               <Card className="h-100 border-success">
                 <Card.Body className="text-center">
                   <FiDollarSign className="display-4 text-success mb-2" />
                   <h3 className="text-success">{formatCurrency(dailyStats.totalPrim)}</h3>
                   <p className="text-muted mb-0">Toplam Prim</p>
-                  <small className="text-success">
-                    {dailyStats.activeUsers} aktif kullanıcı
-                  </small>
+                  <div className="mt-2">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">Normal Satış:</small>
+                      <Badge bg="success">{formatCurrency(dailyStats.salesBreakdown?.regular?.totalPrim || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <small className="text-muted">Kapora:</small>
+                      <Badge bg="secondary">{formatCurrency(dailyStats.salesBreakdown?.kapora?.totalPrim || 0)}</Badge>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <small className="text-success">👥 {dailyStats.activeUsers} aktif kullanıcı</small>
+                    </div>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>

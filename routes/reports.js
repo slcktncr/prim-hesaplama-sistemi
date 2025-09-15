@@ -2085,23 +2085,89 @@ router.get('/daily-report', auth, async (req, res) => {
       }
     ]);
 
+    // Satış türlerine göre ayrıştırılmış istatistikler
+    const salesStats = {
+      regular: { count: 0, totalAmount: 0, totalPrim: 0 }, // Normal satış
+      kapora: { count: 0, totalAmount: 0, totalPrim: 0 }   // Kapora
+    };
+    
+    salesData.forEach(item => {
+      if (item._id === 'kapora') {
+        salesStats.kapora.count += item.count;
+        salesStats.kapora.totalAmount += item.totalAmount;
+        salesStats.kapora.totalPrim += item.totalPrim;
+      } else {
+        salesStats.regular.count += item.count;
+        salesStats.regular.totalAmount += item.totalAmount;
+        salesStats.regular.totalPrim += item.totalPrim;
+      }
+    });
+
+    // Detaylı iletişim istatistikleri
+    const communicationStats = {
+      totalCalls: communicationData.reduce((sum, item) => sum + item.totalCalls, 0),
+      whatsappIncoming: communicationData.reduce((sum, item) => sum + item.whatsappCount, 0),
+      totalContacts: communicationData.reduce((sum, item) => sum + item.totalContacts, 0),
+      newCustomerMeetings: communicationData.reduce((sum, item) => sum + item.newCustomers, 0),
+      // Detaylı iletişim türleri için ek hesaplamalar
+      callIncoming: 0,
+      callOutgoing: 0,
+      meetingAfterSale: 0
+    };
+
+    // Detaylı iletişim türleri için ayrı aggregation
+    const detailedCommunicationStats = await CommunicationRecord.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          callIncoming: { $sum: '$callIncoming' },
+          callOutgoing: { $sum: '$callOutgoing' },
+          whatsappIncoming: { $sum: '$whatsappIncoming' },
+          meetingNewCustomer: { $sum: '$meetingNewCustomer' },
+          meetingAfterSale: { $sum: '$meetingAfterSale' },
+          totalCommunication: { $sum: '$totalCommunication' }
+        }
+      }
+    ]);
+
+    // İletişim istatistiklerini güncelle
+    if (detailedCommunicationStats.length > 0) {
+      const details = detailedCommunicationStats[0];
+      communicationStats.callIncoming = details.callIncoming;
+      communicationStats.callOutgoing = details.callOutgoing;
+      communicationStats.whatsappIncoming = details.whatsappIncoming;
+      communicationStats.meetingAfterSale = details.meetingAfterSale;
+      communicationStats.newCustomerMeetings = details.meetingNewCustomer;
+      communicationStats.totalContacts = details.totalCommunication;
+      communicationStats.totalCalls = details.callIncoming + details.callOutgoing;
+    }
+
+    // Genel günlük istatistikler
+    const dailyStats = {
+      totalSales: salesStats.regular.count + salesStats.kapora.count,
+      totalRevenue: salesStats.regular.totalAmount + salesStats.kapora.totalAmount,
+      totalPrim: salesStats.regular.totalPrim + salesStats.kapora.totalPrim,
+      totalCommunications: communicationStats.totalCalls,
+      totalWhatsApp: communicationStats.whatsappIncoming,
+      totalContacts: communicationStats.totalContacts,
+      totalNewCustomers: communicationStats.newCustomerMeetings,
+      activeUsers: communicationData.length,
+      // Yeni ayrıştırılmış veriler
+      salesBreakdown: salesStats,
+      communicationBreakdown: communicationStats
+    };
+
     console.log('📊 Daily report debug:');
     console.log('📅 Date range:', { startDate, endDate });
     console.log('📈 Sales data count:', salesData.length);
     console.log('📞 Communication data count:', communicationData.length);
-    console.log('📞 Communication data sample:', communicationData.slice(0, 2));
-
-    // Günlük istatistikler
-    const dailyStats = {
-      totalSales: salesData.reduce((sum, item) => sum + item.count, 0),
-      totalRevenue: salesData.reduce((sum, item) => sum + item.totalAmount, 0),
-      totalPrim: salesData.reduce((sum, item) => sum + item.totalPrim, 0),
-      totalCommunications: communicationData.reduce((sum, item) => sum + item.totalCalls, 0),
-      totalWhatsApp: communicationData.reduce((sum, item) => sum + item.whatsappCount, 0),
-      totalContacts: communicationData.reduce((sum, item) => sum + item.totalContacts, 0),
-      totalNewCustomers: communicationData.reduce((sum, item) => sum + item.newCustomers, 0),
-      activeUsers: communicationData.length
-    };
+    console.log('💰 Sales breakdown:', salesStats);
+    console.log('📞 Communication breakdown:', communicationStats);
 
     // Satış türlerine göre dağılım
     const salesByType = {};
