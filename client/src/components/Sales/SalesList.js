@@ -580,35 +580,38 @@ const SalesList = () => {
                         </small>
                       </td>
                       <td>
-                        {sale.saleType === 'kapora' ? (
-                          <div className="text-muted">
-                            <small>Kapora - Fiyat Bilgisi Yok</small>
-                          </div>
-                        ) : (
+                        <div>
+                          {/* Liste Fiyatı - Kapora dahil tüm türler için */}
                           <div>
-                            {/* İndirim Öncesi Orijinal Liste Fiyatı */}
-                            <div>
-                              <strong>Liste: {formatCurrency(sale.originalListPrice || sale.listPrice)}</strong>
-                            </div>
-                            
-                            {/* İndirim Varsa Göster */}
-                            {sale.discountRate > 0 && (
-                              <div>
-                                <small className="text-success">
-                                  İndirimli: {formatCurrency(sale.discountedListPrice || (sale.listPrice * (1 - sale.discountRate / 100)))}
-                                </small>
-                                <Badge bg="success" className="ms-1" style={{ fontSize: '0.6rem' }}>
-                                  %{sale.discountRate} İndirim
-                                </Badge>
-                              </div>
+                            <strong>Liste: {formatCurrency(sale.originalListPrice || sale.listPrice)}</strong>
+                            {sale.saleType === 'kapora' && (
+                              <Badge bg="warning" className="ms-1" style={{ fontSize: '0.6rem' }}>
+                                Kapora
+                              </Badge>
                             )}
-                            
-                            {/* Aktivite Fiyatı */}
+                          </div>
+                          
+                          {/* İndirim Varsa Göster - Kapora dışında */}
+                          {sale.saleType !== 'kapora' && sale.discountRate > 0 && (
+                            <div>
+                              <small className="text-success">
+                                İndirimli: {formatCurrency(sale.discountedListPrice || (sale.listPrice * (1 - sale.discountRate / 100)))}
+                              </small>
+                              <Badge bg="success" className="ms-1" style={{ fontSize: '0.6rem' }}>
+                                %{sale.discountRate} İndirim
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          {/* Aktivite Fiyatı - Kapora dışında */}
+                          {sale.saleType !== 'kapora' && (
                             <div>
                               <small>Aktivite: {formatCurrency(sale.activitySalePrice)}</small>
                             </div>
-                            
-                            {/* Prim Hesaplama Tabanı */}
+                          )}
+                          
+                          {/* Prim Hesaplama Tabanı - Kapora dışında */}
+                          {sale.saleType !== 'kapora' && (
                             <div>
                               <small className="text-info">
                                 Prim Tabanı: {(() => {
@@ -626,12 +629,15 @@ const SalesList = () => {
                                 })()}
                               </small>
                             </div>
-                            
+                          )}
+                          
+                          {/* Ödeme Tipi Badge - Kapora dışında */}
+                          {sale.saleType !== 'kapora' && (
                             <Badge bg={getPaymentTypeClass(sale.paymentType)} className="mt-1">
                               {sale.paymentType}
                             </Badge>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </td>
                       <td>
                         <div>
