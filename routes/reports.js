@@ -92,7 +92,7 @@ function generateDailyHistoricalData(historicalYears, startDate, endDate, salesp
 router.get('/dashboard', auth, async (req, res) => {
   try {
     let query = {};
-    const { period } = req.query;
+    const { period, startDate, endDate } = req.query;
     
     // Dönem filtresi
     if (period && period !== 'all') {
@@ -106,9 +106,22 @@ router.get('/dashboard', auth, async (req, res) => {
       }
     }
     
+    // Tarih aralığı filtresi (saleDate bazlı)
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Günün sonuna kadar
+      
+      query.saleDate = {
+        $gte: start,
+        $lte: end
+      };
+    }
+    
     if (process.env.NODE_ENV === 'development') {
       console.log('📊 Dashboard query:', JSON.stringify(query, null, 2));
       console.log('📅 Selected period:', period);
+      console.log('📅 Date filters:', { startDate, endDate });
     }
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
@@ -1981,11 +1994,14 @@ router.get('/daily-report', auth, async (req, res) => {
     
     console.log(`📊 Daily report for ${date}:`, { startDate, endDate });
 
-    // Satış verileri
+    // Satış verileri (saleDate veya kaporaDate bazlı)
     const salesData = await Sale.aggregate([
       {
         $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
+          $or: [
+            { saleDate: { $gte: startDate, $lte: endDate } },
+            { kaporaDate: { $gte: startDate, $lte: endDate } }
+          ],
           isDeleted: { $ne: true }
         }
       },
@@ -2038,7 +2054,7 @@ router.get('/daily-report', auth, async (req, res) => {
       {
         $lookup: {
           from: 'users',
-          localField: 'user',
+          localField: 'salesperson',
           foreignField: '_id',
           as: 'user'
         }
@@ -2101,13 +2117,27 @@ router.get('/daily-report', auth, async (req, res) => {
     const hourlyDistribution = await Sale.aggregate([
       {
         $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
+          $or: [
+            { saleDate: { $gte: startDate, $lte: endDate } },
+            { kaporaDate: { $gte: startDate, $lte: endDate } }
+          ],
           isDeleted: { $ne: true }
         }
       },
       {
+        $addFields: {
+          effectiveDate: {
+            $cond: {
+              if: { $ne: ["$saleDate", null] },
+              then: "$saleDate",
+              else: "$kaporaDate"
+            }
+          }
+        }
+      },
+      {
         $group: {
-          _id: { $hour: '$createdAt' },
+          _id: { $hour: '$effectiveDate' },
           count: { $sum: 1 },
           totalAmount: { $sum: '$listPrice' }
         }
