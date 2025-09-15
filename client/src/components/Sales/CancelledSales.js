@@ -21,7 +21,7 @@ import {
   FiCalendar
 } from 'react-icons/fi';
 
-import { salesAPI, primsAPI } from '../../utils/api';
+import { salesAPI, primsAPI, usersAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
   formatCurrency, 
@@ -37,6 +37,7 @@ import Loading from '../Common/Loading';
 const CancelledSales = () => {
   const [sales, setSales] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -44,7 +45,8 @@ const CancelledSales = () => {
     period: '',
     page: 1,
     limit: 10,
-    status: 'iptal'
+    status: 'iptal',
+    salesperson: '' // temsilci filtresi
   });
   const [pagination, setPagination] = useState({
     totalPages: 1,
@@ -61,6 +63,7 @@ const CancelledSales = () => {
 
   useEffect(() => {
     fetchPeriods();
+    fetchUsers(); // Tüm kullanıcılar temsilci listesini görebilir
   }, []);
 
   useEffect(() => {
@@ -94,6 +97,15 @@ const CancelledSales = () => {
       setPeriods(response.data || []);
     } catch (error) {
       console.error('Periods fetch error:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getUsersForFilters(); // Tüm kullanıcılar erişebilir
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Users fetch error:', error);
     }
   };
 
@@ -152,7 +164,7 @@ const CancelledSales = () => {
       <Card className="mb-4">
         <Card.Body>
           <Row>
-            <Col md={6}>
+            <Col md={4}>
               <Form.Group>
                 <Form.Label>Arama</Form.Label>
                 <InputGroup>
@@ -168,7 +180,7 @@ const CancelledSales = () => {
                 </InputGroup>
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Form.Group>
                 <Form.Label>Dönem</Form.Label>
                 <Form.Select
@@ -179,6 +191,25 @@ const CancelledSales = () => {
                   {periods.map(period => (
                     <option key={period._id} value={period._id}>
                       {period.name}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>
+                  <FiUser className="me-1" />
+                  Temsilci
+                </Form.Label>
+                <Form.Select
+                  value={filters.salesperson}
+                  onChange={(e) => handleFilterChange('salesperson', e.target.value)}
+                >
+                  <option value="">Tüm Temsilciler</option>
+                  {users.map(user => (
+                    <option key={user._id} value={user.name}>
+                      {user.name}
                     </option>
                   ))}
                 </Form.Select>

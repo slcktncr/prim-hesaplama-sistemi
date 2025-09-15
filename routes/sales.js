@@ -720,9 +720,24 @@ router.get('/', auth, async (req, res) => {
       query.status = status;
     }
 
-    // Temsilci filtresi (sadece admin için)
-    if (salesperson && req.user.role === 'admin') {
-      query.salesperson = salesperson;
+    // Temsilci filtresi (tüm kullanıcılar için)
+    if (salesperson) {
+      // Eğer ObjectId ise direkt kullan, değilse isim ile ara
+      if (mongoose.Types.ObjectId.isValid(salesperson)) {
+        query.salesperson = new mongoose.Types.ObjectId(salesperson);
+      } else {
+        const User = require('../models/User');
+        const user = await User.findOne({ 
+          name: salesperson,
+          isActive: true,
+          isApproved: true
+        });
+        
+        if (user) {
+          query.salesperson = user._id;
+        }
+        // Kullanıcı bulunamazsa filtreyi uygulama (boş sonuç döner)
+      }
     }
     
     // Tarih aralığı filtresi
@@ -1136,6 +1151,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
     }
 
     sale.isCancelled = true;
+    sale.status = 'iptal'; // Status field'ını da güncelle
     sale.cancelledAt = new Date();
     sale.cancelledBy = req.user._id;
     sale.updatedAt = new Date();
@@ -1181,6 +1197,7 @@ router.put('/:id/restore', auth, async (req, res) => {
     }
 
     sale.isCancelled = false;
+    sale.status = 'aktif'; // Status field'ını da geri al
     sale.cancelledAt = null;
     sale.cancelledBy = null;
     sale.updatedAt = new Date();

@@ -66,7 +66,8 @@ const SalesList = () => {
     primStatus: '', // 'ödendi', 'ödenmedi', ''
     startDate: '',
     endDate: '',
-    salesperson: '' // temsilci filtresi
+    salesperson: '', // temsilci filtresi
+    status: 'aktif' // Sadece aktif satışları göster (iptal edilenleri gizle)
   });
   const [sorting, setSorting] = useState({
     field: 'effectiveDate', // karma tarih sıralaması (saleDate + kaporaDate)
