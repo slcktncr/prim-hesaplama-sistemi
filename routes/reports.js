@@ -7,6 +7,7 @@ const PrimTransaction = require('../models/PrimTransaction');
 const User = require('../models/User');
 const PrimPeriod = require('../models/PrimPeriod');
 const CommunicationYear = require('../models/CommunicationYear');
+const SaleType = require('../models/SaleType');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -139,6 +140,9 @@ router.get('/dashboard', auth, async (req, res) => {
         }
       }
     ]);
+
+    // Aktif satış türlerini getir
+    const activeSaleTypes = await SaleType.find({ isActive: true }).sort({ sortOrder: 1 });
 
     // Genel istatistikler
     const totalSales = await Sale.countDocuments({ ...query, status: 'aktif' });
