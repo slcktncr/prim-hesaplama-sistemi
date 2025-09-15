@@ -672,7 +672,8 @@ router.get('/', auth, async (req, res) => {
       endDate = '',
       primPeriod = '',
       sortBy = 'effectiveDate',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
+      status = '' // İptal edilen satışlar filtresi
     } = req.query;
     
     // Sayfa ve limit kontrolü
@@ -712,6 +713,11 @@ router.get('/', auth, async (req, res) => {
     // Prim durumu filtresi
     if (primStatus) {
       query.primStatus = primStatus;
+    }
+    
+    // Status filtresi (aktif, iptal, vs.)
+    if (status) {
+      query.status = status;
     }
 
     // Temsilci filtresi (sadece admin için)
