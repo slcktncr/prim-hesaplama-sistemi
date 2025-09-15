@@ -182,10 +182,14 @@ const SaleForm = () => {
     switch (fieldName) {
       case 'contractNo':
         const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
-        const isRequired = !nonContractTypes.includes(saleTypeValue);
+        // Direkt formData.saleType kullan, getSaleTypeValue ile karışmasın
+        const isKapora = formData.saleType === 'kapora';
+        const isRequired = !isKapora && !nonContractTypes.includes(saleTypeValue);
         console.log('🔍 ContractNo requirement:', {
+          originalSaleType: formData.saleType,
           saleTypeValue,
           nonContractTypes,
+          isKapora,
           isRequired
         });
         return isRequired;

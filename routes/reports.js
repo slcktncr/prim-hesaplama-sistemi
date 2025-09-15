@@ -107,29 +107,35 @@ router.get('/dashboard', auth, async (req, res) => {
       }
     }
     
-    // Tarih aralığı filtresi (saleDate bazlı)
+    // Tarih aralığı filtresi (saleDate veya kaporaDate bazlı)
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999); // Günün sonuna kadar
       
-      query.saleDate = {
-        $gte: start,
-        $lte: end
-      };
+      query.$or = [
+        { saleDate: { $gte: start, $lte: end } },
+        { kaporaDate: { $gte: start, $lte: end } }
+      ];
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📊 Dashboard query:', JSON.stringify(query, null, 2));
-      console.log('📅 Selected period:', period);
-      console.log('📅 Date filters:', { startDate, endDate });
-    }
+    // Debug için her zaman log at (geçici)
+    console.log('📊 Dashboard query:', JSON.stringify(query, null, 2));
+    console.log('📅 Selected period:', period);
+    console.log('📅 Date filters:', { startDate, endDate });
+    console.log('📅 Parsed dates:', { 
+      start: startDate ? new Date(startDate) : null, 
+      end: endDate ? new Date(endDate) : null 
+    });
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
 
     // Satış türlerine göre ayrıştırılmış istatistikler
+    const matchQuery = { ...query, status: 'aktif' };
+    console.log('📊 SalesByType match query:', JSON.stringify(matchQuery, null, 2));
+    
     const salesByType = await Sale.aggregate([
-      { $match: { ...query, status: 'aktif' } },
+      { $match: matchQuery },
       {
         $group: {
           _id: '$saleType',
@@ -140,6 +146,8 @@ router.get('/dashboard', auth, async (req, res) => {
         }
       }
     ]);
+    
+    console.log('📊 SalesByType result:', salesByType);
 
     // Aktif satış türlerini getir
     const activeSaleTypes = await SaleType.find({ isActive: true }).sort({ sortOrder: 1 });
