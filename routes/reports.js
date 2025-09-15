@@ -2068,22 +2068,28 @@ router.get('/daily-report', auth, async (req, res) => {
         $group: {
           _id: '$user._id',
           userName: { $first: '$user.name' },
-          totalCalls: { $sum: '$totalCalls' },
-          whatsappCount: { $sum: '$whatsappCount' },
-          totalContacts: { $sum: '$totalContacts' },
-          newCustomers: { $sum: '$newCustomers' },
+          totalCalls: { $sum: { $add: ['$callIncoming', '$callOutgoing'] } },
+          whatsappCount: { $sum: '$whatsappIncoming' },
+          totalContacts: { $sum: '$totalCommunication' },
+          newCustomers: { $sum: '$meetingNewCustomer' },
           records: {
             $push: {
-              totalCalls: '$totalCalls',
-              whatsappCount: '$whatsappCount',
-              totalContacts: '$totalContacts',
-              newCustomers: '$newCustomers',
+              totalCalls: { $add: ['$callIncoming', '$callOutgoing'] },
+              whatsappCount: '$whatsappIncoming',
+              totalContacts: '$totalCommunication',
+              newCustomers: '$meetingNewCustomer',
               date: '$date'
             }
           }
         }
       }
     ]);
+
+    console.log('📊 Daily report debug:');
+    console.log('📅 Date range:', { startDate, endDate });
+    console.log('📈 Sales data count:', salesData.length);
+    console.log('📞 Communication data count:', communicationData.length);
+    console.log('📞 Communication data sample:', communicationData.slice(0, 2));
 
     // Günlük istatistikler
     const dailyStats = {
