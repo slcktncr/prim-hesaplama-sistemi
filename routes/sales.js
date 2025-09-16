@@ -425,6 +425,18 @@ router.post('/', auth, [
     const discountRateNum = parseFloat(discountRate) || 0;
     let discountedListPriceNum = 0;
 
+    // Debug: Kapora için fiyat bilgilerini logla
+    if (saleType === 'kapora') {
+      console.log('🏷️ Kapora fiyat debug:', {
+        saleType,
+        listPrice: listPrice,
+        listPriceNum,
+        originalListPrice,
+        originalListPriceNum,
+        requestBody: req.body
+      });
+    }
+
     // Kapora değilse prim hesapla
     if (!isKaporaType(saleType)) {
       // Aktif prim oranını al
@@ -497,6 +509,15 @@ router.post('/', auth, [
       createdBy: req.user._id
     };
 
+    // Debug: Kapora için saleData'yı logla
+    if (saleType === 'kapora') {
+      console.log('💾 Kapora saleData debug:', {
+        listPrice: saleData.listPrice,
+        originalListPrice: saleData.originalListPrice,
+        saleData
+      });
+    }
+
     // Kapora değilse prim bilgilerini ekle
     if (!isKaporaType(saleType) && currentPrimRate) {
       const validPrices = [];
@@ -517,6 +538,16 @@ router.post('/', auth, [
     
     const sale = new Sale(saleData);
       await sale.save();
+
+    // Debug: Kapora için kaydedilen sale'i logla
+    if (saleType === 'kapora') {
+      console.log('✅ Kapora kaydedildi:', {
+        id: sale._id,
+        listPrice: sale.listPrice,
+        originalListPrice: sale.originalListPrice,
+        savedSale: sale.toObject()
+      });
+    }
 
     // Populate edilmiş satışı döndür
     const populatedSale = await Sale.findById(sale._id)

@@ -574,6 +574,18 @@ const SaleForm = () => {
 
       console.log('📤 Sending sale data:', saleData);
 
+      // Debug: Kapora için özel log
+      if (formData.saleType === 'kapora') {
+        console.log('🏷️ KAPORA DEBUG - Frontend:', {
+          saleType: formData.saleType,
+          listPrice: formData.listPrice,
+          listPriceInSaleData: saleData.listPrice,
+          originalListPrice: formData.originalListPrice,
+          originalListPriceInSaleData: saleData.originalListPrice,
+          formData: formData
+        });
+      }
+
       if (isEdit) {
         await salesAPI.updateSale(id, saleData);
         toast.success('Satış başarıyla güncellendi');
