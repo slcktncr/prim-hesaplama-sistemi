@@ -556,6 +556,9 @@ const SaleForm = () => {
         }
       } else if (formData.saleType === 'kapora') {
         saleData.kaporaDate = formData.kaporaDate;
+        // Kapora için de liste fiyatı gerekli
+        saleData.listPrice = parseFloat(formData.listPrice) || 0;
+        saleData.originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
       } else {
         // Yeni satış türleri için normal satış gibi davran
         saleData.saleDate = formData.saleDate;
