@@ -11,16 +11,16 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('_id name email role createdAt updatedAt permissions customRole firstName lastName')
-      .populate('customRole', 'name displayName')
+      .select('_id name email role systemRole createdAt updatedAt permissions firstName lastName')
+      .populate('role', 'name displayName')
       .sort({ name: 1 });
     
     console.log('🔍 Total users found:', users.length);
     console.log('🔍 Sample user (first):', users[0]);
-    console.log('🔍 Users with customRole:', users.filter(u => u.customRole).map(u => ({ 
+    console.log('🔍 Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
-      role: u.role, 
-      customRole: u.customRole,
+      systemRole: u.systemRole,
+      role: u.role,
       createdAt: u.createdAt 
     })));
     console.log('🔍 Users without createdAt:', users.filter(u => !u.createdAt).map(u => u.name));
@@ -61,16 +61,16 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isActive: true,
       isApproved: true
     })
-      .select('_id name email role createdAt updatedAt permissions customRole firstName lastName')
-      .populate('customRole', 'name displayName')
+      .select('_id name email role systemRole createdAt updatedAt permissions firstName lastName')
+      .populate('role', 'name displayName')
       .sort({ name: 1 });
 
     console.log('🔍 ALL-USERS: Total users found:', users.length);
     console.log('🔍 ALL-USERS: Sample user (first):', users[0]);
-    console.log('🔍 ALL-USERS: Users with customRole:', users.filter(u => u.customRole).map(u => ({ 
+    console.log('🔍 ALL-USERS: Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
-      role: u.role, 
-      customRole: u.customRole,
+      systemRole: u.systemRole,
+      role: u.role,
       createdAt: u.createdAt 
     })));
     console.log('🔍 ALL-USERS: Users without createdAt:', users.filter(u => !u.createdAt).map(u => u.name));
@@ -298,7 +298,7 @@ router.put('/:id', [
       });
     }
 
-    const { firstName, lastName, email, role, isActive, customRole } = req.body;
+    const { firstName, lastName, email, role, isActive } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -319,13 +319,24 @@ router.put('/:id', [
       return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
     }
 
-    // Özel rol kontrolü
-    if (customRole) {
+    // Rol kontrolü ve atama
+    if (role === 'admin') {
+      // Sistem admin rolü
+      user.systemRole = 'admin';
+      user.role = null;
+    } else if (role) {
+      // Tanımlı rol kontrolü
       const Role = require('../models/Role');
-      const roleExists = await Role.findById(customRole);
+      const roleExists = await Role.findById(role);
       if (!roleExists) {
-        return res.status(400).json({ message: 'Geçersiz özel rol' });
+        return res.status(400).json({ message: 'Geçersiz rol' });
       }
+      user.systemRole = null;
+      user.role = role;
+    } else {
+      // Rol yok
+      user.systemRole = null;
+      user.role = null;
     }
 
     // Kullanıcı bilgilerini güncelle
@@ -333,16 +344,14 @@ router.put('/:id', [
     user.lastName = lastName.trim();
     user.name = `${firstName.trim()} ${lastName.trim()}`;
     user.email = email.toLowerCase();
-    user.role = role;
-    user.customRole = customRole || null; // Özel rol (null ise temizle)
     user.isActive = isActive !== undefined ? isActive : user.isActive;
     user.updatedAt = new Date();
 
     await user.save();
 
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role isActive isApproved createdAt updatedAt permissions customRole')
-      .populate('customRole', 'name displayName')
+      .select('firstName lastName name email role systemRole isActive isApproved createdAt updatedAt permissions')
+      .populate('role', 'name displayName')
       .populate('approvedBy', 'name email');
 
     res.json({

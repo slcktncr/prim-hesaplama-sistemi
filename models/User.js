@@ -27,15 +27,16 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Şifre gereklidir'],
     minlength: 6
   },
+  // Ana rol sistemi - sadece Role modeli referansı
   role: {
-    type: String,
-    enum: ['admin', 'salesperson', 'visitor'],
-    default: 'salesperson'
-  },
-  // Yeni rol sistemi (Role modeli referansı)
-  customRole: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
+    default: null
+  },
+  // Geriye uyumluluk için eski sistem rolü (admin korunacak)
+  systemRole: {
+    type: String,
+    enum: ['admin'],
     default: null
   },
   // Eski yetkilendirme sistemi (geriye uyumluluk için)

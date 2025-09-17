@@ -11,7 +11,7 @@ const auth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'prim_hesaplama_jwt_secret_key_2024');
-    const user = await User.findById(decoded.id).populate('customRole', 'name displayName permissions');
+    const user = await User.findById(decoded.id).populate('role', 'name displayName permissions');
 
     if (!user || !user.isActive || !user.isApproved) {
       return res.status(401).json({ message: 'Hesabınız henüz onaylanmamış veya aktif değil' });
@@ -27,7 +27,11 @@ const auth = async (req, res, next) => {
 // Admin yetkisi kontrolü
 const adminAuth = async (req, res, next) => {
   try {
-    if (req.user.role !== 'admin') {
+    // Sistem admin'i veya admin yetkilerine sahip rol
+    const isSystemAdmin = req.user.systemRole === 'admin';
+    const hasAdminRole = req.user.role && req.user.role.name === 'admin';
+    
+    if (!isSystemAdmin && !hasAdminRole) {
       return res.status(403).json({ message: 'Admin yetkisi gereklidir' });
     }
     next();
@@ -36,17 +40,17 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-// Özel rol yetkisi kontrolü
+// Rol yetkisi kontrolü
 const hasPermission = (permission) => async (req, res, next) => {
   try {
-    // Admin her şeyi yapabilir
-    if (req.user.role === 'admin') {
+    // Sistem admin'i her şeyi yapabilir
+    if (req.user.systemRole === 'admin') {
       return next();
     }
 
-    // Özel rol varsa onun yetkilerini kontrol et
-    if (req.user.customRole && req.user.customRole.permissions) {
-      if (req.user.customRole.permissions[permission]) {
+    // Kullanıcının rolü varsa onun yetkilerini kontrol et
+    if (req.user.role && req.user.role.permissions) {
+      if (req.user.role.permissions[permission]) {
         return next();
       }
     }
@@ -68,17 +72,17 @@ const hasPermission = (permission) => async (req, res, next) => {
 // Birden fazla yetki kontrolü (herhangi biri yeterli)
 const hasAnyPermission = (permissions) => async (req, res, next) => {
   try {
-    // Admin her şeyi yapabilir
-    if (req.user.role === 'admin') {
+    // Sistem admin'i her şeyi yapabilir
+    if (req.user.systemRole === 'admin') {
       return next();
     }
 
     let hasAccess = false;
 
-    // Özel rol varsa onun yetkilerini kontrol et
-    if (req.user.customRole && req.user.customRole.permissions) {
+    // Kullanıcının rolü varsa onun yetkilerini kontrol et
+    if (req.user.role && req.user.role.permissions) {
       hasAccess = permissions.some(permission => 
-        req.user.customRole.permissions[permission]
+        req.user.role.permissions[permission]
       );
     }
 
@@ -105,7 +109,8 @@ const hasAnyPermission = (permissions) => async (req, res, next) => {
 // Eski isimlerle de export et (backward compatibility)
 const protect = auth;
 const authorize = (roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
+  const userRole = req.user.systemRole || req.user.role?.name;
+  if (!roles.includes(userRole)) {
     return res.status(403).json({ message: 'Bu işlem için yetkiniz bulunmamaktadır' });
   }
   next();
