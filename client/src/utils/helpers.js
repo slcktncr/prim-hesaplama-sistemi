@@ -354,7 +354,12 @@ export const removeLocalStorage = (key) => {
 export const hasPermission = (user, permission) => {
   if (!user) return false;
   
-  // Rol yetkisi
+  // Individual permission override varsa onu kullan
+  if (user.individualPermissions && user.individualPermissions[permission] !== null && user.individualPermissions[permission] !== undefined) {
+    return !!user.individualPermissions[permission];
+  }
+  
+  // Yoksa rol yetkisini kullan
   if (user.role && user.role.permissions) {
     return !!user.role.permissions[permission];
   }

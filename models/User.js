@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema({
     ref: 'Role',
     required: true // Artık zorunlu - her kullanıcının bir rolü olmalı
   },
+  // Kullanıcıya özel yetki override'ları (rol yetkilerinin üzerine yazar)
+  individualPermissions: {
+    // Genel Yetkiler
+    canViewAllSales: { type: Boolean, default: null }, // null = rol yetkisini kullan
+    canViewAllReports: { type: Boolean, default: null },
+    canViewAllEarnings: { type: Boolean, default: null },
+    canViewDashboard: { type: Boolean, default: null },
+    canCreateSales: { type: Boolean, default: null },
+    canEditSales: { type: Boolean, default: null },
+    canDeleteSales: { type: Boolean, default: null }
+    // Gerektiğinde daha fazla eklenebilir
+  },
   isActive: {
     type: Boolean,
     default: false // Varsayılan olarak pasif, admin onayı bekler

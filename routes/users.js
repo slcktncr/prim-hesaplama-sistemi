@@ -71,7 +71,7 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isActive: true,
       isApproved: true
     })
-      .select('_id name email role createdAt updatedAt firstName lastName')
+      .select('_id name email role individualPermissions createdAt updatedAt firstName lastName')
       .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
 
@@ -299,90 +299,38 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
     }
 
-    // Kullanıcıya özel rol oluştur/güncelle
-    const Role = require('../models/Role');
-    let userRole;
+    // Kullanıcıya özel yetki override'larını güncelle (rol oluşturmak yerine)
+    console.log('🔄 BACKEND: Updating individual permissions for user:', user.name);
+    console.log('📋 BACKEND: Current individual permissions:', user.individualPermissions);
+    console.log('📋 BACKEND: Incoming permissions:', permissions);
+
+    // Individual permissions'ı güncelle
+    const oldIndividualPermissions = { ...user.individualPermissions };
     
-    // Eğer kullanıcının rolü "salesperson" gibi genel bir rol ise, özel rol oluştur
-    if (user.role.name === 'salesperson' || user.role.name === 'visitor') {
-      console.log('🔄 BACKEND: Creating personal role for user:', user.name);
-      
-      // Kullanıcıya özel rol oluştur
-      console.log('🔍 BACKEND: Creating role with createdBy:', req.user._id);
-      
-      if (!req.user._id) {
-        console.error('❌ BACKEND: req.user._id is null/undefined');
-        return res.status(400).json({ message: 'Admin kullanıcı bilgisi bulunamadı' });
+    // Sadece gönderilen permission'ları güncelle, diğerleri null kalır (rol yetkisini kullanır)
+    Object.keys(permissions).forEach(permission => {
+      if (user.individualPermissions.hasOwnProperty(permission)) {
+        user.individualPermissions[permission] = permissions[permission];
       }
-      
-      userRole = new Role({
-        name: `user_${user._id}`,
-        displayName: `${user.name} (Özel)`,
-        description: `${user.name} kullanıcısına özel rol`,
-        isSystemRole: false,
-        permissions: { ...user.role.permissions, ...permissions }, // Mevcut + yeni
-        createdBy: req.user._id,
-        isActive: true
-      });
-      
-      console.log('🔍 BACKEND: Role object created:', {
-        name: userRole.name,
-        displayName: userRole.displayName,
-        createdBy: userRole.createdBy,
-        permissionsCount: Object.keys(userRole.permissions).length
-      });
-      
-      try {
-        await userRole.save();
-        console.log('✅ BACKEND: Personal role saved to DB');
-        
-        // Kullanıcının rolünü güncelle
-        user.role = userRole._id;
-        await user.save();
-        console.log('✅ BACKEND: User role updated to personal role');
-        
-        console.log('✅ BACKEND: Personal role created:', userRole.displayName);
-      } catch (saveError) {
-        console.error('❌ BACKEND: Error saving personal role:', saveError);
-        throw saveError;
-      }
-    } else {
-      // Zaten özel rol varsa, sadece güncelle
-      userRole = await Role.findById(user.role._id);
-      
-      if (!userRole) {
-        console.log('❌ BACKEND: Role not found:', user.role._id);
-        return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
-      }
+    });
+    
+    console.log('🔄 BACKEND: Individual permissions change:', {
+      before: oldIndividualPermissions,
+      incoming: permissions,
+      after: user.individualPermissions
+    });
 
-      console.log('📋 BACKEND: Role before update:', {
-        roleName: userRole.name,
-        roleDisplayName: userRole.displayName,
-        currentPermissions: userRole.permissions
-      });
-
-      // Yetkileri güncelle
-      const oldPermissions = { ...userRole.permissions };
-      userRole.permissions = { ...userRole.permissions, ...permissions };
-      
-      console.log('🔄 BACKEND: Permissions change:', {
-        before: oldPermissions,
-        incoming: permissions,
-        after: userRole.permissions
-      });
-
-      try {
-        await userRole.save();
-        console.log('✅ BACKEND: Personal role updated successfully');
-      } catch (updateError) {
-        console.error('❌ BACKEND: Error updating personal role:', updateError);
-        throw updateError;
-      }
+    try {
+      await user.save();
+      console.log('✅ BACKEND: Individual permissions updated successfully');
+    } catch (updateError) {
+      console.error('❌ BACKEND: Error updating individual permissions:', updateError);
+      throw updateError;
     }
 
     // Güncellenmiş kullanıcıyı döndür
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role')
+      .select('firstName lastName name email role individualPermissions')
       .populate('role', 'name displayName permissions');
 
     console.log('📤 BACKEND: Returning updated user:', {

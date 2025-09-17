@@ -82,18 +82,26 @@ const UserPermissions = () => {
     }
   };
 
+  const getEffectivePermission = (user, permission) => {
+    // Individual permission override varsa onu kullan
+    if (user.individualPermissions && user.individualPermissions[permission] !== null && user.individualPermissions[permission] !== undefined) {
+      return user.individualPermissions[permission];
+    }
+    // Yoksa rol yetkisini kullan
+    return user.role?.permissions?.[permission] || false;
+  };
+
   const handleEditPermissions = (user) => {
     setSelectedUser(user);
-    // Yeni sistemde yetkileri rolden al
-    const userPermissions = user.role?.permissions || {};
+    // Effective permissions'ı göster (individual + role)
     setPermissions({
-      canViewAllSales: userPermissions.canViewAllSales || false,
-      canViewAllReports: userPermissions.canViewAllReports || false,
-      canViewAllEarnings: userPermissions.canViewAllEarnings || false,
-      canViewDashboard: userPermissions.canViewDashboard || true,
-      canCreateSales: userPermissions.canCreateSales || true,
-      canEditSales: userPermissions.canEditSales || false,
-      canDeleteSales: userPermissions.canDeleteSales || false
+      canViewAllSales: getEffectivePermission(user, 'canViewAllSales'),
+      canViewAllReports: getEffectivePermission(user, 'canViewAllReports'),
+      canViewAllEarnings: getEffectivePermission(user, 'canViewAllEarnings'),
+      canViewDashboard: getEffectivePermission(user, 'canViewDashboard'),
+      canCreateSales: getEffectivePermission(user, 'canCreateSales'),
+      canEditSales: getEffectivePermission(user, 'canEditSales'),
+      canDeleteSales: getEffectivePermission(user, 'canDeleteSales')
     });
     setShowModal(true);
   };
@@ -278,13 +286,13 @@ const UserPermissions = () => {
                       </div>
                     </td>
                     <td>
-                      {getPermissionBadge(user.role?.permissions?.canViewAllSales)}
+                      {getPermissionBadge(getEffectivePermission(user, 'canViewAllSales'))}
                     </td>
                     <td>
-                      {getPermissionBadge(user.role?.permissions?.canViewAllReports)}
+                      {getPermissionBadge(getEffectivePermission(user, 'canViewAllReports'))}
                     </td>
                     <td>
-                      {getPermissionBadge(user.role?.permissions?.canViewAllEarnings)}
+                      {getPermissionBadge(getEffectivePermission(user, 'canViewAllEarnings'))}
                     </td>
                     <td>
                       {user.role?.name === 'visitor' ? (
