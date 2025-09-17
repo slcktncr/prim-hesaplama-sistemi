@@ -364,6 +364,59 @@ router.get('/create-default-roles', async (req, res) => {
 
     const defaultRoles = [
       {
+        name: 'admin',
+        displayName: 'Sistem Yöneticisi',
+        description: 'Tüm sistem yetkilerine sahip süper kullanıcı',
+        isSystemRole: true,
+        permissions: {
+          // Genel Yetkiler - Tümü true
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: true,
+          
+          // Satış Yetkileri - Tümü true
+          canViewSales: true,
+          canCreateSales: true,
+          canEditSales: true,
+          canDeleteSales: true,
+          canViewAllSales: true,
+          canTransferSales: true,
+          canCancelSales: true,
+          canModifySales: true,
+          canImportSales: true,
+          
+          // Prim Yetkileri - Tümü true
+          canViewPrims: true,
+          canManagePrimPeriods: true,
+          canEditPrimRates: true,
+          canProcessPayments: true,
+          canViewAllEarnings: true,
+          
+          // İletişim Yetkileri - Tümü true
+          canViewCommunications: true,
+          canEditCommunications: true,
+          canViewAllCommunications: true,
+          
+          // Kullanıcı Yönetimi - Tümü true
+          canViewUsers: true,
+          canCreateUsers: true,
+          canEditUsers: true,
+          canDeleteUsers: true,
+          canManageRoles: true,
+          
+          // Sistem Yönetimi - Tümü true
+          canAccessSystemSettings: true,
+          canManageBackups: true,
+          canViewSystemLogs: true,
+          canManageAnnouncements: true,
+          
+          // Özel Yetkiler - Tümü true
+          canViewPenalties: true,
+          canApplyPenalties: true,
+          canOverrideValidations: true
+        }
+      },
+      {
         name: 'salesperson',
         displayName: 'Satış Temsilcisi',
         description: 'Standart satış temsilcisi yetkileri',
@@ -493,6 +546,56 @@ router.get('/create-default-roles', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Rol oluşturma hatası',
+      error: error.message 
+    });
+  }
+});
+
+// @route   GET /api/auth/debug-user
+// @desc    Debug current user status (public for emergency)
+// @access  Public (emergency use only)
+router.get('/debug-user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await User.findOne({ email: email.toLowerCase() })
+      .populate('role', 'name displayName permissions')
+      .select('firstName lastName name email role systemRole isActive isApproved permissions');
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Kullanıcı bulunamadı' 
+      });
+    }
+
+    // Role listesi de al
+    const Role = require('../models/Role');
+    const allRoles = await Role.find({}).select('name displayName isActive');
+
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        systemRole: user.systemRole,
+        role: user.role,
+        isActive: user.isActive,
+        isApproved: user.isApproved,
+        permissions: user.permissions
+      },
+      allRoles: allRoles,
+      debug: {
+        hasSystemAdmin: user.systemRole === 'admin',
+        hasRoleAdmin: user.role && user.role.name === 'admin',
+        roleCount: allRoles.length
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Debug user hatası:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Debug hatası',
       error: error.message 
     });
   }

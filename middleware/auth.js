@@ -24,14 +24,13 @@ const auth = async (req, res, next) => {
   }
 };
 
-// Admin yetkisi kontrolü
+// Admin yetkisi kontrolü - Tek rol sistemi
 const adminAuth = async (req, res, next) => {
   try {
-    // Sistem admin'i veya admin yetkilerine sahip rol
-    const isSystemAdmin = req.user.systemRole === 'admin';
+    // Sadece admin rolü kontrolü
     const hasAdminRole = req.user.role && req.user.role.name === 'admin';
     
-    if (!isSystemAdmin && !hasAdminRole) {
+    if (!hasAdminRole) {
       return res.status(403).json({ message: 'Admin yetkisi gereklidir' });
     }
     next();
@@ -40,23 +39,11 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-// Rol yetkisi kontrolü
+// Rol yetkisi kontrolü - Tek sistem
 const hasPermission = (permission) => async (req, res, next) => {
   try {
-    // Sistem admin'i her şeyi yapabilir
-    if (req.user.systemRole === 'admin') {
-      return next();
-    }
-
-    // Kullanıcının rolü varsa onun yetkilerini kontrol et
-    if (req.user.role && req.user.role.permissions) {
-      if (req.user.role.permissions[permission]) {
-        return next();
-      }
-    }
-
-    // Eski yetki sistemini de kontrol et (geriye uyumluluk)
-    if (req.user.permissions && req.user.permissions[permission]) {
+    // Rolün yetkisini kontrol et
+    if (req.user.role && req.user.role.permissions && req.user.role.permissions[permission]) {
       return next();
     }
 
@@ -69,27 +56,15 @@ const hasPermission = (permission) => async (req, res, next) => {
   }
 };
 
-// Birden fazla yetki kontrolü (herhangi biri yeterli)
+// Birden fazla yetki kontrolü (herhangi biri yeterli) - Tek sistem
 const hasAnyPermission = (permissions) => async (req, res, next) => {
   try {
-    // Sistem admin'i her şeyi yapabilir
-    if (req.user.systemRole === 'admin') {
-      return next();
-    }
-
     let hasAccess = false;
 
     // Kullanıcının rolü varsa onun yetkilerini kontrol et
     if (req.user.role && req.user.role.permissions) {
       hasAccess = permissions.some(permission => 
         req.user.role.permissions[permission]
-      );
-    }
-
-    // Eski yetki sistemini de kontrol et (geriye uyumluluk)
-    if (!hasAccess && req.user.permissions) {
-      hasAccess = permissions.some(permission => 
-        req.user.permissions[permission]
       );
     }
 
@@ -109,7 +84,7 @@ const hasAnyPermission = (permissions) => async (req, res, next) => {
 // Eski isimlerle de export et (backward compatibility)
 const protect = auth;
 const authorize = (roles) => (req, res, next) => {
-  const userRole = req.user.systemRole || req.user.role?.name;
+  const userRole = req.user.role?.name;
   if (!roles.includes(userRole)) {
     return res.status(403).json({ message: 'Bu işlem için yetkiniz bulunmamaktadır' });
   }

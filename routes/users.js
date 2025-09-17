@@ -199,32 +199,23 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Rol belirtilmeli' });
     }
 
-    // Admin sistem rolü
-    if (role === 'admin') {
-      user.systemRole = 'admin';
-      user.role = null;
-    } else {
-      // Özel rol kontrolü
-      const Role = require('../models/Role');
-      const roleExists = await Role.findById(role);
-      
-      if (!roleExists) {
-        return res.status(400).json({ message: 'Geçersiz rol' });
-      }
-
-      user.systemRole = null;
-      user.role = role;
+    // Rol kontrolü ve atama - Tek sistem
+    const Role = require('../models/Role');
+    const roleExists = await Role.findById(role);
+    
+    if (!roleExists) {
+      return res.status(400).json({ message: 'Geçersiz rol' });
     }
+
+    user.role = role;
 
     await user.save();
 
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role systemRole isActive isApproved')
+      .select('firstName lastName name email role isActive isApproved')
       .populate('role', 'name displayName');
 
-    const roleDisplayName = role === 'admin' 
-      ? 'Sistem Yöneticisi' 
-      : updatedUser.role?.displayName || 'Rol';
+    const roleDisplayName = updatedUser.role?.displayName || 'Rol';
 
     res.json({
       message: `Kullanıcı rolü "${roleDisplayName}" olarak güncellendi`,

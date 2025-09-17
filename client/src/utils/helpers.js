@@ -354,51 +354,31 @@ export const removeLocalStorage = (key) => {
 export const hasPermission = (user, permission) => {
   if (!user) return false;
   
-  // Sistem admin'i her şeyi yapabilir
-  if (user.systemRole === 'admin') return true;
-  
-  // Kullanıcının rolü varsa onun yetkilerini kontrol et
+  // Rol yetkisi
   if (user.role && user.role.permissions) {
     return !!user.role.permissions[permission];
-  }
-  
-  // Eski yetki sistemini de kontrol et (geriye uyumluluk)
-  if (user.permissions) {
-    return !!user.permissions[permission];
   }
   
   return false;
 };
 
-// Birden fazla yetki kontrolü (herhangi biri yeterli)
+// Birden fazla yetki kontrolü (herhangi biri yeterli) - Tek sistem
 export const hasAnyPermission = (user, permissions) => {
   if (!user || !Array.isArray(permissions)) return false;
-  
-  // Sistem admin'i her şeyi yapabilir
-  if (user.systemRole === 'admin') return true;
   
   return permissions.some(permission => hasPermission(user, permission));
 };
 
-// Kullanıcının etkili rolünü döndürür
+// Kullanıcının etkili rolünü döndürür - Tek sistem
 export const getUserEffectiveRole = (user) => {
   if (!user) return null;
-  
-  // Sistem admin'i
-  if (user.systemRole === 'admin') {
-    return {
-      name: 'admin',
-      displayName: 'Sistem Yöneticisi',
-      isSystemRole: true
-    };
-  }
   
   // Tanımlı rol
   if (user.role) {
     return {
       name: user.role.name,
       displayName: user.role.displayName || user.role.name,
-      isSystemRole: false
+      isSystemRole: user.role.isSystemRole || false
     };
   }
   

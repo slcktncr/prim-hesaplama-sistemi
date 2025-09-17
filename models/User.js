@@ -27,27 +27,11 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Şifre gereklidir'],
     minlength: 6
   },
-  // Ana rol sistemi - sadece Role modeli referansı
+  // Tek rol sistemi - sadece Role modeli referansı
   role: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
-    default: null
-  },
-  // Geriye uyumluluk için eski sistem rolü (admin korunacak)
-  systemRole: {
-    type: String,
-    enum: ['admin'],
-    default: null
-  },
-  // Eski yetkilendirme sistemi (geriye uyumluluk için)
-  permissions: {
-    canViewAllSales: { type: Boolean, default: false },
-    canViewAllReports: { type: Boolean, default: false },
-    canViewAllPrims: { type: Boolean, default: false },
-    canViewDashboard: { type: Boolean, default: true },
-    canManageOwnSales: { type: Boolean, default: true },
-    canViewOwnReports: { type: Boolean, default: true },
-    canViewOwnPrims: { type: Boolean, default: true }
+    required: true // Artık zorunlu - herkesin bir rolü olmalı
   },
   isActive: {
     type: Boolean,
@@ -125,19 +109,7 @@ userSchema.pre('save', async function(next) {
     this.password = await bcrypt.hash(this.password, salt);
   }
   
-  // Ziyaretçi rolü için özel ayarlar
-  if (this.role === 'visitor') {
-    this.requiresCommunicationEntry = false; // İletişim kaydı girme zorunluluğu yok
-    this.permissions = {
-      canViewAllSales: true,        // Tüm satışları görüntüleyebilir
-      canViewAllReports: true,      // Tüm raporları görüntüleyebilir
-      canViewAllPrims: true,        // Tüm primleri görüntüleyebilir
-      canViewDashboard: true,       // Dashboard'u görüntüleyebilir
-      canManageOwnSales: false,     // Kendi satışlarını yönetemez
-      canViewOwnReports: false,     // Kendi raporları yok
-      canViewOwnPrims: false        // Kendi primleri yok
-    };
-  }
+  // Artık rol-based permissions kullanıyoruz, burada özel ayar yok
   
   next();
 });
