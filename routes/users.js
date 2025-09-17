@@ -179,11 +179,11 @@ router.delete('/:id/reject', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   PUT /api/users/:id/role
-// @desc    Change user role (supports both system roles and custom roles)
+// @desc    Change user role (new unified role system)
 // @access  Private (Admin only)
 router.put('/:id/role', [auth, adminAuth], async (req, res) => {
   try {
-    const { role, customRole } = req.body;
+    const { role } = req.body;
     
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -195,50 +195,41 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Kendi rolünüzü değiştiremezsiniz' });
     }
 
-    // Sistem rolü değiştiriliyorsa
-    if (role) {
-      if (!['admin', 'salesperson', 'visitor'].includes(role)) {
-        return res.status(400).json({ message: 'Geçersiz sistem rolü' });
-      }
-
-      user.role = role;
-      user.customRole = null; // Sistem rolü seçildiğinde özel rolü temizle
-      await user.save();
-
-      const updatedUser = await User.findById(user._id)
-        .select('firstName lastName name email role isActive isApproved customRole')
-        .populate('customRole', 'name displayName');
-
-      return res.json({
-        message: `Kullanıcı sistem rolü ${role === 'admin' ? 'Admin' : role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'} olarak güncellendi`,
-        user: updatedUser
-      });
+    if (!role) {
+      return res.status(400).json({ message: 'Rol belirtilmeli' });
     }
 
-    // Özel rol atanıyorsa
-    if (customRole) {
+    // Admin sistem rolü
+    if (role === 'admin') {
+      user.systemRole = 'admin';
+      user.role = null;
+    } else {
+      // Özel rol kontrolü
       const Role = require('../models/Role');
-      const roleExists = await Role.findById(customRole);
+      const roleExists = await Role.findById(role);
       
       if (!roleExists) {
-        return res.status(400).json({ message: 'Geçersiz özel rol' });
+        return res.status(400).json({ message: 'Geçersiz rol' });
       }
 
-      user.customRole = customRole;
-      user.role = 'salesperson'; // Özel rol atanırken sistem rolü salesperson yap
-      await user.save();
-
-      const updatedUser = await User.findById(user._id)
-        .select('firstName lastName name email role isActive isApproved customRole')
-        .populate('customRole', 'name displayName');
-
-      return res.json({
-        message: `Kullanıcıya "${roleExists.displayName}" rolü atandı`,
-        user: updatedUser
-      });
+      user.systemRole = null;
+      user.role = role;
     }
 
-    return res.status(400).json({ message: 'Rol veya özel rol belirtilmeli' });
+    await user.save();
+
+    const updatedUser = await User.findById(user._id)
+      .select('firstName lastName name email role systemRole isActive isApproved')
+      .populate('role', 'name displayName');
+
+    const roleDisplayName = role === 'admin' 
+      ? 'Sistem Yöneticisi' 
+      : updatedUser.role?.displayName || 'Rol';
+
+    res.json({
+      message: `Kullanıcı rolü "${roleDisplayName}" olarak güncellendi`,
+      user: updatedUser
+    });
   } catch (error) {
     console.error('Update user role error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });

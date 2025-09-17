@@ -160,7 +160,7 @@ router.post('/bulk-prim-status/preview', [auth, adminAuth], async (req, res) => 
       // Eğer ObjectId ise direkt kullan, değilse isim ile ara
       if (mongoose.Types.ObjectId.isValid(filters.salesperson)) {
         query.salesperson = new mongoose.Types.ObjectId(filters.salesperson);
-      } else {
+    } else {
         const User = require('../models/User');
         const user = await User.findOne({ 
           name: filters.salesperson,
@@ -357,8 +357,8 @@ router.post('/', auth, [
   body('contractNo').custom(async (value, { req }) => {
     // Kapora için sözleşme no zorunlu değil
     if (req.body.saleType === 'kapora') {
-      return true;
-    }
+          return true;
+        }
     
     if (!value || value.trim() === '') {
       throw new Error('Sözleşme no gereklidir');
@@ -631,7 +631,7 @@ router.get('/upcoming-entries', auth, async (req, res) => {
       .populate('salesperson', 'name email')
       .sort({ entryDate: 1, customerName: 1 })
       .limit(200);
-      
+    
     console.log(`📊 Found ${upcomingEntries.length} upcoming entries`);
 
     // Gün gruplarına ayır
@@ -1653,7 +1653,7 @@ router.put('/:id/modify', [
     // Prim yeniden hesaplama (kapora değilse)
     if (!isKaporaType(sale.saleType)) {
       const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-      if (currentPrimRate) {
+    if (currentPrimRate) {
         const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
         const discountRateNum = parseFloat(sale.discountRate) || 0;
         const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
