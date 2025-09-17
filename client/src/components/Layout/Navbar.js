@@ -68,7 +68,9 @@ const Navbar = () => {
                   {user?.name}
                 </div>
                 <div className="text-muted small">
-                  {user?.role === 'admin' ? 'Yönetici' : 'Satış Temsilcisi'}
+                  {user?.systemRole === 'admin' ? 'Sistem Yöneticisi' : 
+                   user?.role ? user.role.displayName || user.role.name :
+                   'Kullanıcı'}
                 </div>
               </div>
             </Dropdown.Toggle>
@@ -78,16 +80,24 @@ const Navbar = () => {
                 <h6>{user?.name}</h6>
                 <small className="text-muted">{user?.email}</small>
                 <div className="mt-1">
-                  <span className={`badge ${user?.role === 'admin' ? 'bg-danger' : 'bg-primary'} small`}>
-                    {user?.role === 'admin' ? (
+                  <span className={`badge ${
+                    user?.systemRole === 'admin' ? 'bg-danger' : 
+                    user?.role ? 'bg-success' : 'bg-secondary'
+                  } small`}>
+                    {user?.systemRole === 'admin' ? (
                       <>
                         <FiShield className="me-1" size={10} />
-                        Yönetici
+                        Sistem Yöneticisi
+                      </>
+                    ) : user?.role ? (
+                      <>
+                        <FiUser className="me-1" size={10} />
+                        {user.role.displayName || user.role.name}
                       </>
                     ) : (
                       <>
                         <FiUser className="me-1" size={10} />
-                        Satış Temsilcisi
+                        Kullanıcı
                       </>
                     )}
                   </span>
@@ -99,7 +109,7 @@ const Navbar = () => {
                 Profil Ayarları
               </Dropdown.Item>
               
-              {user?.role === 'admin' && (
+              {(user?.systemRole === 'admin' || (user?.role && user.role.name === 'admin')) && (
                 <Dropdown.Item onClick={() => navigate('/admin/system-settings')}>
                   <FiShield className="me-2" />
                   Sistem Ayarları

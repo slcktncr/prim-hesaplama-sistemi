@@ -143,9 +143,9 @@ router.get('/team-status', auth, async (req, res) => {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
+    // Tüm aktif satış temsilcilerini getir (sistem admin hariç)
     const allSalespeople = await User.find({
-      role: 'salesperson',
+      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç
       isActive: true,
       isApproved: true,
       requiresCommunicationEntry: true
@@ -348,9 +348,9 @@ router.get('/admin/all-statuses', [auth, adminAuth], async (req, res) => {
     
     const stats = await DailyStatus.getStatusStats(targetDate);
     
-    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
+    // Tüm aktif satış temsilcilerini getir (sistem admin hariç)
     const allSalespeople = await User.find({
-      role: 'salesperson',
+      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç
       isActive: true,
       isApproved: true
     }).select('name email requiresCommunicationEntry');

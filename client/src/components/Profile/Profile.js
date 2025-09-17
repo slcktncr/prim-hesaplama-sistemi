@@ -237,8 +237,13 @@ const Profile = () => {
               <div className="mb-3">
                 <strong>Rol:</strong>
                 <div className="mt-1">
-                  <Badge bg={user?.role === 'admin' ? 'danger' : 'primary'}>
-                    {user?.role === 'admin' ? 'Yönetici' : 'Satış Temsilcisi'}
+                  <Badge bg={
+                    user?.systemRole === 'admin' ? 'danger' : 
+                    user?.role ? 'success' : 'secondary'
+                  }>
+                    {user?.systemRole === 'admin' ? 'Sistem Yöneticisi' : 
+                     user?.role ? user.role.displayName || user.role.name :
+                     'Rol Atanmamış'}
                   </Badge>
                 </div>
               </div>
