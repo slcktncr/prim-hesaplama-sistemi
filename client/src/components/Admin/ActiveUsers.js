@@ -375,6 +375,7 @@ const ActiveUsers = () => {
                   </Form.Text>
                 </Form.Group>
               </Col>
+            </Row>
             
             <Row>
               <Col md={12}>
