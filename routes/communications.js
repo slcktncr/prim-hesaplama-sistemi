@@ -284,11 +284,22 @@ router.get('/report', auth, async (req, res) => {
 
     // Tüm aktif kullanıcıları al
     const User = require('../models/User');
+    const Role = require('../models/Role');
+    
+    // Önce salesperson rolünü bul
+    const salespersonRole = await Role.findOne({ name: 'salesperson' });
+    if (!salespersonRole) {
+      console.log('❌ Salesperson role not found');
+      return res.status(404).json({ message: 'Satış temsilcisi rolü bulunamadı' });
+    }
+    
     const allUsers = await User.find({ 
-      role: 'salesperson', 
+      role: salespersonRole._id, // ObjectId kullan
       isActive: true, 
       isApproved: true 
-    }).select('_id name email');
+    })
+    .populate('role', 'name displayName')
+    .select('_id name email role');
 
     console.log('=== BACKEND DEBUG START ===');
     console.log('All active users found:', allUsers.length);
@@ -509,11 +520,22 @@ router.get('/daily-report', auth, async (req, res) => {
     });
 
     // Tüm aktif kullanıcıları al
+    const Role = require('../models/Role');
+    
+    // Önce salesperson rolünü bul
+    const salespersonRole = await Role.findOne({ name: 'salesperson' });
+    if (!salespersonRole) {
+      console.log('❌ Salesperson role not found in daily-report');
+      return res.status(404).json({ message: 'Satış temsilcisi rolü bulunamadı' });
+    }
+    
     const allUsers = await User.find({ 
-      role: 'salesperson', 
+      role: salespersonRole._id, // ObjectId kullan
       isActive: true, 
       isApproved: true 
-    }).select('_id name email');
+    })
+    .populate('role', 'name displayName')
+    .select('_id name email role');
 
     // Günlük bazda gruplama
     const dailyData = {};

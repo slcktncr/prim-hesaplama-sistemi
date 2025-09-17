@@ -284,33 +284,60 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
     }
 
-    // Kullanıcının rolündeki yetkileri güncelle
+    // Kullanıcıya özel rol oluştur/güncelle
     const Role = require('../models/Role');
-    const role = await Role.findById(user.role._id);
+    let userRole;
     
-    if (!role) {
-      console.log('❌ BACKEND: Role not found:', user.role._id);
-      return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
+    // Eğer kullanıcının rolü "salesperson" gibi genel bir rol ise, özel rol oluştur
+    if (user.role.name === 'salesperson' || user.role.name === 'visitor') {
+      console.log('🔄 BACKEND: Creating personal role for user:', user.name);
+      
+      // Kullanıcıya özel rol oluştur
+      userRole = new Role({
+        name: `user_${user._id}`,
+        displayName: `${user.name} (Özel)`,
+        description: `${user.name} kullanıcısına özel rol`,
+        isSystemRole: false,
+        permissions: { ...user.role.permissions, ...permissions }, // Mevcut + yeni
+        createdBy: req.user._id,
+        isActive: true
+      });
+      
+      await userRole.save();
+      
+      // Kullanıcının rolünü güncelle
+      user.role = userRole._id;
+      await user.save();
+      
+      console.log('✅ BACKEND: Personal role created:', userRole.displayName);
+    } else {
+      // Zaten özel rol varsa, sadece güncelle
+      userRole = await Role.findById(user.role._id);
+      
+      if (!userRole) {
+        console.log('❌ BACKEND: Role not found:', user.role._id);
+        return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
+      }
+
+      console.log('📋 BACKEND: Role before update:', {
+        roleName: userRole.name,
+        roleDisplayName: userRole.displayName,
+        currentPermissions: userRole.permissions
+      });
+
+      // Yetkileri güncelle
+      const oldPermissions = { ...userRole.permissions };
+      userRole.permissions = { ...userRole.permissions, ...permissions };
+      
+      console.log('🔄 BACKEND: Permissions change:', {
+        before: oldPermissions,
+        incoming: permissions,
+        after: userRole.permissions
+      });
+
+      await userRole.save();
+      console.log('✅ BACKEND: Personal role updated successfully');
     }
-
-    console.log('📋 BACKEND: Role before update:', {
-      roleName: role.name,
-      roleDisplayName: role.displayName,
-      currentPermissions: role.permissions
-    });
-
-    // Yetkileri güncelle
-    const oldPermissions = { ...role.permissions };
-    role.permissions = { ...role.permissions, ...permissions };
-    
-    console.log('🔄 BACKEND: Permissions change:', {
-      before: oldPermissions,
-      incoming: permissions,
-      after: role.permissions
-    });
-
-    await role.save();
-    console.log('✅ BACKEND: Role saved successfully');
 
     // Güncellenmiş kullanıcıyı döndür
     const updatedUser = await User.findById(user._id)
