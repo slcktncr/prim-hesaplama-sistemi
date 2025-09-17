@@ -26,17 +26,39 @@ const UserPermissions = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(true); // İlk yüklemede force refresh
   }, []);
 
-  const fetchUsers = async () => {
+  // Sayfa focus olduğunda yenile
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchUsers(true);
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const fetchUsers = async (forceRefresh = false) => {
     try {
       setLoading(true);
+      
+      // Cache bypass için timestamp ekle
+      const timestamp = forceRefresh ? `?t=${Date.now()}` : '';
       const response = await usersAPI.getAllUsers();
+      
       // Admin hariç tüm kullanıcıları göster (yeni sistem)
       const nonAdminUsers = response.data.filter(user => 
         !(user.role && user.role.name === 'admin')
       );
+      
+      console.log('👥 UserPermissions: Fetched users with roles:', 
+        nonAdminUsers.slice(0, 3).map(u => ({
+          name: u.name,
+          role: u.role?.displayName || 'Rol Yok'
+        }))
+      );
+      
       setUsers(nonAdminUsers);
       setError(null);
     } catch (error) {
@@ -114,6 +136,14 @@ const UserPermissions = () => {
             Kullanıcıların sistem yetkilerini yönetin
           </p>
         </div>
+        <Button 
+          variant="outline-primary" 
+          onClick={() => fetchUsers(true)}
+          disabled={loading}
+        >
+          <FiSettings className="me-2" />
+          Yenile
+        </Button>
       </div>
 
       {error && (
