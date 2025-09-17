@@ -203,12 +203,13 @@ router.put('/profile', auth, [
   }
 });
 
-// @route   POST /api/auth/fix-admin
+// @route   GET/POST /api/auth/fix-admin
 // @desc    Fix existing admin account (temporary endpoint)
 // @access  Public (one-time use)
-router.post('/fix-admin', async (req, res) => {
+const fixAdmin = async (req, res) => {
   try {
-    const { email } = req.body;
+    // GET veya POST'dan email al
+    const email = req.body?.email || req.query?.email || 'selcuktuncer@gmail.com';
     
     if (email !== 'selcuktuncer@gmail.com') {
       return res.status(403).json({ message: 'Bu endpoint sadece belirli hesap için' });
@@ -251,6 +252,10 @@ router.post('/fix-admin', async (req, res) => {
     console.error('Fix admin error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
-});
+};
+
+// Hem GET hem POST için register et
+router.get('/fix-admin', fixAdmin);
+router.post('/fix-admin', fixAdmin);
 
 module.exports = router;

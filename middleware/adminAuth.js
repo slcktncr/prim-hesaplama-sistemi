@@ -5,8 +5,11 @@ const adminAuth = (req, res, next) => {
       return res.status(401).json({ message: 'Erişim reddedildi. Giriş yapmanız gerekiyor.' });
     }
 
-    // Admin kontrolü
-    if (req.user.role !== 'admin') {
+    // Admin kontrolü - yeni sistem
+    const isSystemAdmin = req.user.systemRole === 'admin';
+    const hasAdminRole = req.user.role && req.user.role.name === 'admin';
+    
+    if (!isSystemAdmin && !hasAdminRole) {
       return res.status(403).json({ 
         message: 'Erişim reddedildi. Bu işlem için admin yetkisi gerekliyor.' 
       });
