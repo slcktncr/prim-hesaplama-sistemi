@@ -419,7 +419,7 @@ router.put('/:id/communication-requirement', [auth, adminAuth], async (req, res)
 router.get('/communication-settings', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ 
-      role: 'salesperson', // Sadece satış temsilcileri, ziyaretçiler dahil değil
+      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç tüm kullanıcılar
       isApproved: true 
     })
     .select('name email isActive requiresCommunicationEntry communicationExemptReason communicationExemptBy communicationExemptAt')

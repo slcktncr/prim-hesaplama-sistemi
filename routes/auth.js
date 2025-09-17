@@ -340,6 +340,164 @@ router.get('/emergency-admin-fix', async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/create-default-roles
+// @desc    Create default roles (emergency endpoint)
+// @access  Public (emergency use only)
+router.get('/create-default-roles', async (req, res) => {
+  try {
+    const Role = require('../models/Role');
+    
+    console.log('🔧 Varsayılan roller oluşturuluyor...');
+
+    // Admin kullanıcısını bul (yeni sistem)
+    const adminUser = await User.findOne({ systemRole: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Admin kullanıcı bulunamadı' 
+      });
+    }
+
+    // Mevcut rolleri kontrol et
+    const existingRoles = await Role.find({});
+    console.log(`📊 Mevcut rol sayısı: ${existingRoles.length}`);
+
+    const defaultRoles = [
+      {
+        name: 'salesperson',
+        displayName: 'Satış Temsilcisi',
+        description: 'Standart satış temsilcisi yetkileri',
+        isSystemRole: true,
+        permissions: {
+          // Genel Yetkiler
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: false,
+          
+          // Satış Yetkileri
+          canViewSales: true,
+          canCreateSales: true,
+          canEditSales: true,
+          canDeleteSales: false,
+          canViewAllSales: false,
+          canTransferSales: false,
+          canCancelSales: false,
+          canModifySales: false,
+          canImportSales: false,
+          
+          // Prim Yetkileri
+          canViewPrims: true,
+          canManagePrimPeriods: false,
+          canEditPrimRates: false,
+          canProcessPayments: false,
+          canViewAllEarnings: false,
+          
+          // İletişim Yetkileri
+          canViewCommunications: true,
+          canEditCommunications: true,
+          canViewAllCommunications: false,
+          
+          // Kullanıcı Yönetimi
+          canViewUsers: false,
+          canCreateUsers: false,
+          canEditUsers: false,
+          canDeleteUsers: false,
+          canManageRoles: false,
+          
+          // Sistem Yönetimi
+          canAccessSystemSettings: false,
+          canManageBackups: false,
+          canViewSystemLogs: false,
+          canManageAnnouncements: false,
+          
+          // Özel Yetkiler
+          canViewPenalties: false,
+          canApplyPenalties: false,
+          canOverrideValidations: false
+        }
+      },
+      {
+        name: 'visitor',
+        displayName: 'Ziyaretçi',
+        description: 'Sadece görüntüleme yetkisi olan kullanıcı',
+        isSystemRole: true,
+        permissions: {
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: false,
+          canViewSales: true,
+          canCreateSales: false,
+          canEditSales: false,
+          canDeleteSales: false,
+          canViewAllSales: true,
+          canTransferSales: false,
+          canCancelSales: false,
+          canModifySales: false,
+          canImportSales: false,
+          canViewPrims: true,
+          canManagePrimPeriods: false,
+          canEditPrimRates: false,
+          canProcessPayments: false,
+          canViewAllEarnings: true,
+          canViewCommunications: true,
+          canEditCommunications: false,
+          canViewAllCommunications: true,
+          canViewUsers: false,
+          canCreateUsers: false,
+          canEditUsers: false,
+          canDeleteUsers: false,
+          canManageRoles: false,
+          canAccessSystemSettings: false,
+          canManageBackups: false,
+          canViewSystemLogs: false,
+          canManageAnnouncements: false,
+          canViewPenalties: false,
+          canApplyPenalties: false,
+          canOverrideValidations: false
+        }
+      }
+    ];
+
+    const createdRoles = [];
+    
+    for (const roleData of defaultRoles) {
+      const existingRole = await Role.findOne({ name: roleData.name });
+      
+      if (existingRole) {
+        console.log(`⚠️ Rol zaten mevcut: ${roleData.displayName}`);
+        continue;
+      }
+
+      const role = new Role({
+        ...roleData,
+        createdBy: adminUser._id
+      });
+
+      await role.save();
+      createdRoles.push(role);
+      console.log(`✅ Rol oluşturuldu: ${roleData.displayName}`);
+    }
+
+    res.json({
+      success: true,
+      message: `${createdRoles.length} varsayılan rol oluşturuldu`,
+      roles: createdRoles.map(r => ({
+        name: r.name,
+        displayName: r.displayName,
+        description: r.description
+      }))
+    });
+
+  } catch (error) {
+    console.error('❌ Rol oluşturma hatası:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Rol oluşturma hatası',
+      error: error.message 
+    });
+  }
+});
+
 // Hem GET hem POST için register et
 router.get('/fix-admin', fixAdmin);
 router.post('/fix-admin', fixAdmin);
