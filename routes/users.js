@@ -354,10 +354,10 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
 router.put('/:id', [
   auth, 
   adminAuth,
-  body('firstName').notEmpty().withMessage('Ad gereklidir'),
-  body('lastName').notEmpty().withMessage('Soyad gereklidir'),
-  body('email').isEmail().withMessage('Geçerli bir email adresi gereklidir'),
-  body('role').isIn(['admin', 'salesperson', 'visitor']).withMessage('Geçerli bir rol seçilmelidir')
+  body('firstName').optional().notEmpty().withMessage('Ad gereklidir'),
+  body('lastName').optional().notEmpty().withMessage('Soyad gereklidir'),
+  body('email').optional().isEmail().withMessage('Geçerli bir email adresi gereklidir'),
+  body('role').optional().isMongoId().withMessage('Geçerli bir rol ID\'si gereklidir')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -368,7 +368,7 @@ router.put('/:id', [
       });
     }
 
-    const { firstName, lastName, email, role, isActive } = req.body;
+    const { firstName, lastName, email, role, isActive, password } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -380,40 +380,52 @@ router.put('/:id', [
       return res.status(400).json({ message: 'Kendi admin rolünüzü değiştiremezsiniz' });
     }
 
-    // Email benzersizlik kontrolü
-    const existingUser = await User.findOne({ 
-      email: email.toLowerCase(),
-      _id: { $ne: req.params.id }
-    });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
+    // Email benzersizlik kontrolü (sadece email değiştiriliyorsa)
+    if (email && email.toLowerCase() !== user.email) {
+      const existingUser = await User.findOne({ 
+        email: email.toLowerCase(),
+        _id: { $ne: req.params.id }
+      });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
+      }
     }
 
-    // Rol kontrolü ve atama (TEK SİSTEM)
+    // Rol kontrolü ve atama (sadece rol gönderilmişse)
     if (role) {
-      // Tanımlı rol kontrolü
       const Role = require('../models/Role');
       const roleExists = await Role.findById(role);
       if (!roleExists) {
         return res.status(400).json({ message: 'Geçersiz rol' });
       }
       user.role = role;
-    } else {
-      return res.status(400).json({ message: 'Rol seçilmelidir' });
     }
 
-    // Kullanıcı bilgilerini güncelle
-    user.firstName = firstName.trim();
-    user.lastName = lastName.trim();
-    user.name = `${firstName.trim()} ${lastName.trim()}`;
-    user.email = email.toLowerCase();
-    user.isActive = isActive !== undefined ? isActive : user.isActive;
+    // Kullanıcı bilgilerini güncelle (sadece gönderilen alanlar)
+    if (firstName) {
+      user.firstName = firstName.trim();
+    }
+    if (lastName) {
+      user.lastName = lastName.trim();
+    }
+    if (firstName || lastName) {
+      user.name = `${user.firstName} ${user.lastName}`;
+    }
+    if (email) {
+      user.email = email.toLowerCase();
+    }
+    if (password) {
+      user.password = password; // Pre-save hook hashleyecek
+    }
+    if (isActive !== undefined) {
+      user.isActive = isActive;
+    }
     user.updatedAt = new Date();
 
     await user.save();
 
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role isActive isApproved createdAt updatedAt')
+      .select('firstName lastName name email role individualPermissions isActive isApproved createdAt updatedAt')
       .populate('role', 'name displayName permissions')
       .populate('approvedBy', 'name email');
 
