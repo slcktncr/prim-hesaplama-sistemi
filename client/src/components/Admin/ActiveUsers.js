@@ -98,6 +98,7 @@ const ActiveUsers = () => {
       lastName: user.lastName || '',
       email: user.email || '',
       role: user.role || 'salesperson',
+      customRole: user.customRole?._id || null,
       isActive: user.isActive !== false
     });
     setShowEditModal(true);
@@ -351,10 +352,17 @@ const ActiveUsers = () => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Rol *</Form.Label>
+                  <Form.Label>Sistem Rolü *</Form.Label>
                   <Form.Select
                     value={formData.role}
-                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                    onChange={(e) => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        role: e.target.value,
+                        // Sistem rolü değiştirildiğinde özel rolü temizle
+                        customRole: e.target.value === 'salesperson' ? prev.customRole : null
+                      }));
+                    }}
                     required
                   >
                     <option value="salesperson">Satış Temsilcisi</option>
@@ -363,6 +371,35 @@ const ActiveUsers = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+            </Row>
+            
+            {/* Özel Rol Seçimi - Sadece Satış Temsilcisi için */}
+            {formData.role === 'salesperson' && (
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Özel Rol (Opsiyonel)</Form.Label>
+                    <Form.Select
+                      value={formData.customRole || ''}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        customRole: e.target.value || null 
+                      }))}
+                    >
+                      <option value="">Özel rol seçiniz...</option>
+                      {roles.filter(role => role.isActive).map(role => (
+                        <option key={role._id} value={role._id}>
+                          {role.displayName}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Text className="text-muted">
+                      Özel rol seçilmezse varsayılan satış temsilcisi yetkileri kullanılır
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+            )}
             </Row>
             
             <Row>

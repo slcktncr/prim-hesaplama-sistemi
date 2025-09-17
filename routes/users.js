@@ -298,7 +298,7 @@ router.put('/:id', [
       });
     }
 
-    const { firstName, lastName, email, role, isActive } = req.body;
+    const { firstName, lastName, email, role, isActive, customRole } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -319,19 +319,30 @@ router.put('/:id', [
       return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
     }
 
+    // Özel rol kontrolü
+    if (customRole) {
+      const Role = require('../models/Role');
+      const roleExists = await Role.findById(customRole);
+      if (!roleExists) {
+        return res.status(400).json({ message: 'Geçersiz özel rol' });
+      }
+    }
+
     // Kullanıcı bilgilerini güncelle
     user.firstName = firstName.trim();
     user.lastName = lastName.trim();
     user.name = `${firstName.trim()} ${lastName.trim()}`;
     user.email = email.toLowerCase();
     user.role = role;
+    user.customRole = customRole || null; // Özel rol (null ise temizle)
     user.isActive = isActive !== undefined ? isActive : user.isActive;
     user.updatedAt = new Date();
 
     await user.save();
 
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role isActive isApproved createdAt updatedAt permissions')
+      .select('firstName lastName name email role isActive isApproved createdAt updatedAt permissions customRole')
+      .populate('customRole', 'name displayName')
       .populate('approvedBy', 'name email');
 
     res.json({
