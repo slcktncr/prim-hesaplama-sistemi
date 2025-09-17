@@ -13,21 +13,33 @@ import {
 import { toast } from 'react-toastify';
 import { FiSettings, FiUser, FiSave, FiX } from 'react-icons/fi';
 
-import { usersAPI } from '../../utils/api';
+import { usersAPI, rolesAPI } from '../../utils/api';
 import Loading from '../Common/Loading';
 
 const UserPermissions = () => {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [permissions, setPermissions] = useState({});
   const [saving, setSaving] = useState(false);
+  const [changingRole, setChangingRole] = useState({});
 
   useEffect(() => {
     fetchUsers(true); // İlk yüklemede force refresh
+    fetchRoles();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await rolesAPI.getAllRoles();
+      setRoles(response.data || []);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
 
   // Sayfa focus olduğunda yenile
   useEffect(() => {
@@ -82,6 +94,37 @@ const UserPermissions = () => {
       canViewOwnPrims: true
     });
     setShowModal(true);
+  };
+
+  const handleRoleChange = async (userId, newRoleId) => {
+    const user = users.find(u => u._id === userId);
+    const role = roles.find(r => r._id === newRoleId);
+    
+    if (!role) {
+      toast.error('Rol bulunamadı');
+      return;
+    }
+    
+    if (!window.confirm(`${user.name} kullanıcısının rolünü "${role.displayName}" olarak değiştirmek istediğinizden emin misiniz?`)) {
+      return;
+    }
+
+    setChangingRole(prev => ({ ...prev, [userId]: true }));
+    try {
+      await usersAPI.changeRole(userId, newRoleId);
+      toast.success(`${user.name} kullanıcısının rolü "${role.displayName}" olarak güncellendi`);
+      
+      // Küçük bir delay sonra verileri yenile
+      setTimeout(() => {
+        fetchUsers(true);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Role change error:', error);
+      toast.error(error.response?.data?.message || 'Rol değiştirme sırasında hata oluştu');
+    } finally {
+      setChangingRole(prev => ({ ...prev, [userId]: false }));
+    }
   };
 
   const handlePermissionChange = (permission, value) => {
@@ -192,8 +235,8 @@ const UserPermissions = () => {
                     </td>
                     <td>{user.email}</td>
                     <td>
-                      <div className="d-flex flex-column gap-1">
-                        {/* Yeni rol sistemi */}
+                      <div className="d-flex flex-column gap-2">
+                        {/* Rol Badge */}
                         {user.role ? (
                           <Badge bg={user.role.name === 'admin' ? 'danger' : 'success'}>
                             {user.role.displayName || user.role.name}
@@ -203,6 +246,22 @@ const UserPermissions = () => {
                             Rol Atanmamış
                           </Badge>
                         )}
+                        
+                        {/* Rol Değiştirme Dropdown */}
+                        <Form.Select
+                          size="sm"
+                          value={user.role?._id || ''}
+                          onChange={(e) => e.target.value && handleRoleChange(user._id, e.target.value)}
+                          disabled={changingRole[user._id]}
+                          style={{ fontSize: '0.75rem' }}
+                        >
+                          <option value="">Rol Seç...</option>
+                          {roles.filter(role => role.isActive).map(role => (
+                            <option key={role._id} value={role._id}>
+                              {role.displayName}
+                            </option>
+                          ))}
+                        </Form.Select>
                       </div>
                     </td>
                     <td>

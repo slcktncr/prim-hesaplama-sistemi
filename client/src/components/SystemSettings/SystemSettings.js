@@ -22,7 +22,6 @@ import {
 import SaleTypesManagement from './SaleTypesManagement';
 import PaymentMethods from '../Admin/PaymentMethods';
 import PrimSettings from '../Prims/PrimSettings';
-import ActiveUsers from '../Admin/ActiveUsers';
 import PrimPeriods from '../Prims/PrimPeriods';
 import PendingUsers from '../Admin/PendingUsers';
 import UserPermissions from '../Admin/UserPermissions';
@@ -75,12 +74,6 @@ const SystemSettings = () => {
                 <Nav.Link eventKey="prim-rates">
                   <FiPercent className="me-2" />
                   Prim Oranları
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="users">
-                  <FiUsers className="me-2" />
-                  Kullanıcı Yönetimi
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -167,9 +160,6 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="prim-rates">
                   <PrimSettings />
-                </Tab.Pane>
-                <Tab.Pane eventKey="users">
-                  <ActiveUsers />
                 </Tab.Pane>
                 <Tab.Pane eventKey="periods">
                   <PrimPeriods />
