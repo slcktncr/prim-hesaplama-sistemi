@@ -92,8 +92,8 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
-    // Kullanıcıyı bul
-    const user = await User.findOne({ email });
+    // Kullanıcıyı bul (role populate ile)
+    const user = await User.findOne({ email }).populate('role', 'name displayName permissions');
     if (!user || !user.isActive) {
       return res.status(401).json({ message: 'Geçersiz kullanıcı bilgileri' });
     }
@@ -114,7 +114,10 @@ router.post('/login', [
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        systemRole: user.systemRole,
+        isActive: user.isActive,
+        isApproved: user.isApproved
       }
     });
   } catch (error) {
