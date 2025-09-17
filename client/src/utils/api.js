@@ -151,8 +151,8 @@ export const communicationsAPI = {
   deleteYear: (id) => API.delete(`/communications/years/${id}`)
 };
 
-// Penalties API calls
-export const penaltiesAPI = {
+// Old Penalties API calls (Legacy)
+export const oldPenaltiesAPI = {
   getMyStatus: () => API.get('/penalties/my-status'),
   getAllUsers: (params) => API.get('/penalties/all-users', { params }),
   reactivateUser: (userId, data) => API.post(`/penalties/reactivate/${userId}`, data),
