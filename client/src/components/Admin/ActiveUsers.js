@@ -28,7 +28,12 @@ const ActiveUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getAllUsers();
-      console.log('Fetched users:', response.data);
+      console.log('🔄 Fetched users:', response.data.length, 'users');
+      console.log('🔍 Sample user roles:', response.data.slice(0, 3).map(u => ({
+        name: u.name,
+        role: u.role?.displayName || 'No role',
+        roleId: u.role?._id
+      })));
       setUsers(response.data);
     } catch (error) {
       console.error('Users fetch error:', error);
@@ -64,7 +69,12 @@ const ActiveUsers = () => {
     try {
       await usersAPI.changeRole(userId, newRoleId);
       toast.success(`Kullanıcı rolü "${role.displayName}" olarak güncellendi`);
-      fetchUsers();
+      
+      // Küçük bir delay sonra verileri yenile
+      setTimeout(() => {
+        fetchUsers();
+      }, 500);
+      
     } catch (error) {
       console.error('Role change error:', error);
       toast.error(error.response?.data?.message || 'Rol değiştirme sırasında hata oluştu');

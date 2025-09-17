@@ -66,7 +66,14 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       .sort({ name: 1 });
 
     console.log('🔍 ALL-USERS: Total users found:', users.length);
-    console.log('🔍 ALL-USERS: Sample user (first):', users[0]);
+    if (users.length > 0) {
+      console.log('🔍 ALL-USERS: Sample user (first):', {
+        name: users[0].name,
+        email: users[0].email,
+        role: users[0].role,
+        systemRole: users[0].systemRole
+      });
+    }
     console.log('🔍 ALL-USERS: Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
       systemRole: u.systemRole,
@@ -207,13 +214,19 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Geçersiz rol' });
     }
 
+    console.log(`🔄 ROLE CHANGE: ${user.name} → ${roleExists.displayName}`);
+    console.log(`📋 Before: role = ${user.role}`);
+    
     user.role = role;
-
     await user.save();
+    
+    console.log(`📋 After save: role = ${user.role}`);
 
     const updatedUser = await User.findById(user._id)
       .select('firstName lastName name email role isActive isApproved')
       .populate('role', 'name displayName');
+
+    console.log(`📋 After populate: role =`, updatedUser.role);
 
     const roleDisplayName = updatedUser.role?.displayName || 'Rol';
 
