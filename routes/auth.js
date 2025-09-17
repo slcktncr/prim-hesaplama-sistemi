@@ -254,6 +254,76 @@ const fixAdmin = async (req, res) => {
   }
 };
 
+// @route   GET /api/auth/emergency-admin-fix
+// @desc    Emergency admin fix without authentication
+// @access  Public (emergency use only)
+router.get('/emergency-admin-fix', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    
+    console.log('🚨 Emergency admin fix başlatılıyor...');
+    
+    // Selçuk TUNÇER'i bul
+    const user = await User.findOne({ 
+      email: 'selcuktuncer@gmail.com' 
+    });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Kullanıcı bulunamadı: selcuktuncer@gmail.com' 
+      });
+    }
+
+    console.log('📋 Mevcut durum:', {
+      name: user.name,
+      systemRole: user.systemRole,
+      role: user.role,
+      isActive: user.isActive,
+      isApproved: user.isApproved
+    });
+
+    // Admin yetkilerini düzelt
+    user.systemRole = 'admin';
+    user.role = null;
+    user.isActive = true;
+    user.isApproved = true;
+    user.approvedAt = new Date();
+
+    // firstName/lastName eksikse düzelt
+    if (!user.firstName || !user.lastName) {
+      const nameParts = user.name ? user.name.split(' ') : ['Selçuk', 'TUNÇER'];
+      user.firstName = nameParts[0] || 'Selçuk';
+      user.lastName = nameParts.slice(1).join(' ') || 'TUNÇER';
+    }
+
+    await user.save();
+
+    console.log('✅ Emergency admin fix tamamlandı');
+
+    res.json({
+      success: true,
+      message: 'Admin yetkisi başarıyla düzeltildi',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        systemRole: user.systemRole,
+        isActive: user.isActive,
+        isApproved: user.isApproved
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Emergency admin fix error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Sunucu hatası',
+      error: error.message 
+    });
+  }
+});
+
 // Hem GET hem POST için register et
 router.get('/fix-admin', fixAdmin);
 router.post('/fix-admin', fixAdmin);
