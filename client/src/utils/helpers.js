@@ -349,3 +349,56 @@ export const removeLocalStorage = (key) => {
     console.error('Error removing localStorage:', error);
   }
 };
+
+// Kullanıcı yetki kontrolü
+export const hasPermission = (user, permission) => {
+  if (!user) return false;
+  
+  // Admin her şeyi yapabilir
+  if (user.role === 'admin') return true;
+  
+  // Özel rol varsa onun yetkilerini kontrol et
+  if (user.customRole && user.customRole.permissions) {
+    return !!user.customRole.permissions[permission];
+  }
+  
+  // Eski yetki sistemini de kontrol et (geriye uyumluluk)
+  if (user.permissions) {
+    return !!user.permissions[permission];
+  }
+  
+  return false;
+};
+
+// Birden fazla yetki kontrolü (herhangi biri yeterli)
+export const hasAnyPermission = (user, permissions) => {
+  if (!user || !Array.isArray(permissions)) return false;
+  
+  // Admin her şeyi yapabilir
+  if (user.role === 'admin') return true;
+  
+  return permissions.some(permission => hasPermission(user, permission));
+};
+
+// Kullanıcının etkili rolünü döndürür (özel rol varsa onu, yoksa sistem rolünü)
+export const getUserEffectiveRole = (user) => {
+  if (!user) return null;
+  
+  if (user.customRole) {
+    return {
+      name: user.customRole.name,
+      displayName: user.customRole.displayName || user.customRole.name,
+      isCustom: true,
+      systemRole: user.role
+    };
+  }
+  
+  return {
+    name: user.role,
+    displayName: user.role === 'admin' ? 'Admin' : 
+                 user.role === 'salesperson' ? 'Satış Temsilcisi' :
+                 user.role === 'visitor' ? 'Ziyaretçi' : user.role,
+    isCustom: false,
+    systemRole: user.role
+  };
+};

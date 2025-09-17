@@ -161,13 +161,28 @@ const UserPermissions = () => {
                     </td>
                     <td>{user.email}</td>
                     <td>
-                      <Badge bg={
-                        user.role === 'salesperson' ? 'primary' : 
-                        user.role === 'visitor' ? 'secondary' : 'info'
-                      }>
-                        {user.role === 'salesperson' ? 'Temsilci' : 
-                         user.role === 'visitor' ? 'Ziyaretçi' : user.role}
-                      </Badge>
+                      <div className="d-flex flex-column gap-1">
+                        {/* Özel rol varsa önce onu göster */}
+                        {user.customRole ? (
+                          <>
+                            <Badge bg="success">
+                              {user.customRole.displayName || user.customRole.name}
+                            </Badge>
+                            <Badge bg="light" text="dark" size="sm">
+                              Sistem: {user.role === 'salesperson' ? 'Temsilci' : 
+                                      user.role === 'visitor' ? 'Ziyaretçi' : user.role}
+                            </Badge>
+                          </>
+                        ) : (
+                          <Badge bg={
+                            user.role === 'salesperson' ? 'primary' : 
+                            user.role === 'visitor' ? 'secondary' : 'info'
+                          }>
+                            {user.role === 'salesperson' ? 'Temsilci' : 
+                             user.role === 'visitor' ? 'Ziyaretçi' : user.role}
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                     <td>
                       {user.role === 'visitor' ? 
