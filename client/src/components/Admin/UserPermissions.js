@@ -139,7 +139,17 @@ const UserPermissions = () => {
   const handleSavePermissions = async () => {
     try {
       setSaving(true);
-      await usersAPI.updatePermissions(selectedUser._id, permissions);
+      
+      console.log('🔧 FRONTEND: Saving permissions for user:', {
+        userId: selectedUser._id,
+        userName: selectedUser.name,
+        userRole: selectedUser.role,
+        permissions: permissions
+      });
+      
+      const response = await usersAPI.updatePermissions(selectedUser._id, permissions);
+      
+      console.log('✅ FRONTEND: Permissions saved successfully:', response.data);
       
       toast.success('Kullanıcı yetkileri başarıyla güncellendi');
       setShowModal(false);
@@ -151,7 +161,8 @@ const UserPermissions = () => {
       }, 500);
       
     } catch (error) {
-      console.error('Save permissions error:', error);
+      console.error('❌ FRONTEND: Save permissions error:', error);
+      console.error('❌ FRONTEND: Error details:', error.response?.data);
       toast.error(error.response?.data?.message || 'Yetkiler güncellenirken hata oluştu');
     } finally {
       setSaving(false);

@@ -242,19 +242,34 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
 // @access  Private (Admin only)
 router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
   try {
+    console.log('🔧 BACKEND: Permissions update request:', {
+      userId: req.params.id,
+      requestBody: req.body,
+      adminUser: req.user.name
+    });
+
     const { permissions } = req.body;
     
     const user = await User.findById(req.params.id).populate('role');
     if (!user) {
+      console.log('❌ BACKEND: User not found:', req.params.id);
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
+    console.log('👤 BACKEND: User found:', {
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
+
     // Admin rolündeki kullanıcıların izinleri değiştirilemez
     if (user.role && user.role.name === 'admin') {
+      console.log('❌ BACKEND: Cannot update admin permissions');
       return res.status(400).json({ message: 'Admin kullanıcıların izinleri değiştirilemez' });
     }
 
     if (!user.role) {
+      console.log('❌ BACKEND: User has no role');
       return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
     }
 
@@ -263,31 +278,46 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
     const role = await Role.findById(user.role._id);
     
     if (!role) {
+      console.log('❌ BACKEND: Role not found:', user.role._id);
       return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
     }
 
-    // Yetkileri güncelle
-    role.permissions = { ...role.permissions, ...permissions };
-    await role.save();
-
-    console.log('🔧 PERMISSIONS UPDATE:', {
-      user: user.name,
-      role: role.displayName,
-      updatedPermissions: Object.keys(permissions)
+    console.log('📋 BACKEND: Role before update:', {
+      roleName: role.name,
+      roleDisplayName: role.displayName,
+      currentPermissions: role.permissions
     });
+
+    // Yetkileri güncelle
+    const oldPermissions = { ...role.permissions };
+    role.permissions = { ...role.permissions, ...permissions };
+    
+    console.log('🔄 BACKEND: Permissions change:', {
+      before: oldPermissions,
+      incoming: permissions,
+      after: role.permissions
+    });
+
+    await role.save();
+    console.log('✅ BACKEND: Role saved successfully');
 
     // Güncellenmiş kullanıcıyı döndür
     const updatedUser = await User.findById(user._id)
       .select('firstName lastName name email role')
       .populate('role', 'name displayName permissions');
 
+    console.log('📤 BACKEND: Returning updated user:', {
+      name: updatedUser.name,
+      role: updatedUser.role
+    });
+
     res.json({
       message: 'Kullanıcı yetkileri başarıyla güncellendi',
       user: updatedUser
     });
   } catch (error) {
-    console.error('Update user permissions error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ BACKEND: Update user permissions error:', error);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
   }
 });
 
