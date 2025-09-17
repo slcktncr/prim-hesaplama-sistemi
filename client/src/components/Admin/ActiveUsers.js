@@ -400,7 +400,6 @@ const ActiveUsers = () => {
                 </Col>
               </Row>
             )}
-            </Row>
             
             <Row>
               <Col md={12}>
