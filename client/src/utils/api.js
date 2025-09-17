@@ -101,10 +101,9 @@ export const usersAPI = {
   getSalespeople: () => API.get('/users/salespeople'),
   getAllUsers: () => API.get('/users/all-users'),
   getUsersForFilters: () => API.get('/users/for-filters'),
-  changeRole: (id, role, customRole = null) => {
-    // Yeni sistemde sadece role parametresi kullanılıyor
-    const requestData = { role: customRole || role };
-    return API.put(`/users/${id}/role`, requestData);
+  changeRole: (id, roleId) => {
+    // Yeni sistemde sadece role ID'si gönderiliyor
+    return API.put(`/users/${id}/role`, { role: roleId });
   },
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
   updateUser: (id, userData) => API.put(`/users/${id}`, userData),

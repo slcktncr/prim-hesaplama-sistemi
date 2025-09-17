@@ -47,19 +47,23 @@ const ActiveUsers = () => {
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
+  const handleRoleChange = async (userId, newRoleId) => {
     const user = users.find(u => u._id === userId);
-    const roleText = newRole === 'admin' ? 'Admin' : 
-                     newRole === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi';
+    const role = roles.find(r => r._id === newRoleId);
     
-    if (!window.confirm(`${user.name} kullanıcısının sistem rolünü "${roleText}" olarak değiştirmek istediğinizden emin misiniz?`)) {
+    if (!role) {
+      toast.error('Rol bulunamadı');
+      return;
+    }
+    
+    if (!window.confirm(`${user.name} kullanıcısının rolünü "${role.displayName}" olarak değiştirmek istediğinizden emin misiniz?`)) {
       return;
     }
 
     setActionLoading(prev => ({ ...prev, [userId]: 'role' }));
     try {
-      await usersAPI.changeRole(userId, newRole);
-      toast.success(`Kullanıcı sistem rolü ${roleText} olarak güncellendi`);
+      await usersAPI.changeRole(userId, newRoleId);
+      toast.success(`Kullanıcı rolü "${role.displayName}" olarak güncellendi`);
       fetchUsers();
     } catch (error) {
       console.error('Role change error:', error);
@@ -243,34 +247,17 @@ const ActiveUsers = () => {
                                 </Dropdown.Item>
                                 
                                 <Dropdown.Divider />
-                                <Dropdown.Header>Sistem Rolleri</Dropdown.Header>
+                                <Dropdown.Header>Rol Değiştir</Dropdown.Header>
                                 
-                                {user.role !== 'admin' && !user.customRole && (
+                                {roles.filter(role => role.isActive && role._id !== user.role?._id).map(role => (
                                   <Dropdown.Item 
-                                    onClick={() => handleRoleChange(user._id, 'admin')}
-                                  >
-                                    <FiShield className="me-2" />
-                                    Admin Yap
-                                  </Dropdown.Item>
-                                )}
-                                
-                                {(user.role !== 'salesperson' || user.customRole) && (
-                                  <Dropdown.Item 
-                                    onClick={() => handleRoleChange(user._id, 'salesperson')}
+                                    key={role._id}
+                                    onClick={() => handleRoleChange(user._id, role._id)}
                                   >
                                     <FiUser className="me-2" />
-                                    {user.customRole ? 'Satış Temsilcisi Yap (Özel Rolden Çık)' : 'Satış Temsilcisi Yap'}
+                                    {role.displayName} Yap
                                   </Dropdown.Item>
-                                )}
-                                
-                                {user.role !== 'visitor' && !user.customRole && (
-                                  <Dropdown.Item 
-                                    onClick={() => handleRoleChange(user._id, 'visitor')}
-                                  >
-                                    <FiEye className="me-2" />
-                                    Ziyaretçi Yap
-                                  </Dropdown.Item>
-                                )}
+                                ))}
 
                                 {roles.length > 0 && (
                                   <>

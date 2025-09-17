@@ -725,6 +725,122 @@ router.get('/migrate-users-to-roles', async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/check-roles-status
+// @desc    Check current roles and users status
+// @access  Public (debug use only)
+router.get('/check-roles-status', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const Role = require('../models/Role');
+    
+    // Tüm rolleri getir
+    const allRoles = await Role.find({}).select('name displayName isActive');
+    
+    // Tüm kullanıcıları getir
+    const allUsers = await User.find({})
+      .populate('role', 'name displayName')
+      .select('name email role isActive isApproved')
+      .sort({ name: 1 });
+
+    // Rol dağılımını hesapla
+    const roleDistribution = {};
+    allUsers.forEach(user => {
+      const roleName = user.role ? user.role.name : 'no_role';
+      roleDistribution[roleName] = (roleDistribution[roleName] || 0) + 1;
+    });
+
+    res.json({
+      success: true,
+      summary: {
+        totalRoles: allRoles.length,
+        totalUsers: allUsers.length,
+        roleDistribution
+      },
+      roles: allRoles,
+      users: allUsers.map(user => ({
+        name: user.name,
+        email: user.email,
+        role: user.role ? user.role.displayName : 'Rol Yok',
+        roleName: user.role ? user.role.name : null,
+        isActive: user.isActive,
+        isApproved: user.isApproved
+      }))
+    });
+
+  } catch (error) {
+    console.error('❌ Check roles status error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Status check hatası',
+      error: error.message 
+    });
+  }
+});
+
+// @route   POST /api/auth/assign-role-by-email
+// @desc    Assign specific role to user by email (emergency use)
+// @access  Public (emergency use only)
+router.post('/assign-role-by-email', async (req, res) => {
+  try {
+    const { email, roleName } = req.body;
+    
+    if (!email || !roleName) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email ve roleName gerekli' 
+      });
+    }
+
+    const User = require('../models/User');
+    const Role = require('../models/Role');
+    
+    // Kullanıcıyı bul
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: `Kullanıcı bulunamadı: ${email}` 
+      });
+    }
+
+    // Rolü bul
+    const role = await Role.findOne({ name: roleName });
+    if (!role) {
+      return res.status(404).json({ 
+        success: false,
+        message: `Rol bulunamadı: ${roleName}` 
+      });
+    }
+
+    // Rolü ata
+    user.role = role._id;
+    await user.save();
+
+    // Güncellenmiş kullanıcıyı döndür
+    const updatedUser = await User.findById(user._id)
+      .populate('role', 'name displayName')
+      .select('name email role');
+
+    res.json({
+      success: true,
+      message: `${user.name} kullanıcısına "${role.displayName}" rolü atandı`,
+      user: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Assign role error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Rol atama hatası',
+      error: error.message 
+    });
+  }
+});
+
 // Hem GET hem POST için register et
 router.get('/fix-admin', fixAdmin);
 router.post('/fix-admin', fixAdmin);
