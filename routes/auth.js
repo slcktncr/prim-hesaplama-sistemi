@@ -128,7 +128,20 @@ router.post('/login', [
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('role', 'name displayName permissions');
+    
+    console.log('🔍 /api/auth/me - User info:', {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      systemRole: user.systemRole,
+      role: user.role,
+      isActive: user.isActive,
+      isApproved: user.isApproved
+    });
+    
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);
