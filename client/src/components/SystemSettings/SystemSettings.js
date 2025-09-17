@@ -16,7 +16,8 @@ import {
   FiMessageSquare,
   FiDatabase,
   FiBell,
-  FiRefreshCw
+  FiRefreshCw,
+  FiAlertTriangle
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
@@ -35,6 +36,7 @@ import BackupManagement from '../Admin/BackupManagement';
 import RoleManagement from '../Admin/RoleManagement';
 import BulkPrimStatusManagement from '../Admin/BulkPrimStatusManagement';
 import UserManagement from '../Admin/UserManagement';
+import PenaltyManagement from '../Admin/PenaltyManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -155,6 +157,12 @@ const SystemSettings = () => {
                   Toplu Prim Durumu
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="penalty-management">
+                  <FiAlertTriangle className="me-2" />
+                  Ceza Yönetimi
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -206,6 +214,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="bulk-prim-status">
                   <BulkPrimStatusManagement />
+                </Tab.Pane>
+                <Tab.Pane eventKey="penalty-management">
+                  <PenaltyManagement />
                 </Tab.Pane>
               </Tab.Content>
             </div>

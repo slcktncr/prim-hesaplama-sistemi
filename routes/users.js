@@ -146,8 +146,20 @@ router.put('/:id/approve', [auth, adminAuth], async (req, res) => {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
+    // Zaten onaylanmışsa sadece bilgi döndür, hata verme
     if (user.isApproved) {
-      return res.status(400).json({ message: 'Kullanıcı zaten onaylanmış' });
+      console.log(`ℹ️ User ${user.name} is already approved`);
+      
+      const approvedUser = await User.findById(user._id)
+        .select('firstName lastName name email role isActive isApproved approvedAt')
+        .populate('role', 'name displayName permissions')
+        .populate('approvedBy', 'name email');
+
+      return res.json({
+        message: 'Kullanıcı zaten onaylanmış',
+        user: approvedUser,
+        alreadyApproved: true
+      });
     }
 
     // Varsayılan rol ata (salesperson)
@@ -174,6 +186,8 @@ router.put('/:id/approve', [auth, adminAuth], async (req, res) => {
       .select('firstName lastName name email role isActive isApproved approvedAt')
       .populate('role', 'name displayName permissions')
       .populate('approvedBy', 'name email');
+
+    console.log(`✅ User approved successfully: ${user.name}`);
 
     res.json({
       message: 'Kullanıcı başarıyla onaylandı',

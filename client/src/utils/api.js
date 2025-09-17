@@ -238,4 +238,14 @@ export const rolesAPI = {
   toggleRoleStatus: (id) => API.post(`/roles/${id}/toggle-status`)
 };
 
+// Penalties API calls
+export const penaltiesAPI = {
+  getPenalties: (filters) => API.get('/penalties', { params: filters }),
+  addPenalty: (penaltyData) => API.post('/penalties', penaltyData),
+  cancelPenalty: (id, reason) => API.put(`/penalties/${id}/cancel`, { reason }),
+  getSettings: () => API.get('/penalties/settings'),
+  updateSettings: (settings) => API.put('/penalties/settings', settings),
+  checkMissedEntries: () => API.post('/penalties/check-missed-entries')
+};
+
 export default API;

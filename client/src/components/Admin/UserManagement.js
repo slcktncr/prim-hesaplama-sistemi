@@ -210,17 +210,32 @@ const UserManagement = () => {
 
       for (const user of pendingUsers) {
         try {
-          // Önce onaylanmamışsa onayla
+          let needsUpdate = false;
+          const updateData = {};
+
+          // Onaylanmamışsa onayla
           if (!user.isApproved) {
+            console.log(`🔄 Approving user: ${user.name}`);
             await usersAPI.approveUser(user._id);
+            needsUpdate = true;
           }
-          // Sonra aktif değilse aktifleştir
-          if (!user.isActive) {
-            await usersAPI.updateUser(user._id, { isActive: true });
+          
+          // Aktif değilse aktifleştir (sadece onaylanmış kullanıcı için)
+          if (!user.isActive && (user.isApproved || needsUpdate)) {
+            console.log(`🔄 Activating user: ${user.name}`);
+            updateData.isActive = true;
           }
+
+          // Eğer sadece aktifleştirme gerekiyorsa
+          if (Object.keys(updateData).length > 0) {
+            await usersAPI.updateUser(user._id, updateData);
+          }
+
           successCount++;
+          console.log(`✅ Successfully processed user: ${user.name}`);
         } catch (error) {
-          console.error(`Error processing user ${user.name}:`, error);
+          console.error(`❌ Error processing user ${user.name}:`, error);
+          console.error('Error details:', error.response?.data);
           errorCount++;
         }
       }
@@ -232,7 +247,10 @@ const UserManagement = () => {
         toast.error(`${errorCount} kullanıcı işlenirken hata oluştu`);
       }
 
-      fetchUsers();
+      // Kullanıcı listesini yenile
+      setTimeout(() => {
+        fetchUsers();
+      }, 500);
     } catch (error) {
       console.error('Bulk approve error:', error);
       toast.error('Toplu onaylama sırasında hata oluştu');

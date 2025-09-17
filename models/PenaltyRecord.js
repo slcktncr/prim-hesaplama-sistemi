@@ -1,133 +1,157 @@
 const mongoose = require('mongoose');
 
 const penaltyRecordSchema = new mongoose.Schema({
-  // Temsilci bilgisi
-  salesperson: {
+  // Ceza alan kullanıcı
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
     index: true
   },
   
-  // Yıl bilgisi
-  year: {
+  // Ceza puanı
+  points: {
     type: Number,
+    required: true,
+    min: 1,
+    max: 10
+  },
+  
+  // Ceza sebebi
+  reason: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 500
+  },
+  
+  // Ceza tarihi
+  date: {
+    type: Date,
     required: true,
     index: true
   },
   
-  // Ceza puanı bilgileri
-  totalPenaltyPoints: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-  
-  // Hesap durumu
-  isAccountActive: {
-    type: Boolean,
-    default: true
-  },
-  
-  // Hesap pasife alınma bilgileri
-  deactivatedAt: {
-    type: Date
-  },
-  deactivatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  deactivationReason: {
+  // Ceza türü
+  type: {
     type: String,
-    default: 'Ceza puanı limitini aştı'
+    enum: ['missed_entry', 'manual', 'late_entry', 'invalid_entry'],
+    default: 'missed_entry',
+    index: true
   },
   
-  // Hesap aktifleştirme bilgileri
-  reactivatedAt: {
-    type: Date
+  // Durum bilgileri
+  isCancelled: {
+    type: Boolean,
+    default: false,
+    index: true
   },
-  reactivatedBy: {
+  
+  isResolved: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  
+  // İptal bilgileri
+  cancelledBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  reactivationReason: {
-    type: String
+  
+  cancelledAt: {
+    type: Date
   },
   
-  // Ceza geçmişi
-  penaltyHistory: [{
-    date: {
-      type: Date,
-      required: true
-    },
-    points: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    reason: {
-      type: String,
-      required: true
-    },
-    appliedBy: {
-      type: String,
-      default: 'system'
-    },
-    appliedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  
-  // Sistem bilgileri
-  createdAt: {
-    type: Date,
-    default: Date.now
+  cancelReason: {
+    type: String,
+    trim: true,
+    maxlength: 500
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  
+  // Çözüm bilgileri
+  resolvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  
+  resolvedAt: {
+    type: Date
+  },
+  
+  resolveReason: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  
+  // Kim tarafından oluşturuldu
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  
+  // Otomatik çözülme tarihi (opsiyonel)
+  autoResolveAt: {
+    type: Date
+  },
+  
+  // Notlar
+  notes: {
+    type: String,
+    trim: true,
+    maxlength: 1000
   }
+}, {
+  timestamps: true
 });
 
-// Benzersiz indeks: Bir temsilci için yılda sadece bir kayıt
-penaltyRecordSchema.index({ salesperson: 1, year: 1 }, { unique: true });
+// İndeksler
+penaltyRecordSchema.index({ user: 1, date: -1 });
+penaltyRecordSchema.index({ type: 1, isCancelled: 1 });
+penaltyRecordSchema.index({ createdAt: -1 });
 
-// Güncelleme middleware
-penaltyRecordSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
+// Sanal alanlar
+penaltyRecordSchema.virtual('isActive').get(function() {
+  return !this.isCancelled && !this.isResolved;
 });
 
-// Ceza puanı ekleme metodu
-penaltyRecordSchema.methods.addPenalty = function(points, reason, maxPoints = 100) {
-  this.totalPenaltyPoints += points;
-  
-  this.penaltyHistory.push({
-    date: new Date(),
-    points: points,
-    reason: reason,
-    appliedBy: 'system'
-  });
-  
-  // Maksimum puana ulaştıysa hesabı pasife al
-  if (this.totalPenaltyPoints >= maxPoints && this.isAccountActive) {
-    this.isAccountActive = false;
-    this.deactivatedAt = new Date();
-    this.deactivationReason = `Ceza puanı limitini aştı (${this.totalPenaltyPoints}/${maxPoints})`;
-  }
+// JSON'a çevirirken sanal alanları dahil et
+penaltyRecordSchema.set('toJSON', { virtuals: true });
+
+// Ceza iptal etme metodu
+penaltyRecordSchema.methods.cancel = function(adminId, reason) {
+  this.isCancelled = true;
+  this.cancelledBy = adminId;
+  this.cancelledAt = new Date();
+  this.cancelReason = reason;
   
   return this.save();
 };
 
-// Hesabı aktifleştirme metodu
-penaltyRecordSchema.methods.reactivateAccount = function(adminId, reason = 'Admin tarafından aktifleştirildi') {
-  this.isAccountActive = true;
-  this.reactivatedAt = new Date();
-  this.reactivatedBy = adminId;
-  this.reactivationReason = reason;
+// Ceza çözme metodu
+penaltyRecordSchema.methods.resolve = function(adminId, reason) {
+  this.isResolved = true;
+  this.resolvedBy = adminId;
+  this.resolvedAt = new Date();
+  this.resolveReason = reason;
   
   return this.save();
+};
+
+// Statics - Kullanıcının aktif ceza puanlarını hesapla
+penaltyRecordSchema.statics.getUserActivePenalties = function(userId) {
+  return this.find({
+    user: userId,
+    isCancelled: false,
+    isResolved: false
+  });
+};
+
+penaltyRecordSchema.statics.getUserTotalActivePoints = async function(userId) {
+  const penalties = await this.getUserActivePenalties(userId);
+  return penalties.reduce((total, penalty) => total + penalty.points, 0);
 };
 
 module.exports = mongoose.model('PenaltyRecord', penaltyRecordSchema);

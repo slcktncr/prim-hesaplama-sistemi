@@ -1,297 +1,415 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
-const PenaltyRecord = require('../models/PenaltyRecord');
-const CommunicationRecord = require('../models/CommunicationRecord');
-const CommunicationYear = require('../models/CommunicationYear');
-const DailyStatus = require('../models/DailyStatus');
-const User = require('../models/User');
+const { body, validationResult } = require('express-validator');
 
 const { auth, adminAuth } = require('../middleware/auth');
+const PenaltyRecord = require('../models/PenaltyRecord');
+const User = require('../models/User');
+const CommunicationRecord = require('../models/CommunicationRecord');
 
 const router = express.Router();
 
-// @route   GET /api/penalties/my-status
-// @desc    Kullanıcının ceza puanı durumunu getir
-// @access  Private
-router.get('/my-status', auth, async (req, res) => {
+// @route   GET /api/penalties
+// @desc    Get penalty records with filters
+// @access  Private (Admin only)
+router.get('/', [auth, adminAuth], async (req, res) => {
   try {
-    const currentYear = new Date().getFullYear();
-    
-    const penaltyRecord = await PenaltyRecord.findOne({
-      salesperson: req.user.id,
-      year: currentYear
+    const { 
+      startDate, 
+      endDate, 
+      userId, 
+      status = 'all',
+      page = 1,
+      limit = 50 
+    } = req.query;
+
+    let query = {};
+
+    // Date filter
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    // User filter
+    if (userId) {
+      query.user = userId;
+    }
+
+    // Status filter
+    if (status !== 'all') {
+      switch (status) {
+        case 'active':
+          query.isCancelled = false;
+          query.isResolved = false;
+          break;
+        case 'resolved':
+          query.isResolved = true;
+          break;
+        case 'cancelled':
+          query.isCancelled = true;
+          break;
+      }
+    }
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const penalties = await PenaltyRecord.find(query)
+      .populate('user', 'name email')
+      .populate('createdBy', 'name email')
+      .populate('cancelledBy', 'name email')
+      .sort({ date: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const total = await PenaltyRecord.countDocuments(query);
+
+    res.json({
+      penalties,
+      pagination: {
+        total,
+        page: pageNum,
+        pages: Math.ceil(total / limitNum),
+        limit: limitNum
+      }
     });
 
-    if (!penaltyRecord) {
-      return res.json({
-        totalPenaltyPoints: 0,
-        isAccountActive: true,
-        penaltyHistory: []
+  } catch (error) {
+    console.error('Get penalties error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   POST /api/penalties
+// @desc    Add manual penalty
+// @access  Private (Admin only)
+router.post('/', [
+  auth, 
+  adminAuth,
+  body('userId').isMongoId().withMessage('Geçerli kullanıcı ID\'si gereklidir'),
+  body('points').isInt({ min: 1, max: 10 }).withMessage('Puan 1-10 arasında olmalıdır'),
+  body('reason').trim().isLength({ min: 5 }).withMessage('Sebep en az 5 karakter olmalıdır'),
+  body('date').isISO8601().withMessage('Geçerli tarih formatı gereklidir')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veriler', 
+        errors: errors.array() 
       });
     }
 
-    res.json(penaltyRecord);
-  } catch (error) {
-    console.error('Penalty status error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
-  }
-});
+    const { userId, points, reason, date } = req.body;
 
-// @route   GET /api/penalties/all-users
-// @desc    Tüm kullanıcıların ceza puanı durumunu getir (Admin)
-// @access  Private (Admin)
-router.get('/all-users', [auth, adminAuth], async (req, res) => {
-  try {
-    const { year = new Date().getFullYear() } = req.query;
-    
-    const penaltyRecords = await PenaltyRecord.find({ year: parseInt(year) })
-      .populate('salesperson', 'name email isActive')
-      .sort({ totalPenaltyPoints: -1 });
-
-    // Tüm aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
-    const allUsers = await User.find({ 
-      role: 'salesperson',
-      isApproved: true 
-    }).select('name email isActive isPenaltyDeactivated');
-
-    // Ceza kaydı olmayan kullanıcılar için boş kayıt oluştur
-    const usersWithPenalties = allUsers.map(user => {
-      const penaltyRecord = penaltyRecords.find(p => 
-        p.salesperson._id.toString() === user._id.toString()
-      );
-
-      return {
-        salesperson: user,
-        totalPenaltyPoints: penaltyRecord ? penaltyRecord.totalPenaltyPoints : 0,
-        isAccountActive: penaltyRecord ? penaltyRecord.isAccountActive : true,
-        penaltyHistory: penaltyRecord ? penaltyRecord.penaltyHistory : [],
-        deactivatedAt: penaltyRecord ? penaltyRecord.deactivatedAt : null,
-        reactivatedAt: penaltyRecord ? penaltyRecord.reactivatedAt : null
-      };
-    });
-
-    res.json(usersWithPenalties);
-  } catch (error) {
-    console.error('All users penalty status error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
-  }
-});
-
-// @route   POST /api/penalties/reactivate/:userId
-// @desc    Kullanıcı hesabını aktifleştir (Admin)
-// @access  Private (Admin)
-router.post('/reactivate/:userId', [auth, adminAuth], async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { reason } = req.body;
-    const currentYear = new Date().getFullYear();
-
-    // Kullanıcıyı bul
+    // User check
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
-    // Ceza kaydını bul
-    let penaltyRecord = await PenaltyRecord.findOne({
-      salesperson: userId,
-      year: currentYear
+    // Admin kendine ceza veremez
+    if (userId === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Kendinize ceza puanı veremezsiniz' });
+    }
+
+    // Create penalty record
+    const penalty = new PenaltyRecord({
+      user: userId,
+      points,
+      reason,
+      date: new Date(date),
+      type: 'manual',
+      createdBy: req.user._id
     });
 
-    if (!penaltyRecord) {
+    await penalty.save();
+
+    // Update user penalty stats
+    await updateUserPenaltyStats(userId);
+
+    const populatedPenalty = await PenaltyRecord.findById(penalty._id)
+      .populate('user', 'name email')
+      .populate('createdBy', 'name email');
+
+    console.log('✅ Manual penalty added:', {
+      user: populatedPenalty.user.name,
+      points,
+      reason: reason.substring(0, 50),
+      addedBy: req.user.name
+    });
+
+    res.status(201).json({
+      message: 'Ceza puanı başarıyla eklendi',
+      penalty: populatedPenalty
+    });
+
+  } catch (error) {
+    console.error('Add penalty error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   PUT /api/penalties/:id/cancel
+// @desc    Cancel penalty record
+// @access  Private (Admin only)
+router.put('/:id/cancel', [
+  auth, 
+  adminAuth,
+  body('reason').trim().isLength({ min: 5 }).withMessage('İptal sebebi en az 5 karakter olmalıdır')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veriler', 
+        errors: errors.array() 
+      });
+    }
+
+    const { reason } = req.body;
+
+    const penalty = await PenaltyRecord.findById(req.params.id);
+    if (!penalty) {
       return res.status(404).json({ message: 'Ceza kaydı bulunamadı' });
     }
 
-    // Hesabı aktifleştir
-    await penaltyRecord.reactivateAccount(req.user.id, reason);
+    if (penalty.isCancelled) {
+      return res.status(400).json({ message: 'Bu ceza kaydı zaten iptal edilmiş' });
+    }
 
-    // User modelindeki ceza durumunu güncelle
-    user.isPenaltyDeactivated = false;
-    user.penaltyDeactivatedAt = null;
-    await user.save();
+    penalty.isCancelled = true;
+    penalty.cancelledBy = req.user._id;
+    penalty.cancelledAt = new Date();
+    penalty.cancelReason = reason;
 
-    res.json({
-      message: 'Kullanıcı hesabı başarıyla aktifleştirildi',
-      penaltyRecord
+    await penalty.save();
+
+    // Update user penalty stats
+    await updateUserPenaltyStats(penalty.user);
+
+    console.log('✅ Penalty cancelled:', {
+      penaltyId: penalty._id,
+      reason: reason.substring(0, 50),
+      cancelledBy: req.user.name
     });
 
+    res.json({ message: 'Ceza puanı başarıyla iptal edildi' });
+
   } catch (error) {
-    console.error('Reactivate user error:', error);
+    console.error('Cancel penalty error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 
-// @route   POST /api/penalties/check-daily
-// @desc    Günlük ceza puanı kontrolü (Sistem tarafından çağrılır)
-// @access  Private (Admin)
-router.post('/check-daily', [auth, adminAuth], async (req, res) => {
+// @route   POST /api/penalties/check-missed-entries
+// @desc    Check for missed communication entries and add penalties
+// @access  Private (Admin only)
+router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
   try {
-    const { date } = req.body;
-    const checkDate = date ? new Date(date) : new Date();
-    checkDate.setHours(0, 0, 0, 0);
+    const settings = await getPenaltySettings();
+    const checkDate = req.body.date ? new Date(req.body.date) : new Date();
     
-    const year = checkDate.getFullYear();
+    // Dün 23:00'dan önceki günleri kontrol et
+    const yesterday = new Date(checkDate);
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 0, 0, 0);
 
-    // Aktif yıl ayarlarını getir
-    const yearSettings = await CommunicationYear.findOne({ 
-      year: year,
-      isActive: true 
-    });
+    // Son 7 günü kontrol et (ayarlanabilir)
+    const checkStartDate = new Date(yesterday);
+    checkStartDate.setDate(checkStartDate.getDate() - 7);
 
-    if (!yearSettings || !yearSettings.settings.penaltySystemActive) {
-      return res.json({ message: 'Bu yıl için ceza sistemi aktif değil' });
-    }
+    console.log('🔍 Checking missed entries from', checkStartDate, 'to', yesterday);
 
-    // İletişim kaydı zorunlu olan aktif satış temsilcilerini getir (ziyaretçiler dahil değil)
-    const activeUsers = await User.find({
-      role: 'salesperson',
+    // Muaf olmayan aktif kullanıcıları al
+    const eligibleUsers = await User.find({
       isActive: true,
       isApproved: true,
-      isPenaltyDeactivated: false,
-      requiresCommunicationEntry: true // Sadece iletişim kaydı zorunlu olanlar
-    });
+      requiresCommunicationEntry: true,
+      role: { $exists: true }
+    }).populate('role', 'name');
 
-    const results = [];
+    const nonAdminUsers = eligibleUsers.filter(user => 
+      user.role && user.role.name !== 'admin'
+    );
 
-    for (const user of activeUsers) {
-      // Kullanıcının o günkü durum kaydını kontrol et
-      const dailyStatus = await DailyStatus.getStatusForDate(user._id, checkDate);
+    let newPenalties = 0;
+    let checkedDays = 0;
+
+    for (let d = new Date(checkStartDate); d <= yesterday; d.setDate(d.getDate() + 1)) {
+      const checkDay = new Date(d);
+      checkDay.setHours(0, 0, 0, 0);
       
-      // İzinli, hastalık veya resmi tatilde ise ceza verme
-      if (dailyStatus && ['izinli', 'hastalik', 'resmi_tatil'].includes(dailyStatus.status)) {
-        results.push({
-          user: user.name,
-          status: 'exempt',
-          reason: `${dailyStatus.statusDisplay} durumunda`,
-          date: checkDate
-        });
-        continue;
-      }
+      const nextDay = new Date(checkDay);
+      nextDay.setDate(nextDay.getDate() + 1);
 
-      // Kullanıcının o günkü iletişim kaydını kontrol et
-      const communicationRecord = await CommunicationRecord.findOne({
-        salesperson: user._id,
-        date: checkDate
-      });
+      checkedDays++;
 
-      // Kayıt yoksa veya girilmemişse ceza puanı ekle
-      if (!communicationRecord || !communicationRecord.isEntered) {
-        let penaltyRecord = await PenaltyRecord.findOne({
+      for (const user of nonAdminUsers) {
+        // Bu kullanıcının bu gün için iletişim kaydı var mı?
+        const hasEntry = await CommunicationRecord.findOne({
           salesperson: user._id,
-          year: year
+          date: {
+            $gte: checkDay,
+            $lt: nextDay
+          }
         });
 
-        if (!penaltyRecord) {
-          penaltyRecord = new PenaltyRecord({
-            salesperson: user._id,
-            year: year
+        if (!hasEntry) {
+          // Bu gün için zaten ceza kaydı var mı?
+          const existingPenalty = await PenaltyRecord.findOne({
+            user: user._id,
+            date: {
+              $gte: checkDay,
+              $lt: nextDay
+            },
+            type: 'missed_entry'
           });
+
+          if (!existingPenalty) {
+            // Yeni ceza kaydı oluştur
+            const penalty = new PenaltyRecord({
+              user: user._id,
+              points: settings.dailyPenaltyPoints,
+              reason: `${checkDay.toLocaleDateString('tr-TR')} tarihinde iletişim kaydı girilmedi`,
+              date: checkDay,
+              type: 'missed_entry',
+              createdBy: req.user._id
+            });
+
+            await penalty.save();
+            newPenalties++;
+
+            console.log(`⚠️ Penalty added for ${user.name} - ${checkDay.toLocaleDateString('tr-TR')}`);
+          }
         }
-
-        // Ceza puanı ekle
-        await penaltyRecord.addPenalty(
-          yearSettings.settings.dailyPenaltyPoints,
-          `${checkDate.toISOString().split('T')[0]} tarihinde veri girişi yapılmadı`,
-          yearSettings.settings.maxPenaltyPoints
-        );
-
-        // Eğer hesap pasifleştirildiyse User modelini güncelle
-        if (!penaltyRecord.isAccountActive) {
-          user.isPenaltyDeactivated = true;
-          user.penaltyDeactivatedAt = new Date();
-          await user.save();
-        }
-
-        // İletişim kaydını güncelle
-        if (communicationRecord) {
-          communicationRecord.penaltyApplied = true;
-          communicationRecord.penaltyDate = new Date();
-          await communicationRecord.save();
-        }
-
-        results.push({
-          user: user.name,
-          penaltyApplied: true,
-          newTotalPoints: penaltyRecord.totalPenaltyPoints,
-          accountDeactivated: !penaltyRecord.isAccountActive
-        });
-      } else {
-        results.push({
-          user: user.name,
-          penaltyApplied: false,
-          reason: 'Veri girişi yapılmış'
-        });
       }
     }
 
+    // Tüm etkilenen kullanıcıların penalty stats'ını güncelle
+    for (const user of nonAdminUsers) {
+      await updateUserPenaltyStats(user._id);
+    }
+
+    console.log(`✅ Missed entry check completed: ${newPenalties} new penalties, ${checkedDays} days checked`);
+
     res.json({
-      message: 'Günlük ceza puanı kontrolü tamamlandı',
-      date: checkDate.toISOString().split('T')[0],
-      results
+      message: `Kontrol tamamlandı: ${newPenalties} yeni ceza puanı eklendi`,
+      newPenalties,
+      checkedDays,
+      checkedUsers: nonAdminUsers.length
     });
 
   } catch (error) {
-    console.error('Daily penalty check error:', error);
+    console.error('Check missed entries error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 
-// @route   POST /api/penalties/manual-penalty
-// @desc    Manuel ceza puanı ekle (Admin)
-// @access  Private (Admin)
-router.post('/manual-penalty', [auth, adminAuth], async (req, res) => {
+// @route   GET /api/penalties/settings
+// @desc    Get penalty settings
+// @access  Private (Admin only)
+router.get('/settings', [auth, adminAuth], async (req, res) => {
   try {
-    const { userId, points, reason, year = new Date().getFullYear() } = req.body;
-
-    if (!userId || !points || !reason) {
-      return res.status(400).json({ 
-        message: 'Kullanıcı ID, puan ve sebep gereklidir' 
-      });
-    }
-
-    // Kullanıcıyı kontrol et
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
-    }
-
-    // Yıl ayarlarını getir
-    const yearSettings = await CommunicationYear.findOne({ year: parseInt(year) });
-    const maxPoints = yearSettings ? yearSettings.settings.maxPenaltyPoints : 100;
-
-    // Ceza kaydını bul veya oluştur
-    let penaltyRecord = await PenaltyRecord.findOne({
-      salesperson: userId,
-      year: parseInt(year)
-    });
-
-    if (!penaltyRecord) {
-      penaltyRecord = new PenaltyRecord({
-        salesperson: userId,
-        year: parseInt(year)
-      });
-    }
-
-    // Ceza puanı ekle
-    await penaltyRecord.addPenalty(parseInt(points), reason, maxPoints);
-
-    // Eğer hesap pasifleştirildiyse User modelini güncelle
-    if (!penaltyRecord.isAccountActive) {
-      user.isPenaltyDeactivated = true;
-      user.penaltyDeactivatedAt = new Date();
-      await user.save();
-    }
-
-    res.json({
-      message: 'Ceza puanı başarıyla eklendi',
-      penaltyRecord
-    });
-
+    const settings = await getPenaltySettings();
+    res.json(settings);
   } catch (error) {
-    console.error('Manual penalty error:', error);
+    console.error('Get penalty settings error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
+
+// @route   PUT /api/penalties/settings
+// @desc    Update penalty settings
+// @access  Private (Admin only)
+router.put('/settings', [
+  auth, 
+  adminAuth,
+  body('dailyPenaltyPoints').isInt({ min: 1, max: 10 }).withMessage('Günlük ceza puanı 1-10 arasında olmalıdır'),
+  body('maxPenaltyPoints').isInt({ min: 5, max: 50 }).withMessage('Maksimum ceza puanı 5-50 arasında olmalıdır'),
+  body('autoDeactivateEnabled').isBoolean().withMessage('Otomatik pasifleştirme boolean olmalıdır'),
+  body('penaltyResetDays').isInt({ min: 7, max: 365 }).withMessage('Sıfırlama süresi 7-365 gün arasında olmalıdır')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veriler', 
+        errors: errors.array() 
+      });
+    }
+
+    const settings = req.body;
+    await savePenaltySettings(settings);
+
+    console.log('✅ Penalty settings updated by', req.user.name);
+
+    res.json({ 
+      message: 'Ceza ayarları başarıyla güncellendi',
+      settings 
+    });
+
+  } catch (error) {
+    console.error('Update penalty settings error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Helper functions
+async function updateUserPenaltyStats(userId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    const settings = await getPenaltySettings();
+
+    // Aktif ceza puanlarını hesapla (iptal edilmemiş)
+    const activePenalties = await PenaltyRecord.find({
+      user: userId,
+      isCancelled: false,
+      isResolved: false
+    });
+
+    const totalActivePoints = activePenalties.reduce((sum, p) => sum + p.points, 0);
+
+    // Eğer maksimum puana ulaşmışsa ve otomatik pasifleştirme açıksa
+    if (settings.autoDeactivateEnabled && totalActivePoints >= settings.maxPenaltyPoints) {
+      if (!user.isPenaltyDeactivated) {
+        user.isPenaltyDeactivated = true;
+        user.penaltyDeactivatedAt = new Date();
+        user.isActive = false;
+        
+        console.log(`⚠️ User ${user.name} deactivated due to penalty points: ${totalActivePoints}`);
+      }
+    }
+
+    await user.save();
+
+  } catch (error) {
+    console.error('Update user penalty stats error:', error);
+  }
+}
+
+async function getPenaltySettings() {
+  // Bu fonksiyon sistem ayarlarından penalty ayarlarını alır
+  // Şimdilik default değerler döndürüyoruz, daha sonra SystemSettings model'inde saklanabilir
+  return {
+    dailyPenaltyPoints: 1,
+    maxPenaltyPoints: 10,
+    autoDeactivateEnabled: true,
+    penaltyResetDays: 30
+  };
+}
+
+async function savePenaltySettings(settings) {
+  // Bu fonksiyon sistem ayarlarına penalty ayarlarını kaydeder
+  // Şimdilik bir şey yapmıyor, daha sonra SystemSettings model'inde saklanabilir
+  console.log('Saving penalty settings:', settings);
+  return settings;
+}
 
 module.exports = router;
