@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
-    default: null // Şimdilik optional - sonra migration yapacağız
+    required: true // Artık zorunlu - her kullanıcının bir rolü olmalı
   },
   isActive: {
     type: Boolean,

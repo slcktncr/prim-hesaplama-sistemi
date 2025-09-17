@@ -143,13 +143,19 @@ router.get('/team-status', auth, async (req, res) => {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-    // Tüm aktif satış temsilcilerini getir (sistem admin hariç)
+    // Tüm aktif satış temsilcilerini getir (admin hariç - TEK SİSTEM)
     const allSalespeople = await User.find({
-      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç
       isActive: true,
       isApproved: true,
       requiresCommunicationEntry: true
-    }).select('name email');
+    })
+    .populate('role', 'name')
+    .select('name email role');
+    
+    // Admin rolünü filtrele
+    const nonAdminSalespeople = allSalespeople.filter(user => 
+      !(user.role && user.role.name === 'admin')
+    );
 
     // Bugünkü durum kayıtlarını getir
     const todayStatuses = await DailyStatus.find({
@@ -166,7 +172,7 @@ router.get('/team-status', auth, async (req, res) => {
     });
 
     // Tüm temsilciler için durum listesi oluştur
-    const teamStatus = allSalespeople.map(person => {
+    const teamStatus = nonAdminSalespeople.map(person => {
       const status = statusMap[person._id.toString()];
       return {
         _id: person._id,
@@ -348,12 +354,18 @@ router.get('/admin/all-statuses', [auth, adminAuth], async (req, res) => {
     
     const stats = await DailyStatus.getStatusStats(targetDate);
     
-    // Tüm aktif satış temsilcilerini getir (sistem admin hariç)
-    const allSalespeople = await User.find({
-      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç
+    // Tüm aktif satış temsilcilerini getir (admin hariç - TEK SİSTEM)
+    const allUsers = await User.find({
       isActive: true,
       isApproved: true
-    }).select('name email requiresCommunicationEntry');
+    })
+    .populate('role', 'name')
+    .select('name email requiresCommunicationEntry role');
+    
+    // Admin rolünü filtrele
+    const allSalespeople = allUsers.filter(user => 
+      !(user.role && user.role.name === 'admin')
+    );
 
     res.json({
       stats: stats,

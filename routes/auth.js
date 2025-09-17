@@ -236,11 +236,59 @@ const fixAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
-    // Admin hesabını düzelt
+    // Admin hesabını düzelt - TEK SİSTEM
+    const Role = require('../models/Role');
+    let adminRole = await Role.findOne({ name: 'admin' });
+    
+    if (!adminRole) {
+      // Admin rolü yoksa oluştur
+      adminRole = new Role({
+        name: 'admin',
+        displayName: 'Sistem Yöneticisi',
+        description: 'Tüm sistem yetkilerine sahip süper kullanıcı',
+        isSystemRole: true,
+        permissions: {
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: true,
+          canViewSales: true,
+          canCreateSales: true,
+          canEditSales: true,
+          canDeleteSales: true,
+          canViewAllSales: true,
+          canTransferSales: true,
+          canCancelSales: true,
+          canModifySales: true,
+          canImportSales: true,
+          canViewPrims: true,
+          canManagePrimPeriods: true,
+          canEditPrimRates: true,
+          canProcessPayments: true,
+          canViewAllEarnings: true,
+          canViewCommunications: true,
+          canEditCommunications: true,
+          canViewAllCommunications: true,
+          canViewUsers: true,
+          canCreateUsers: true,
+          canEditUsers: true,
+          canDeleteUsers: true,
+          canManageRoles: true,
+          canAccessSystemSettings: true,
+          canManageBackups: true,
+          canViewSystemLogs: true,
+          canManageAnnouncements: true,
+          canViewPenalties: true,
+          canApplyPenalties: true,
+          canOverrideValidations: true
+        },
+        createdBy: null
+      });
+      await adminRole.save();
+    }
+    
     user.isActive = true;
     user.isApproved = true;
-    user.systemRole = 'admin'; // Yeni sistem için
-    user.role = null; // Sistem admin'i için role null
+    user.role = adminRole._id; // TEK SİSTEM: Sadece role field'ı
     
     // firstName/lastName eksikse düzelt
     if (!user.firstName || !user.lastName) {
@@ -253,15 +301,19 @@ const fixAdmin = async (req, res) => {
 
     console.log('✅ Admin hesabı düzeltildi:', email);
 
+    // Populate edilmiş kullanıcıyı döndür
+    const updatedUser = await User.findById(user._id)
+      .populate('role', 'name displayName permissions');
+
     res.json({
-      message: 'Admin hesabı başarıyla düzeltildi',
+      message: 'Admin hesabı başarıyla düzeltildi (TEK SİSTEM)',
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        systemRole: user.systemRole,
-        isActive: user.isActive,
-        isApproved: user.isApproved
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        isActive: updatedUser.isActive,
+        isApproved: updatedUser.isApproved
       }
     });
   } catch (error) {
@@ -403,8 +455,61 @@ router.get('/create-default-roles', async (req, res) => {
     
     console.log('🔧 Varsayılan roller oluşturuluyor...');
 
-    // Admin kullanıcısını bul (yeni sistem)
-    const adminUser = await User.findOne({ systemRole: 'admin' });
+    // Admin kullanıcısını bul (TEK SİSTEM)
+    let adminRole = await Role.findOne({ name: 'admin' });
+    
+    // Admin rolü yoksa önce oluştur
+    if (!adminRole) {
+      console.log('⚠️ Admin rolü bulunamadı, oluşturuluyor...');
+      adminRole = new Role({
+        name: 'admin',
+        displayName: 'Sistem Yöneticisi',
+        description: 'Tüm sistem yetkilerine sahip süper kullanıcı',
+        isSystemRole: true,
+        permissions: {
+          // Tüm yetkiler true
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: true,
+          canViewSales: true,
+          canCreateSales: true,
+          canEditSales: true,
+          canDeleteSales: true,
+          canViewAllSales: true,
+          canTransferSales: true,
+          canCancelSales: true,
+          canModifySales: true,
+          canImportSales: true,
+          canViewPrims: true,
+          canManagePrimPeriods: true,
+          canEditPrimRates: true,
+          canProcessPayments: true,
+          canViewAllEarnings: true,
+          canViewCommunications: true,
+          canEditCommunications: true,
+          canViewAllCommunications: true,
+          canViewUsers: true,
+          canCreateUsers: true,
+          canEditUsers: true,
+          canDeleteUsers: true,
+          canManageRoles: true,
+          canAccessSystemSettings: true,
+          canManageBackups: true,
+          canViewSystemLogs: true,
+          canManageAnnouncements: true,
+          canViewPenalties: true,
+          canApplyPenalties: true,
+          canOverrideValidations: true
+        },
+        createdBy: null // Sistem oluşturdu
+      });
+      await adminRole.save();
+    }
+    
+    // Admin kullanıcı var mı kontrol et
+    const adminUser = await User.findOne({ email: 'selcuktuncer@gmail.com' })
+      .populate('role');
+    
     if (!adminUser) {
       return res.status(404).json({ 
         success: false,
@@ -577,7 +682,7 @@ router.get('/create-default-roles', async (req, res) => {
 
       const role = new Role({
         ...roleData,
-        createdBy: adminUser._id
+        createdBy: adminRole._id // adminUser yerine adminRole kullan
       });
 
       await role.save();
@@ -613,7 +718,7 @@ router.get('/debug-user/:email', async (req, res) => {
     const { email } = req.params;
     const user = await User.findOne({ email: email.toLowerCase() })
       .populate('role', 'name displayName permissions')
-      .select('firstName lastName name email role systemRole isActive isApproved permissions');
+      .select('firstName lastName name email role isActive isApproved');
 
     if (!user) {
       return res.status(404).json({ 
@@ -631,17 +736,15 @@ router.get('/debug-user/:email', async (req, res) => {
       user: {
         name: user.name,
         email: user.email,
-        systemRole: user.systemRole,
         role: user.role,
         isActive: user.isActive,
-        isApproved: user.isApproved,
-        permissions: user.permissions
+        isApproved: user.isApproved
       },
       allRoles: allRoles,
       debug: {
-        hasSystemAdmin: user.systemRole === 'admin',
         hasRoleAdmin: user.role && user.role.name === 'admin',
-        roleCount: allRoles.length
+        roleCount: allRoles.length,
+        isAdmin: user.role && user.role.name === 'admin'
       }
     });
 

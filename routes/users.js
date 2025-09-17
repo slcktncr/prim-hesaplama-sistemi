@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('_id name email role systemRole createdAt updatedAt permissions firstName lastName')
+      .select('_id name email role createdAt updatedAt firstName lastName')
       .populate('role', 'name displayName')
       .sort({ name: 1 });
     
@@ -19,7 +19,6 @@ router.get('/', [auth, adminAuth], async (req, res) => {
     console.log('🔍 Sample user (first):', users[0]);
     console.log('🔍 Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
-      systemRole: u.systemRole,
       role: u.role,
       createdAt: u.createdAt 
     })));
@@ -61,7 +60,7 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isActive: true,
       isApproved: true
     })
-      .select('_id name email role systemRole createdAt updatedAt permissions firstName lastName')
+      .select('_id name email role createdAt updatedAt firstName lastName')
       .populate('role', 'name displayName')
       .sort({ name: 1 });
 
@@ -70,13 +69,11 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       console.log('🔍 ALL-USERS: Sample user (first):', {
         name: users[0].name,
         email: users[0].email,
-        role: users[0].role,
-        systemRole: users[0].systemRole
+        role: users[0].role
       });
     }
     console.log('🔍 ALL-USERS: Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
-      systemRole: u.systemRole,
       role: u.role,
       createdAt: u.createdAt 
     })));
@@ -314,24 +311,17 @@ router.put('/:id', [
       return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor' });
     }
 
-    // Rol kontrolü ve atama
-    if (role === 'admin') {
-      // Sistem admin rolü
-      user.systemRole = 'admin';
-      user.role = null;
-    } else if (role) {
+    // Rol kontrolü ve atama (TEK SİSTEM)
+    if (role) {
       // Tanımlı rol kontrolü
       const Role = require('../models/Role');
       const roleExists = await Role.findById(role);
       if (!roleExists) {
         return res.status(400).json({ message: 'Geçersiz rol' });
       }
-      user.systemRole = null;
       user.role = role;
     } else {
-      // Rol yok
-      user.systemRole = null;
-      user.role = null;
+      return res.status(400).json({ message: 'Rol seçilmelidir' });
     }
 
     // Kullanıcı bilgilerini güncelle
@@ -345,7 +335,7 @@ router.put('/:id', [
     await user.save();
 
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role systemRole isActive isApproved createdAt updatedAt permissions')
+      .select('firstName lastName name email role isActive isApproved createdAt updatedAt')
       .populate('role', 'name displayName')
       .populate('approvedBy', 'name email');
 
@@ -413,13 +403,18 @@ router.put('/:id/communication-requirement', [auth, adminAuth], async (req, res)
 // @access  Private (Admin only)
 router.get('/communication-settings', [auth, adminAuth], async (req, res) => {
   try {
-    const users = await User.find({ 
-      systemRole: { $ne: 'admin' }, // Sistem admin'i hariç tüm kullanıcılar
+    const allUsers = await User.find({ 
       isApproved: true 
     })
-    .select('name email isActive requiresCommunicationEntry communicationExemptReason communicationExemptBy communicationExemptAt')
+    .populate('role', 'name')
     .populate('communicationExemptBy', 'name')
+    .select('name email isActive requiresCommunicationEntry communicationExemptReason communicationExemptBy communicationExemptAt role')
     .sort({ name: 1 });
+    
+    // Admin rolünü filtrele (TEK SİSTEM)
+    const users = allUsers.filter(user => 
+      !(user.role && user.role.name === 'admin')
+    );
 
     res.json(users);
   } catch (error) {

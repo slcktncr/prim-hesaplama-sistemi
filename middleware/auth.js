@@ -27,14 +27,22 @@ const auth = async (req, res, next) => {
 // Admin yetkisi kontrolü - Tek rol sistemi
 const adminAuth = async (req, res, next) => {
   try {
-    // Sadece admin rolü kontrolü
+    // Sadece admin rolü kontrolü - TEK SİSTEM
     const hasAdminRole = req.user.role && req.user.role.name === 'admin';
     
     if (!hasAdminRole) {
+      console.log('❌ Admin yetki kontrolü başarısız:', {
+        userId: req.user._id,
+        userRole: req.user.role?.name || 'rol yok',
+        hasRole: !!req.user.role
+      });
       return res.status(403).json({ message: 'Admin yetkisi gereklidir' });
     }
+    
+    console.log('✅ Admin yetki kontrolü başarılı:', req.user.role.name);
     next();
   } catch (error) {
+    console.error('Admin auth error:', error);
     res.status(500).json({ message: 'Yetki kontrolü hatası' });
   }
 };
