@@ -191,6 +191,56 @@ const UserManagement = () => {
     }
   };
 
+  const handleBulkApproveAndActivate = async () => {
+    const pendingUsers = users.filter(user => !user.isApproved || !user.isActive);
+    
+    if (pendingUsers.length === 0) {
+      toast.info('Onaylanacak veya aktifleştirilecek kullanıcı bulunamadı');
+      return;
+    }
+
+    if (!window.confirm(`${pendingUsers.length} kullanıcıyı onaylayıp aktifleştirmek istediğinizden emin misiniz?`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const user of pendingUsers) {
+        try {
+          // Önce onaylanmamışsa onayla
+          if (!user.isApproved) {
+            await usersAPI.approveUser(user._id);
+          }
+          // Sonra aktif değilse aktifleştir
+          if (!user.isActive) {
+            await usersAPI.updateUser(user._id, { isActive: true });
+          }
+          successCount++;
+        } catch (error) {
+          console.error(`Error processing user ${user.name}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} kullanıcı başarıyla onaylandı ve aktifleştirildi`);
+      }
+      if (errorCount > 0) {
+        toast.error(`${errorCount} kullanıcı işlenirken hata oluştu`);
+      }
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Bulk approve error:', error);
+      toast.error('Toplu onaylama sırasında hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filtreleme
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -229,6 +279,14 @@ const UserManagement = () => {
           >
             <FiRefreshCw className="me-2" />
             Yenile
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={handleBulkApproveAndActivate}
+            disabled={loading}
+          >
+            <FiEye className="me-2" />
+            Tümünü Onayla & Aktifleştir
           </Button>
           <Button 
             variant="primary" 
@@ -272,7 +330,11 @@ const UserManagement = () => {
             </Col>
             <Col md={2}>
               <div className="text-muted">
-                {filteredUsers.length} kullanıcı
+                <strong>{filteredUsers.length}</strong> kullanıcı
+                <br />
+                <small>
+                  {users.filter(u => !u.isApproved || !u.isActive).length} bekliyor
+                </small>
               </div>
             </Col>
           </Row>
