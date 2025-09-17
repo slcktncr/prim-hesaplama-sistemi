@@ -158,7 +158,8 @@ const UserPermissions = () => {
       // Kullanıcı listesini yenile (yeni sistemde rolden yetkileri alacak)
       setTimeout(() => {
         fetchUsers(true);
-      }, 500);
+        fetchRoles(); // Rolleri de yenile
+      }, 1000); // Delay artırıldı
       
     } catch (error) {
       console.error('❌ FRONTEND: Save permissions error:', error);
