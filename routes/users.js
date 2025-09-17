@@ -12,7 +12,7 @@ router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
       .select('_id name email role createdAt updatedAt firstName lastName')
-      .populate('role', 'name displayName')
+      .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
     
     console.log('🔍 Total users found:', users.length);
@@ -50,7 +50,7 @@ router.get('/salespeople', auth, async (req, res) => {
       isApproved: true,
       role: salespersonRole._id // ObjectId kullan
     })
-      .populate('role', 'name displayName')
+      .populate('role', 'name displayName permissions')
       .select('name email firstName lastName role')
       .sort({ name: 1 });
 
@@ -72,7 +72,7 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
       isApproved: true
     })
       .select('_id name email role createdAt updatedAt firstName lastName')
-      .populate('role', 'name displayName')
+      .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
 
     console.log('🔍 ALL-USERS: Total users found:', users.length);
@@ -232,7 +232,7 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
 
     const updatedUser = await User.findById(user._id)
       .select('firstName lastName name email role isActive isApproved')
-      .populate('role', 'name displayName');
+      .populate('role', 'name displayName permissions');
 
     console.log(`📋 After populate: role =`, updatedUser.role);
 
@@ -425,7 +425,7 @@ router.put('/:id', [
 
     const updatedUser = await User.findById(user._id)
       .select('firstName lastName name email role isActive isApproved createdAt updatedAt')
-      .populate('role', 'name displayName')
+      .populate('role', 'name displayName permissions')
       .populate('approvedBy', 'name email');
 
     res.json({
