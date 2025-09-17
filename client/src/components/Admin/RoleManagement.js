@@ -262,7 +262,7 @@ const RoleManagement = () => {
                         <Badge bg={role.isActive ? 'success' : 'secondary'}>
                           {role.isActive ? 'Aktif' : 'Pasif'}
                         </Badge>
-                        {role.isSystemRole && (
+                        {role.name === 'admin' && (
                           <Badge bg="warning" className="ms-1">Sistem</Badge>
                         )}
                       </td>
@@ -282,7 +282,7 @@ const RoleManagement = () => {
                               variant="outline-primary"
                               size="sm"
                               onClick={() => handleEditRole(role)}
-                              disabled={role.isSystemRole}
+                              disabled={role.name === 'admin'}
                             >
                               <FaEdit />
                             </Button>
@@ -310,7 +310,7 @@ const RoleManagement = () => {
                               variant="outline-danger"
                               size="sm"
                               onClick={() => handleDeleteRole(role)}
-                              disabled={role.isSystemRole}
+                              disabled={role.name === 'admin'}
                             >
                               <FaTrash />
                             </Button>

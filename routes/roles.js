@@ -90,9 +90,9 @@ router.put('/:id', [auth, adminAuth], async (req, res) => {
       return res.status(404).json({ message: 'Rol bulunamadı' });
     }
 
-    // Sistem rollerinin bazı özelliklerini değiştirmeyi engelle
-    if (role.isSystemRole) {
-      return res.status(400).json({ message: 'Sistem rolleri değiştirilemez' });
+    // Sadece admin rolünün değiştirilmesini engelle
+    if (role.name === 'admin') {
+      return res.status(400).json({ message: 'Admin rolü değiştirilemez' });
     }
 
     role.displayName = displayName || role.displayName;
@@ -124,13 +124,13 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
       return res.status(404).json({ message: 'Rol bulunamadı' });
     }
 
-    // Sistem rollerinin silinmesini engelle
-    if (role.isSystemRole) {
-      return res.status(400).json({ message: 'Sistem rolleri silinemez' });
+    // Sadece admin rolünün silinmesini engelle
+    if (role.name === 'admin') {
+      return res.status(400).json({ message: 'Admin rolü silinemez' });
     }
 
     // Bu rolü kullanan kullanıcıları kontrol et
-    const usersWithRole = await User.countDocuments({ customRole: role._id });
+    const usersWithRole = await User.countDocuments({ role: role._id });
     if (usersWithRole > 0) {
       return res.status(400).json({ 
         message: `Bu rol ${usersWithRole} kullanıcı tarafından kullanılıyor. Önce kullanıcıların rollerini değiştirin.` 
@@ -238,8 +238,8 @@ router.post('/:id/toggle-status', [auth, adminAuth], async (req, res) => {
       return res.status(404).json({ message: 'Rol bulunamadı' });
     }
 
-    if (role.isSystemRole) {
-      return res.status(400).json({ message: 'Sistem rollerinin durumu değiştirilemez' });
+    if (role.name === 'admin') {
+      return res.status(400).json({ message: 'Admin rolünün durumu değiştirilemez' });
     }
 
     role.isActive = !role.isActive;

@@ -95,10 +95,10 @@ roleSchema.pre('save', function(next) {
   next();
 });
 
-// Sistem rollerinin silinmesini engelle
+// Admin rolünün silinmesini engelle
 roleSchema.pre('deleteOne', { document: true, query: false }, function(next) {
-  if (this.isSystemRole) {
-    return next(new Error('Sistem rolleri silinemez'));
+  if (this.name === 'admin') {
+    return next(new Error('Admin rolü silinemez'));
   }
   next();
 });
