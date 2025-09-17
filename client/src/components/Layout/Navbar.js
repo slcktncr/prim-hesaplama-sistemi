@@ -68,9 +68,7 @@ const Navbar = () => {
                   {user?.name}
                 </div>
                 <div className="text-muted small">
-                  {user?.systemRole === 'admin' ? 'Sistem Yöneticisi' : 
-                   user?.role ? user.role.displayName || user.role.name :
-                   'Kullanıcı'}
+                {user?.role ? user.role.displayName || user.role.name : 'Kullanıcı'}
                 </div>
               </div>
             </Dropdown.Toggle>
@@ -109,7 +107,7 @@ const Navbar = () => {
                 Profil Ayarları
               </Dropdown.Item>
               
-              {(user?.systemRole === 'admin' || (user?.role && user.role.name === 'admin')) && (
+              {(user?.role && user.role.name === 'admin') && (
                 <Dropdown.Item onClick={() => navigate('/admin/system-settings')}>
                   <FiShield className="me-2" />
                   Sistem Ayarları

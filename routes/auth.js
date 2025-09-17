@@ -271,13 +271,65 @@ const fixAdmin = async (req, res) => {
 };
 
 // @route   GET /api/auth/emergency-admin-fix
-// @desc    Emergency admin fix without authentication
+// @desc    Emergency admin fix - NEW ROLE SYSTEM
 // @access  Public (emergency use only)
 router.get('/emergency-admin-fix', async (req, res) => {
   try {
     const User = require('../models/User');
+    const Role = require('../models/Role');
     
-    console.log('🚨 Emergency admin fix başlatılıyor...');
+    console.log('🚨 Emergency admin fix başlatılıyor (YENİ SİSTEM)...');
+    
+    // Admin rolünü bul
+    let adminRole = await Role.findOne({ name: 'admin' });
+    if (!adminRole) {
+      console.log('⚠️ Admin rolü bulunamadı, oluşturuluyor...');
+      // Admin rolü yoksa oluştur
+      adminRole = new Role({
+        name: 'admin',
+        displayName: 'Sistem Yöneticisi',
+        description: 'Tüm sistem yetkilerine sahip süper kullanıcı',
+        isSystemRole: true,
+        permissions: {
+          // Tüm yetkiler true
+          canViewDashboard: true,
+          canViewReports: true,
+          canExportData: true,
+          canViewSales: true,
+          canCreateSales: true,
+          canEditSales: true,
+          canDeleteSales: true,
+          canViewAllSales: true,
+          canTransferSales: true,
+          canCancelSales: true,
+          canModifySales: true,
+          canImportSales: true,
+          canViewPrims: true,
+          canManagePrimPeriods: true,
+          canEditPrimRates: true,
+          canProcessPayments: true,
+          canViewAllEarnings: true,
+          canViewCommunications: true,
+          canEditCommunications: true,
+          canViewAllCommunications: true,
+          canViewUsers: true,
+          canCreateUsers: true,
+          canEditUsers: true,
+          canDeleteUsers: true,
+          canManageRoles: true,
+          canAccessSystemSettings: true,
+          canManageBackups: true,
+          canViewSystemLogs: true,
+          canManageAnnouncements: true,
+          canViewPenalties: true,
+          canApplyPenalties: true,
+          canOverrideValidations: true
+        },
+        createdBy: null // Sistem oluşturdu
+      });
+      await adminRole.save();
+      console.log('✅ Admin rolü oluşturuldu');
+    }
     
     // Selçuk TUNÇER'i bul
     const user = await User.findOne({ 
@@ -293,15 +345,13 @@ router.get('/emergency-admin-fix', async (req, res) => {
 
     console.log('📋 Mevcut durum:', {
       name: user.name,
-      systemRole: user.systemRole,
       role: user.role,
       isActive: user.isActive,
       isApproved: user.isApproved
     });
 
-    // Admin yetkilerini düzelt
-    user.systemRole = 'admin';
-    user.role = null;
+    // YENİ SİSTEM: Sadece role field'ı
+    user.role = adminRole._id;
     user.isActive = true;
     user.isApproved = true;
     user.approvedAt = new Date();
@@ -315,18 +365,22 @@ router.get('/emergency-admin-fix', async (req, res) => {
 
     await user.save();
 
-    console.log('✅ Emergency admin fix tamamlandı');
+    // Populate edilmiş kullanıcıyı döndür
+    const updatedUser = await User.findById(user._id)
+      .populate('role', 'name displayName permissions');
+
+    console.log('✅ Emergency admin fix tamamlandı (YENİ SİSTEM)');
 
     res.json({
       success: true,
-      message: 'Admin yetkisi başarıyla düzeltildi',
+      message: 'Admin yetkisi başarıyla düzeltildi (YENİ SİSTEM)',
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        systemRole: user.systemRole,
-        isActive: user.isActive,
-        isApproved: user.isApproved
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        isActive: updatedUser.isActive,
+        isApproved: updatedUser.isApproved
       }
     });
 
@@ -596,6 +650,76 @@ router.get('/debug-user/:email', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Debug hatası',
+      error: error.message 
+    });
+  }
+});
+
+// @route   GET /api/auth/migrate-users-to-roles
+// @desc    Migrate existing users to new role system
+// @access  Public (emergency use only)
+router.get('/migrate-users-to-roles', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const Role = require('../models/Role');
+    
+    console.log('🔄 Kullanıcı migration başlatılıyor...');
+    
+    // Rolleri bul
+    const salespersonRole = await Role.findOne({ name: 'salesperson' });
+    if (!salespersonRole) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Satış temsilcisi rolü bulunamadı. Önce rolleri oluşturun.' 
+      });
+    }
+
+    // Role'ü null olan kullanıcıları bul
+    const usersWithoutRole = await User.find({ 
+      role: null,
+      email: { $ne: 'selcuktuncer@gmail.com' } // Admin hariç
+    });
+
+    console.log(`📊 Migration yapılacak kullanıcı sayısı: ${usersWithoutRole.length}`);
+
+    let migratedCount = 0;
+    const results = [];
+
+    for (const user of usersWithoutRole) {
+      try {
+        user.role = salespersonRole._id;
+        await user.save();
+        migratedCount++;
+        results.push({
+          name: user.name,
+          email: user.email,
+          status: 'success'
+        });
+        console.log(`✅ ${user.name} → Satış Temsilcisi`);
+      } catch (error) {
+        results.push({
+          name: user.name,
+          email: user.email,
+          status: 'error',
+          error: error.message
+        });
+        console.error(`❌ ${user.name} migration hatası:`, error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `${migratedCount}/${usersWithoutRole.length} kullanıcı migration tamamlandı`,
+      migratedCount,
+      totalCount: usersWithoutRole.length,
+      results: results
+    });
+
+  } catch (error) {
+    console.error('❌ User migration error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Migration hatası',
       error: error.message 
     });
   }
