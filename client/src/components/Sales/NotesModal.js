@@ -12,7 +12,7 @@ const NotesModal = ({ show, onHide, sale, onSuccess }) => {
   const { user } = useAuth();
 
   const canEditNotes = user && (
-    user.role === 'admin' || 
+    (user.role && user.role.name === 'admin') || 
     (sale?.salesperson?._id === user._id || sale?.salesperson === user._id)
   );
 

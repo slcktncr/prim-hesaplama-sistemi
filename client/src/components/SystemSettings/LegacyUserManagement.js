@@ -74,7 +74,7 @@ const LegacyUserManagement = () => {
       const activeUsers = response.data.filter(user => {
         // Daha esnek filtering - sadece legacy user'ı hariç tut
         const isNotLegacy = user.email !== 'eski.satis@legacy.system';
-        const hasValidRole = user.role === 'salesperson' || user.role === 'admin'; // Admin'leri de dahil et
+        const hasValidRole = (user.role && user.role.name === 'salesperson') || (user.role && user.role.name === 'admin'); // Admin'leri de dahil et
         const isActiveOrApproved = user.isActive || user.isApproved; // Approved olanları da dahil et
         
         const isValid = isNotLegacy && hasValidRole && isActiveOrApproved;

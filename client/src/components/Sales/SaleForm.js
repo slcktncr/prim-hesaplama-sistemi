@@ -18,7 +18,7 @@ const SaleForm = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
 
   const [formData, setFormData] = useState({
     customerName: '',

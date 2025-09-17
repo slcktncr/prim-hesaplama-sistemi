@@ -24,7 +24,7 @@ import {
 
 const Sidebar = ({ onLinkClick }) => {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
 
   // Link tıklanınca mobilde sidebar'ı kapat
   const handleLinkClick = () => {

@@ -224,11 +224,11 @@ const ActiveUsers = () => {
                               ) : (
                                 // Özel rol yoksa sistem rolünü göster
                                 <Badge bg={
-                                  user.role === 'admin' ? 'danger' : 
-                                  user.role === 'visitor' ? 'secondary' : 'primary'
+                                  user.role && user.role.name === 'admin' ? 'danger' : 
+                                  user.role && user.role.name === 'visitor' ? 'secondary' : 'primary'
                                 }>
-                                  {user.role === 'admin' ? 'Admin' : 
-                                   user.role === 'visitor' ? 'Ziyaretçi' : 'Satış Temsilcisi'}
+                                  {user.role && user.role.name === 'admin' ? 'Admin' : 
+                                   user.role && user.role.name === 'visitor' ? 'Ziyaretçi' : user.role?.displayName || 'Satış Temsilcisi'}
                                 </Badge>
                               )}
                             </div>

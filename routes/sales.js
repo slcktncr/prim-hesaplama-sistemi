@@ -721,9 +721,9 @@ router.get('/', auth, async (req, res) => {
     let query = { isDeleted: { $ne: true } };
 
     // Kullanıcı rolüne göre erişim kontrolü
-    if (req.user.role === 'admin') {
+    if (req.user.role && req.user.role.name === 'admin') {
       // Admin tüm satışları görebilir
-    } else if (req.user.role === 'visitor') {
+    } else if (req.user.role && req.user.role.name === 'visitor') {
       // Ziyaretçi tüm satışları görebilir ama düzenleyemez
     } else {
       // Normal kullanıcı sadece kendi satışlarını görebilir

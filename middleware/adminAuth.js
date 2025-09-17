@@ -6,7 +6,7 @@ const adminAuth = (req, res, next) => {
     }
 
     // Admin kontrolü - yeni sistem
-    const isSystemAdmin = req.user.systemRole === 'admin';
+    const isSystemAdmin = req.user.role && req.user.role.name === 'admin';
     const hasAdminRole = req.user.role && req.user.role.name === 'admin';
     
     if (!isSystemAdmin && !hasAdminRole) {

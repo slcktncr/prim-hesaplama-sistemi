@@ -107,7 +107,7 @@ const Dashboard = () => {
           <h1>Dashboard</h1>
           <p className="text-muted mb-0">
             Hoş geldiniz, {user?.name}
-            {user?.role === 'admin' && <span className="badge bg-warning ms-2">Admin</span>}
+            {user?.role && user.role.name === 'admin' && <span className="badge bg-warning ms-2">Admin</span>}
           </p>
         </div>
       </div>
@@ -371,14 +371,14 @@ const Dashboard = () => {
 
       <Row>
         {/* En İyi Performans (Sadece Admin için) */}
-        {user?.role === 'admin' && topPerformers && (
+        {user?.role && user.role.name === 'admin' && topPerformers && (
           <Col lg={6} className="mb-4">
             <TopPerformers performers={topPerformers} />
           </Col>
         )}
 
         {/* Son Aktiviteler */}
-        <Col lg={user?.role === 'admin' ? 6 : 12} className="mb-4">
+        <Col lg={user?.role && user.role.name === 'admin' ? 6 : 12} className="mb-4">
           <RecentActivity />
         </Col>
       </Row>

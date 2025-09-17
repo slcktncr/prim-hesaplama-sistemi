@@ -79,10 +79,10 @@ const Navbar = () => {
                 <small className="text-muted">{user?.email}</small>
                 <div className="mt-1">
                   <span className={`badge ${
-                    user?.systemRole === 'admin' ? 'bg-danger' : 
+                    user?.role && user.role.name === 'admin' ? 'bg-danger' : 
                     user?.role ? 'bg-success' : 'bg-secondary'
                   } small`}>
-                    {user?.systemRole === 'admin' ? (
+                    {user?.role && user.role.name === 'admin' ? (
                       <>
                         <FiShield className="me-1" size={10} />
                         Sistem Yöneticisi

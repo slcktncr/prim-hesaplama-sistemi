@@ -211,7 +211,7 @@ const TeamStatus = () => {
                 <th>Not</th>
                 <th>Ayarlanma Zamanı</th>
                 <th>Ceza Muafiyeti</th>
-                {user?.role === 'admin' && <th>İşlemler</th>}
+                {user?.role && user.role.name === 'admin' && <th>İşlemler</th>}
               </tr>
             </thead>
             <tbody>
@@ -253,7 +253,7 @@ const TeamStatus = () => {
                       <Badge bg="secondary" className="small">Normal</Badge>
                     )}
                   </td>
-                  {user?.role === 'admin' && (
+                  {user?.role && user.role.name === 'admin' && (
                     <td>
                       <Button
                         variant="outline-primary"
@@ -273,7 +273,7 @@ const TeamStatus = () => {
       </Card>
 
       {/* Admin Status Change Modal */}
-      {user?.role === 'admin' && (
+      {user?.role && user.role.name === 'admin' && (
         <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)} centered>
           <Modal.Header closeButton>
             <Modal.Title>

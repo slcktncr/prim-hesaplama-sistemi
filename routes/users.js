@@ -349,7 +349,7 @@ router.put('/:id', [
     }
 
     // Kendi kendini admin'den çıkaramaz
-    if (req.user._id.toString() === req.params.id && req.user.role === 'admin' && role !== 'admin') {
+    if (req.user._id.toString() === req.params.id && req.user.role && req.user.role.name === 'admin' && role !== 'admin') {
       return res.status(400).json({ message: 'Kendi admin rolünüzü değiştiremezsiniz' });
     }
 

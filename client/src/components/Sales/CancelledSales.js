@@ -59,7 +59,7 @@ const CancelledSales = () => {
   const [selectedSale, setSelectedSale] = useState(null);
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
 
   useEffect(() => {
     fetchPeriods();

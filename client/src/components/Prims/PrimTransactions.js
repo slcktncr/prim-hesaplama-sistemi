@@ -53,7 +53,7 @@ const PrimTransactions = () => {
   });
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
 
   // Dönem değiştirme modal state'leri
   const [showPeriodModal, setShowPeriodModal] = useState(false);

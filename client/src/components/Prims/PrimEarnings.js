@@ -51,7 +51,7 @@ const PrimEarnings = () => {
   const [selectedDeductions, setSelectedDeductions] = useState(null);
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
 
   useEffect(() => {
     fetchPeriods();
@@ -279,7 +279,7 @@ const PrimEarnings = () => {
                   <option value="">Tüm Temsilciler</option>
                   {users.map(user => (
                     <option key={user._id} value={user.name}>
-                      {user.name} {user.role === 'admin' && '(Admin)'}
+                      {user.name} {user.role && user.role.name === 'admin' && '(Admin)'}
                     </option>
                   ))}
                 </Form.Select>

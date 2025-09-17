@@ -13,7 +13,7 @@ const router = express.Router();
 // @access  Private (All authenticated users)
 router.get('/sale-types', [auth], async (req, res) => {
   try {
-    const isAdmin = req.user.role === 'admin';
+    const isAdmin = req.user.role && req.user.role.name === 'admin';
     
     if (isAdmin) {
       // Admin için tüm satış türleri (yönetim paneli için)
@@ -204,7 +204,7 @@ router.delete('/sale-types/:id', [auth, adminAuth], async (req, res) => {
 // @access  Private (All authenticated users)
 router.get('/payment-types', [auth], async (req, res) => {
   try {
-    const isAdmin = req.user.role === 'admin';
+    const isAdmin = req.user.role && req.user.role.name === 'admin';
     
     if (isAdmin) {
       // Admin için tüm ödeme türleri (yönetim paneli için)

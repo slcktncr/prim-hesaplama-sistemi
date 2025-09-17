@@ -36,7 +36,7 @@ import DailyReport from './DailyReport';
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('sales-summary');
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role && user.role.name === 'admin';
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportType, setExportType] = useState('excel');
   const [exportScope, setExportScope] = useState('all');

@@ -115,7 +115,6 @@ router.post('/login', [
         name: user.name,
         email: user.email,
         role: user.role,
-        systemRole: user.systemRole,
         isActive: user.isActive,
         isApproved: user.isApproved
       }

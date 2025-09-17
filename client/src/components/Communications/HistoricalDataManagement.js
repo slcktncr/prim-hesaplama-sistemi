@@ -296,9 +296,9 @@ const HistoricalDataManagement = () => {
   };
 
   const getAllUsersForYear = () => {
-    // Sadece satış temsilcilerini dahil et, ziyaretçileri ve admin'leri hariç tut
+    // Sadece satış temsilcilerini dahil et, admin'leri hariç tut
     const activeRepresentatives = users.filter(user => 
-      user.role === 'salesperson' && user.isActive !== false && user.isApproved !== false
+      user.role && user.role.name === 'salesperson' && user.isActive !== false && user.isApproved !== false
     );
     console.log('=== getAllUsersForYear DEBUG ===');
     console.log('Total users:', users.length);

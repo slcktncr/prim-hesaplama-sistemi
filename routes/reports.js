@@ -262,7 +262,7 @@ router.get('/dashboard', auth, async (req, res) => {
       primAmount: [] // Prim tutarı liderleri
     };
 
-    if (req.user.role === 'admin') {
+    if (req.user.role && req.user.role.name === 'admin') {
       const baseQuery = { ...query, status: 'aktif' }; // Tüm satış türleri dahil
       
       // Satış adeti liderleri
