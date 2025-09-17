@@ -101,7 +101,11 @@ export const usersAPI = {
   getSalespeople: () => API.get('/users/salespeople'),
   getAllUsers: () => API.get('/users/all-users'),
   getUsersForFilters: () => API.get('/users/for-filters'),
-  changeRole: (id, role, customRole = null) => API.put(`/users/${id}/role`, { role, customRole }),
+  changeRole: (id, role, customRole = null) => {
+    // Yeni sistemde sadece role parametresi kullanılıyor
+    const requestData = { role: customRole || role };
+    return API.put(`/users/${id}/role`, requestData);
+  },
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
   updateUser: (id, userData) => API.put(`/users/${id}`, userData),
   updateCommunicationRequirement: (id, data) => API.put(`/users/${id}/communication-requirement`, data),
