@@ -150,6 +150,20 @@ router.put('/:id/approve', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ message: 'Kullanıcı zaten onaylanmış' });
     }
 
+    // Varsayılan rol ata (salesperson)
+    if (!user.role) {
+      const Role = require('../models/Role');
+      const defaultRole = await Role.findOne({ name: 'salesperson', isActive: true });
+      
+      if (!defaultRole) {
+        console.error('❌ Default salesperson role not found');
+        return res.status(500).json({ message: 'Varsayılan rol bulunamadı' });
+      }
+      
+      user.role = defaultRole._id;
+      console.log(`✅ Assigned default role to ${user.name}: ${defaultRole.displayName}`);
+    }
+
     user.isApproved = true;
     user.isActive = true;
     user.approvedBy = req.user._id;
@@ -158,6 +172,7 @@ router.put('/:id/approve', [auth, adminAuth], async (req, res) => {
 
     const approvedUser = await User.findById(user._id)
       .select('firstName lastName name email role isActive isApproved approvedAt')
+      .populate('role', 'name displayName permissions')
       .populate('approvedBy', 'name email');
 
     res.json({
