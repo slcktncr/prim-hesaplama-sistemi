@@ -952,9 +952,18 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
 
-    // Erişim kontrolü
-    if (req.user.role !== 'admin' && req.user.role !== 'visitor' && 
-        sale.salesperson._id.toString() !== req.user._id.toString()) {
+    // Erişim kontrolü (YENİ SİSTEM)
+    const isAdmin = req.user.role && req.user.role.name === 'admin';
+    const isVisitor = req.user.role && req.user.role.name === 'visitor';
+    const isOwner = sale.salesperson._id.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isVisitor && !isOwner) {
+      console.log('❌ Sale access denied:', {
+        userId: req.user._id,
+        userRole: req.user.role?.name,
+        saleId: req.params.id,
+        salesperson: sale.salesperson._id
+      });
       return res.status(403).json({ message: 'Bu satışa erişim yetkiniz yok' });
     }
     
@@ -1049,7 +1058,7 @@ router.put('/:id', auth, [
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışı düzenleme yetkiniz yok' });
     }
 
@@ -1182,7 +1191,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışı iptal etme yetkiniz yok' });
     }
 
@@ -1228,7 +1237,7 @@ router.put('/:id/restore', auth, async (req, res) => {
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışı geri alma yetkiniz yok' });
     }
 
@@ -1406,7 +1415,7 @@ router.put('/:id/notes', auth, async (req, res) => {
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışın notlarını düzenleme yetkiniz yok' });
     }
 
@@ -1440,7 +1449,7 @@ router.delete('/:id/notes', auth, async (req, res) => {
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışın notlarını silme yetkiniz yok' });
     }
 
@@ -1480,7 +1489,7 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışı düzenleme yetkiniz yok' });
     }
 
@@ -1624,7 +1633,7 @@ router.put('/:id/modify', [
     }
 
     // Erişim kontrolü
-    if (req.user.role !== 'admin' && sale.salesperson.toString() !== req.user._id.toString()) {
+    if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Bu satışı modifiye etme yetkiniz yok' });
     }
 

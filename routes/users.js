@@ -36,14 +36,25 @@ router.get('/', [auth, adminAuth], async (req, res) => {
 // @access  Private
 router.get('/salespeople', auth, async (req, res) => {
   try {
+    // Önce salesperson rolünü bul
+    const Role = require('../models/Role');
+    const salespersonRole = await Role.findOne({ name: 'salesperson' });
+    
+    if (!salespersonRole) {
+      console.log('❌ Salesperson role not found');
+      return res.status(404).json({ message: 'Satış temsilcisi rolü bulunamadı' });
+    }
+
     const salespeople = await User.find({ 
       isActive: true,
       isApproved: true,
-      role: 'salesperson' // Sadece satış temsilcileri, ziyaretçiler dahil değil
+      role: salespersonRole._id // ObjectId kullan
     })
-      .select('name email firstName lastName')
+      .populate('role', 'name displayName')
+      .select('name email firstName lastName role')
       .sort({ name: 1 });
 
+    console.log(`✅ Found ${salespeople.length} salespeople`);
     res.json(salespeople);
   } catch (error) {
     console.error('Get salespeople error:', error);
