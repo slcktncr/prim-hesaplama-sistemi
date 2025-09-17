@@ -222,7 +222,8 @@ router.post('/fix-admin', async (req, res) => {
     // Admin hesabını düzelt
     user.isActive = true;
     user.isApproved = true;
-    user.role = 'admin';
+    user.systemRole = 'admin'; // Yeni sistem için
+    user.role = null; // Sistem admin'i için role null
     
     // firstName/lastName eksikse düzelt
     if (!user.firstName || !user.lastName) {
@@ -241,7 +242,7 @@ router.post('/fix-admin', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        systemRole: user.systemRole,
         isActive: user.isActive,
         isApproved: user.isApproved
       }
