@@ -238,27 +238,48 @@ router.put('/:id/role', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   PUT /api/users/:id/permissions
-// @desc    Update user permissions (admin only)
+// @desc    Update user role permissions (admin only) - YENİ SİSTEM
 // @access  Private (Admin only)
 router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
   try {
     const { permissions } = req.body;
     
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('role');
     if (!user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
     // Admin rolündeki kullanıcıların izinleri değiştirilemez
-    if (user.role === 'admin') {
+    if (user.role && user.role.name === 'admin') {
       return res.status(400).json({ message: 'Admin kullanıcıların izinleri değiştirilemez' });
     }
 
-    user.permissions = { ...user.permissions, ...permissions };
-    await user.save();
+    if (!user.role) {
+      return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
+    }
 
+    // Kullanıcının rolündeki yetkileri güncelle
+    const Role = require('../models/Role');
+    const role = await Role.findById(user.role._id);
+    
+    if (!role) {
+      return res.status(400).json({ message: 'Kullanıcının rolü bulunamadı' });
+    }
+
+    // Yetkileri güncelle
+    role.permissions = { ...role.permissions, ...permissions };
+    await role.save();
+
+    console.log('🔧 PERMISSIONS UPDATE:', {
+      user: user.name,
+      role: role.displayName,
+      updatedPermissions: Object.keys(permissions)
+    });
+
+    // Güncellenmiş kullanıcıyı döndür
     const updatedUser = await User.findById(user._id)
-      .select('firstName lastName name email role permissions');
+      .select('firstName lastName name email role')
+      .populate('role', 'name displayName permissions');
 
     res.json({
       message: 'Kullanıcı yetkileri başarıyla güncellendi',

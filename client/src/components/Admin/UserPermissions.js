@@ -84,14 +84,16 @@ const UserPermissions = () => {
 
   const handleEditPermissions = (user) => {
     setSelectedUser(user);
-    setPermissions(user.permissions || {
-      canViewAllSales: false,
-      canViewAllReports: false,
-      canViewAllPrims: false,
-      canViewDashboard: true,
-      canManageOwnSales: true,
-      canViewOwnReports: true,
-      canViewOwnPrims: true
+    // Yeni sistemde yetkileri rolden al
+    const userPermissions = user.role?.permissions || {};
+    setPermissions({
+      canViewAllSales: userPermissions.canViewAllSales || false,
+      canViewAllReports: userPermissions.canViewAllReports || false,
+      canViewAllEarnings: userPermissions.canViewAllEarnings || false,
+      canViewDashboard: userPermissions.canViewDashboard || true,
+      canCreateSales: userPermissions.canCreateSales || true,
+      canEditSales: userPermissions.canEditSales || false,
+      canDeleteSales: userPermissions.canDeleteSales || false
     });
     setShowModal(true);
   };
@@ -139,19 +141,18 @@ const UserPermissions = () => {
       setSaving(true);
       await usersAPI.updatePermissions(selectedUser._id, permissions);
       
-      // Kullanıcı listesini güncelle
-      setUsers(prev => prev.map(user => 
-        user._id === selectedUser._id 
-          ? { ...user, permissions }
-          : user
-      ));
-      
       toast.success('Kullanıcı yetkileri başarıyla güncellendi');
       setShowModal(false);
       setSelectedUser(null);
+      
+      // Kullanıcı listesini yenile (yeni sistemde rolden yetkileri alacak)
+      setTimeout(() => {
+        fetchUsers(true);
+      }, 500);
+      
     } catch (error) {
       console.error('Save permissions error:', error);
-      toast.error('Yetkiler güncellenirken hata oluştu');
+      toast.error(error.response?.data?.message || 'Yetkiler güncellenirken hata oluştu');
     } finally {
       setSaving(false);
     }
@@ -327,10 +328,10 @@ const UserPermissions = () => {
               />
               <Form.Check
                 type="switch"
-                id="canViewAllPrims"
+                id="canViewAllEarnings"
                 label="Tüm Primleri Görüntüleme"
-                checked={permissions.canViewAllPrims || false}
-                onChange={(e) => handlePermissionChange('canViewAllPrims', e.target.checked)}
+                checked={permissions.canViewAllEarnings || false}
+                onChange={(e) => handlePermissionChange('canViewAllEarnings', e.target.checked)}
                 className="mb-2"
               />
             </Col>
@@ -346,26 +347,26 @@ const UserPermissions = () => {
               />
               <Form.Check
                 type="switch"
-                id="canManageOwnSales"
-                label="Kendi Satışlarını Yönetme"
-                checked={permissions.canManageOwnSales !== false}
-                onChange={(e) => handlePermissionChange('canManageOwnSales', e.target.checked)}
+                id="canCreateSales"
+                label="Satış Oluşturma"
+                checked={permissions.canCreateSales !== false}
+                onChange={(e) => handlePermissionChange('canCreateSales', e.target.checked)}
                 className="mb-2"
               />
               <Form.Check
                 type="switch"
-                id="canViewOwnReports"
-                label="Kendi Raporlarını Görüntüleme"
-                checked={permissions.canViewOwnReports !== false}
-                onChange={(e) => handlePermissionChange('canViewOwnReports', e.target.checked)}
+                id="canEditSales"
+                label="Satış Düzenleme"
+                checked={permissions.canEditSales || false}
+                onChange={(e) => handlePermissionChange('canEditSales', e.target.checked)}
                 className="mb-2"
               />
               <Form.Check
                 type="switch"
-                id="canViewOwnPrims"
-                label="Kendi Primlerini Görüntüleme"
-                checked={permissions.canViewOwnPrims !== false}
-                onChange={(e) => handlePermissionChange('canViewOwnPrims', e.target.checked)}
+                id="canDeleteSales"
+                label="Satış Silme"
+                checked={permissions.canDeleteSales || false}
+                onChange={(e) => handlePermissionChange('canDeleteSales', e.target.checked)}
                 className="mb-2"
               />
             </Col>
