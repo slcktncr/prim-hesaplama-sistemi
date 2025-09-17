@@ -33,8 +33,10 @@ const UserPermissions = () => {
     try {
       setLoading(true);
       const response = await usersAPI.getAllUsers();
-      // Salesperson ve visitor rolündeki kullanıcıları göster (admin hariç)
-      const nonAdminUsers = response.data.filter(user => user.role !== 'admin');
+      // Admin hariç tüm kullanıcıları göster (yeni sistem)
+      const nonAdminUsers = response.data.filter(user => 
+        !(user.role && user.role.name === 'admin')
+      );
       setUsers(nonAdminUsers);
       setError(null);
     } catch (error) {
@@ -154,21 +156,16 @@ const UserPermissions = () => {
                         <strong>{user.name}</strong>
                         <br />
                         <small className="text-muted">
-                          {user.role === 'salesperson' ? 'Satış Temsilcisi' : 
-                           user.role === 'visitor' ? 'Ziyaretçi' : 'Kullanıcı'}
+                          {user.role ? user.role.displayName || user.role.name : 'Rol Atanmamış'}
                         </small>
                       </div>
                     </td>
                     <td>{user.email}</td>
                     <td>
                       <div className="d-flex flex-column gap-1">
-                        {/* Sistem admin'i */}
-                        {user.systemRole === 'admin' ? (
-                          <Badge bg="danger">
-                            Sistem Yöneticisi
-                          </Badge>
-                        ) : user.role ? (
-                          <Badge bg="success">
+                        {/* Yeni rol sistemi */}
+                        {user.role ? (
+                          <Badge bg={user.role.name === 'admin' ? 'danger' : 'success'}>
                             {user.role.displayName || user.role.name}
                           </Badge>
                         ) : (
@@ -179,26 +176,19 @@ const UserPermissions = () => {
                       </div>
                     </td>
                     <td>
-                      {user.role === 'visitor' ? 
-                        <Badge bg="success">✓</Badge> : 
-                        getPermissionBadge(user.permissions?.canViewAllSales)
-                      }
+                      {getPermissionBadge(user.role?.permissions?.canViewAllSales)}
                     </td>
                     <td>
-                      {user.role === 'visitor' ? 
-                        <Badge bg="success">✓</Badge> : 
-                        getPermissionBadge(user.permissions?.canViewAllReports)
-                      }
+                      {getPermissionBadge(user.role?.permissions?.canViewAllReports)}
                     </td>
                     <td>
-                      {user.role === 'visitor' ? 
-                        <Badge bg="success">✓</Badge> : 
-                        getPermissionBadge(user.permissions?.canViewAllPrims)
-                      }
+                      {getPermissionBadge(user.role?.permissions?.canViewAllEarnings)}
                     </td>
                     <td>
-                      {user.role === 'visitor' ? (
+                      {user.role?.name === 'visitor' ? (
                         <Badge bg="info">Sadece Görüntüleme</Badge>
+                      ) : user.role?.name === 'admin' ? (
+                        <Badge bg="danger">Sistem Yöneticisi</Badge>
                       ) : (
                         <Button
                           variant="outline-primary"

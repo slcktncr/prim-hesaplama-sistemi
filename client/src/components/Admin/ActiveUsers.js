@@ -97,7 +97,7 @@ const ActiveUsers = () => {
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       email: user.email || '',
-      role: user.systemRole === 'admin' ? 'admin' : user.role?._id || null,
+      role: user.role?._id || null,
       isActive: user.isActive !== false
     });
     setShowEditModal(true);
@@ -361,9 +361,7 @@ const ActiveUsers = () => {
                     required
                   >
                     <option value="">Rol seçiniz...</option>
-                    {/* Sistem admin rolü */}
-                    <option value="admin">Sistem Yöneticisi (Admin)</option>
-                    {/* Tanımlı roller */}
+                    {/* Tüm aktif roller */}
                     {roles.filter(role => role.isActive).map(role => (
                       <option key={role._id} value={role._id}>
                         {role.displayName}
