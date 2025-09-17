@@ -107,6 +107,8 @@ export const usersAPI = {
   },
   updatePermissions: (id, permissions) => API.put(`/users/${id}/permissions`, { permissions }),
   updateUser: (id, userData) => API.put(`/users/${id}`, userData),
+  createUser: (userData) => API.post('/users', userData),
+  deleteUser: (id) => API.delete(`/users/${id}`),
   updateCommunicationRequirement: (id, data) => API.put(`/users/${id}/communication-requirement`, data),
   getCommunicationSettings: () => API.get('/users/communication-settings')
 };

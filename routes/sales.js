@@ -726,8 +726,8 @@ router.get('/', auth, async (req, res) => {
     } else if (req.user.role && req.user.role.name === 'visitor') {
       // Ziyaretçi tüm satışları görebilir ama düzenleyemez
     } else {
-      // Normal kullanıcı sadece kendi satışlarını görebilir
-      query.salesperson = req.user._id;
+      // Satış temsilcileri tüm satışları görebilir (sadece düzenleyemez)
+      // Bu değişiklikle artık herkes tüm satışları görebilir
     }
     
     // Arama filtresi
@@ -952,20 +952,18 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
 
-    // Erişim kontrolü (YENİ SİSTEM)
+    // Erişim kontrolü (YENİ SİSTEM) - Herkes tüm satışları görebilir
     const isAdmin = req.user.role && req.user.role.name === 'admin';
     const isVisitor = req.user.role && req.user.role.name === 'visitor';
     const isOwner = sale.salesperson._id.toString() === req.user._id.toString();
     
-    if (!isAdmin && !isVisitor && !isOwner) {
-      console.log('❌ Sale access denied:', {
-        userId: req.user._id,
-        userRole: req.user.role?.name,
-        saleId: req.params.id,
-        salesperson: sale.salesperson._id
-      });
-      return res.status(403).json({ message: 'Bu satışa erişim yetkiniz yok' });
-    }
+    // Artık herkes tüm satışları görebilir (düzenleme yetkisi ayrı kontrol edilecek)
+    console.log('✅ Sale view access granted:', {
+      userId: req.user._id,
+      userRole: req.user.role?.name,
+      saleId: req.params.id,
+      isOwner: isOwner
+    });
     
     res.json(sale);
   } catch (error) {

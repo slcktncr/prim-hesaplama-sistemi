@@ -34,6 +34,7 @@ import LegacyUserManagement from './LegacyUserManagement';
 import BackupManagement from '../Admin/BackupManagement';
 import RoleManagement from '../Admin/RoleManagement';
 import BulkPrimStatusManagement from '../Admin/BulkPrimStatusManagement';
+import UserManagement from '../Admin/UserManagement';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
@@ -86,6 +87,12 @@ const SystemSettings = () => {
                 <Nav.Link eventKey="pending-users">
                   <FiClock className="me-2" />
                   Onay Bekleyenler
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="user-management">
+                  <FiUsers className="me-2" />
+                  Kullanıcı Yönetimi
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -166,6 +173,9 @@ const SystemSettings = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey="pending-users">
                   <PendingUsers />
+                </Tab.Pane>
+                <Tab.Pane eventKey="user-management">
+                  <UserManagement />
                 </Tab.Pane>
                 <Tab.Pane eventKey="permissions">
                   <UserPermissions />

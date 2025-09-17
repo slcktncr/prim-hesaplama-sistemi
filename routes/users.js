@@ -501,4 +501,108 @@ router.get('/communication-settings', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   POST /api/users
+// @desc    Create new user (admin only)
+// @access  Private (Admin only)
+router.post('/', [
+  auth, 
+  adminAuth,
+  body('firstName').trim().notEmpty().withMessage('Ad gereklidir'),
+  body('lastName').trim().notEmpty().withMessage('Soyad gereklidir'),
+  body('email').isEmail().normalizeEmail().withMessage('Geçerli bir e-posta adresi gereklidir'),
+  body('password').isLength({ min: 6 }).withMessage('Şifre en az 6 karakter olmalıdır'),
+  body('role').notEmpty().withMessage('Rol seçilmelidir')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { firstName, lastName, email, password, role, isActive = true } = req.body;
+
+    // E-posta benzersizlik kontrolü
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Bu e-posta adresi zaten kullanılıyor' });
+    }
+
+    // Rol kontrolü
+    const Role = require('../models/Role');
+    const roleExists = await Role.findById(role);
+    if (!roleExists) {
+      return res.status(400).json({ message: 'Geçersiz rol' });
+    }
+
+    // Yeni kullanıcı oluştur
+    const user = new User({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.toLowerCase(),
+      password,
+      role,
+      isActive,
+      isApproved: true, // Admin tarafından oluşturulan kullanıcılar otomatik onaylı
+      approvedBy: req.user._id,
+      approvedAt: new Date()
+    });
+
+    await user.save();
+
+    const newUser = await User.findById(user._id)
+      .select('firstName lastName name email role individualPermissions isActive isApproved createdAt')
+      .populate('role', 'name displayName permissions')
+      .populate('approvedBy', 'name email');
+
+    console.log('✅ New user created by admin:', {
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role?.displayName,
+      createdBy: req.user.name
+    });
+
+    res.status(201).json({
+      message: 'Kullanıcı başarıyla oluşturuldu',
+      user: newUser
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// @route   DELETE /api/users/:id
+// @desc    Delete user (admin only)
+// @access  Private (Admin only)
+router.delete('/:id', [auth, adminAuth], async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('role', 'name');
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Admin kendini silemez
+    if (req.user._id.toString() === user._id.toString()) {
+      return res.status(400).json({ message: 'Kendi hesabınızı silemezsiniz' });
+    }
+
+    // Admin rolündeki kullanıcıları silemez (güvenlik)
+    if (user.role && user.role.name === 'admin') {
+      return res.status(400).json({ message: 'Admin kullanıcılar silinemez' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    console.log('🗑️ User deleted by admin:', {
+      deletedUser: user.name,
+      deletedBy: req.user.name
+    });
+
+    res.json({ message: 'Kullanıcı başarıyla silindi' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;
