@@ -308,6 +308,13 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
       console.log('🔄 BACKEND: Creating personal role for user:', user.name);
       
       // Kullanıcıya özel rol oluştur
+      console.log('🔍 BACKEND: Creating role with createdBy:', req.user._id);
+      
+      if (!req.user._id) {
+        console.error('❌ BACKEND: req.user._id is null/undefined');
+        return res.status(400).json({ message: 'Admin kullanıcı bilgisi bulunamadı' });
+      }
+      
       userRole = new Role({
         name: `user_${user._id}`,
         displayName: `${user.name} (Özel)`,
@@ -318,13 +325,27 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
         isActive: true
       });
       
-      await userRole.save();
+      console.log('🔍 BACKEND: Role object created:', {
+        name: userRole.name,
+        displayName: userRole.displayName,
+        createdBy: userRole.createdBy,
+        permissionsCount: Object.keys(userRole.permissions).length
+      });
       
-      // Kullanıcının rolünü güncelle
-      user.role = userRole._id;
-      await user.save();
-      
-      console.log('✅ BACKEND: Personal role created:', userRole.displayName);
+      try {
+        await userRole.save();
+        console.log('✅ BACKEND: Personal role saved to DB');
+        
+        // Kullanıcının rolünü güncelle
+        user.role = userRole._id;
+        await user.save();
+        console.log('✅ BACKEND: User role updated to personal role');
+        
+        console.log('✅ BACKEND: Personal role created:', userRole.displayName);
+      } catch (saveError) {
+        console.error('❌ BACKEND: Error saving personal role:', saveError);
+        throw saveError;
+      }
     } else {
       // Zaten özel rol varsa, sadece güncelle
       userRole = await Role.findById(user.role._id);
@@ -350,8 +371,13 @@ router.put('/:id/permissions', [auth, adminAuth], async (req, res) => {
         after: userRole.permissions
       });
 
-      await userRole.save();
-      console.log('✅ BACKEND: Personal role updated successfully');
+      try {
+        await userRole.save();
+        console.log('✅ BACKEND: Personal role updated successfully');
+      } catch (updateError) {
+        console.error('❌ BACKEND: Error updating personal role:', updateError);
+        throw updateError;
+      }
     }
 
     // Güncellenmiş kullanıcıyı döndür

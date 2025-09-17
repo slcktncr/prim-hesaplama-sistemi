@@ -77,7 +77,7 @@ const roleSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false // Sistem rolleri için null olabilir
   },
   createdAt: {
     type: Date,
