@@ -1499,10 +1499,29 @@ router.delete('/:id/notes', auth, async (req, res) => {
 // @access  Private
 router.put('/:id/convert-to-sale', auth, async (req, res) => {
   try {
-    const { saleDate, paymentType } = req.body;
+    const { saleDate, paymentType, listPrice, activitySalePrice, contractNo } = req.body;
+
+    console.log('🔄 Convert to sale request:', {
+      saleId: req.params.id,
+      body: req.body,
+      user: req.user.email
+    });
 
     if (!saleDate || !saleDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
       return res.status(400).json({ message: 'Geçerli bir satış tarihi giriniz (YYYY-MM-DD)' });
+    }
+
+    // Kapora -> Satış dönüşümü için gerekli alanları kontrol et
+    if (!listPrice || parseFloat(listPrice) <= 0) {
+      return res.status(400).json({ message: 'Geçerli bir liste fiyatı giriniz' });
+    }
+
+    if (!activitySalePrice || parseFloat(activitySalePrice) <= 0) {
+      return res.status(400).json({ message: 'Geçerli bir aktivite satış fiyatı giriniz' });
+    }
+
+    if (!paymentType || paymentType.trim() === '') {
+      return res.status(400).json({ message: 'Ödeme tipi seçiniz' });
     }
 
     const sale = await Sale.findById(req.params.id);
@@ -1529,10 +1548,18 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
     // Prim dönemini belirle
     const primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
 
-    // Prim hesaplama
-    const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
-    const discountRateNum = parseFloat(sale.discountRate) || 0;
-    const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
+    // Prim hesaplama - Request'ten gelen değerleri kullan
+    const listPriceNum = parseFloat(listPrice) || 0;
+    const originalListPriceNum = parseFloat(req.body.originalListPrice || listPrice) || listPriceNum;
+    const discountRateNum = parseFloat(req.body.discountRate) || 0;
+    const activitySalePriceNum = parseFloat(activitySalePrice) || 0;
+
+    console.log('💰 Prim calculation values:', {
+      listPrice: listPriceNum,
+      originalListPrice: originalListPriceNum,
+      discountRate: discountRateNum,
+      activitySalePrice: activitySalePriceNum
+    });
 
     let discountedListPriceNum = 0;
     if (discountRateNum > 0 && originalListPriceNum > 0) {
@@ -1547,17 +1574,38 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
     const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
     const primAmount = basePrimPrice * (currentPrimRate.rate / 100);
 
-    // Satışa çevir
+    console.log('📊 Prim calculation result:', {
+      validPrices,
+      basePrimPrice,
+      primRate: currentPrimRate.rate,
+      primAmount
+    });
+
+    // Satışa çevir - Request'ten gelen değerlerle güncelle
     sale.saleType = 'satis';
     sale.saleDate = saleDate;
-    sale.paymentType = paymentType || sale.paymentType;
+    sale.paymentType = paymentType;
+    sale.listPrice = listPriceNum;
+    sale.originalListPrice = originalListPriceNum;
+    sale.discountRate = discountRateNum;
+    sale.discountedListPrice = discountedListPriceNum;
+    sale.activitySalePrice = activitySalePriceNum;
+    sale.contractNo = contractNo || null; // Sözleşme no varsa güncelle
     sale.primRate = currentPrimRate.rate;
     sale.basePrimPrice = basePrimPrice;
     sale.primAmount = primAmount;
     sale.primPeriod = primPeriodId;
     sale.primStatus = 'ödenmedi';
-    sale.discountedListPrice = discountedListPriceNum;
     sale.updatedAt = new Date();
+
+    console.log('💾 Updating sale with:', {
+      saleType: sale.saleType,
+      listPrice: sale.listPrice,
+      originalListPrice: sale.originalListPrice,
+      activitySalePrice: sale.activitySalePrice,
+      contractNo: sale.contractNo,
+      primAmount: sale.primAmount
+    });
 
     await sale.save();
 
@@ -1574,7 +1622,28 @@ router.put('/:id/convert-to-sale', auth, async (req, res) => {
 
   } catch (error) {
     console.error('Convert to sale error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      saleId: req.params.id,
+      body: req.body
+    });
+    
+    // Validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: validationErrors,
+        details: validationErrors.join(', ')
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

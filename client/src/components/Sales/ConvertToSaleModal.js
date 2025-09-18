@@ -9,7 +9,8 @@ const ConvertToSaleModal = ({ show, onHide, sale, onSuccess }) => {
     saleDate: '',
     listPrice: '',
     activitySalePrice: '',
-    paymentType: 'Nakit'
+    paymentType: 'Nakit',
+    contractNo: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,12 @@ const ConvertToSaleModal = ({ show, onHide, sale, onSuccess }) => {
       newErrors.paymentType = 'Ödeme tipi seçiniz';
     }
 
+    if (!validateRequired(formData.contractNo)) {
+      newErrors.contractNo = 'Sözleşme no gereklidir';
+    } else if (formData.contractNo.length !== 6) {
+      newErrors.contractNo = 'Sözleşme no tam olarak 6 hane olmalıdır';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -72,7 +79,8 @@ const ConvertToSaleModal = ({ show, onHide, sale, onSuccess }) => {
         saleDate: '',
         listPrice: '',
         activitySalePrice: '',
-        paymentType: 'Nakit'
+        paymentType: 'Nakit',
+        contractNo: ''
       });
       setErrors({});
     } catch (error) {
@@ -143,6 +151,26 @@ const ConvertToSaleModal = ({ show, onHide, sale, onSuccess }) => {
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">
                   {errors.paymentType}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Sözleşme No *</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="contractNo"
+                  value={formData.contractNo}
+                  onChange={handleChange}
+                  isInvalid={!!errors.contractNo}
+                  placeholder="6 haneli sözleşme no"
+                  maxLength={6}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.contractNo}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
