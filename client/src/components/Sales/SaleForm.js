@@ -305,8 +305,9 @@ const SaleForm = () => {
       if (name === 'saleType') {
         // value zaten getSaleTypeValue ile oluşturulmuş
         const nonContractTypes = ['yazlikev', 'kislikev', 'kapora'];
-        if (nonContractTypes.includes(value)) {
+        if (nonContractTypes.includes(value) || value === 'kapora') {
           newFormData.contractNo = '';
+          console.log('🧹 ContractNo cleared for saleType:', value);
         }
       }
       
@@ -528,7 +529,7 @@ const SaleForm = () => {
         blockNo: formData.blockNo,
         apartmentNo: formData.apartmentNo,
         periodNo: formData.periodNo,
-        contractNo: formData.contractNo,
+        contractNo: formData.saleType === 'kapora' ? null : formData.contractNo,
         saleType: formData.saleType,
         entryDate: formData.entryDate,
         exitDate: formData.exitDate,

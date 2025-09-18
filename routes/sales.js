@@ -355,23 +355,26 @@ router.post('/', auth, [
   body('apartmentNo').trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').custom(async (value, { req }) => {
-    // Kapora için sözleşme no zorunlu değil
+    // Kapora için sözleşme no kontrolü yapma
     if (req.body.saleType === 'kapora') {
-          return true;
-        }
+      return true;
+    }
     
+    // Normal satış için sözleşme no zorunlu
     if (!value || value.trim() === '') {
       throw new Error('Sözleşme no gereklidir');
     }
     
-    // Sözleşme no benzersizlik kontrolü
-    const existingSale = await Sale.findOne({ 
-      contractNo: value.trim(),
-      isDeleted: { $ne: true }
-    });
-    
-    if (existingSale) {
-      throw new Error('Bu sözleşme numarası zaten kullanılıyor');
+    // Sözleşme no benzersizlik kontrolü (sadece dolu değerler için)
+    if (value && value.trim() !== '') {
+      const existingSale = await Sale.findOne({ 
+        contractNo: value.trim(),
+        isDeleted: { $ne: true }
+      });
+      
+      if (existingSale) {
+        throw new Error('Bu sözleşme numarası zaten kullanılıyor');
+      }
     }
     
     return true;
@@ -495,7 +498,7 @@ router.post('/', auth, [
       blockNo: blockNo.trim(),
       apartmentNo: apartmentNo.trim(),
       periodNo: periodNo.trim(),
-      contractNo: contractNo ? contractNo.trim() : '',
+      contractNo: (saleType === 'kapora') ? null : (contractNo ? contractNo.trim() : ''),
       saleType,
       saleDate: saleDate || null,
       kaporaDate: kaporaDate || null,

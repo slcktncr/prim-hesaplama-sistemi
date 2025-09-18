@@ -59,12 +59,10 @@ const saleSchema = new mongoose.Schema({
   contractNo: {
     type: String,
     required: function() {
-      // Dinamik kontrol için SaleType kontrolü yapılmalı
-      // Ancak burada SaleType erişimi zor olduğu için sadece boş değilse unique olsun
-      return false; // Backend validation'da kontrol ediyoruz
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     },
-    trim: true
-    // Index'i schema seviyesinde tanımlayacağız
+    trim: true,
+    default: null // Kapora için null değer
   },
   listPrice: {
     type: Number,
