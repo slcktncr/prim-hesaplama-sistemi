@@ -47,9 +47,11 @@ const PaymentMethods = () => {
     try {
       setLoading(true);
       const response = await paymentMethodsAPI.getAll(includeInactive);
-      setPaymentMethods(response.data.data);
+      const dataArray = Array.isArray(response.data?.data) ? response.data.data : [];
+      setPaymentMethods(dataArray);
     } catch (error) {
       console.error('Fetch payment methods error:', error);
+      setPaymentMethods(prevMethods => Array.isArray(prevMethods) ? prevMethods : []);
       toast.error('Ödeme yöntemleri yüklenirken hata oluştu');
     } finally {
       setLoading(false);
@@ -62,7 +64,9 @@ const PaymentMethods = () => {
       name: '',
       description: '',
       isDefault: false,
-      sortOrder: Math.max(...paymentMethods.map(m => m.sortOrder || 0), 0) + 1
+      sortOrder: Array.isArray(paymentMethods) && paymentMethods.length > 0 
+        ? Math.max(...paymentMethods.map(m => m.sortOrder || 0), 0) + 1 
+        : 1
     });
     setFormErrors({});
     setShowModal(true);
@@ -250,7 +254,8 @@ const PaymentMethods = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paymentMethods.map((method) => (
+                    {Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
+                      paymentMethods.map((method) => (
                       <tr key={method._id}>
                         <td>
                           <Badge bg="secondary">{method.sortOrder}</Badge>
@@ -307,7 +312,14 @@ const PaymentMethods = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="text-center text-muted">
+                          Henüz ödeme yöntemi eklenmemiş
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </Table>
               )}

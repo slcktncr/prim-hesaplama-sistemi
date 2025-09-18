@@ -23,7 +23,7 @@ import { formatDateTime } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
 const SaleTypesManagement = () => {
-  const [saleTypes, setSaleTypes] = useState([]);
+  const [saleTypes, setSaleTypes] = useState([]); // Her zaman array olarak başlat
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -82,8 +82,10 @@ const SaleTypesManagement = () => {
       console.log('✅ Sale types response:', response);
       
       if (response && response.data) {
-        setSaleTypes(response.data);
-        console.log(`📊 Loaded ${response.data.length} sale types`);
+        // Veriyi array olarak garanti et
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        setSaleTypes(dataArray);
+        console.log(`📊 Loaded ${dataArray.length} sale types`);
       } else {
         console.warn('⚠️ No data in response, setting empty array');
         setSaleTypes([]);
@@ -94,7 +96,9 @@ const SaleTypesManagement = () => {
       console.error('❌ Fetch sale types error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Satış türleri yüklenirken hata oluştu';
       setError(errorMessage);
-      setSaleTypes([]); // Boş array set et ki sayfa tamamen boş kalmasın
+      
+      // Error durumunda da array'i koru
+      setSaleTypes(prevTypes => Array.isArray(prevTypes) ? prevTypes : []);
       
       // Toast error sadece network hatası değilse göster
       if (!error.message?.includes('Network Error')) {
@@ -191,6 +195,14 @@ const SaleTypesManagement = () => {
     setShowDeleteModal(true);
   };
 
+  // Safety check - saleTypes'ın array olduğundan emin ol
+  React.useEffect(() => {
+    if (!Array.isArray(saleTypes)) {
+      console.warn('⚠️ saleTypes is not an array, fixing...', saleTypes);
+      setSaleTypes([]);
+    }
+  }, [saleTypes]);
+
   if (loading) {
     return <Loading text="Satış türleri yükleniyor..." />;
   }
@@ -232,10 +244,10 @@ const SaleTypesManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {saleTypes.length === 0 ? (
+          {!Array.isArray(saleTypes) || saleTypes.length === 0 ? (
             <tr>
               <td colSpan="9" className="text-center text-muted">
-                Henüz satış türü eklenmemiş
+                {!Array.isArray(saleTypes) ? 'Veri yükleniyor...' : 'Henüz satış türü eklenmemiş'}
               </td>
             </tr>
           ) : (
