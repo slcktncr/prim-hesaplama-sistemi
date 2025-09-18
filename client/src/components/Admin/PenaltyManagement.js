@@ -96,9 +96,11 @@ const PenaltyManagement = () => {
   const fetchPenalties = async () => {
     try {
       const response = await penaltiesAPI.getPenalties(filters);
-      setPenalties(response.data || []);
+      const dataArray = Array.isArray(response.data) ? response.data : [];
+      setPenalties(dataArray);
     } catch (error) {
       console.error('Penalties fetch error:', error);
+      setPenalties(prevPenalties => Array.isArray(prevPenalties) ? prevPenalties : []);
       toast.error('Ceza kayıtları yüklenirken hata oluştu');
     }
   };
@@ -107,7 +109,8 @@ const PenaltyManagement = () => {
     try {
       const response = await usersAPI.getAllUsers();
       // Muaf olmayan aktif kullanıcıları filtrele
-      const eligibleUsers = response.data.filter(user => 
+      const responseData = Array.isArray(response.data) ? response.data : [];
+      const eligibleUsers = responseData.filter(user => 
         user.isActive && 
         user.isApproved && 
         user.requiresCommunicationEntry && 
@@ -116,6 +119,7 @@ const PenaltyManagement = () => {
       setUsers(eligibleUsers);
     } catch (error) {
       console.error('Users fetch error:', error);
+      setUsers(prevUsers => Array.isArray(prevUsers) ? prevUsers : []);
     }
   };
 
@@ -216,9 +220,9 @@ const PenaltyManagement = () => {
   };
 
   const getUserPenaltyStats = (user) => {
-    const userPenalties = penalties.filter(p => 
+    const userPenalties = Array.isArray(penalties) ? penalties.filter(p => 
       p.user._id === user._id && !p.isCancelled
-    );
+    ) : [];
     const totalPoints = userPenalties.reduce((sum, p) => sum + p.points, 0);
     const activePoints = userPenalties.filter(p => !p.isResolved).reduce((sum, p) => sum + p.points, 0);
     
@@ -336,7 +340,7 @@ const PenaltyManagement = () => {
                               onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
                             >
                               <option value="">Tüm Kullanıcılar</option>
-                              {users.map(user => (
+                              {Array.isArray(users) && users.map(user => (
                                 <option key={user._id} value={user._id}>
                                   {user.name}
                                 </option>
@@ -387,10 +391,10 @@ const PenaltyManagement = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {penalties.length === 0 ? (
+                      {!Array.isArray(penalties) || penalties.length === 0 ? (
                         <tr>
                           <td colSpan="7" className="text-center text-muted">
-                            Ceza kaydı bulunamadı
+                            {!Array.isArray(penalties) ? 'Veriler yükleniyor...' : 'Ceza kaydı bulunamadı'}
                           </td>
                         </tr>
                       ) : (
@@ -449,11 +453,10 @@ const PenaltyManagement = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map(user => {
+                      {Array.isArray(users) && users.map(user => {
                         const stats = getUserPenaltyStats(user);
-                        const lastPenalty = penalties
-                          .filter(p => p.user._id === user._id)
-                          .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                        const userPenalties = Array.isArray(penalties) ? penalties.filter(p => p.user._id === user._id) : [];
+                        const lastPenalty = userPenalties.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
                         
                         return (
                           <tr key={user._id}>
@@ -533,7 +536,7 @@ const PenaltyManagement = () => {
               required
             >
               <option value="">Kullanıcı seçiniz...</option>
-              {users.map(user => (
+              {Array.isArray(users) && users.map(user => (
                 <option key={user._id} value={user._id}>
                   {user.name}
                 </option>

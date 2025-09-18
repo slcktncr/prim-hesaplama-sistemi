@@ -48,22 +48,6 @@ const SaleTypesManagement = () => {
     }
   });
 
-  useEffect(() => {
-    console.log('🔄 SaleTypesManagement component mounted, fetching data...');
-    
-    // Async function wrapper to handle errors properly
-    const initializeComponent = async () => {
-      try {
-        await fetchSaleTypes();
-      } catch (error) {
-        console.error('❌ Failed to initialize SaleTypesManagement:', error);
-        setError('Bileşen başlatılırken hata oluştu');
-      }
-    };
-
-    initializeComponent();
-  }, [fetchSaleTypes]);
-
   const fetchSaleTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -108,6 +92,22 @@ const SaleTypesManagement = () => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    console.log('🔄 SaleTypesManagement component mounted, fetching data...');
+    
+    // Async function wrapper to handle errors properly
+    const initializeComponent = async () => {
+      try {
+        await fetchSaleTypes();
+      } catch (error) {
+        console.error('❌ Failed to initialize SaleTypesManagement:', error);
+        setError('Bileşen başlatılırken hata oluştu');
+      }
+    };
+
+    initializeComponent();
+  }, [fetchSaleTypes]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
