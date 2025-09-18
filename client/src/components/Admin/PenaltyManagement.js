@@ -95,19 +95,34 @@ const PenaltyManagement = () => {
 
   const fetchPenalties = async () => {
     try {
+      console.log('🔍 Fetching penalties with filters:', filters);
       const response = await penaltiesAPI.getPenalties(filters);
-      const dataArray = Array.isArray(response.data) ? response.data : [];
+      console.log('📋 Penalties API response:', response);
+      
+      // Backend response.data.penalties döndürüyor
+      const dataArray = Array.isArray(response.data?.penalties) ? response.data.penalties : 
+                       Array.isArray(response.data) ? response.data : [];
+      
+      console.log('✅ Processed penalties data:', {
+        count: dataArray.length,
+        penalties: dataArray
+      });
+      
       setPenalties(dataArray);
     } catch (error) {
-      console.error('Penalties fetch error:', error);
+      console.error('❌ Penalties fetch error:', error);
+      console.error('Error response:', error.response?.data);
       setPenalties(prevPenalties => Array.isArray(prevPenalties) ? prevPenalties : []);
-      toast.error('Ceza kayıtları yüklenirken hata oluştu');
+      toast.error(error.response?.data?.message || 'Ceza kayıtları yüklenirken hata oluştu');
     }
   };
 
   const fetchUsers = async () => {
     try {
+      console.log('👥 Fetching users for penalty management...');
       const response = await usersAPI.getAllUsers();
+      console.log('📋 Users API response:', response);
+      
       // Muaf olmayan aktif kullanıcıları filtrele
       const responseData = Array.isArray(response.data) ? response.data : [];
       const eligibleUsers = responseData.filter(user => 
@@ -116,10 +131,19 @@ const PenaltyManagement = () => {
         user.requiresCommunicationEntry && 
         user.role?.name !== 'admin'
       );
+      
+      console.log('✅ Processed users data:', {
+        totalUsers: responseData.length,
+        eligibleUsers: eligibleUsers.length,
+        users: eligibleUsers.map(u => ({ name: u.name, email: u.email }))
+      });
+      
       setUsers(eligibleUsers);
     } catch (error) {
-      console.error('Users fetch error:', error);
+      console.error('❌ Users fetch error:', error);
+      console.error('Error response:', error.response?.data);
       setUsers(prevUsers => Array.isArray(prevUsers) ? prevUsers : []);
+      toast.error(error.response?.data?.message || 'Kullanıcılar yüklenirken hata oluştu');
     }
   };
 

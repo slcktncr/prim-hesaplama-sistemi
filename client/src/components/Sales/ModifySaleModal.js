@@ -97,6 +97,64 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
     }
   };
 
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Giriş tarihi için
+    if (name === 'entryDay' || name === 'entryMonth') {
+      const currentEntry = formData.entryDate || '';
+      const parts = currentEntry.split('/');
+      const currentDay = parts[0] || '';
+      const currentMonth = parts[1] || '';
+      
+      let newDay = name === 'entryDay' ? value : currentDay;
+      let newMonth = name === 'entryMonth' ? value : currentMonth;
+      
+      // Sadece her ikisi de seçiliyse birleştir, aksi halde kısmi seçimi koru
+      let newEntryDate = '';
+      if (newDay && newMonth) {
+        newEntryDate = `${newDay}/${newMonth}`;
+      } else if (newDay || newMonth) {
+        // Kısmi seçim durumunda da değeri sakla
+        newEntryDate = `${newDay || ''}/${newMonth || ''}`;
+      }
+      
+      setFormData(prev => ({ ...prev, entryDate: newEntryDate }));
+      
+      // Clear error
+      if (errors.entryDate) {
+        setErrors(prev => ({ ...prev, entryDate: '' }));
+      }
+    }
+    
+    // Çıkış tarihi için
+    if (name === 'exitDay' || name === 'exitMonth') {
+      const currentExit = formData.exitDate || '';
+      const parts = currentExit.split('/');
+      const currentDay = parts[0] || '';
+      const currentMonth = parts[1] || '';
+      
+      let newDay = name === 'exitDay' ? value : currentDay;
+      let newMonth = name === 'exitMonth' ? value : currentMonth;
+      
+      // Sadece her ikisi de seçiliyse birleştir, aksi halde kısmi seçimi koru
+      let newExitDate = '';
+      if (newDay && newMonth) {
+        newExitDate = `${newDay}/${newMonth}`;
+      } else if (newDay || newMonth) {
+        // Kısmi seçim durumunda da değeri sakla
+        newExitDate = `${newDay || ''}/${newMonth || ''}`;
+      }
+      
+      setFormData(prev => ({ ...prev, exitDate: newExitDate }));
+      
+      // Clear error
+      if (errors.exitDate) {
+        setErrors(prev => ({ ...prev, exitDate: '' }));
+      }
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -351,31 +409,107 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>Giriş Tarihi *</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="GG/AA"
-                  value={formData.entryDate}
-                  onChange={(e) => handleInputChange('entryDate', e.target.value)}
-                  isInvalid={!!errors.entryDate}
-                />
+                <Row>
+                  <Col xs={6}>
+                    <Form.Select
+                      name="entryDay"
+                      value={formData.entryDate ? (formData.entryDate.split('/')[0] || '') : ''}
+                      onChange={handleDateChange}
+                      isInvalid={!!errors.entryDate}
+                    >
+                      <option value="">Gün</option>
+                      {Array.from({length: 31}, (_, i) => i + 1).map(day => {
+                        const dayStr = day.toString().padStart(2, '0');
+                        return (
+                          <option key={day} value={dayStr}>
+                            {day}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
+                  </Col>
+                  <Col xs={6}>
+                    <Form.Select
+                      name="entryMonth"
+                      value={formData.entryDate ? (formData.entryDate.split('/')[1] || '') : ''}
+                      onChange={handleDateChange}
+                      isInvalid={!!errors.entryDate}
+                    >
+                      <option value="">Ay</option>
+                      <option value="01">Ocak</option>
+                      <option value="02">Şubat</option>
+                      <option value="03">Mart</option>
+                      <option value="04">Nisan</option>
+                      <option value="05">Mayıs</option>
+                      <option value="06">Haziran</option>
+                      <option value="07">Temmuz</option>
+                      <option value="08">Ağustos</option>
+                      <option value="09">Eylül</option>
+                      <option value="10">Ekim</option>
+                      <option value="11">Kasım</option>
+                      <option value="12">Aralık</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
                 <Form.Control.Feedback type="invalid">
                   {errors.entryDate}
                 </Form.Control.Feedback>
+                <Form.Text className="text-muted">
+                  Örn: 5 Eylül
+                </Form.Text>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>Çıkış Tarihi *</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="GG/AA"
-                  value={formData.exitDate}
-                  onChange={(e) => handleInputChange('exitDate', e.target.value)}
-                  isInvalid={!!errors.exitDate}
-                />
+                <Row>
+                  <Col xs={6}>
+                    <Form.Select
+                      name="exitDay"
+                      value={formData.exitDate ? (formData.exitDate.split('/')[0] || '') : ''}
+                      onChange={handleDateChange}
+                      isInvalid={!!errors.exitDate}
+                    >
+                      <option value="">Gün</option>
+                      {Array.from({length: 31}, (_, i) => i + 1).map(day => {
+                        const dayStr = day.toString().padStart(2, '0');
+                        return (
+                          <option key={day} value={dayStr}>
+                            {day}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
+                  </Col>
+                  <Col xs={6}>
+                    <Form.Select
+                      name="exitMonth"
+                      value={formData.exitDate ? (formData.exitDate.split('/')[1] || '') : ''}
+                      onChange={handleDateChange}
+                      isInvalid={!!errors.exitDate}
+                    >
+                      <option value="">Ay</option>
+                      <option value="01">Ocak</option>
+                      <option value="02">Şubat</option>
+                      <option value="03">Mart</option>
+                      <option value="04">Nisan</option>
+                      <option value="05">Mayıs</option>
+                      <option value="06">Haziran</option>
+                      <option value="07">Temmuz</option>
+                      <option value="08">Ağustos</option>
+                      <option value="09">Eylül</option>
+                      <option value="10">Ekim</option>
+                      <option value="11">Kasım</option>
+                      <option value="12">Aralık</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
                 <Form.Control.Feedback type="invalid">
                   {errors.exitDate}
                 </Form.Control.Feedback>
+                <Form.Text className="text-muted">
+                  Örn: 20 Mart
+                </Form.Text>
               </Form.Group>
             </Col>
           </Row>

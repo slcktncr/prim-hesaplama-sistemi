@@ -23,6 +23,16 @@ router.get('/', [auth, adminAuth], async (req, res) => {
       limit = 50 
     } = req.query;
 
+    console.log('🔍 Get penalties request:', {
+      startDate,
+      endDate,
+      userId,
+      status,
+      page,
+      limit,
+      user: req.user.email
+    });
+
     let query = {};
 
     // Date filter
@@ -58,6 +68,8 @@ router.get('/', [auth, adminAuth], async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
+    console.log('📋 Penalty query:', query);
+
     const penalties = await PenaltyRecord.find(query)
       .populate('user', 'name email')
       .populate('createdBy', 'name email')
@@ -67,6 +79,12 @@ router.get('/', [auth, adminAuth], async (req, res) => {
       .limit(limitNum);
 
     const total = await PenaltyRecord.countDocuments(query);
+
+    console.log('✅ Penalties found:', {
+      count: penalties.length,
+      total,
+      query
+    });
 
     res.json({
       penalties,
@@ -79,8 +97,12 @@ router.get('/', [auth, adminAuth], async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get penalties error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Get penalties error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -305,8 +327,12 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Check missed entries error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Check missed entries error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

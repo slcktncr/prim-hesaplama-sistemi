@@ -416,7 +416,7 @@ router.post('/', auth, [
     const {
       customerName, phone, blockNo, apartmentNo, periodNo, contractNo,
       saleType, saleDate, kaporaDate, listPrice, originalListPrice, 
-      discountRate, discountedListPrice, activitySalePrice, paymentType
+      discountRate, discountedListPrice, activitySalePrice, paymentType, primRate
     } = req.body;
 
     let currentPrimRate = null;
@@ -483,7 +483,19 @@ router.post('/', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      const primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
+      
+      // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
+      const customPrimRate = parseFloat(primRate) || 0;
+      const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
+      const primAmount = basePrimPrice * (finalPrimRate / 100);
+      
+      console.log('💰 Prim calculation:', {
+        basePrimPrice,
+        systemRate: currentPrimRate.rate,
+        customRate: customPrimRate,
+        finalRate: finalPrimRate,
+        primAmount
+      });
       
       // Prim tutarı kontrolü
       if (!isFinite(primAmount) || primAmount < 0) {
@@ -510,6 +522,11 @@ router.post('/', auth, [
       paymentType: paymentType || '',
       salesperson: req.user._id,
       createdBy: req.user._id
+    };
+
+    // Admin özel prim oranı varsa ekle
+    if (primRate && parseFloat(primRate) > 0) {
+      saleData.primRate = parseFloat(primRate);
     };
 
     // Debug: Kapora için saleData'yı logla
@@ -1089,12 +1106,12 @@ router.put('/:id', auth, [
     const allowedFields = [
       'customerName', 'phone', 'blockNo', 'apartmentNo', 'periodNo', 'contractNo',
       'saleType', 'saleDate', 'kaporaDate', 'listPrice', 'originalListPrice',
-      'discountRate', 'discountedListPrice', 'activitySalePrice', 'paymentType'
+      'discountRate', 'discountedListPrice', 'activitySalePrice', 'paymentType', 'primRate'
     ];
 
     // Prim yeniden hesaplanması gerekip gerekmediğini kontrol et
     let needsPrimRecalculation = false;
-    const primAffectingFields = ['saleType', 'saleDate', 'listPrice', 'originalListPrice', 'discountRate', 'discountedListPrice', 'activitySalePrice'];
+    const primAffectingFields = ['saleType', 'saleDate', 'listPrice', 'originalListPrice', 'discountRate', 'discountedListPrice', 'activitySalePrice', 'primRate'];
 
     allowedFields.forEach(field => {
       if (req.body.hasOwnProperty(field)) {
@@ -1311,12 +1328,13 @@ router.put('/:id/transfer', [auth, adminAuth], [
       });
     }
 
-    const { newSalespersonId, transferReason } = req.body;
+    const { newSalespersonId, transferReason, newPeriod } = req.body;
     
     console.log('🔄 Transfer request:', {
       saleId: req.params.id,
       newSalespersonId,
       transferReason,
+      newPeriod,
       user: req.user.email
     });
 
@@ -1353,26 +1371,51 @@ router.put('/:id/transfer', [auth, adminAuth], [
     const oldSalesperson = sale.salesperson;
 
     // Transfer işlemi
+    const oldSalespersonId = sale.salesperson._id;
     sale.salesperson = newSalespersonId;
-    sale.transferHistory = sale.transferHistory || [];
-    sale.transferHistory.push({
-      fromSalesperson: oldSalesperson._id,
-      toSalesperson: newSalespersonId,
-      transferredBy: req.user._id,
-      transferredAt: new Date(),
-      reason: transferReason || 'Belirtilmedi'
-    });
+    
+    // Transfer bilgilerini ayrı alanlar olarak saklayalım (Sale model'inde tanımlı olan alanlar)
+    sale.transferredFrom = oldSalespersonId;
+    sale.transferredAt = new Date();
+    sale.transferredBy = req.user._id;
+    
+    // Dönem değişikliği varsa uygula
+    if (newPeriod && sale.primStatus !== 'ödendi') {
+      const oldPeriod = sale.primPeriod;
+      sale.primPeriod = newPeriod;
+      console.log('📅 Period changed:', {
+        oldPeriod: oldPeriod,
+        newPeriod: newPeriod
+      });
+    }
+    
     sale.updatedAt = new Date();
+    
+    console.log('💾 Saving transfer data:', {
+      oldSalesperson: oldSalespersonId,
+      newSalesperson: newSalespersonId,
+      transferredBy: req.user._id,
+      transferredAt: sale.transferredAt
+    });
 
     await sale.save();
+    console.log('💾 Sale saved successfully');
 
     const updatedSale = await Sale.findById(sale._id)
       .populate('salesperson', 'name email')
-      .populate('primPeriod', 'name')
-      .populate('transferHistory.fromSalesperson', 'name email')
-      .populate('transferHistory.toSalesperson', 'name email')
-      .populate('transferHistory.transferredBy', 'name email');
-
+      .populate('primPeriod', 'name');
+    
+    if (!updatedSale) {
+      throw new Error('Updated sale not found after save');
+    }
+    
+    console.log('✅ Transfer completed successfully:', {
+      saleId: sale._id,
+      fromSalesperson: oldSalesperson.name,
+      toSalesperson: newSalesperson.name,
+      newSalespersonId: updatedSale.salesperson._id,
+      populatedSalesperson: updatedSale.salesperson?.name
+    });
 
     res.json({
       message: `Satış ${oldSalesperson.name} temsilcisinden ${newSalesperson.name} temsilcisine transfer edildi`,

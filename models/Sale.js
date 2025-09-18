@@ -155,15 +155,20 @@ const saleSchema = new mongoose.Schema({
   },
   
   // Prim hesaplama bilgileri
+  primRate: {
+    type: Number,
+    min: 0,
+    max: 100,
+    validate: {
+      validator: function(v) {
+        return v == null || (v >= 0 && v <= 100);
+      },
+      message: 'Prim oranı 0-100 arasında olmalıdır'
+    }
+  },
   primAmount: {
     type: Number,
     default: 0
-  },
-  primRate: {
-    type: Number,
-    required: function() {
-      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
-    }
   },
   basePrimPrice: {
     type: Number, // Liste fiyatı ve aktivite satış fiyatından düşük olan

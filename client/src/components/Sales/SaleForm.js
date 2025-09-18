@@ -38,7 +38,8 @@ const SaleForm = () => {
     paymentType: 'Nakit',
     entryDate: '', // Giriş tarihi (gün/ay)
     exitDate: '',  // Çıkış tarihi (gün/ay)
-    notes: ''      // Notlar
+    notes: '',     // Notlar
+    primRate: ''   // Admin için özel prim oranı
   });
 
   const [periods, setPeriods] = useState([]);
@@ -244,7 +245,8 @@ const SaleForm = () => {
           paymentType: sale.paymentType || 'Nakit',
           entryDate: sale.entryDate || '',
           exitDate: sale.exitDate || '',
-          notes: sale.notes || ''
+          notes: sale.notes || '',
+          primRate: sale.primRate?.toString() || ''
         });
         
         // Telefon varsa alanı göster
@@ -574,6 +576,11 @@ const SaleForm = () => {
             saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
           }
         }
+        
+        // Admin özel prim oranı varsa ekle
+        if (isAdmin && formData.primRate && parseFloat(formData.primRate) > 0) {
+          saleData.primRate = parseFloat(formData.primRate);
+        }
       }
 
       console.log('📤 Sending sale data:', saleData);
@@ -626,7 +633,11 @@ const SaleForm = () => {
     const originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
     const discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
     const activityPrice = parseFloat(formData.activitySalePrice) || 0;
-    const rate = currentRate?.rate || 0;
+    
+    // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
+    const customRate = parseFloat(formData.primRate) || 0;
+    const systemRate = currentRate?.rate || 0;
+    const rate = (isAdmin && customRate > 0) ? customRate / 100 : systemRate;
     
     // 3 fiyat arasından geçerli olanları topla
     const validPrices = [];
@@ -1251,6 +1262,29 @@ const SaleForm = () => {
                       %{currentRate.rate.toFixed(2)}
                     </div>
                   </div>
+
+                  {/* Admin için özel prim oranı alanı */}
+                  {isAdmin && (
+                    <div className="mb-3">
+                      <Form.Label>
+                        <small className="text-muted">Özel Prim Oranı (%)</small>
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        name="primRate"
+                        value={formData.primRate}
+                        onChange={handleChange}
+                        placeholder="Varsayılan oranı kullan"
+                        size="sm"
+                      />
+                      <Form.Text className="text-muted">
+                        Boş bırakılırsa sistem oranı (%{currentRate.rate.toFixed(2)}) kullanılır
+                      </Form.Text>
+                    </div>
+                  )}
                   
                   <div className="mb-3">
                     <small className="text-muted">Liste Fiyatı (Ana)</small>
