@@ -202,7 +202,9 @@ const saleSchema = new mongoose.Schema({
   primPeriod: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'PrimPeriod',
-    required: true
+    required: function() {
+      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
+    }
   },
   
   // Tarihler
@@ -298,17 +300,20 @@ const saleSchema = new mongoose.Schema({
 
 // Prim hesaplama middleware
 saleSchema.pre('save', function(next) {
-  // İndirimli liste fiyatını hesapla
-  const discountedListPrice = this.discountRate ? 
-    this.listPrice * (1 - this.discountRate / 100) : 
-    this.listPrice;
-  
-  // En düşük fiyatı bul (indirimli liste fiyatı vs aktivite satış fiyatı)
-  this.basePrimPrice = Math.min(discountedListPrice, this.activitySalePrice || discountedListPrice);
-  
-  // Prim tutarını hesapla  
-  // primRate yüzde değeri olarak saklanıyor (1 = %1)
-  this.primAmount = this.basePrimPrice * (this.primRate / 100);
+  // Sadece kapora değilse prim hesapla
+  if (this.saleType !== 'kapora') {
+    // İndirimli liste fiyatını hesapla
+    const discountedListPrice = this.discountRate ? 
+      this.listPrice * (1 - this.discountRate / 100) : 
+      this.listPrice;
+    
+    // En düşük fiyatı bul (indirimli liste fiyatı vs aktivite satış fiyatı)
+    this.basePrimPrice = Math.min(discountedListPrice, this.activitySalePrice || discountedListPrice);
+    
+    // Prim tutarını hesapla  
+    // primRate yüzde değeri olarak saklanıyor (1 = %1)
+    this.primAmount = this.basePrimPrice * (this.primRate / 100);
+  }
   
   this.updatedAt = Date.now();
   next();

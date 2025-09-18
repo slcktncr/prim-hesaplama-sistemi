@@ -495,7 +495,7 @@ router.post('/', auth, [
       blockNo: blockNo.trim(),
       apartmentNo: apartmentNo.trim(),
       periodNo: periodNo.trim(),
-      contractNo: contractNo.trim(),
+      contractNo: contractNo ? contractNo.trim() : '',
       saleType,
       saleDate: saleDate || null,
       kaporaDate: kaporaDate || null,
@@ -562,6 +562,24 @@ router.post('/', auth, [
 
   } catch (error) {
     console.error('Sale creation error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      keyPattern: error.keyPattern,
+      errors: error.errors
+    });
+    
+    // Validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: validationErrors,
+        details: validationErrors.join(', ')
+      });
+    }
     
     // Duplicate key error (sözleşme no)
     if (error.code === 11000 && error.keyPattern?.contractNo) {
@@ -570,7 +588,10 @@ router.post('/', auth, [
       });
     }
     
-    res.status(500).json({ message: 'Sunucu hatası' });
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
