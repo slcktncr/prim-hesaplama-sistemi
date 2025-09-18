@@ -135,8 +135,22 @@ const PenaltyManagement = () => {
       console.log('✅ Processed users data:', {
         totalUsers: responseData.length,
         eligibleUsers: eligibleUsers.length,
-        users: eligibleUsers.map(u => ({ name: u.name, email: u.email }))
+        users: eligibleUsers.map(u => ({ 
+          name: u.name, 
+          email: u.email,
+          isApproved: u.isApproved,
+          requiresCommunicationEntry: u.requiresCommunicationEntry,
+          role: u.role?.name
+        }))
       });
+      
+      console.log('🔍 All users from API:', responseData.map(u => ({
+        name: u.name,
+        isActive: u.isActive,
+        isApproved: u.isApproved,
+        requiresCommunicationEntry: u.requiresCommunicationEntry,
+        role: u.role?.name
+      })));
       
       setUsers(eligibleUsers);
     } catch (error) {

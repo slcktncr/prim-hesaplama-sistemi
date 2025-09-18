@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('_id name email role createdAt updatedAt firstName lastName')
+      .select('_id name email role createdAt updatedAt firstName lastName isApproved requiresCommunicationEntry')
       .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
     
@@ -19,10 +19,15 @@ router.get('/', [auth, adminAuth], async (req, res) => {
     console.log('🔍 Sample user (first):', users[0]);
     console.log('🔍 Users with role:', users.filter(u => u.role).map(u => ({ 
       name: u.name, 
-      role: u.role,
-      createdAt: u.createdAt 
+      role: u.role?.name,
+      isApproved: u.isApproved,
+      requiresCommunicationEntry: u.requiresCommunicationEntry
     })));
-    console.log('🔍 Users without createdAt:', users.filter(u => !u.createdAt).map(u => u.name));
+    console.log('🔍 Eligible users for penalties:', users.filter(u => 
+      u.isApproved && 
+      u.requiresCommunicationEntry && 
+      u.role?.name !== 'admin'
+    ).map(u => u.name));
 
     res.json(users);
   } catch (error) {

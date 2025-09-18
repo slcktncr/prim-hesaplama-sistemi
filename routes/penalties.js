@@ -233,8 +233,15 @@ router.put('/:id/cancel', [
 // @access  Private (Admin only)
 router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
   try {
+    console.log('🔍 Starting check missed entries process...');
+    console.log('Request user:', req.user.email);
+    console.log('Request body:', req.body);
+
     const settings = await getPenaltySettings();
+    console.log('✅ Penalty settings loaded:', settings);
+
     const checkDate = req.body.date ? new Date(req.body.date) : new Date();
+    console.log('📅 Check date:', checkDate);
     
     // Dün 23:00'dan önceki günleri kontrol et
     const yesterday = new Date(checkDate);
@@ -248,6 +255,7 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
     console.log('🔍 Checking missed entries from', checkStartDate, 'to', yesterday);
 
     // Muaf olmayan aktif kullanıcıları al
+    console.log('👥 Fetching eligible users...');
     const eligibleUsers = await User.find({
       isActive: true,
       isApproved: true,
@@ -255,66 +263,92 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
       role: { $exists: true }
     }).populate('role', 'name');
 
+    console.log(`✅ Found ${eligibleUsers.length} eligible users`);
+
     const nonAdminUsers = eligibleUsers.filter(user => 
       user.role && user.role.name !== 'admin'
     );
 
+    console.log(`👤 Non-admin users: ${nonAdminUsers.length}`);
+
     let newPenalties = 0;
     let checkedDays = 0;
 
-    for (let d = new Date(checkStartDate); d <= yesterday; d.setDate(d.getDate() + 1)) {
-      const checkDay = new Date(d);
-      checkDay.setHours(0, 0, 0, 0);
-      
-      const nextDay = new Date(checkDay);
-      nextDay.setDate(nextDay.getDate() + 1);
+    console.log('🔄 Starting day-by-day check...');
+    const currentDate = new Date(checkStartDate);
+    while (currentDate <= yesterday) {
+      try {
+        const checkDay = new Date(currentDate);
+        checkDay.setHours(0, 0, 0, 0);
+        
+        const nextDay = new Date(checkDay);
+        nextDay.setDate(nextDay.getDate() + 1);
 
-      checkedDays++;
+        checkedDays++;
+        console.log(`📅 Checking day: ${checkDay.toLocaleDateString('tr-TR')}`);
 
-      for (const user of nonAdminUsers) {
-        // Bu kullanıcının bu gün için iletişim kaydı var mı?
-        const hasEntry = await CommunicationRecord.findOne({
-          salesperson: user._id,
-          date: {
-            $gte: checkDay,
-            $lt: nextDay
-          }
-        });
-
-        if (!hasEntry) {
-          // Bu gün için zaten ceza kaydı var mı?
-          const existingPenalty = await PenaltyRecord.findOne({
-            user: user._id,
-            date: {
-              $gte: checkDay,
-              $lt: nextDay
-            },
-            type: 'missed_entry'
-          });
-
-          if (!existingPenalty) {
-            // Yeni ceza kaydı oluştur
-            const penalty = new PenaltyRecord({
-              user: user._id,
-              points: settings.dailyPenaltyPoints,
-              reason: `${checkDay.toLocaleDateString('tr-TR')} tarihinde iletişim kaydı girilmedi`,
-              date: checkDay,
-              type: 'missed_entry',
-              createdBy: req.user._id
+        for (const user of nonAdminUsers) {
+          try {
+            // Bu kullanıcının bu gün için iletişim kaydı var mı?
+            const hasEntry = await CommunicationRecord.findOne({
+              salesperson: user._id,
+              date: {
+                $gte: checkDay,
+                $lt: nextDay
+              }
             });
 
-            await penalty.save();
-            newPenalties++;
+            if (!hasEntry) {
+              // Bu gün için zaten ceza kaydı var mı?
+              const existingPenalty = await PenaltyRecord.findOne({
+                user: user._id,
+                date: {
+                  $gte: checkDay,
+                  $lt: nextDay
+                },
+                type: 'missed_entry'
+              });
 
-            console.log(`⚠️ Penalty added for ${user.name} - ${checkDay.toLocaleDateString('tr-TR')}`);
+              if (!existingPenalty) {
+                // Yeni ceza kaydı oluştur
+                const penalty = new PenaltyRecord({
+                  user: user._id,
+                  points: settings.dailyPenaltyPoints,
+                  reason: `${checkDay.toLocaleDateString('tr-TR')} tarihinde iletişim kaydı girilmedi`,
+                  date: checkDay,
+                  type: 'missed_entry',
+                  createdBy: req.user._id
+                });
+
+                await penalty.save();
+                newPenalties++;
+
+                console.log(`⚠️ Penalty added for ${user.name} - ${checkDay.toLocaleDateString('tr-TR')}`);
+              }
+            }
+          } catch (userError) {
+            console.error(`❌ Error processing user ${user.name} for ${checkDay.toLocaleDateString('tr-TR')}:`, userError);
+            // Kullanıcı bazlı hata, devam et
           }
         }
+      } catch (dayError) {
+        console.error(`❌ Error processing day ${currentDate.toLocaleDateString('tr-TR')}:`, dayError);
+        // Gün bazlı hata, devam et
       }
+      
+      // Bir sonraki güne geç
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     // Tüm etkilenen kullanıcıların penalty stats'ını güncelle
+    console.log('📊 Updating user penalty stats...');
     for (const user of nonAdminUsers) {
-      await updateUserPenaltyStats(user._id);
+      try {
+        await updateUserPenaltyStats(user._id);
+      } catch (statsError) {
+        console.error(`❌ Error updating stats for user ${user.name}:`, statsError);
+        // Stats hatası, devam et
+      }
     }
 
     console.log(`✅ Missed entry check completed: ${newPenalties} new penalties, ${checkedDays} days checked`);
