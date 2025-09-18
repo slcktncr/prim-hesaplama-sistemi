@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Nav,
-  Tab
+  Tab,
+  Alert,
+  Button
 } from 'react-bootstrap';
 import { 
   FiSettings,
@@ -37,9 +39,54 @@ import RoleManagement from '../Admin/RoleManagement';
 import BulkPrimStatusManagement from '../Admin/BulkPrimStatusManagement';
 import UserManagement from '../Admin/UserManagement';
 import PenaltyManagement from '../Admin/PenaltyManagement';
+import ErrorBoundary from '../Common/ErrorBoundary';
 
 const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('sale-types');
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    console.log('🚀 SystemSettings component mounted');
+    setIsLoaded(true);
+    
+    // Global error handler
+    const handleError = (event) => {
+      console.error('🔥 Global error in SystemSettings:', event.error);
+      setError(`JavaScript hatası: ${event.error?.message || 'Bilinmeyen hata'}`);
+    };
+
+    const handleUnhandledRejection = (event) => {
+      console.error('🔥 Unhandled promise rejection in SystemSettings:', event.reason);
+      setError(`Promise hatası: ${event.reason?.message || 'Bilinmeyen hata'}`);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      console.log('🛑 SystemSettings component unmounting');
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  // Error boundary function
+  const handleComponentError = (error, errorInfo) => {
+    console.error('❌ SystemSettings component error:', error, errorInfo);
+    setError(`Bir bileşen yüklenirken hata oluştu: ${error.message}`);
+  };
+
+  // Tab change handler with error handling
+  const handleTabChange = (tab) => {
+    try {
+      console.log('📋 Changing tab to:', tab);
+      setActiveTab(tab);
+    } catch (error) {
+      console.error('❌ Tab change error:', error);
+      setError(`Tab değiştirilirken hata oluştu: ${error.message}`);
+    }
+  };
 
   return (
     <div>
@@ -56,10 +103,25 @@ const SystemSettings = () => {
         </div>
       </div>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="danger" className="mb-4">
+          <Alert.Heading>Hata!</Alert.Heading>
+          <p>{error}</p>
+          <Button 
+            variant="outline-danger" 
+            size="sm" 
+            onClick={() => setError(null)}
+          >
+            Tekrar Dene
+          </Button>
+        </Alert>
+      )}
+
       {/* Tabs */}
       <Card>
         <Card.Body className="p-0">
-          <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
+          <Tab.Container activeKey={activeTab} onSelect={handleTabChange}>
             <Nav variant="tabs" className="border-bottom">
               <Nav.Item>
                 <Nav.Link eventKey="sale-types">
@@ -168,55 +230,89 @@ const SystemSettings = () => {
             <div className="p-4">
               <Tab.Content>
                 <Tab.Pane eventKey="sale-types">
-                  <SaleTypesManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <SaleTypesManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="payment-types">
-                  <PaymentMethods />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <PaymentMethods />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="prim-rates">
-                  <PrimSettings />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <PrimSettings />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="periods">
-                  <PrimPeriods />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <PrimPeriods />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="pending-users">
-                  <PendingUsers />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <PendingUsers />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="user-management">
-                  <UserManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <UserManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="permissions">
-                  <UserPermissions />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <UserPermissions />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="role-management">
-                  <RoleManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <RoleManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="communication-requirements">
-                  <CommunicationRequirements />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <CommunicationRequirements />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="historical-data">
-                  <HistoricalDataManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <HistoricalDataManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="announcements">
-                  <AnnouncementManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <AnnouncementManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="data-migration">
-                  <HistoricalDataMigration />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <HistoricalDataMigration />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="sales-import">
-                  <SalesImport />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <SalesImport />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="legacy-user">
-                  <LegacyUserManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <LegacyUserManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="backup-management">
-                  <BackupManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <BackupManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="bulk-prim-status">
-                  <BulkPrimStatusManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <BulkPrimStatusManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="penalty-management">
-                  <PenaltyManagement />
+                  <ErrorBoundary onError={handleComponentError}>
+                    <PenaltyManagement />
+                  </ErrorBoundary>
                 </Tab.Pane>
               </Tab.Content>
             </div>

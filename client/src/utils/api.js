@@ -3,12 +3,13 @@ import axios from 'axios';
 // API base configuration
 const API = axios.create({
   baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api',
-  timeout: 300000, // 5 dakika timeout (büyük dosyalar için)
+  timeout: 30000, // 30 saniye timeout - daha kısa timeout
 });
 
 // Request interceptor to add auth token
 API.interceptors.request.use(
   (config) => {
+    console.log('🌐 API Request:', config.method?.toUpperCase(), config.url);
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -16,15 +17,22 @@ API.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('❌ API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ API Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
+    return response;
+  },
   (error) => {
+    console.error('❌ API Response Error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.message);
+    
     if (error.response?.status === 401) {
+      console.warn('🔐 Unauthorized - redirecting to login');
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

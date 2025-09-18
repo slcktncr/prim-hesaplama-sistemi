@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Row, 
   Col, 
@@ -49,23 +49,61 @@ const SaleTypesManagement = () => {
   });
 
   useEffect(() => {
-    fetchSaleTypes();
-  }, []);
+    console.log('🔄 SaleTypesManagement component mounted, fetching data...');
+    
+    // Async function wrapper to handle errors properly
+    const initializeComponent = async () => {
+      try {
+        await fetchSaleTypes();
+      } catch (error) {
+        console.error('❌ Failed to initialize SaleTypesManagement:', error);
+        setError('Bileşen başlatılırken hata oluştu');
+      }
+    };
 
-  const fetchSaleTypes = async () => {
+    initializeComponent();
+  }, [fetchSaleTypes]);
+
+  const fetchSaleTypes = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await systemSettingsAPI.getSaleTypes();
-      setSaleTypes(response.data || []);
+      setError(null);
+      
+      console.log('🔍 Fetching sale types...');
+      
+      // API çağrısını timeout ile wrap et
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API çağrısı zaman aşımına uğradı')), 10000)
+      );
+      
+      const apiPromise = systemSettingsAPI.getSaleTypes();
+      const response = await Promise.race([apiPromise, timeoutPromise]);
+      
+      console.log('✅ Sale types response:', response);
+      
+      if (response && response.data) {
+        setSaleTypes(response.data);
+        console.log(`📊 Loaded ${response.data.length} sale types`);
+      } else {
+        console.warn('⚠️ No data in response, setting empty array');
+        setSaleTypes([]);
+      }
+      
       setError(null);
     } catch (error) {
-      console.error('Fetch sale types error:', error);
-      setError('Satış türleri yüklenirken hata oluştu');
-      toast.error('Satış türleri yüklenirken hata oluştu');
+      console.error('❌ Fetch sale types error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Satış türleri yüklenirken hata oluştu';
+      setError(errorMessage);
+      setSaleTypes([]); // Boş array set et ki sayfa tamamen boş kalmasın
+      
+      // Toast error sadece network hatası değilse göster
+      if (!error.message?.includes('Network Error')) {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
