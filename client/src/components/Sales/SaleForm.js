@@ -636,7 +636,7 @@ const SaleForm = () => {
     
     // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
     const customRate = parseFloat(formData.primRate) || 0;
-    const systemRate = currentRate?.rate || 0;
+    const systemRate = (currentRate?.rate || 0) / 100; // Sistem oranını decimal'e çevir
     const rate = (isAdmin && customRate > 0) ? customRate / 100 : systemRate;
     
     // 3 fiyat arasından geçerli olanları topla
@@ -1355,7 +1355,7 @@ const SaleForm = () => {
             </Card.Header>
             <Card.Body>
               <ul className="small mb-0">
-                <li>Prim, liste fiyatı ve aktivite satış fiyatından düşük olanın %{currentRate ? (currentRate.rate * 100).toFixed(2) : '1'}'i üzerinden hesaplanır.</li>
+                <li>Prim, liste fiyatı ve aktivite satış fiyatından düşük olanın %{currentRate ? currentRate.rate.toFixed(2) : '1'}'i üzerinden hesaplanır.</li>
                 <li>Satış tarihi ayına göre prim dönemi otomatik atanır.</li>
                 <li>Sözleşme numarası benzersiz olmalıdır.</li>
               </ul>

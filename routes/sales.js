@@ -1172,9 +1172,21 @@ router.put('/:id', auth, [
       
       // En düşük fiyat üzerinden prim hesapla
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      const primAmount = basePrimPrice * (currentPrimRate.rate / 100); // rate yüzde değeri olarak saklanıyor (1 = %1)
+      
+      // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
+      const customPrimRate = parseFloat(updateData.primRate) || 0;
+      const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
+      const primAmount = basePrimPrice * (finalPrimRate / 100);
+      
+      console.log('💰 PUT Prim calculation:', {
+        basePrimPrice,
+        systemRate: currentPrimRate.rate,
+        customRate: customPrimRate,
+        finalRate: finalPrimRate,
+        primAmount
+      });
 
-      sale.primRate = currentPrimRate.rate;
+      sale.primRate = finalPrimRate;
       sale.basePrimPrice = basePrimPrice;
       sale.primAmount = primAmount;
 
