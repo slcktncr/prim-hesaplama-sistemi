@@ -1303,10 +1303,22 @@ router.put('/:id/transfer', [auth, adminAuth], [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.log('❌ Transfer validation errors:', errors.array());
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: errors.array(),
+        details: errors.array().map(err => `${err.param}: ${err.msg}`).join(', ')
+      });
     }
 
     const { newSalespersonId, transferReason } = req.body;
+    
+    console.log('🔄 Transfer request:', {
+      saleId: req.params.id,
+      newSalespersonId,
+      transferReason,
+      user: req.user.email
+    });
 
     const sale = await Sale.findById(req.params.id)
       .populate('salesperson', 'name email');
@@ -1316,10 +1328,22 @@ router.put('/:id/transfer', [auth, adminAuth], [
     }
 
     // Yeni temsilciyi kontrol et
-    const newSalesperson = await User.findById(newSalespersonId);
-    if (!newSalesperson || newSalesperson.role !== 'salesperson') {
-      return res.status(404).json({ message: 'Geçerli bir satış temsilcisi bulunamadı' });
+    const newSalesperson = await User.findById(newSalespersonId).populate('role', 'name');
+    if (!newSalesperson) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
+    
+    // Role kontrolü - admin değilse ve aktif değilse hata
+    if (!newSalesperson.isActive || !newSalesperson.isApproved) {
+      return res.status(400).json({ message: 'Seçilen kullanıcı aktif değil veya onaylanmamış' });
+    }
+    
+    console.log('🔄 Transfer validation:', {
+      newSalesperson: newSalesperson.name,
+      role: newSalesperson.role?.name,
+      isActive: newSalesperson.isActive,
+      isApproved: newSalesperson.isApproved
+    });
 
     // Aynı temsilciye transfer kontrolü
     if (sale.salesperson._id.toString() === newSalespersonId) {
@@ -1357,7 +1381,18 @@ router.put('/:id/transfer', [auth, adminAuth], [
 
   } catch (error) {
     console.error('Transfer sale error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      saleId: req.params.id,
+      body: req.body
+    });
+    
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

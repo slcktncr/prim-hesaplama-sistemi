@@ -69,12 +69,21 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
     setLoading(true);
     try {
       const transferData = {
-        newSalesperson: selectedUser
+        newSalespersonId: selectedUser,
+        transferReason: 'Admin transfer'
       };
 
       if (changePeriod && selectedPeriod) {
         transferData.newPeriod = selectedPeriod;
       }
+
+      console.log('🔄 Transfer request data:', {
+        saleId: sale._id,
+        transferData,
+        selectedUser,
+        changePeriod,
+        selectedPeriod
+      });
 
       await salesAPI.transferSale(sale._id, transferData);
       
@@ -86,7 +95,13 @@ const TransferModal = ({ show, onHide, sale, onSuccess }) => {
       onSuccess();
     } catch (error) {
       console.error('Transfer error:', error);
-      toast.error(error.response?.data?.message || 'Transfer işlemi sırasında hata oluştu');
+      console.error('Error response:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.details ||
+                          'Transfer işlemi sırasında hata oluştu';
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
