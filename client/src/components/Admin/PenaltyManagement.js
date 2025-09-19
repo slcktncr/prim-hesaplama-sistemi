@@ -127,10 +127,17 @@ const PenaltyManagement = () => {
       // Muaf olmayan aktif kullanıcıları filtrele
       const responseData = Array.isArray(response.data) ? response.data : [];
       const eligibleUsers = responseData.filter(user => 
-        user.isApproved && 
-        user.requiresCommunicationEntry && 
         user.role?.name !== 'admin'
       );
+      
+      console.log('🔍 Detailed user filtering:', {
+        totalUsers: responseData.length,
+        adminUsers: responseData.filter(u => u.role?.name === 'admin').length,
+        nonAdminUsers: responseData.filter(u => u.role?.name !== 'admin').length,
+        approvedUsers: responseData.filter(u => u.isApproved).length,
+        requiresCommunicationUsers: responseData.filter(u => u.requiresCommunicationEntry).length,
+        eligibleUsers: eligibleUsers.length
+      });
       
       console.log('✅ Processed users data:', {
         totalUsers: responseData.length,
@@ -154,9 +161,8 @@ const PenaltyManagement = () => {
       
       console.log('🔍 Frontend filtering debug:');
       responseData.forEach(user => {
-        const nonAdmin = user.isActive && user.role?.name !== 'admin';
-        const eligible = user.isActive && 
-                        user.isApproved && 
+        const nonAdmin = user.role?.name !== 'admin';
+        const eligible = user.isApproved && 
                         user.requiresCommunicationEntry && 
                         user.role?.name !== 'admin';
         console.log(`User: ${user.name}`, {
@@ -486,9 +492,11 @@ const PenaltyManagement = () => {
                                   variant="outline-secondary"
                                   size="sm"
                                   onClick={() => {
-                                    const reason = prompt('İptal sebebini belirtin:');
-                                    if (reason) {
-                                      handleCancelPenalty(penalty._id, reason);
+                                    const reason = prompt('İptal sebebini belirtin (en az 5 karakter):');
+                                    if (reason && reason.trim().length >= 5) {
+                                      handleCancelPenalty(penalty._id, reason.trim());
+                                    } else if (reason) {
+                                      toast.error('İptal sebebi en az 5 karakter olmalıdır');
                                     }
                                   }}
                                 >
