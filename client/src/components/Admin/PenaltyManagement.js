@@ -602,113 +602,18 @@ const PenaltyManagement = () => {
                     </thead>
                     <tbody>
                       {(() => {
-                        try {
-                          console.log('🔍 CRITICAL RENDER DEBUG - User status table:', {
-                            isArray: Array.isArray(users),
-                            length: users?.length || 0,
-                            users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || [],
-                            penaltiesLength: penalties?.length || 0,
-                            penaltiesIsArray: Array.isArray(penalties),
-                            usersType: typeof users,
-                            usersConstructor: users?.constructor?.name,
-                            usersKeys: users ? Object.keys(users) : 'null'
-                          });
-                        } catch (error) {
-                          console.error('🚨 TBODY RENDER ERROR:', error);
-                        }
-                        
-                        // Force re-fetch users if empty
-                        if ((!Array.isArray(users) || users.length === 0) && !loading) {
-                          console.log('⚠️ FORCING USER REFETCH - Users array is empty or not array:', users);
-                          setTimeout(() => fetchUsers(), 100);
-                        }
-                        
-                        if (!Array.isArray(users) || users.length === 0) {
-                          console.log('⚠️ Users array is empty or not array:', users);
-                          return (
-                            <tr>
-                              <td colSpan="6" className="text-center py-4">
-                                <div className="text-muted">
-                                  <p>Kullanıcı bulunamadı.</p>
-                                  <small>
-                                    Users array: {Array.isArray(users) ? 'Array' : 'Not Array'} - 
-                                    Length: {users?.length || 0} - 
-                                    Type: {typeof users} - 
-                                    Constructor: {users?.constructor?.name || 'undefined'}
-                                  </small>
-                                  <br />
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline-primary" 
-                                    onClick={() => fetchUsers()}
-                                    className="mt-2"
-                                  >
-                                    Kullanıcıları Yenile
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        }
-                        
-                        return users.map(user => {
-                        console.log('🔍 Processing user for table:', user.name);
-                        const stats = getUserPenaltyStats(user);
-                        const userPenalties = Array.isArray(penalties) ? penalties.filter(p => p.user._id === user._id) : [];
-                        const lastPenalty = userPenalties.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-                        
+                        console.log('🔥 TBODY START!');
                         return (
-                          <tr key={user._id}>
-                            <td>
-                              <div>
-                                <strong>{user.name}</strong>
-                                <br />
-                                <small className="text-muted">{user.email}</small>
+                          <tr>
+                            <td colSpan="6" className="text-center py-4">
+                              <div className="text-muted">
+                                <p>TEST: {users?.length || 0} kullanıcı bulundu</p>
+                                <small>Debug: {Array.isArray(users) ? 'Array' : 'Not Array'}</small>
                               </div>
-                            </td>
-                            <td>
-                              <Badge bg={stats.totalPoints > 0 ? 'warning' : 'success'}>
-                                {stats.totalPoints} puan
-                              </Badge>
-                            </td>
-                            <td>
-                              <Badge bg={stats.activePoints > 0 ? 'danger' : 'success'}>
-                                {stats.activePoints} puan
-                              </Badge>
-                              {stats.activePoints > 0 && (
-                                <div className="mt-1">
-                                  <ProgressBar 
-                                    now={(stats.activePoints / settings.maxPenaltyPoints) * 100}
-                                    variant={stats.activePoints >= settings.maxPenaltyPoints ? 'danger' : 'warning'}
-                                    size="sm"
-                                  />
-                                </div>
-                              )}
-                            </td>
-                            <td>
-                              {user.isPenaltyDeactivated ? (
-                                <Badge bg="danger">Pasifleştirildi</Badge>
-                              ) : stats.activePoints >= settings.maxPenaltyPoints ? (
-                                <Badge bg="warning">Risk Altında</Badge>
-                              ) : (
-                                <Badge bg="success">Normal</Badge>
-                              )}
-                            </td>
-                            <td>
-                              {lastPenalty ? formatDate(lastPenalty.date) : 'Yok'}
-                            </td>
-                            <td>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => setFilters(prev => ({ ...prev, userId: user._id }))}
-                              >
-                                <FiEye />
-                              </Button>
                             </td>
                           </tr>
                         );
-                      });})}
+                      })()}
                     </tbody>
                   </Table>
                 </Tab.Pane>
