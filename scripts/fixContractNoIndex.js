@@ -1,106 +1,75 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB Connected...');
-  } catch (error) {
-    console.error('Database connection error:', error.message);
-    process.exit(1);
-  }
-};
+const Sale = require('../models/Sale');
 
 const fixContractNoIndex = async () => {
   try {
-    console.log('🔧 ContractNo index düzeltme işlemi başlatılıyor...');
+    console.log('🔧 Fixing contractNo index...');
     
-    const db = mongoose.connection.db;
-    const salesCollection = db.collection('sales');
+    // MongoDB bağlantısını kur
+    const DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/stwork';
+    await mongoose.connect(DB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     
-    // Mevcut indexleri listele
-    console.log('📋 Mevcut indexler:');
-    const indexes = await salesCollection.indexes();
-    console.log(indexes.map(idx => ({ name: idx.name, key: idx.key, sparse: idx.sparse, unique: idx.unique })));
+    console.log('✅ Connected to MongoDB');
     
-    // Yeni index zaten varsa çık
-    const existingSparseIndex = indexes.find(idx => 
-      idx.key.contractNo === 1 && idx.sparse === true && idx.unique === true
-    );
+    // Mevcut index'leri listele
+    const indexes = await Sale.collection.indexes();
+    console.log('📋 Current indexes:', indexes.map(idx => ({
+      name: idx.name,
+      key: idx.key,
+      unique: idx.unique,
+      sparse: idx.sparse,
+      partialFilterExpression: idx.partialFilterExpression
+    })));
     
-    if (existingSparseIndex) {
-      console.log('✅ Sparse unique index zaten mevcut, işlem gerekmiyor');
-      return;
-    }
-    
-    // Mevcut contractNo index'ini sil
+    // Eski contractNo index'ini sil
     try {
-      console.log('🗑️ Eski contractNo_1 index\'i siliniyor...');
-      await salesCollection.dropIndex('contractNo_1');
-      console.log('✅ Eski index silindi');
+      await Sale.collection.dropIndex({ contractNo: 1 });
+      console.log('🗑️ Dropped old contractNo index');
     } catch (error) {
-      console.log('⚠️ Eski index silinemedi (muhtemelen zaten yok):', error.message);
+      console.log('ℹ️ Old index not found or already dropped:', error.message);
     }
     
-    // Mevcut null contractNo kayıtlarını temizle
-    console.log('🧹 Null contractNo kayıtları temizleniyor...');
-    const nullContractResult = await salesCollection.updateMany(
-      { contractNo: null },
-      { $unset: { contractNo: "" } }
-    );
-    console.log(`✅ ${nullContractResult.modifiedCount} adet null contractNo kaydı temizlendi`);
-    
-    // Boş string contractNo kayıtlarını temizle
-    console.log('🧹 Boş string contractNo kayıtları temizleniyor...');
-    const emptyContractResult = await salesCollection.updateMany(
-      { contractNo: "" },
-      { $unset: { contractNo: "" } }
-    );
-    console.log(`✅ ${emptyContractResult.modifiedCount} adet boş string contractNo kaydı temizlendi`);
-    
-    // Yeni sparse unique index oluştur
-    console.log('🔨 Yeni sparse unique index oluşturuluyor...');
-    await salesCollection.createIndex(
-      { contractNo: 1 },
+    // Yeni partial index oluştur
+    await Sale.collection.createIndex(
+      { contractNo: 1 }, 
       { 
         unique: true, 
-        sparse: true,
-        name: 'contractNo_1_sparse'
+        partialFilterExpression: { contractNo: { $ne: null } },
+        name: 'contractNo_1_partial'
       }
     );
-    console.log('✅ Yeni sparse unique index oluşturuldu');
+    console.log('✅ Created new partial unique index for contractNo');
     
-    // Son durumu kontrol et
-    console.log('📋 Güncel indexler:');
-    const newIndexes = await salesCollection.indexes();
-    console.log(newIndexes.map(idx => ({ name: idx.name, key: idx.key, sparse: idx.sparse, unique: idx.unique })));
+    // Yeni index'leri listele
+    const newIndexes = await Sale.collection.indexes();
+    console.log('📋 New indexes:', newIndexes.map(idx => ({
+      name: idx.name,
+      key: idx.key,
+      unique: idx.unique,
+      sparse: idx.sparse,
+      partialFilterExpression: idx.partialFilterExpression
+    })));
     
-    console.log('✅ ContractNo index düzeltme işlemi tamamlandı!');
+    // Test: Kapora kayıtlarını kontrol et
+    const kaporaCount = await Sale.countDocuments({ saleType: 'kapora', contractNo: null });
+    console.log(`📊 Found ${kaporaCount} kapora records with null contractNo`);
+    
+    console.log('🎉 Index fix completed successfully!');
     
   } catch (error) {
-    console.error('❌ Index düzeltme hatası:', error);
-    throw error;
+    console.error('❌ Error fixing index:', error);
+  } finally {
+    await mongoose.connection.close();
+    console.log('👋 Database connection closed');
   }
 };
 
 // Script'i çalıştır
-const runScript = async () => {
-  try {
-    await connectDB();
-    await fixContractNoIndex();
-    console.log('✅ Script tamamlandı!');
-  } catch (error) {
-    console.error('❌ Script başarısız:', error);
-  } finally {
-    await mongoose.connection.close();
-    console.log('🔌 Veritabanı bağlantısı kapatıldı');
-    process.exit(0);
-  }
-};
-
-// Eğer bu dosya direkt çalıştırılıyorsa script'i başlat
 if (require.main === module) {
-  runScript();
+  fixContractNoIndex();
 }
 
-module.exports = { fixContractNoIndex };
+module.exports = fixContractNoIndex;

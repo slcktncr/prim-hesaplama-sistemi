@@ -322,7 +322,10 @@ saleSchema.pre('save', function(next) {
   next();
 });
 
-// ContractNo için sparse unique index
-saleSchema.index({ contractNo: 1 }, { unique: true, sparse: true });
+// ContractNo için partial unique index - sadece null olmayan değerler için unique olsun
+saleSchema.index({ contractNo: 1 }, { 
+  unique: true, 
+  partialFilterExpression: { contractNo: { $ne: null } } 
+});
 
 module.exports = mongoose.model('Sale', saleSchema);

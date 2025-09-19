@@ -10,6 +10,14 @@ const app = express();
 // Database bağlantısı
 connectDB();
 
+// Index fix - sadece production'da çalıştır
+if (process.env.NODE_ENV === 'production') {
+  const fixContractNoIndex = require('./scripts/fixContractNoIndex');
+  setTimeout(() => {
+    fixContractNoIndex().catch(console.error);
+  }, 5000); // 5 saniye bekle ki bağlantı kurulsun
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
