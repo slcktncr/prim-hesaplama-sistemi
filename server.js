@@ -19,6 +19,13 @@ const initializeApp = async () => {
     } catch (error) {
       console.error('Index fix error:', error);
     }
+    
+    try {
+      const fixPenaltyIndex = require('./scripts/fixPenaltyIndex');
+      await fixPenaltyIndex();
+    } catch (error) {
+      console.error('Penalty index fix error:', error);
+    }
   }
 };
 
