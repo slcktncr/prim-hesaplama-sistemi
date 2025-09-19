@@ -537,6 +537,12 @@ const SaleForm = () => {
         exitDate: formData.exitDate,
         notes: formData.notes
       };
+
+      // Admin özel prim oranı varsa ekle (hem create hem edit için)
+      if (isAdmin && formData.primRate && parseFloat(formData.primRate) > 0) {
+        saleData.primRate = parseFloat(formData.primRate);
+        console.log('🎯 Adding custom prim rate to saleData:', saleData.primRate);
+      }
       
       console.log('📤 Gönderilecek saleData (base):', saleData);
 
@@ -576,14 +582,16 @@ const SaleForm = () => {
             saleData.discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
           }
         }
-        
-        // Admin özel prim oranı varsa ekle
-        if (isAdmin && formData.primRate && parseFloat(formData.primRate) > 0) {
-          saleData.primRate = parseFloat(formData.primRate);
-        }
       }
 
       console.log('📤 Sending sale data:', saleData);
+      console.log('🎯 Edit mode debug:', {
+        isEdit,
+        isAdmin,
+        formDataPrimRate: formData.primRate,
+        saleDataPrimRate: saleData.primRate,
+        hasPrimRate: !!saleData.primRate
+      });
 
       // Debug: Kapora için özel log
       if (formData.saleType === 'kapora') {
