@@ -127,7 +127,8 @@ const PenaltyManagement = () => {
       // Muaf olmayan aktif kullanıcıları filtrele
       const responseData = Array.isArray(response.data) ? response.data : [];
       const eligibleUsers = responseData.filter(user => 
-        user.isActive && 
+        user.isApproved && 
+        user.requiresCommunicationEntry && 
         user.role?.name !== 'admin'
       );
       
