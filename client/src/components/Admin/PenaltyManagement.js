@@ -561,6 +561,15 @@ const PenaltyManagement = () => {
                       </p>
                     </Col>
                   </Row>
+                  {(() => {
+                    console.log('🔥 BEFORE TABLE RENDER!', {
+                      usersLength: users?.length,
+                      penaltiesLength: penalties?.length,
+                      loading,
+                      error
+                    });
+                    return null;
+                  })()}
                   <Table responsive striped hover>
                     <thead>
                       <tr>
