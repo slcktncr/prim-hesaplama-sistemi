@@ -639,6 +639,15 @@ const SaleForm = () => {
     const systemRate = (currentRate?.rate || 0) / 100; // Sistem oranını decimal'e çevir
     const rate = (isAdmin && customRate > 0) ? customRate / 100 : systemRate;
     
+    console.log('🔍 Frontend Prim Calculation:', {
+      customRate,
+      systemRate,
+      finalRate: rate,
+      isAdmin,
+      hasCustomRate: customRate > 0,
+      currentRateRaw: currentRate?.rate
+    });
+    
     // 3 fiyat arasından geçerli olanları topla
     const validPrices = [];
     
@@ -657,7 +666,16 @@ const SaleForm = () => {
     // En az bir geçerli fiyat varsa, en düşüğü üzerinden hesapla
     if (validPrices.length > 0) {
       const basePrice = Math.min(...validPrices);
-      return basePrice * (rate / 100); // rate yüzde değeri olarak saklanıyor
+      const primAmount = basePrice * rate; // rate zaten decimal (0.08 = %8)
+      
+      console.log('💰 Frontend Prim Result:', {
+        validPrices,
+        basePrice,
+        rate,
+        primAmount
+      });
+      
+      return primAmount;
     }
     
     return 0;
