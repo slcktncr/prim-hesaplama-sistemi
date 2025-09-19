@@ -152,6 +152,21 @@ const PenaltyManagement = () => {
         role: u.role?.name
       })));
       
+      console.log('🔍 Frontend filtering debug:');
+      responseData.forEach(user => {
+        const eligible = user.isActive && 
+                        user.isApproved && 
+                        user.requiresCommunicationEntry && 
+                        user.role?.name !== 'admin';
+        console.log(`User: ${user.name}`, {
+          isActive: user.isActive,
+          isApproved: user.isApproved,
+          requiresCommunicationEntry: user.requiresCommunicationEntry,
+          role: user.role?.name,
+          eligible: eligible
+        });
+      });
+      
       setUsers(eligibleUsers);
     } catch (error) {
       console.error('❌ Users fetch error:', error);
@@ -378,11 +393,18 @@ const PenaltyManagement = () => {
                               onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
                             >
                               <option value="">Tüm Kullanıcılar</option>
-                              {Array.isArray(users) && users.map(user => (
-                                <option key={user._id} value={user._id}>
-                                  {user.name}
-                                </option>
-                              ))}
+                              {(() => {
+                                console.log('🔍 Rendering users dropdown:', {
+                                  isArray: Array.isArray(users),
+                                  length: users?.length || 0,
+                                  users: users?.map(u => ({ name: u.name, id: u._id })) || []
+                                });
+                                return Array.isArray(users) && users.map(user => (
+                                  <option key={user._id} value={user._id}>
+                                    {user.name}
+                                  </option>
+                                ));
+                              })()}
                             </Form.Select>
                           </Form.Group>
                         </Col>

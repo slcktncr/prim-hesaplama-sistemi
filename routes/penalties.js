@@ -270,6 +270,16 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
     );
 
     console.log(`👤 Non-admin users: ${nonAdminUsers.length}`);
+    console.log('🔍 User eligibility details:');
+    eligibleUsers.forEach(user => {
+      console.log(`User: ${user.name}`, {
+        isActive: user.isActive,
+        isApproved: user.isApproved,
+        requiresCommunicationEntry: user.requiresCommunicationEntry,
+        role: user.role?.name,
+        eligible: user.role && user.role.name !== 'admin'
+      });
+    });
 
     let newPenalties = 0;
     let checkedDays = 0;
@@ -289,6 +299,8 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
 
         for (const user of nonAdminUsers) {
           try {
+            console.log(`🔍 Checking user ${user.name} for ${checkDay.toLocaleDateString('tr-TR')}`);
+            
             // Bu kullanıcının bu gün için iletişim kaydı var mı?
             const hasEntry = await CommunicationRecord.findOne({
               salesperson: user._id,
@@ -297,6 +309,8 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
                 $lt: nextDay
               }
             });
+
+            console.log(`📋 User ${user.name} - Has entry: ${!!hasEntry}`);
 
             if (!hasEntry) {
               // Bu gün için zaten ceza kaydı var mı?
@@ -309,7 +323,11 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
                 type: 'missed_entry'
               });
 
+              console.log(`🔍 User ${user.name} - Existing penalty: ${!!existingPenalty}`);
+              
               if (!existingPenalty) {
+                console.log(`⚠️  Creating penalty for ${user.name} on ${checkDay.toLocaleDateString('tr-TR')}`);
+                
                 // Yeni ceza kaydı oluştur
                 const penalty = new PenaltyRecord({
                   user: user._id,
@@ -321,6 +339,7 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
                 });
 
                 await penalty.save();
+                console.log(`✅ Penalty saved for ${user.name}: ${penalty._id}`);
                 newPenalties++;
 
                 console.log(`⚠️ Penalty added for ${user.name} - ${checkDay.toLocaleDateString('tr-TR')}`);

@@ -28,6 +28,17 @@ router.get('/', [auth, adminAuth], async (req, res) => {
       u.requiresCommunicationEntry && 
       u.role?.name !== 'admin'
     ).map(u => u.name));
+    
+    console.log('🔍 User filtering debug:');
+    users.forEach(user => {
+      console.log(`User: ${user.name}`, {
+        isActive: user.isActive,
+        isApproved: user.isApproved,
+        requiresCommunicationEntry: user.requiresCommunicationEntry,
+        role: user.role?.name,
+        eligible: user.isApproved && user.requiresCommunicationEntry && user.role?.name !== 'admin'
+      });
+    });
 
     res.json(users);
   } catch (error) {
