@@ -32,7 +32,7 @@ import {
   FiDownload
 } from 'react-icons/fi';
 
-import { penaltiesAPI, usersAPI } from '../../utils/api';
+import { penaltiesAPI, usersAPI, API } from '../../utils/api';
 import { formatDate } from '../../utils/helpers';
 
 const PenaltyManagement = () => {
@@ -120,7 +120,7 @@ const PenaltyManagement = () => {
   const fetchUsers = async () => {
     try {
       console.log('👥 Fetching users for penalty management...');
-      const response = await usersAPI.getAllUsers();
+      const response = await API.get('/users');
       console.log('📋 Users API response:', response);
       console.log('📋 Raw response.data:', response.data);
       console.log('📋 Response.data type:', typeof response.data);
