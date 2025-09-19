@@ -401,67 +401,6 @@ const SalesSummaryReport = () => {
           </Card>
         </Col>
 
-        {/* Sale Type Distribution */}
-        <Col lg={4}>
-          <Card className="mb-4">
-            <Card.Header>
-              <h5 className="mb-0">Satış Türü Dağılımı</h5>
-            </Card.Header>
-            <Card.Body>
-              {reportData?.saleTypeBreakdown && reportData.saleTypeBreakdown.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={reportData.saleTypeBreakdown.map(item => ({
-                          name: formatSaleTypeName(item._id),
-                          value: item.count,
-                          totalAmount: item.totalListPrice
-                        }))}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {reportData.saleTypeBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatNumber(value)} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  
-                  <Table size="sm" className="mt-3">
-                    <tbody>
-                      {reportData.saleTypeBreakdown.map((item, index) => (
-                        <tr key={item._id || 'unknown'}>
-                          <td>
-                            <Badge 
-                              bg="light" 
-                              text="dark"
-                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                            >
-                              {formatSaleTypeName(item._id)}
-                            </Badge>
-                          </td>
-                          <td>{formatNumber(item.count)}</td>
-                          <td className="text-end">{formatCurrency(item.totalListPrice || 0)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </>
-              ) : (
-                <div className="text-center py-5">
-                  <p className="text-muted">Satış türü verisi bulunmuyor</p>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
 
         {/* Payment Type Distribution */}
         <Col lg={4}>

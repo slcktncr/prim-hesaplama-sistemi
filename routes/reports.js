@@ -449,6 +449,13 @@ router.get('/sales-summary', auth, async (req, res) => {
     if (period) {
       query.primPeriod = new mongoose.Types.ObjectId(period);
     }
+    
+    // Debug: Kapora satışlarını kontrol et
+    const kaporaSales = await Sale.find({ 
+      ...query, 
+      saleType: 'kapora' 
+    }).select('saleType status saleDate customerName').limit(5);
+    console.log('🔍 Kapora sales debug:', kaporaSales);
 
     // Güncel Sale verilerini al
     const activeSales = await Sale.aggregate([
@@ -467,9 +474,9 @@ router.get('/sales-summary', auth, async (req, res) => {
       }
     ]);
 
-    // Satış tiplerini al
+    // Satış tiplerini al - tüm aktif satışlar (iptal edilmemiş)
     const saleTypeBreakdown = await Sale.aggregate([
-      { $match: { ...query, status: 'aktif' } },
+      { $match: { ...query, status: { $ne: 'iptal' } } }, // İptal edilmemiş tüm satışlar
       {
         $group: {
           _id: '$saleType',
@@ -481,6 +488,8 @@ router.get('/sales-summary', auth, async (req, res) => {
         }
       }
     ]);
+    
+    console.log('📊 Sale type breakdown result:', saleTypeBreakdown);
 
     const cancelledSales = await Sale.aggregate([
       { $match: { ...query, status: 'iptal' } },
