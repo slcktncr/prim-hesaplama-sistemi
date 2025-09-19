@@ -127,8 +127,6 @@ const PenaltyManagement = () => {
       const responseData = Array.isArray(response.data) ? response.data : [];
       const eligibleUsers = responseData.filter(user => 
         user.isActive && 
-        user.isApproved && 
-        user.requiresCommunicationEntry && 
         user.role?.name !== 'admin'
       );
       
@@ -154,6 +152,7 @@ const PenaltyManagement = () => {
       
       console.log('🔍 Frontend filtering debug:');
       responseData.forEach(user => {
+        const nonAdmin = user.isActive && user.role?.name !== 'admin';
         const eligible = user.isActive && 
                         user.isApproved && 
                         user.requiresCommunicationEntry && 
@@ -163,6 +162,7 @@ const PenaltyManagement = () => {
           isApproved: user.isApproved,
           requiresCommunicationEntry: user.requiresCommunicationEntry,
           role: user.role?.name,
+          nonAdmin: nonAdmin,
           eligible: eligible
         });
       });
