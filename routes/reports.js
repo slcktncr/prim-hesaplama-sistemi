@@ -432,16 +432,27 @@ router.get('/sales-summary', auth, async (req, res) => {
     
     // Tarih filtresi
     if (startDate && endDate) {
-      query.saleDate = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-      console.log('📅 Date filter applied:', {
+      // Hem saleDate hem de kaporaDate'e göre filtrele (kapora satışları için)
+      query.$or = [
+        {
+          saleDate: {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate)
+          }
+        },
+        {
+          kaporaDate: {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate)
+          }
+        }
+      ];
+      console.log('📅 Date filter applied (saleDate OR kaporaDate):', {
         startDate,
         endDate,
         startDateObj: new Date(startDate),
         endDateObj: new Date(endDate),
-        query: query.saleDate
+        query: query.$or
       });
     }
     
