@@ -381,7 +381,13 @@ const PenaltyManagement = () => {
       {/* Tabs */}
       <Card>
         <Card.Body className="p-0">
-          <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
+            <Tab.Container 
+              activeKey={activeTab} 
+              onSelect={(key) => {
+                console.log('🔥 TAB CHANGE!', { from: activeTab, to: key });
+                setActiveTab(key);
+              }}
+            >
             <Nav variant="tabs" className="border-bottom">
               <Nav.Item>
                 <Nav.Link eventKey="penalties">
