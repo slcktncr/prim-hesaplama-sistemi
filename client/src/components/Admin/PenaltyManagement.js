@@ -602,16 +602,20 @@ const PenaltyManagement = () => {
                     </thead>
                     <tbody>
                       {(() => {
-                        console.log('🔍 CRITICAL RENDER DEBUG - User status table:', {
-                          isArray: Array.isArray(users),
-                          length: users?.length || 0,
-                          users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || [],
-                          penaltiesLength: penalties?.length || 0,
-                          penaltiesIsArray: Array.isArray(penalties),
-                          usersType: typeof users,
-                          usersConstructor: users?.constructor?.name,
-                          usersKeys: users ? Object.keys(users) : 'null'
-                        });
+                        try {
+                          console.log('🔍 CRITICAL RENDER DEBUG - User status table:', {
+                            isArray: Array.isArray(users),
+                            length: users?.length || 0,
+                            users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || [],
+                            penaltiesLength: penalties?.length || 0,
+                            penaltiesIsArray: Array.isArray(penalties),
+                            usersType: typeof users,
+                            usersConstructor: users?.constructor?.name,
+                            usersKeys: users ? Object.keys(users) : 'null'
+                          });
+                        } catch (error) {
+                          console.error('🚨 TBODY RENDER ERROR:', error);
+                        }
                         
                         // Force re-fetch users if empty
                         if ((!Array.isArray(users) || users.length === 0) && !loading) {
