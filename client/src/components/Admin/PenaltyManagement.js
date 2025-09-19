@@ -72,9 +72,7 @@ const PenaltyManagement = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'penalties') {
-      fetchPenalties();
-    }
+    fetchPenalties();
   }, [filters, activeTab]);
 
   const fetchData = async () => {
