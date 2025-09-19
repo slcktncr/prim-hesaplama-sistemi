@@ -83,11 +83,8 @@ router.get('/salespeople', auth, async (req, res) => {
 // @access  Private (Admin only)
 router.get('/all-users', [auth, adminAuth], async (req, res) => {
   try {
-    const users = await User.find({ 
-      isActive: true,
-      isApproved: true
-    })
-      .select('_id name email role individualPermissions createdAt updatedAt firstName lastName')
+    const users = await User.find({})
+      .select('_id name email role individualPermissions createdAt updatedAt firstName lastName isActive isApproved requiresCommunicationEntry')
       .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
 

@@ -58,6 +58,16 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const response = await usersAPI.getAllUsers();
+      console.log('🔍 UserManagement - Raw API response:', response.data);
+      console.log('🔍 UserManagement - Users with status info:');
+      (response.data || []).forEach(user => {
+        console.log(`  User: ${user.name}`, {
+          isActive: user.isActive,
+          isApproved: user.isApproved,
+          hasIsActive: 'isActive' in user,
+          hasIsApproved: 'isApproved' in user
+        });
+      });
       setUsers(response.data || []);
       setError(null);
     } catch (error) {
@@ -390,40 +400,49 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map(user => (
-                  <tr key={user._id}>
-                    <td>
-                      <div>
-                        <strong>{user.name}</strong>
-                        <br />
-                        <small className="text-muted">
-                          {user.firstName} {user.lastName}
-                        </small>
-                      </div>
-                    </td>
-                    <td>{user.email}</td>
-                    <td>
-                      {user.role ? (
-                        <Badge bg={
-                          user.role.name === 'admin' ? 'danger' : 
-                          user.role.name === 'visitor' ? 'secondary' : 'primary'
-                        }>
-                          {user.role.displayName}
+                {filteredUsers.map(user => {
+                  // Debug log for each user being rendered
+                  console.log(`🔍 Rendering user: ${user.name}`, {
+                    isActive: user.isActive,
+                    isApproved: user.isApproved,
+                    hasIsActive: 'isActive' in user,
+                    hasIsApproved: 'isApproved' in user
+                  });
+                  
+                  return (
+                    <tr key={user._id}>
+                      <td>
+                        <div>
+                          <strong>{user.name}</strong>
+                          <br />
+                          <small className="text-muted">
+                            {user.firstName} {user.lastName}
+                          </small>
+                        </div>
+                      </td>
+                      <td>{user.email}</td>
+                      <td>
+                        {user.role ? (
+                          <Badge bg={
+                            user.role.name === 'admin' ? 'danger' : 
+                            user.role.name === 'visitor' ? 'secondary' : 'primary'
+                          }>
+                            {user.role.displayName}
+                          </Badge>
+                        ) : (
+                          <Badge bg="warning">Rol Atanmamış</Badge>
+                        )}
+                      </td>
+                      <td>
+                        <Badge bg={user.isActive ? 'success' : 'secondary'}>
+                          {user.isActive ? 'Aktif' : 'Pasif'}
                         </Badge>
-                      ) : (
-                        <Badge bg="warning">Rol Atanmamış</Badge>
-                      )}
-                    </td>
-                    <td>
-                      <Badge bg={user.isActive ? 'success' : 'secondary'}>
-                        {user.isActive ? 'Aktif' : 'Pasif'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <Badge bg={user.isApproved ? 'success' : 'warning'}>
-                        {user.isApproved ? 'Onaylandı' : 'Bekliyor'}
-                      </Badge>
-                    </td>
+                      </td>
+                      <td>
+                        <Badge bg={user.isApproved ? 'success' : 'warning'}>
+                          {user.isApproved ? 'Onaylandı' : 'Bekliyor'}
+                        </Badge>
+                      </td>
                     <td>
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
                     </td>
