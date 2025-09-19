@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find({ isActive: true })
-      .select('_id name email role createdAt updatedAt firstName lastName isApproved requiresCommunicationEntry')
+      .select('_id name email role createdAt updatedAt firstName lastName isActive isApproved requiresCommunicationEntry')
       .populate('role', 'name displayName permissions')
       .sort({ name: 1 });
     
