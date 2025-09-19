@@ -7,16 +7,22 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Database bağlantısı
-connectDB();
+// Database bağlantısı ve index fix
+const initializeApp = async () => {
+  await connectDB();
+  
+  // Index fix - sadece production'da çalıştır
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const fixContractNoIndex = require('./scripts/fixContractNoIndex');
+      await fixContractNoIndex();
+    } catch (error) {
+      console.error('Index fix error:', error);
+    }
+  }
+};
 
-// Index fix - sadece production'da çalıştır
-if (process.env.NODE_ENV === 'production') {
-  const fixContractNoIndex = require('./scripts/fixContractNoIndex');
-  setTimeout(() => {
-    fixContractNoIndex().catch(console.error);
-  }, 5000); // 5 saniye bekle ki bağlantı kurulsun
-}
+initializeApp();
 
 // Middleware
 app.use(cors());

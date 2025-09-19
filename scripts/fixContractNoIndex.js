@@ -5,14 +5,13 @@ const fixContractNoIndex = async () => {
   try {
     console.log('🔧 Fixing contractNo index...');
     
-    // MongoDB bağlantısını kur
-    const DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/stwork';
-    await mongoose.connect(DB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    // Mevcut bağlantıyı kontrol et
+    if (mongoose.connection.readyState !== 1) {
+      console.log('❌ MongoDB not connected, skipping index fix');
+      return;
+    }
     
-    console.log('✅ Connected to MongoDB');
+    console.log('✅ Using existing MongoDB connection');
     
     // Mevcut index'leri listele
     const indexes = await Sale.collection.indexes();
@@ -61,9 +60,6 @@ const fixContractNoIndex = async () => {
     
   } catch (error) {
     console.error('❌ Error fixing index:', error);
-  } finally {
-    await mongoose.connection.close();
-    console.log('👋 Database connection closed');
   }
 };
 
