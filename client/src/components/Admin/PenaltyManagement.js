@@ -32,7 +32,7 @@ import {
   FiDownload
 } from 'react-icons/fi';
 
-import { penaltiesAPI, usersAPI, API } from '../../utils/api';
+import API, { penaltiesAPI, usersAPI } from '../../utils/api';
 import { formatDate } from '../../utils/helpers';
 
 const PenaltyManagement = () => {
