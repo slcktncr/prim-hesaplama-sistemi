@@ -355,15 +355,23 @@ router.post('/', auth, [
   body('apartmentNo').trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').custom(async (value, { req }) => {
-    console.log('🔍 ContractNo validation:', {
+    console.log('🔍 ContractNo validation START:', {
       value,
       saleType: req.body.saleType,
-      isKapora: req.body.saleType === 'kapora'
+      saleTypeType: typeof req.body.saleType,
+      isKapora: req.body.saleType === 'kapora',
+      requestBody: req.body
     });
     
     // SaleType ayarlarından contractNo zorunluluğunu kontrol et
     const SaleType = require('../models/SaleType');
+    console.log('🔍 Looking for SaleType with name:', req.body.saleType);
     const saleTypeRecord = await SaleType.findOne({ name: req.body.saleType });
+    console.log('🔍 SaleType record found:', saleTypeRecord ? {
+      name: saleTypeRecord.name,
+      requiredFields: saleTypeRecord.requiredFields,
+      contractNoRequired: saleTypeRecord.requiredFields?.contractNo
+    } : 'NOT FOUND');
     
     if (saleTypeRecord && saleTypeRecord.requiredFields && saleTypeRecord.requiredFields.contractNo === false) {
       console.log('✅ SaleType setting: contractNo NOT required for', req.body.saleType);
@@ -371,7 +379,13 @@ router.post('/', auth, [
     }
     
     // Fallback: Belirli satış türleri için sözleşme no kontrolü yapma
-    const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
+    const noContractNoTypes = ['kapora', 'yazlkev', 'kslkev'];
+    console.log('🔍 Checking fallback types:', {
+      saleType: req.body.saleType,
+      noContractNoTypes,
+      includes: noContractNoTypes.includes(req.body.saleType)
+    });
+    
     if (noContractNoTypes.includes(req.body.saleType)) {
       console.log('✅ Contract-free sale type detected, skipping contractNo validation:', req.body.saleType);
       return true;
@@ -1059,7 +1073,7 @@ router.put('/:id', auth, [
     }
     
     // Fallback: Belirli satış türleri için sözleşme no zorunlu değil
-    const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
+    const noContractNoTypes = ['kapora', 'yazlkev', 'kslkev'];
     if (noContractNoTypes.includes(req.body.saleType)) {
       return true;
     }

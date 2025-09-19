@@ -526,10 +526,10 @@ const SaleForm = () => {
       console.log('📝 Form data:', formData);
       console.log('🔍 SaleType debug:', {
         currentSaleType: formData.saleType,
-        isYazlik: formData.saleType === 'yazlikev',
-        isKislik: formData.saleType === 'kislikev',
+        isYazlik: formData.saleType === 'yazlkev',
+        isKislik: formData.saleType === 'kslkev',
         isKapora: formData.saleType === 'kapora',
-        contractNoWillBeNull: ['kapora', 'yazlikev', 'kislikev'].includes(formData.saleType)
+        contractNoWillBeNull: ['kapora', 'yazlkev', 'kslkev'].includes(formData.saleType)
       });
       
       const saleData = {
@@ -538,7 +538,7 @@ const SaleForm = () => {
         blockNo: formData.blockNo,
         apartmentNo: formData.apartmentNo,
         periodNo: formData.periodNo,
-        contractNo: ['kapora', 'yazlikev', 'kislikev'].includes(formData.saleType) ? null : formData.contractNo,
+        contractNo: ['kapora', 'yazlkev', 'kslkev'].includes(formData.saleType) ? null : formData.contractNo,
         saleType: formData.saleType,
         entryDate: formData.entryDate,
         exitDate: formData.exitDate,
