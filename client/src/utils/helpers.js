@@ -254,10 +254,11 @@ export const getQuickDateFilters = (currentFilters = {}) => {
     
     thisMonth: () => {
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       return {
         ...currentFilters,
         startDate: firstDayOfMonth.toISOString().split('T')[0],
-        endDate: today.toISOString().split('T')[0],
+        endDate: lastDayOfMonth.toISOString().split('T')[0],
         selectedUser: 'all'
       };
     },

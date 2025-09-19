@@ -482,37 +482,52 @@ const SalesSummaryReport = () => {
               </Table>
             </Col>
             <Col md={6}>
-              <h6>Prim Durumu</h6>
+              <h6>Satış Durumu</h6>
               <Table size="sm">
                 <tbody>
+                  {/* Satış Tipleri */}
+                  {reportData?.saleTypeBreakdown && reportData.saleTypeBreakdown.length > 0 ? (
+                    reportData.saleTypeBreakdown.map((saleType, index) => (
+                      <tr key={index}>
+                        <td>{saleType._id || 'Belirtilmemiş'} Satış:</td>
+                        <td>
+                          <strong className="text-primary">{formatNumber(saleType.count)}</strong>
+                          <br />
+                          <small className="text-muted">
+                            Liste: {formatCurrency(saleType.totalListPrice || 0)}
+                            <br />
+                            Aktivite: {formatCurrency(saleType.totalActivityPrice || 0)}
+                          </small>
+                        </td>
+                      </tr>
+                    ))
+                  ) : null}
+                  
+                  {/* İptal Bilgileri */}
                   <tr>
-                    <td>Ödenen Prim Sayısı:</td>
+                    <td>İptal Edilen Satış:</td>
+                    <td>
+                      <strong className="text-danger">{formatNumber(cancelledSales?.count || 0)}</strong>
+                      <br />
+                      <small className="text-muted">
+                        Liste: {formatCurrency(cancelledSales?.totalListPrice || 0)}
+                        <br />
+                        Aktivite: {formatCurrency(cancelledSales?.totalActivityPrice || 0)}
+                      </small>
+                    </td>
+                  </tr>
+                  
+                  {/* Prim Durumu */}
+                  <tr>
+                    <td>Ödenen Prim:</td>
                     <td><strong className="text-success">{formatNumber(activeSales?.paidPrims || 0)}</strong></td>
                   </tr>
                   <tr>
-                    <td>Ödenmemiş Prim Sayısı:</td>
+                    <td>Ödenmemiş Prim:</td>
                     <td><strong className="text-warning">{formatNumber(activeSales?.unpaidPrims || 0)}</strong></td>
                   </tr>
-                  <tr>
-                    <td>İptal Edilen Satış:</td>
-                    <td><strong className="text-danger">{formatNumber(cancelledSales?.count || 0)}</strong></td>
-                  </tr>
-                  <tr>
-                    <td>İptal Edilen Tutar:</td>
-                    <td><strong className="text-danger">{formatCurrency(cancelledSales?.totalBasePrimPrice || 0)}</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Toplam Giriş:</td>
-                    <td><strong className="text-primary">{formatNumber(successRateData?.totalSalesCount || 0)}</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Kapora Durumu:</td>
-                    <td><strong className="text-warning">{formatNumber(successRateData?.kaporaSalesCount || 0)}</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Gerçek Satış:</td>
-                    <td><strong className="text-success">{formatNumber(successRateData?.realSalesCount || 0)}</strong></td>
-                  </tr>
+                  
+                  {/* Başarı Oranı */}
                   <tr>
                     <td>Başarı Oranı:</td>
                     <td>

@@ -453,6 +453,21 @@ router.get('/sales-summary', auth, async (req, res) => {
       }
     ]);
 
+    // Satış tiplerini al
+    const saleTypeBreakdown = await Sale.aggregate([
+      { $match: { ...query, status: 'aktif' } },
+      {
+        $group: {
+          _id: '$saleType',
+          count: { $sum: 1 },
+          totalListPrice: { $sum: '$listPrice' },
+          totalActivityPrice: { $sum: '$activitySalePrice' },
+          totalBasePrimPrice: { $sum: '$basePrimPrice' },
+          totalPrimAmount: { $sum: '$primAmount' }
+        }
+      }
+    ]);
+
     const cancelledSales = await Sale.aggregate([
       { $match: { ...query, status: 'iptal' } },
       {
@@ -637,6 +652,7 @@ router.get('/sales-summary', auth, async (req, res) => {
     res.json({
       activeSales: combinedActiveSales,
       cancelledSales: combinedCancelledSales,
+      saleTypeBreakdown,
       paymentTypeDistribution,
       monthlySales: combinedMonthlySales,
       successRateData: {
