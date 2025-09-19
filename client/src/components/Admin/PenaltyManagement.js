@@ -283,9 +283,39 @@ const PenaltyManagement = () => {
   };
 
   const getUserPenaltyStats = (user) => {
-    const userPenalties = Array.isArray(penalties) ? penalties.filter(p => 
-      p.user._id === user._id && !p.isCancelled
-    ) : [];
+    console.log('🔍 Getting penalty stats for user:', {
+      userId: user._id,
+      userName: user.name,
+      totalPenalties: penalties?.length || 0,
+      penaltiesArray: Array.isArray(penalties)
+    });
+    
+    if (!Array.isArray(penalties)) {
+      console.log('⚠️ Penalties is not an array:', penalties);
+      return { totalPoints: 0, activePoints: 0, count: 0 };
+    }
+    
+    // Debug: Check penalty structure
+    console.log('🔍 Sample penalty structure:', penalties[0]);
+    
+    const userPenalties = penalties.filter(p => {
+      const matches = p.user && p.user._id && p.user._id.toString() === user._id.toString() && !p.isCancelled;
+      console.log('🔍 Penalty check:', {
+        penaltyId: p._id,
+        penaltyUserId: p.user?._id,
+        targetUserId: user._id,
+        matches: matches,
+        isCancelled: p.isCancelled
+      });
+      return matches;
+    });
+    
+    console.log('📊 User penalty stats:', {
+      userName: user.name,
+      userPenalties: userPenalties.length,
+      penalties: userPenalties.map(p => ({ id: p._id, points: p.points, isResolved: p.isResolved }))
+    });
+    
     const totalPoints = userPenalties.reduce((sum, p) => sum + p.points, 0);
     const activePoints = userPenalties.filter(p => !p.isResolved).reduce((sum, p) => sum + p.points, 0);
     
@@ -513,6 +543,14 @@ const PenaltyManagement = () => {
 
                 {/* Users Tab */}
                 <Tab.Pane eventKey="users">
+                  <Row className="mb-3">
+                    <Col>
+                      <h5>Kullanıcı Ceza Durumları</h5>
+                      <p className="text-muted">
+                        Toplam {users?.length || 0} kullanıcı, {penalties?.length || 0} ceza kaydı
+                      </p>
+                    </Col>
+                  </Row>
                   <Table responsive striped hover>
                     <thead>
                       <tr>
@@ -529,9 +567,30 @@ const PenaltyManagement = () => {
                         console.log('🔍 Rendering user status table:', {
                           isArray: Array.isArray(users),
                           length: users?.length || 0,
-                          users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || []
+                          users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || [],
+                          penaltiesLength: penalties?.length || 0,
+                          penaltiesIsArray: Array.isArray(penalties)
                         });
-                        return Array.isArray(users) && users.map(user => {
+                        
+                        if (!Array.isArray(users) || users.length === 0) {
+                          console.log('⚠️ Users array is empty or not array:', users);
+                          return (
+                            <tr>
+                              <td colSpan="6" className="text-center py-4">
+                                <div className="text-muted">
+                                  <p>Kullanıcı bulunamadı.</p>
+                                  <small>
+                                    Users array: {Array.isArray(users) ? 'Array' : 'Not Array'} - 
+                                    Length: {users?.length || 0}
+                                  </small>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        }
+                        
+                        return users.map(user => {
+                        console.log('🔍 Processing user for table:', user.name);
                         const stats = getUserPenaltyStats(user);
                         const userPenalties = Array.isArray(penalties) ? penalties.filter(p => p.user._id === user._id) : [];
                         const lastPenalty = userPenalties.sort((a, b) => new Date(b.date) - new Date(a.date))[0];

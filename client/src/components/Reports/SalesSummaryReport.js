@@ -53,6 +53,18 @@ const SalesSummaryReport = () => {
     period: ''
   });
 
+  // Satış türü isimlerini düzeltme fonksiyonu
+  const formatSaleTypeName = (saleType) => {
+    const typeMap = {
+      'satis': 'SATIŞ',
+      'kapora': 'KAPORA', 
+      'yazlik': 'YAZLIK',
+      'kislik': 'KIŞLIK',
+      'normal': 'NORMAL'
+    };
+    return typeMap[saleType?.toLowerCase()] || saleType?.toUpperCase() || 'BELİRTİLMEMİŞ';
+  };
+
   useEffect(() => {
     fetchPeriods();
     const debouncedFetch = debounce(fetchReportData, 500);
@@ -83,6 +95,7 @@ const SalesSummaryReport = () => {
       console.log('Total sales count:', response.data?.successRateData?.totalSalesCount);
       console.log('Monthly sales count:', response.data?.monthlySales?.length);
       console.log('Monthly sales sample:', response.data?.monthlySales?.slice(0, 3));
+      console.log('Sale type breakdown:', response.data?.saleTypeBreakdown);
       console.log('=== END DEBUG ===');
       
       setReportData(response.data);
@@ -401,7 +414,7 @@ const SalesSummaryReport = () => {
                     <PieChart>
                       <Pie
                         data={reportData.saleTypeBreakdown.map(item => ({
-                          name: item._id || 'Belirtilmemiş',
+                          name: formatSaleTypeName(item._id),
                           value: item.count,
                           totalAmount: item.totalListPrice
                         }))}
@@ -431,7 +444,7 @@ const SalesSummaryReport = () => {
                               text="dark"
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             >
-                              {item._id || 'Belirtilmemiş'}
+                              {formatSaleTypeName(item._id)}
                             </Badge>
                           </td>
                           <td>{formatNumber(item.count)}</td>
@@ -550,8 +563,8 @@ const SalesSummaryReport = () => {
                   {/* Satış Tipleri */}
                   {reportData?.saleTypeBreakdown && reportData.saleTypeBreakdown.length > 0 ? (
                     reportData.saleTypeBreakdown.map((saleType, index) => (
-                      <tr key={index}>
-                        <td>{saleType._id || 'Belirtilmemiş'} Satış:</td>
+                        <tr key={index}>
+                          <td>{formatSaleTypeName(saleType._id)} Satış:</td>
                         <td>
                           <strong className="text-primary">{formatNumber(saleType.count)}</strong>
                           <br />

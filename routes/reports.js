@@ -416,6 +416,13 @@ router.get('/sales-summary', auth, async (req, res) => {
   try {
     const { startDate, endDate, salesperson, period } = req.query;
     
+    console.log('📊 Sales summary request:', {
+      startDate,
+      endDate,
+      salesperson,
+      period
+    });
+    
     let query = {};
     
     // Tüm kullanıcılar tüm verileri görebilir (sadece görüntüleme için)
@@ -429,6 +436,13 @@ router.get('/sales-summary', auth, async (req, res) => {
         $gte: new Date(startDate),
         $lte: new Date(endDate)
       };
+      console.log('📅 Date filter applied:', {
+        startDate,
+        endDate,
+        startDateObj: new Date(startDate),
+        endDateObj: new Date(endDate),
+        query: query.saleDate
+      });
     }
     
     // Dönem filtresi
