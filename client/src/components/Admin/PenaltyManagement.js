@@ -564,13 +564,22 @@ const PenaltyManagement = () => {
                     </thead>
                     <tbody>
                       {(() => {
-                        console.log('🔍 Rendering user status table:', {
+                        console.log('🔍 CRITICAL RENDER DEBUG - User status table:', {
                           isArray: Array.isArray(users),
                           length: users?.length || 0,
                           users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || [],
                           penaltiesLength: penalties?.length || 0,
-                          penaltiesIsArray: Array.isArray(penalties)
+                          penaltiesIsArray: Array.isArray(penalties),
+                          usersType: typeof users,
+                          usersConstructor: users?.constructor?.name,
+                          usersKeys: users ? Object.keys(users) : 'null'
                         });
+                        
+                        // Force re-fetch users if empty
+                        if ((!Array.isArray(users) || users.length === 0) && !loading) {
+                          console.log('⚠️ FORCING USER REFETCH - Users array is empty or not array:', users);
+                          setTimeout(() => fetchUsers(), 100);
+                        }
                         
                         if (!Array.isArray(users) || users.length === 0) {
                           console.log('⚠️ Users array is empty or not array:', users);
@@ -581,8 +590,19 @@ const PenaltyManagement = () => {
                                   <p>Kullanıcı bulunamadı.</p>
                                   <small>
                                     Users array: {Array.isArray(users) ? 'Array' : 'Not Array'} - 
-                                    Length: {users?.length || 0}
+                                    Length: {users?.length || 0} - 
+                                    Type: {typeof users} - 
+                                    Constructor: {users?.constructor?.name || 'undefined'}
                                   </small>
+                                  <br />
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline-primary" 
+                                    onClick={() => fetchUsers()}
+                                    className="mt-2"
+                                  >
+                                    Kullanıcıları Yenile
+                                  </Button>
                                 </div>
                               </td>
                             </tr>
