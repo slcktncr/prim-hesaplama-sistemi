@@ -122,6 +122,9 @@ const PenaltyManagement = () => {
       console.log('👥 Fetching users for penalty management...');
       const response = await usersAPI.getAllUsers();
       console.log('📋 Users API response:', response);
+      console.log('📋 Raw response.data:', response.data);
+      console.log('📋 Response.data type:', typeof response.data);
+      console.log('📋 Is response.data array?', Array.isArray(response.data));
       
       // Muaf olmayan aktif kullanıcıları filtrele
       const responseData = Array.isArray(response.data) ? response.data : [];
@@ -167,6 +170,8 @@ const PenaltyManagement = () => {
         });
       });
       
+      console.log('🔍 Setting users state:', eligibleUsers);
+      console.log('🔍 Users length:', eligibleUsers.length);
       setUsers(eligibleUsers);
     } catch (error) {
       console.error('❌ Users fetch error:', error);
@@ -513,7 +518,13 @@ const PenaltyManagement = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Array.isArray(users) && users.map(user => {
+                      {(() => {
+                        console.log('🔍 Rendering user status table:', {
+                          isArray: Array.isArray(users),
+                          length: users?.length || 0,
+                          users: users?.map(u => ({ name: u.name, id: u._id, email: u.email })) || []
+                        });
+                        return Array.isArray(users) && users.map(user => {
                         const stats = getUserPenaltyStats(user);
                         const userPenalties = Array.isArray(penalties) ? penalties.filter(p => p.user._id === user._id) : [];
                         const lastPenalty = userPenalties.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
@@ -569,7 +580,7 @@ const PenaltyManagement = () => {
                             </td>
                           </tr>
                         );
-                      })}
+                      });})}
                     </tbody>
                   </Table>
                 </Tab.Pane>
