@@ -524,6 +524,13 @@ const SaleForm = () => {
 
     try {
       console.log('📝 Form data:', formData);
+      console.log('🔍 SaleType debug:', {
+        currentSaleType: formData.saleType,
+        isYazlik: formData.saleType === 'yazlikev',
+        isKislik: formData.saleType === 'kislikev',
+        isKapora: formData.saleType === 'kapora',
+        contractNoWillBeNull: ['kapora', 'yazlikev', 'kislikev'].includes(formData.saleType)
+      });
       
       const saleData = {
         customerName: formData.customerName,
@@ -531,7 +538,7 @@ const SaleForm = () => {
         blockNo: formData.blockNo,
         apartmentNo: formData.apartmentNo,
         periodNo: formData.periodNo,
-        contractNo: formData.saleType === 'kapora' ? null : formData.contractNo,
+        contractNo: ['kapora', 'yazlikev', 'kislikev'].includes(formData.saleType) ? null : formData.contractNo,
         saleType: formData.saleType,
         entryDate: formData.entryDate,
         exitDate: formData.exitDate,

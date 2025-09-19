@@ -59,7 +59,7 @@ const saleSchema = new mongoose.Schema({
   contractNo: {
     type: String,
     required: function() {
-      // Belirli satış türleri için sözleşme no zorunlu değil
+      // Fallback: Belirli satış türleri için sözleşme no zorunlu değil
       const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
       return !noContractNoTypes.includes(this.saleType);
     },

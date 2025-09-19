@@ -361,7 +361,16 @@ router.post('/', auth, [
       isKapora: req.body.saleType === 'kapora'
     });
     
-    // Belirli satış türleri için sözleşme no kontrolü yapma
+    // SaleType ayarlarından contractNo zorunluluğunu kontrol et
+    const SaleType = require('../models/SaleType');
+    const saleTypeRecord = await SaleType.findOne({ name: req.body.saleType });
+    
+    if (saleTypeRecord && saleTypeRecord.requiredFields && saleTypeRecord.requiredFields.contractNo === false) {
+      console.log('✅ SaleType setting: contractNo NOT required for', req.body.saleType);
+      return true;
+    }
+    
+    // Fallback: Belirli satış türleri için sözleşme no kontrolü yapma
     const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
     if (noContractNoTypes.includes(req.body.saleType)) {
       console.log('✅ Contract-free sale type detected, skipping contractNo validation:', req.body.saleType);
@@ -1040,7 +1049,16 @@ router.put('/:id', auth, [
   body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').optional().custom(async (value, { req }) => {
-    // Belirli satış türleri için sözleşme no zorunlu değil
+    // SaleType ayarlarından contractNo zorunluluğunu kontrol et
+    const SaleType = require('../models/SaleType');
+    const saleTypeRecord = await SaleType.findOne({ name: req.body.saleType });
+    
+    if (saleTypeRecord && saleTypeRecord.requiredFields && saleTypeRecord.requiredFields.contractNo === false) {
+      console.log('✅ SaleType setting: contractNo NOT required for', req.body.saleType);
+      return true;
+    }
+    
+    // Fallback: Belirli satış türleri için sözleşme no zorunlu değil
     const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
     if (noContractNoTypes.includes(req.body.saleType)) {
       return true;
