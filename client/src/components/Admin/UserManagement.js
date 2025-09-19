@@ -485,7 +485,8 @@ const UserManagement = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </Table>
           )}
