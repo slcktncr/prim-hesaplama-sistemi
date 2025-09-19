@@ -543,6 +543,16 @@ const PenaltyManagement = () => {
 
                 {/* Users Tab */}
                 <Tab.Pane eventKey="users">
+                  {(() => {
+                    console.log('🔥 USERS TAB RENDERED!', {
+                      activeTab,
+                      usersLength: users?.length || 0,
+                      penaltiesLength: penalties?.length || 0,
+                      usersArray: Array.isArray(users),
+                      users: users?.slice(0, 3).map(u => u.name) || []
+                    });
+                    return null;
+                  })()}
                   <Row className="mb-3">
                     <Col>
                       <h5>Kullanıcı Ceza Durumları</h5>
