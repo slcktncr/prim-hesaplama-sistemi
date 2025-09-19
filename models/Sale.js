@@ -59,10 +59,12 @@ const saleSchema = new mongoose.Schema({
   contractNo: {
     type: String,
     required: function() {
-      return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
+      // Belirli satış türleri için sözleşme no zorunlu değil
+      const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
+      return !noContractNoTypes.includes(this.saleType);
     },
     trim: true,
-    default: null // Kapora için null değer
+    default: null // Sözleşme no gerektirmeyen türler için null değer
   },
   listPrice: {
     type: Number,

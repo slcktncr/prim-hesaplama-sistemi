@@ -361,9 +361,10 @@ router.post('/', auth, [
       isKapora: req.body.saleType === 'kapora'
     });
     
-    // Kapora için sözleşme no kontrolü yapma
-    if (req.body.saleType === 'kapora') {
-      console.log('✅ Kapora detected, skipping contractNo validation');
+    // Belirli satış türleri için sözleşme no kontrolü yapma
+    const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
+    if (noContractNoTypes.includes(req.body.saleType)) {
+      console.log('✅ Contract-free sale type detected, skipping contractNo validation:', req.body.saleType);
       return true;
     }
     
@@ -1039,8 +1040,9 @@ router.put('/:id', auth, [
   body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').optional().custom(async (value, { req }) => {
-    // Kapora için sözleşme no zorunlu değil
-    if (req.body.saleType === 'kapora') {
+    // Belirli satış türleri için sözleşme no zorunlu değil
+    const noContractNoTypes = ['kapora', 'yazlikev', 'kislikev'];
+    if (noContractNoTypes.includes(req.body.saleType)) {
       return true;
     }
     
