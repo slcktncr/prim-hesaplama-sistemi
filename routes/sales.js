@@ -355,8 +355,15 @@ router.post('/', auth, [
   body('apartmentNo').trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
   body('periodNo').trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
   body('contractNo').custom(async (value, { req }) => {
+    console.log('🔍 ContractNo validation:', {
+      value,
+      saleType: req.body.saleType,
+      isKapora: req.body.saleType === 'kapora'
+    });
+    
     // Kapora için sözleşme no kontrolü yapma
     if (req.body.saleType === 'kapora') {
+      console.log('✅ Kapora detected, skipping contractNo validation');
       return true;
     }
     
@@ -367,6 +374,7 @@ router.post('/', auth, [
     
     // Sözleşme no benzersizlik kontrolü (sadece dolu değerler için)
     if (value && value.trim() !== '') {
+      console.log('🔍 Checking contractNo uniqueness:', value.trim());
       const existingSale = await Sale.findOne({ 
         contractNo: value.trim(),
         isDeleted: { $ne: true }
@@ -532,9 +540,12 @@ router.post('/', auth, [
     // Debug: Kapora için saleData'yı logla
     if (saleType === 'kapora') {
       console.log('💾 Kapora saleData debug:', {
+        contractNo: saleData.contractNo,
+        contractNoFromRequest: contractNo,
+        saleType: saleData.saleType,
         listPrice: saleData.listPrice,
         originalListPrice: saleData.originalListPrice,
-        saleData
+        fullSaleData: saleData
       });
     }
 

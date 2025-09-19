@@ -589,10 +589,13 @@ const SaleForm = () => {
       if (formData.saleType === 'kapora') {
         console.log('🏷️ KAPORA DEBUG - Frontend:', {
           saleType: formData.saleType,
+          contractNo: saleData.contractNo,
+          contractNoFromForm: formData.contractNo,
           listPrice: formData.listPrice,
           listPriceInSaleData: saleData.listPrice,
           originalListPrice: formData.originalListPrice,
           originalListPriceInSaleData: saleData.originalListPrice,
+          fullSaleData: saleData,
           formData: formData
         });
       }
