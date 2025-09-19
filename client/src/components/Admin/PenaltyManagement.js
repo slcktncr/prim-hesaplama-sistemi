@@ -37,6 +37,7 @@ import { formatDate } from '../../utils/helpers';
 
 const PenaltyManagement = () => {
   const [activeTab, setActiveTab] = useState('penalties');
+  const [forceUpdate, setForceUpdate] = useState(0);
   const [penalties, setPenalties] = useState([]);
   const [users, setUsers] = useState([]);
   const [settings, setSettings] = useState({
@@ -386,9 +387,18 @@ const PenaltyManagement = () => {
               onSelect={(key) => {
                 console.log('🔥 TAB CHANGE!', { from: activeTab, to: key });
                 setActiveTab(key);
+                setForceUpdate(prev => prev + 1); // Force re-render
+                // State güncellemesini kontrol et
+                setTimeout(() => {
+                  console.log('🔥 STATE AFTER SET:', { activeTab, expectedTab: key });
+                }, 100);
               }}
             >
             <Nav variant="tabs" className="border-bottom">
+              {(() => {
+                console.log('🔥 TABS RENDERED!', { activeTab, penaltiesLength: penalties.length, usersLength: users.length });
+                return null;
+              })()}
               <Nav.Item>
                 <Nav.Link eventKey="penalties">
                   <FiAlertTriangle className="me-2" />
@@ -396,7 +406,10 @@ const PenaltyManagement = () => {
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="users">
+                <Nav.Link 
+                  eventKey="users"
+                  onClick={() => console.log('🔥 USERS TAB CLICKED!')}
+                >
                   <FiUsers className="me-2" />
                   Kullanıcı Durumları ({users.length})
                 </Nav.Link>
