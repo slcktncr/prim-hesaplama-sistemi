@@ -10,6 +10,7 @@
     "build": "cd client && npm install && npm run build",
     "start": "node server.js",
     "heroku-postbuild": "cd client && npm install && npm run build && npm run fix:contract-index",
+    "render-postbuild": "cd client && npm install && npm run build && npm run fix:contract-index",
     "migrate:payment-methods": "node scripts/migratePaymentMethods.js",
     "fix:contract-index": "node scripts/fixContractNoIndex.js",
     "list:users": "node scripts/listActiveUsers.js",
@@ -19,22 +20,22 @@
     "create:default-roles": "node scripts/createDefaultRoles.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.5.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
+    "mongoose": "^7.5.0",
     "multer": "^1.4.5-lts.1",
-    "xlsx": "^0.18.5",
     "pdfkit": "^0.13.0",
-    "pdfkit-table": "^0.1.99"
+    "pdfkit-table": "^0.1.99",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.0.1"
   },
   "engines": {
     "node": "20.x"

@@ -232,6 +232,17 @@ export const salesImportAPI = {
   getBackups: () => API.get('/sales-import/backups'),
   restoreFromBackup: (filename, confirmRestore = true) => API.post(`/sales-import/restore/${filename}`, { confirmRestore }),
   createManualBackup: (type, description) => API.post('/sales-import/create-backup', { type, description }),
+};
+
+// Cancelled Sales Import API
+export const cancelledSalesImportAPI = {
+  uploadFile: (formData) => API.post('/cancelled-sales-import/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 600000, // 10 dakika timeout (büyük Excel dosyaları için)
+  }),
+  downloadTemplate: () => API.get('/cancelled-sales-import/template', { responseType: 'blob' }),
   downloadBackup: (filename) => API.get(`/sales-import/download/${filename}`, { responseType: 'blob' })
 };
 

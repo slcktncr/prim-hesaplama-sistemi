@@ -1,0 +1,4 @@
+Müşteri Adı Soyadı,Telefon,Blok No,Daire No,Dönem No,Satış Türü,Satış Tarihi,Kapora Tarihi,Sözleşme No,Liste Fiyatı,İndirim Oranı,Aktivite Satış Fiyatı,Ödeme Tipi,Giriş Tarihi,Çıkış Tarihi,Prim Oranı,Satış Danışmanı Email,İptal Tarihi,İptal Eden Kullanıcı Email,Notlar
+Ahmet Yılmaz,05551234567,A,101,2024-1,satis,2024-01-15,,SZL-2024-001,500000,10,450000,nakit,15/06,20/08,2.5,satis@firma.com,2024-02-20,admin@firma.com,Müşteri talebi üzerine iptal
+Ayşe Demir,05559876543,B,205,2024-1,kapora,,2024-01-10,,,,,,,,1.5,satis2@firma.com,2024-01-25,admin@firma.com,Finansman sorunu
+Mehmet Kaya,05555555555,C,302,2024-2,satis,2024-03-01,,SZL-2024-002,750000,15,637500,taksit,01/07,31/08,3,satis@firma.com,2024-03-15,manager@firma.com,Sözleşme ihlali

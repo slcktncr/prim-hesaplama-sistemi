@@ -19,6 +19,7 @@ import {
   FiDatabase,
   FiBell,
   FiRefreshCw,
+  FiX,
   FiAlertTriangle
 } from 'react-icons/fi';
 
@@ -33,6 +34,7 @@ import HistoricalDataManagement from '../Communications/HistoricalDataManagement
 import AnnouncementManagement from '../Announcements/AnnouncementManagement';
 import HistoricalDataMigration from './HistoricalDataMigration';
 import SalesImport from './SalesImport';
+import CancelledSalesImport from './CancelledSalesImport';
 import LegacyUserManagement from './LegacyUserManagement';
 import BackupManagement from '../Admin/BackupManagement';
 import RoleManagement from '../Admin/RoleManagement';
@@ -202,6 +204,12 @@ const SystemSettings = () => {
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
+                <Nav.Link eventKey="cancelled-sales-import">
+                  <FiX className="me-2" />
+                  İptal Import
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
                 <Nav.Link eventKey="legacy-user">
                   <FiShield className="me-2" />
                   Eski Satış Temsilcisi
@@ -292,6 +300,11 @@ const SystemSettings = () => {
                 <Tab.Pane eventKey="sales-import">
                   <ErrorBoundary onError={handleComponentError}>
                     <SalesImport />
+                  </ErrorBoundary>
+                </Tab.Pane>
+                <Tab.Pane eventKey="cancelled-sales-import">
+                  <ErrorBoundary onError={handleComponentError}>
+                    <CancelledSalesImport />
                   </ErrorBoundary>
                 </Tab.Pane>
                 <Tab.Pane eventKey="legacy-user">

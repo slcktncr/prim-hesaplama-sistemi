@@ -51,7 +51,17 @@ app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/migration', require('./routes/migration'));
 app.use('/api/sales-import', require('./routes/salesImport'));
+app.use('/api/cancelled-sales-import', require('./routes/cancelledSalesImport'));
 app.use('/api/roles', require('./routes/roles'));
+
+// Health check endpoint for Render
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    service: 'Prim Hesaplama Sistemi'
+  });
+});
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
