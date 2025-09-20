@@ -5,64 +5,64 @@ function createOptimizedTemplate() {
   // Mevcut sistemdeki iptal verilerine göre optimize edilmiş şablon
   const optimizedTemplateData = [
     {
-      'Müşteri Adı': 'ERDEM İÇLİ',
-      'Blok': 'D12',
-      'Daire': '14',
-      'Dönem': '34',
-      'Sözleşme No': 'SZL-2024-001',
-      'Satış Tarihi': '2025-09-20',
-      'Liste Fiyatı': 500000,
-      'Aktivite Fiyatı': 450000,
-      'Prim Tutarı': 11250,
-      'Temsilci Email': 'fatma@firma.com',
-      'İptal Tarihi': '2025-09-13',
-      'İptal Eden Email': 'admin@firma.com'
+      'customerName': 'ERDEM İÇLİ',
+      'blockNo': 'D12',
+      'apartmentNo': '14',
+      'periodNo': '34',
+      'contractNo': 'SZL-2024-001',
+      'saleDate': '2025-09-20',
+      'listPrice': 500000,
+      'activitySalePrice': 450000,
+      'primAmount': 11250,
+      'salesperson': 'Fatma KOCAMAN',
+      'cancelledAt': '2025-09-13',
+      'cancelledBy': 'Selçuk TUNCER'
     },
     {
-      'Müşteri Adı': 'NEVİN ÇIRAK',
-      'Blok': 'D12',
-      'Daire': '7',
-      'Dönem': '34',
-      'Sözleşme No': 'SZL-2024-002',
-      'Satış Tarihi': '2025-09-20',
-      'Liste Fiyatı': 600000,
-      'Aktivite Fiyatı': 550000,
-      'Prim Tutarı': 13750,
-      'Temsilci Email': 'fatma@firma.com',
-      'İptal Tarihi': '2025-09-13',
-      'İptal Eden Email': 'admin@firma.com'
+      'customerName': 'NEVİN ÇIRAK',
+      'blockNo': 'D12',
+      'apartmentNo': '7',
+      'periodNo': '34',
+      'contractNo': 'SZL-2024-002',
+      'saleDate': '2025-09-20',
+      'listPrice': 600000,
+      'activitySalePrice': 550000,
+      'primAmount': 13750,
+      'salesperson': 'Fatma KOCAMAN',
+      'cancelledAt': '2025-09-13',
+      'cancelledBy': 'Selçuk TUNCER'
     },
     {
-      'Müşteri Adı': 'FATHİ KANAKRI',
-      'Blok': 'D4',
-      'Daire': '8',
-      'Dönem': '26',
-      'Sözleşme No': 'SZL-2024-003',
-      'Satış Tarihi': '2025-09-20',
-      'Liste Fiyatı': 750000,
-      'Aktivite Fiyatı': 700000,
-      'Prim Tutarı': 17500,
-      'Temsilci Email': 'rahma@firma.com',
-      'İptal Tarihi': '2025-09-18',
-      'İptal Eden Email': 'admin@firma.com'
+      'customerName': 'FATHİ KANAKRI',
+      'blockNo': 'D4',
+      'apartmentNo': '8',
+      'periodNo': '26',
+      'contractNo': 'SZL-2024-003',
+      'saleDate': '2025-09-20',
+      'listPrice': 750000,
+      'activitySalePrice': 700000,
+      'primAmount': 17500,
+      'salesperson': 'Rahma ABOERLISH',
+      'cancelledAt': '2025-09-18',
+      'cancelledBy': 'Selçuk TUNCER'
     }
   ];
 
   // Boş şablon - sadece 12 sütun
   const emptyOptimizedTemplate = [
     {
-      'Müşteri Adı': '',
-      'Blok': '',
-      'Daire': '',
-      'Dönem': '',
-      'Sözleşme No': '',
-      'Satış Tarihi': '', // YYYY-MM-DD
-      'Liste Fiyatı': '', // Sayısal
-      'Aktivite Fiyatı': '', // Sayısal
-      'Prim Tutarı': '', // Sayısal
-      'Temsilci Email': '', // Email
-      'İptal Tarihi': '', // YYYY-MM-DD
-      'İptal Eden Email': '' // Email
+      'customerName': '',
+      'blockNo': '',
+      'apartmentNo': '',
+      'periodNo': '',
+      'contractNo': '',
+      'saleDate': '', // YYYY-MM-DD
+      'listPrice': '', // Sayısal
+      'activitySalePrice': '', // Sayısal
+      'primAmount': '', // Sayısal
+      'salesperson': '', // Ad Soyad
+      'cancelledAt': '', // YYYY-MM-DD
+      'cancelledBy': '' // Ad Soyad
     }
   ];
 
@@ -74,18 +74,18 @@ function createOptimizedTemplate() {
     
     // Sütun genişlikleri - 12 sütun için optimize edilmiş
     const colWidths = [
-      { wch: 20 }, // Müşteri Adı
-      { wch: 8 },  // Blok
-      { wch: 8 },  // Daire
-      { wch: 10 }, // Dönem
-      { wch: 15 }, // Sözleşme No
-      { wch: 12 }, // Satış Tarihi
-      { wch: 12 }, // Liste Fiyatı
-      { wch: 12 }, // Aktivite Fiyatı
-      { wch: 12 }, // Prim Tutarı
-      { wch: 25 }, // Temsilci Email
-      { wch: 12 }, // İptal Tarihi
-      { wch: 25 }  // İptal Eden Email
+      { wch: 20 }, // customerName
+      { wch: 8 },  // blockNo
+      { wch: 12 }, // apartmentNo
+      { wch: 10 }, // periodNo
+      { wch: 15 }, // contractNo
+      { wch: 12 }, // saleDate
+      { wch: 12 }, // listPrice
+      { wch: 15 }, // activitySalePrice
+      { wch: 12 }, // primAmount
+      { wch: 25 }, // salesperson
+      { wch: 12 }, // cancelledAt
+      { wch: 25 }  // cancelledBy
     ];
     wsWithData['!cols'] = colWidths;
 
@@ -107,10 +107,10 @@ function createOptimizedTemplate() {
 
     // CSV versiyonu da oluştur
     const csvData = [
-      'Müşteri Adı,Blok,Daire,Dönem,Sözleşme No,Satış Tarihi,Liste Fiyatı,Aktivite Fiyatı,Prim Tutarı,Temsilci Email,İptal Tarihi,İptal Eden Email',
-      'ERDEM İÇLİ,D12,14,34,SZL-2024-001,2025-09-20,500000,450000,11250,fatma@firma.com,2025-09-13,admin@firma.com',
-      'NEVİN ÇIRAK,D12,7,34,SZL-2024-002,2025-09-20,600000,550000,13750,fatma@firma.com,2025-09-13,admin@firma.com',
-      'FATHİ KANAKRI,D4,8,26,SZL-2024-003,2025-09-20,750000,700000,17500,rahma@firma.com,2025-09-18,admin@firma.com'
+      'customerName,blockNo,apartmentNo,periodNo,contractNo,saleDate,listPrice,activitySalePrice,primAmount,salesperson,cancelledAt,cancelledBy',
+      'ERDEM İÇLİ,D12,14,34,SZL-2024-001,2025-09-20,500000,450000,11250,Fatma KOCAMAN,2025-09-13,Selçuk TUNCER',
+      'NEVİN ÇIRAK,D12,7,34,SZL-2024-002,2025-09-20,600000,550000,13750,Fatma KOCAMAN,2025-09-13,Selçuk TUNCER',
+      'FATHİ KANAKRI,D4,8,26,SZL-2024-003,2025-09-20,750000,700000,17500,Rahma ABOERLISH,2025-09-18,Selçuk TUNCER'
     ].join('\n');
 
     const fs = require('fs');

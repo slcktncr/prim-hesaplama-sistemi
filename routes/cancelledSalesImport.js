@@ -88,33 +88,43 @@ async function convertToCancelledSaleRecord(record, adminUserId) {
   const errors = [];
   
   // Zorunlu alanları kontrol et
-  if (!record['Müşteri Adı']) errors.push('Müşteri Adı boş olamaz');
-  if (!record['Blok']) errors.push('Blok boş olamaz');
-  if (!record['Daire']) errors.push('Daire boş olamaz');
-  if (!record['Dönem']) errors.push('Dönem boş olamaz');
-  if (!record['Satış Tarihi']) errors.push('Satış Tarihi boş olamaz');
-  if (!record['Temsilci Email']) errors.push('Temsilci Email boş olamaz');
-  if (!record['İptal Tarihi']) errors.push('İptal Tarihi boş olamaz');
-  if (!record['İptal Eden Email']) errors.push('İptal Eden Email boş olamaz');
+  if (!record['customerName']) errors.push('customerName boş olamaz');
+  if (!record['blockNo']) errors.push('blockNo boş olamaz');
+  if (!record['apartmentNo']) errors.push('apartmentNo boş olamaz');
+  if (!record['periodNo']) errors.push('periodNo boş olamaz');
+  if (!record['saleDate']) errors.push('saleDate boş olamaz');
+  if (!record['salesperson']) errors.push('salesperson boş olamaz');
+  if (!record['cancelledAt']) errors.push('cancelledAt boş olamaz');
+  if (!record['cancelledBy']) errors.push('cancelledBy boş olamaz');
 
   if (errors.length > 0) {
     throw new Error(errors.join(', '));
   }
 
-  // Kullanıcıları bul
-  const salesperson = await User.findOne({ email: record['Temsilci Email'].toLowerCase() });
+  // Kullanıcıları bul (ad soyad ile)
+  const salesperson = await User.findOne({ 
+    $or: [
+      { name: record['salesperson'] },
+      { name: { $regex: new RegExp(record['salesperson'], 'i') } }
+    ]
+  });
   if (!salesperson) {
-    throw new Error(`Satış danışmanı bulunamadı: ${record['Temsilci Email']}`);
+    throw new Error(`Satış danışmanı bulunamadı: ${record['salesperson']}`);
   }
 
-  const cancelledBy = await User.findOne({ email: record['İptal Eden Email'].toLowerCase() });
+  const cancelledBy = await User.findOne({ 
+    $or: [
+      { name: record['cancelledBy'] },
+      { name: { $regex: new RegExp(record['cancelledBy'], 'i') } }
+    ]
+  });
   if (!cancelledBy) {
-    throw new Error(`İptal eden kullanıcı bulunamadı: ${record['İptal Eden Email']}`);
+    throw new Error(`İptal eden kullanıcı bulunamadı: ${record['cancelledBy']}`);
   }
 
   // Tarihleri çevir
-  const saleDate = excelDateToJSDate(record['Satış Tarihi']);
-  const cancelledAt = excelDateToJSDate(record['İptal Tarihi']);
+  const saleDate = excelDateToJSDate(record['saleDate']);
+  const cancelledAt = excelDateToJSDate(record['cancelledAt']);
 
   if (!saleDate) {
     throw new Error('Geçersiz Satış Tarihi');
@@ -134,9 +144,9 @@ async function convertToCancelledSaleRecord(record, adminUserId) {
   }
 
   // Fiyat bilgilerini işle
-  const listPrice = parseFloat(record['Liste Fiyatı']) || 0;
-  const activityPrice = parseFloat(record['Aktivite Fiyatı']) || 0;
-  const primAmount = parseFloat(record['Prim Tutarı']) || 0;
+  const listPrice = parseFloat(record['listPrice']) || 0;
+  const activityPrice = parseFloat(record['activitySalePrice']) || 0;
+  const primAmount = parseFloat(record['primAmount']) || 0;
 
   // İndirim oranını hesapla
   let discountRate = 0;
@@ -156,17 +166,17 @@ async function convertToCancelledSaleRecord(record, adminUserId) {
 
   const saleRecord = {
     // Müşteri bilgileri
-    customerName: record['Müşteri Adı'],
+    customerName: record['customerName'],
     phone: null,
-    blockNo: record['Blok'],
-    apartmentNo: record['Daire'],
-    periodNo: record['Dönem'],
+    blockNo: record['blockNo'],
+    apartmentNo: record['apartmentNo'],
+    periodNo: record['periodNo'],
 
     // Satış bilgileri
     saleType: 'satis', // İptal import'unda hep satis
     saleDate: saleDate,
     kaporaDate: null,
-    contractNo: record['Sözleşme No'] || null,
+    contractNo: record['contractNo'] || null,
     
     // Fiyat bilgileri
     listPrice: listPrice,
@@ -343,18 +353,18 @@ router.get('/template', [auth, adminAuth], async (req, res) => {
       const XLSX = require('xlsx');
       
       const templateData = [{
-        'Müşteri Adı': '',
-        'Blok': '',
-        'Daire': '',
-        'Dönem': '',
-        'Sözleşme No': '',
-        'Satış Tarihi': '',
-        'Liste Fiyatı': '',
-        'Aktivite Fiyatı': '',
-        'Prim Tutarı': '',
-        'Temsilci Email': '',
-        'İptal Tarihi': '',
-        'İptal Eden Email': ''
+        'customerName': '',
+        'blockNo': '',
+        'apartmentNo': '',
+        'periodNo': '',
+        'contractNo': '',
+        'saleDate': '',
+        'listPrice': '',
+        'activitySalePrice': '',
+        'primAmount': '',
+        'salesperson': '', // Ad Soyad
+        'cancelledAt': '', // YYYY-MM-DD
+        'cancelledBy': '' // Ad Soyad
       }];
       
       const ws = XLSX.utils.json_to_sheet(templateData);

@@ -205,11 +205,11 @@ const CancelledSalesImport = () => {
                       <div className="small text-muted">
                         <strong>Gerekli Kolonlar:</strong>
                         <ul className="mt-2 mb-0">
-                          <li>Müşteri Adı, Blok, Daire, Dönem</li>
-                          <li>Satış Tarihi (YYYY-MM-DD)</li>
-                          <li>Liste Fiyatı, Aktivite Fiyatı</li>
-                          <li>Temsilci Email, İptal Tarihi</li>
-                          <li>İptal Eden Email</li>
+                          <li>customerName, blockNo, apartmentNo, periodNo</li>
+                          <li>saleDate (YYYY-MM-DD)</li>
+                          <li>listPrice, activitySalePrice</li>
+                          <li>salesperson (Ad Soyad), cancelledAt</li>
+                          <li>cancelledBy (Ad Soyad)</li>
                         </ul>
                       </div>
                     </Card.Body>
