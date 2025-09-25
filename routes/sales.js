@@ -1849,6 +1849,12 @@ router.put('/:id/modify', [
   body('reason').trim().isLength({ min: 1 }).withMessage('Değişiklik nedeni gereklidir')
 ], async (req, res) => {
   try {
+    console.log('🔧 Modify request started:', {
+      saleId: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('❌ Modify validation errors:', errors.array());
@@ -1866,8 +1872,16 @@ router.put('/:id/modify', [
 
     const sale = await Sale.findById(req.params.id);
     if (!sale) {
+      console.log('❌ Sale not found:', req.params.id);
       return res.status(404).json({ message: 'Satış bulunamadı' });
     }
+    
+    console.log('✅ Sale found:', {
+      id: sale._id,
+      customer: sale.customerName,
+      currentPrimAmount: sale.primAmount,
+      saleType: sale.saleType
+    });
 
     // Erişim kontrolü
     if (!(req.user.role && req.user.role.name === 'admin') && sale.salesperson.toString() !== req.user._id.toString()) {
@@ -1886,7 +1900,9 @@ router.put('/:id/modify', [
       saleDate: sale.saleDate,
       kaporaDate: sale.kaporaDate,
       entryDate: sale.entryDate,
-      exitDate: sale.exitDate
+      exitDate: sale.exitDate,
+      primAmount: sale.primAmount,
+      basePrimPrice: sale.basePrimPrice
     };
 
     // Yeni değerleri uygula (sadece gönderilen alanlar)
@@ -2077,8 +2093,15 @@ router.put('/:id/modify', [
     });
 
   } catch (error) {
-    console.error('Sale modification error:', error);
-    console.error('Error stack:', error.stack);
+    console.error('❌ Sale modification error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      saleId: req.params.id,
+      userId: req.user?._id,
+      requestBody: req.body
+    });
     
     // Validation errors
     if (error.name === 'ValidationError') {
@@ -2090,9 +2113,18 @@ router.put('/:id/modify', [
       });
     }
     
+    // MongoDB errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        message: 'Geçersiz ID formatı',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
     res.status(500).json({ 
       message: 'Sunucu hatası',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
