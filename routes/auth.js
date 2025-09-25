@@ -23,40 +23,116 @@ router.post('/register', [
   body('role').optional().isIn(['admin', 'temsilci']).withMessage('Geçerli bir rol seçiniz')
 ], async (req, res) => {
   try {
+    console.log('🔐 Register request started:', {
+      name: req.body.name,
+      email: req.body.email,
+      hasPassword: !!req.body.password
+    });
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Register validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { name, email, password } = req.body;
 
     // Kullanıcı var mı kontrol et
+    console.log('🔍 Checking if user exists with email:', email);
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('❌ User already exists:', email);
       return res.status(400).json({ message: 'Bu email ile kayıtlı kullanıcı bulunmaktadır' });
     }
 
     // İlk kullanıcı admin olacak ve otomatik onaylanacak
     const userCount = await User.countDocuments();
     const isFirstUser = userCount === 0;
+    
+    console.log('📊 User count:', userCount, 'isFirstUser:', isFirstUser);
 
     // Yeni kullanıcı oluştur
+    console.log('👤 Creating new user...');
+    
+    let userRole = null;
+    if (isFirstUser) {
+      // İlk kullanıcı için admin rolü bul/oluştur
+      const Role = require('../models/Role');
+      userRole = await Role.findOne({ name: 'admin' });
+      if (!userRole) {
+        console.log('⚠️ Admin role not found, creating...');
+        userRole = new Role({
+          name: 'admin',
+          displayName: 'Sistem Yöneticisi',
+          description: 'Tüm sistem yetkilerine sahip süper kullanıcı',
+          isSystemRole: true,
+          permissions: {
+            canViewDashboard: true,
+            canViewReports: true,
+            canExportData: true,
+            canViewSales: true,
+            canCreateSales: true,
+            canEditSales: true,
+            canDeleteSales: true,
+            canViewAllSales: true,
+            canTransferSales: true,
+            canCancelSales: true,
+            canModifySales: true,
+            canImportSales: true,
+            canViewPrims: true,
+            canManagePrimPeriods: true,
+            canEditPrimRates: true,
+            canProcessPayments: true,
+            canViewAllEarnings: true,
+            canViewCommunications: true,
+            canEditCommunications: true,
+            canViewAllCommunications: true,
+            canViewUsers: true,
+            canCreateUsers: true,
+            canEditUsers: true,
+            canDeleteUsers: true,
+            canManageRoles: true,
+            canAccessSystemSettings: true,
+            canManageBackups: true,
+            canViewSystemLogs: true,
+            canManageAnnouncements: true,
+            canViewPenalties: true,
+            canApplyPenalties: true,
+            canOverrideValidations: true
+          },
+          createdBy: null
+        });
+        await userRole.save();
+        console.log('✅ Admin role created');
+      }
+    } else {
+      // Normal kullanıcı için salesperson rolü bul
+      const Role = require('../models/Role');
+      userRole = await Role.findOne({ name: 'salesperson' });
+      if (!userRole) {
+        console.log('⚠️ Salesperson role not found, user will have no role');
+      }
+    }
+    
     const user = new User({
       firstName: name.split(' ')[0] || name,
       lastName: name.split(' ').slice(1).join(' ') || '',
       name,
       email,
       password,
-      role: isFirstUser ? 'admin' : 'salesperson',
+      role: userRole ? userRole._id : null,
       isActive: isFirstUser, // İlk kullanıcı aktif
       isApproved: isFirstUser // İlk kullanıcı onaylı
     });
 
+    console.log('💾 Saving user to database...');
     await user.save();
+    console.log('✅ User saved successfully');
 
     // Token oluştur
     const token = generateToken(user._id);
 
+    console.log('🎉 Sending success response...');
     res.status(201).json({
       message: isFirstUser 
         ? 'İlk admin kullanıcı başarıyla oluşturuldu' 
@@ -66,14 +142,42 @@ router.post('/register', [
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: userRole ? { name: userRole.name, displayName: userRole.displayName } : null,
         isApproved: user.isApproved,
         requiresApproval: !isFirstUser
       }
     });
   } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('❌ Register error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      requestBody: req.body
+    });
+    
+    // Validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: validationErrors,
+        details: validationErrors.join(', ')
+      });
+    }
+    
+    // Duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'Bu email zaten kayıtlı',
+        error: 'Duplicate email'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
