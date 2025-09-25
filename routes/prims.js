@@ -1221,15 +1221,24 @@ router.get('/earnings-v2', auth, async (req, res) => {
       if (transaction._id.transactionType === 'kazanç') {
         if (transaction._id.status === 'onaylandı') {
           earning.additionalEarnings += transaction.amount;
-        } else {
+        } else if (transaction._id.status === 'beklemede') {
           earning.pendingEarnings += transaction.amount;
         }
       } else if (transaction._id.transactionType === 'kesinti') {
         if (transaction._id.deductionStatus === 'yapıldı') {
           earning.deductions += transaction.amount;
-        } else {
+        } else if (transaction._id.deductionStatus === 'beklemede') {
           earning.pendingDeductions += transaction.amount;
         }
+      }
+
+      // Debug: Bekleyen ödemeler için özel log
+      if (transaction._id.status === 'beklemede' && transaction._id.transactionType === 'kazanç') {
+        console.log(`🔔 Bekleyen ek ödeme bulundu - ${transaction._id.year}/${transaction._id.month}:`, {
+          salesperson: transaction._id.salesperson,
+          amount: transaction.amount,
+          pendingEarnings: earning.pendingEarnings
+        });
       }
     });
 
