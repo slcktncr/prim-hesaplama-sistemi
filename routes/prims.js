@@ -1037,4 +1037,239 @@ router.put('/transactions/:id/status', [
   }
 });
 
+// @route   GET /api/prims/earnings-v2
+// @desc    Temsilci prim hakedişlerini getir (Satış Primleri + PrimTransaction'lar)
+// @access  Private
+router.get('/earnings-v2', auth, async (req, res) => {
+  try {
+    console.log('🔍 Prim earnings v2 request received');
+    console.log('Request query:', req.query);
+
+    const { 
+      salesperson: salespersonFilter,
+      year: yearFilter,
+      month: monthFilter
+    } = req.query;
+
+    // Admin değilse sadece kendi hakedişlerini görebilir
+    const isAdmin = req.user.role?.name === 'admin';
+    console.log('🔐 Is admin?', isAdmin);
+
+    // Temsilci filtresi
+    let salespersonQuery = {};
+    if (salespersonFilter) {
+      salespersonQuery = { salesperson: new mongoose.Types.ObjectId(salespersonFilter) };
+    } else if (!isAdmin) {
+      salespersonQuery = { salesperson: req.user._id };
+    }
+
+    // Tarih filtreleri
+    let dateQuery = {};
+    if (yearFilter && monthFilter) {
+      const year = parseInt(yearFilter);
+      const month = parseInt(monthFilter);
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+      dateQuery = { $gte: startOfMonth, $lte: endOfMonth };
+    }
+
+    // 1. Satış Primlerini Getir
+    let salesQuery = {
+      ...salespersonQuery,
+      saleType: { $ne: 'kapora' }
+    };
+    
+    if (Object.keys(dateQuery).length > 0) {
+      salesQuery.saleDate = dateQuery;
+    }
+
+    const salesEarnings = await Sale.aggregate([
+      { $match: salesQuery },
+      {
+        $addFields: {
+          saleYear: { $year: '$saleDate' },
+          saleMonth: { $month: '$saleDate' }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            year: '$saleYear',
+            month: '$saleMonth'
+          },
+          salesEarnings: { $sum: '$primAmount' },
+          salesCount: { $sum: 1 },
+          paidSalesCount: { $sum: { $cond: [{ $eq: ['$primStatus', 'ödendi'] }, 1, 0] } },
+          unpaidSalesCount: { $sum: { $cond: [{ $eq: ['$primStatus', 'ödenmedi'] }, 1, 0] } }
+        }
+      }
+    ]);
+
+    // 2. PrimTransaction'ları Getir
+    let primTransactionQuery = { ...salespersonQuery };
+    
+    if (Object.keys(dateQuery).length > 0) {
+      primTransactionQuery.createdAt = dateQuery;
+    }
+
+    const primTransactions = await PrimTransaction.aggregate([
+      { $match: primTransactionQuery },
+      {
+        $addFields: {
+          transactionYear: { $year: '$createdAt' },
+          transactionMonth: { $month: '$createdAt' }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            year: '$transactionYear',
+            month: '$transactionMonth',
+            transactionType: '$transactionType',
+            status: '$status',
+            deductionStatus: '$deductionStatus'
+          },
+          amount: { $sum: '$amount' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // 3. Sonuçları Birleştir
+    const earningsMap = new Map();
+
+    // Satış primlerini ekle
+    salesEarnings.forEach(earning => {
+      const key = `${earning._id.salesperson}_${earning._id.year}_${earning._id.month}`;
+      earningsMap.set(key, {
+        salesperson: earning._id.salesperson,
+        year: earning._id.year,
+        month: earning._id.month,
+        salesEarnings: earning.salesEarnings || 0,
+        salesCount: earning.salesCount || 0,
+        paidSalesCount: earning.paidSalesCount || 0,
+        unpaidSalesCount: earning.unpaidSalesCount || 0,
+        additionalEarnings: 0,
+        pendingEarnings: 0,
+        deductions: 0,
+        pendingDeductions: 0,
+        transactionCount: 0
+      });
+    });
+
+    // PrimTransaction'ları ekle
+    primTransactions.forEach(transaction => {
+      const key = `${transaction._id.salesperson}_${transaction._id.year}_${transaction._id.month}`;
+      
+      if (!earningsMap.has(key)) {
+        earningsMap.set(key, {
+          salesperson: transaction._id.salesperson,
+          year: transaction._id.year,
+          month: transaction._id.month,
+          salesEarnings: 0,
+          salesCount: 0,
+          paidSalesCount: 0,
+          unpaidSalesCount: 0,
+          additionalEarnings: 0,
+          pendingEarnings: 0,
+          deductions: 0,
+          pendingDeductions: 0,
+          transactionCount: 0
+        });
+      }
+
+      const earning = earningsMap.get(key);
+      earning.transactionCount += transaction.count;
+
+      if (transaction._id.transactionType === 'kazanç') {
+        if (transaction._id.status === 'onaylandı') {
+          earning.additionalEarnings += transaction.amount;
+        } else {
+          earning.pendingEarnings += transaction.amount;
+        }
+      } else if (transaction._id.transactionType === 'kesinti') {
+        if (transaction._id.deductionStatus === 'yapıldı') {
+          earning.deductions += transaction.amount;
+        } else {
+          earning.pendingDeductions += transaction.amount;
+        }
+      }
+    });
+
+    // 4. User bilgilerini ekle ve final result oluştur
+    const finalEarnings = [];
+    
+    for (const earning of earningsMap.values()) {
+      try {
+        const user = await User.findById(earning.salesperson).select('name email');
+        
+        const totalEarnings = earning.salesEarnings + earning.additionalEarnings - earning.deductions;
+        
+        finalEarnings.push({
+          salesperson: user,
+          primPeriod: {
+            name: `${['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                     'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'][earning.month - 1]} ${earning.year}`,
+            month: earning.month,
+            year: earning.year
+          },
+          totalEarnings,
+          transactionCount: earning.salesCount + earning.transactionCount,
+          
+          // Detaylar
+          salesEarnings: earning.salesEarnings,
+          salesCount: earning.salesCount,
+          additionalEarnings: earning.additionalEarnings,
+          pendingEarnings: earning.pendingEarnings,
+          deductions: earning.deductions,
+          pendingDeductions: earning.pendingDeductions,
+          
+          // Eski format uyumluluğu
+          kazancCount: earning.salesCount,
+          kesintiCount: earning.transactionCount,
+          transferGelenCount: 0,
+          transferGidenCount: 0,
+          paidCount: earning.paidSalesCount,
+          unpaidCount: earning.unpaidSalesCount
+        });
+      } catch (userError) {
+        console.error('User lookup error:', userError);
+      }
+    }
+
+    // Sıralama
+    finalEarnings.sort((a, b) => {
+      if (a.primPeriod.year !== b.primPeriod.year) {
+        return b.primPeriod.year - a.primPeriod.year;
+      }
+      if (a.primPeriod.month !== b.primPeriod.month) {
+        return b.primPeriod.month - a.primPeriod.month;
+      }
+      return (a.salesperson?.name || '').localeCompare(b.salesperson?.name || '');
+    });
+
+    console.log('✅ Final earnings count:', finalEarnings.length);
+    if (finalEarnings.length > 0) {
+      console.log('📊 Sample final earning:', {
+        salesperson: finalEarnings[0].salesperson?.name,
+        period: finalEarnings[0].primPeriod?.name,
+        salesEarnings: finalEarnings[0].salesEarnings,
+        additionalEarnings: finalEarnings[0].additionalEarnings,
+        deductions: finalEarnings[0].deductions,
+        totalEarnings: finalEarnings[0].totalEarnings
+      });
+    }
+
+    res.json(finalEarnings);
+  } catch (error) {
+    console.error('Get prim earnings v2 error:', error);
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

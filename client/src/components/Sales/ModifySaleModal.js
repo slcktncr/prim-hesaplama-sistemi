@@ -55,7 +55,7 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
 
   useEffect(() => {
     calculatePrim();
-  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate, customPrimRate, useCustomPrimRate]);
+  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate, customPrimRate, useCustomPrimRate, sale]);
 
   const fetchPrimRate = async () => {
     try {

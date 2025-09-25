@@ -81,40 +81,40 @@ const PrimEarnings = () => {
   }, [filters]);
 
   const fetchEarnings = async () => {
+    console.log('🔍 Fetching earnings with new API v2...');
     try {
       setLoading(true);
       
-      // Backend'e sadece temsilci filtresi gönder, dönem filtresi frontend'de uygulanacak
-      const backendFilters = {
-        salesperson: filters.salesperson
-        // period filtresi backend'e gönderilmiyor
-      };
+      const params = {};
       
-      // Hem earnings hem de deductions getir
-      const [earningsResponse, deductionsResponse] = await Promise.all([
-        primsAPI.getEarnings(backendFilters),
-        primsAPI.getDeductions(backendFilters)
-      ]);
-      
-      // Backend'den tüm earnings gelir, frontend'de dönem filtresi uygula
-      let filteredEarnings = earningsResponse.data || [];
-      
-      // Dönem filtresi varsa uygula
-      if (filters.period && filters.period !== '') {
+      // Period filtresi
+      if (filters.period) {
         const selectedPeriod = periods.find(p => p._id === filters.period);
         if (selectedPeriod) {
-          filteredEarnings = filteredEarnings.filter(earning => 
-            earning.primPeriod?.year === selectedPeriod.year &&
-            earning.primPeriod?.month === selectedPeriod.month
-          );
+          params.year = selectedPeriod.year;
+          params.month = selectedPeriod.month;
         }
       }
       
-      setEarnings(filteredEarnings);
-      setDeductions(deductionsResponse.data || []);
+      // Salesperson filtresi
+      if (filters.salesperson) {
+        const selectedUser = users.find(u => u.name === filters.salesperson);
+        if (selectedUser) {
+          params.salesperson = selectedUser._id;
+        }
+      }
+
+      console.log('📊 Earnings v2 params:', params);
+
+      // Yeni API kullan - PrimTransaction'lar da dahil
+      const response = await primsAPI.getEarningsV2(params);
+      console.log('📈 Earnings v2 response:', response.data);
+      
+      setEarnings(response.data || []);
+      setDeductions([]); // Artık earnings içinde dahil
       setError(null);
     } catch (error) {
-      console.error('Earnings fetch error:', error);
+      console.error('Earnings v2 fetch error:', error);
       setError('Prim hakedişleri yüklenirken hata oluştu');
       toast.error('Prim hakedişleri yüklenirken hata oluştu');
     } finally {
@@ -395,8 +395,9 @@ const PrimEarnings = () => {
                   <th>Temsilci</th>
                   <th>Dönem</th>
                   <th>Satış Bilgileri</th>
-                  <th>Ödeme Durumu</th>
-                  <th>Toplam Prim</th>
+                  <th>Satış Primleri</th>
+                  <th>Ek Prim/Kesinti</th>
+                  <th>Net Hakediş</th>
                   <th>İşlem Detayları</th>
                 </tr>
               </thead>
@@ -434,7 +435,7 @@ const PrimEarnings = () => {
                     <td>
                       <div className="text-center">
                         <div className="h5 mb-1 text-info">
-                          {earning.transactionCount || 0}
+                          {earning.salesCount || 0}
                         </div>
                         <div className="small text-muted">Satış Adedi</div>
                       </div>
