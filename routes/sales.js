@@ -938,15 +938,73 @@ router.get('/', auth, async (req, res) => {
       }
     });
     
-    // Array'leri tek objeye çevir
+    // Add lookup for modificationHistory and populate modifiedBy
+    pipeline.push({
+      $lookup: {
+        from: 'users', // 'users' collection for modifiedBy
+        localField: 'modificationHistory.modifiedBy',
+        foreignField: '_id',
+        as: 'modifiedByUsers', // Temporary field to hold populated users
+        pipeline: [{ $project: { name: 1, email: 1 } }]
+      }
+    });
+    
+    // Array'leri tek objeye çevir ve modificationHistory'yi populate et
     pipeline.push({
       $addFields: {
         salesperson: { $arrayElemAt: ["$salesperson", 0] },
-        primPeriod: { $arrayElemAt: ["$primPeriod", 0] }
+        primPeriod: { $arrayElemAt: ["$primPeriod", 0] },
+        modificationHistory: {
+          $map: {
+            input: "$modificationHistory",
+            as: "mod",
+            in: {
+              $mergeObjects: [
+                "$$mod",
+                {
+                  modifiedBy: {
+                    $arrayElemAt: [
+                      "$modifiedByUsers",
+                      { $indexOfArray: ["$modifiedByUsers._id", "$$mod.modifiedBy"] }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    });
+    
+    // Remove the temporary field
+    pipeline.push({
+      $project: {
+        modifiedByUsers: 0
       }
     });
 
     const sales = await Sale.aggregate(pipeline);
+
+    // Debug: ModificationHistory populate kontrolü
+    console.log('🔍 Sales modificationHistory populate check:', {
+      totalSales: sales.length,
+      samplesWithHistory: sales.filter(s => s.modificationHistory?.length > 0).length
+    });
+    
+    // İlk satışın modificationHistory'sini detaylı logla
+    const firstSaleWithHistory = sales.find(s => s.modificationHistory?.length > 0);
+    if (firstSaleWithHistory) {
+      console.log('🔍 First sale with modification history:', {
+        customerName: firstSaleWithHistory.customerName,
+        modificationCount: firstSaleWithHistory.modificationHistory?.length,
+        firstModification: {
+          modifiedBy: firstSaleWithHistory.modificationHistory[0]?.modifiedBy,
+          modifiedByType: typeof firstSaleWithHistory.modificationHistory[0]?.modifiedBy,
+          modifiedByName: firstSaleWithHistory.modificationHistory[0]?.modifiedBy?.name,
+          modifiedAt: firstSaleWithHistory.modificationHistory[0]?.modifiedAt
+        }
+      });
+    }
 
     // Satış türü adlarını ve renklerini ekle
     const salesWithTypeNames = await Promise.all(sales.map(async (sale) => {

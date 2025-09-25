@@ -5,6 +5,26 @@ import { FiClock, FiUser, FiEdit, FiTrendingUp, FiTrendingDown, FiMapPin, FiCale
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
 const ModificationHistoryModal = ({ show, onHide, sale }) => {
+  // Debug log ekle
+  console.log('🔍 ModificationHistoryModal sale data:', {
+    customerName: sale?.customerName,
+    hasModificationHistory: !!sale?.modificationHistory,
+    modificationHistoryLength: sale?.modificationHistory?.length,
+    firstModification: sale?.modificationHistory?.[0]
+  });
+
+  if (sale?.modificationHistory?.length > 0) {
+    sale.modificationHistory.forEach((mod, i) => {
+      console.log(`🔍 Modification ${i+1}:`, {
+        modifiedBy: mod.modifiedBy,
+        modifiedByType: typeof mod.modifiedBy,
+        modifiedByName: mod.modifiedBy?.name,
+        modifiedByIsObject: typeof mod.modifiedBy === 'object',
+        modifiedAt: mod.modifiedAt
+      });
+    });
+  }
+
   if (!sale || !sale.modificationHistory || sale.modificationHistory.length === 0) {
     return (
       <Modal show={show} onHide={onHide} size="lg">

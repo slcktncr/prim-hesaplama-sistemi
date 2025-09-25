@@ -18,7 +18,8 @@ import {
   FiPhone, 
   FiMapPin, 
   FiRefreshCw,
-  FiClock
+  FiClock,
+  FiDownload
 } from 'react-icons/fi';
 
 import { salesAPI } from '../../utils/api';
@@ -90,6 +91,83 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
     return 'secondary';                     // Daha uzak - Gri
   };
 
+  const exportToCSV = () => {
+    if (!upcomingData || upcomingData.totalCount === 0) {
+      toast.warning('Export edilecek veri bulunamadı');
+      return;
+    }
+
+    // CSV başlıkları
+    const headers = [
+      'Giriş Tarihi',
+      'Müşteri Adı',
+      'Telefon',
+      'Konum',
+      'Liste Fiyatı',
+      'Aktivite Fiyatı',
+      'Temsilci',
+      'Sözleşme No',
+      'Satış Tarihi',
+      'Kapora Tarihi'
+    ];
+
+    // Tüm satışları tek bir diziye topla
+    const allSales = [];
+    upcomingData.sortedDates.forEach(dateStr => {
+      upcomingData.groupedByDate[dateStr].forEach(sale => {
+        allSales.push({
+          entryDate: dateStr,
+          customerName: sale.customerName || '',
+          phone: sale.customerPhone || '',
+          location: `${sale.blockNo || ''}/${sale.apartmentNo || ''}`,
+          listPrice: sale.listPrice || 0,
+          activityPrice: sale.activitySalePrice || 0,
+          salesperson: sale.salesperson?.name || '',
+          contractNo: sale.contractNo || '',
+          saleDate: sale.saleDate ? new Date(sale.saleDate).toLocaleDateString('tr-TR') : '',
+          kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toLocaleDateString('tr-TR') : ''
+        });
+      });
+    });
+
+    // CSV içeriği oluştur
+    const csvContent = [
+      headers.join(','),
+      ...allSales.map(sale => [
+        sale.entryDate,
+        `"${sale.customerName}"`,
+        sale.phone,
+        sale.location,
+        sale.listPrice,
+        sale.activityPrice,
+        `"${sale.salesperson}"`,
+        sale.contractNo,
+        sale.saleDate,
+        sale.kaporaDate
+      ].join(','))
+    ].join('\n');
+
+    // BOM ekle (Türkçe karakterler için)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Dosya adı oluştur
+    const today = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+    const filename = `yaklasan-girisler-${daysAhead}-gun-${today}.csv`;
+    
+    // İndir
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`${allSales.length} kayıt CSV olarak indirildi`);
+  };
+
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
@@ -120,7 +198,7 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
           <Col md={6}>
             <Form.Group>
               <Form.Label>&nbsp;</Form.Label>
-              <div>
+              <div className="d-flex gap-2">
                 <Button 
                   variant="outline-primary" 
                   onClick={fetchUpcomingEntries}
@@ -128,6 +206,15 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
                 >
                   <FiRefreshCw className={`me-2 ${loading ? 'spin' : ''}`} />
                   Yenile
+                </Button>
+                <Button 
+                  variant="outline-success" 
+                  onClick={exportToCSV}
+                  disabled={loading || !upcomingData || upcomingData.totalCount === 0}
+                  title="Listeyi CSV olarak indir"
+                >
+                  <FiDownload className="me-2" />
+                  Export
                 </Button>
               </div>
             </Form.Group>
@@ -161,7 +248,15 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
               <>
                 {/* Summary */}
                 <Alert variant="success">
-                  <strong>{upcomingData.totalCount} müşteri</strong> önümüzdeki {daysAhead} gün içinde giriş yapacak.
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{upcomingData.totalCount} müşteri</strong> önümüzdeki {daysAhead} gün içinde giriş yapacak.
+                    </div>
+                    <div className="text-muted small">
+                      <FiDownload className="me-1" />
+                      Export butonuna tıklayarak CSV olarak indirebilirsiniz
+                    </div>
+                  </div>
                 </Alert>
 
                 {/* Grouped by Date */}
