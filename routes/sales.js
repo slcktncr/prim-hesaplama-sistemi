@@ -1292,12 +1292,12 @@ router.put('/:id/cancel', auth, async (req, res) => {
     }
 
     // Zaten iptal edilmiş mi kontrol et
-    if (sale.isCancelled) {
+    if (sale.status === 'iptal') {
       return res.status(400).json({ message: 'Bu satış zaten iptal edilmiş' });
     }
 
+    sale.status = 'iptal'; // Status field'ını güncelle
     sale.isCancelled = true;
-    sale.status = 'iptal'; // Status field'ını da güncelle
     sale.cancelledAt = new Date();
     sale.cancelledBy = req.user._id;
     sale.updatedAt = new Date();
@@ -1338,12 +1338,12 @@ router.put('/:id/restore', auth, async (req, res) => {
     }
 
     // İptal edilmiş mi kontrol et
-    if (!sale.isCancelled) {
+    if (sale.status !== 'iptal') {
       return res.status(400).json({ message: 'Bu satış zaten aktif durumda' });
     }
 
+    sale.status = 'aktif'; // Status field'ını geri al
     sale.isCancelled = false;
-    sale.status = 'aktif'; // Status field'ını da geri al
     sale.cancelledAt = null;
     sale.cancelledBy = null;
     sale.updatedAt = new Date();

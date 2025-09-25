@@ -185,6 +185,10 @@ const saleSchema = new mongoose.Schema({
     enum: ['aktif', 'iptal'],
     default: 'aktif'
   },
+  isCancelled: {
+    type: Boolean,
+    default: false
+  },
   primStatus: {
     type: String,
     enum: ['ödenmedi', 'ödendi'],
