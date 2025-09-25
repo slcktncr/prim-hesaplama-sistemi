@@ -91,25 +91,11 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
     return 'secondary';                     // Daha uzak - Gri
   };
 
-  const exportToCSV = () => {
+  const exportToExcel = () => {
     if (!upcomingData || upcomingData.totalCount === 0) {
       toast.warning('Export edilecek veri bulunamadı');
       return;
     }
-
-    // CSV başlıkları
-    const headers = [
-      'Giriş Tarihi',
-      'Müşteri Adı',
-      'Telefon',
-      'Konum',
-      'Liste Fiyatı',
-      'Aktivite Fiyatı',
-      'Temsilci',
-      'Sözleşme No',
-      'Satış Tarihi',
-      'Kapora Tarihi'
-    ];
 
     // Tüm satışları tek bir diziye topla
     const allSales = [];
@@ -119,7 +105,8 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
           entryDate: dateStr,
           customerName: sale.customerName || '',
           phone: sale.customerPhone || '',
-          location: `${sale.blockNo || ''}/${sale.apartmentNo || ''}`,
+          blockNo: sale.blockNo || '',
+          apartmentNo: sale.apartmentNo || '',
           listPrice: sale.listPrice || 0,
           activityPrice: sale.activitySalePrice || 0,
           salesperson: sale.salesperson?.name || '',
@@ -130,32 +117,235 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
       });
     });
 
-    // CSV içeriği oluştur
-    const csvContent = [
-      headers.join(','),
-      ...allSales.map(sale => [
-        sale.entryDate,
-        `"${sale.customerName}"`,
-        sale.phone,
-        sale.location,
-        sale.listPrice,
-        sale.activityPrice,
-        `"${sale.salesperson}"`,
-        sale.contractNo,
-        sale.saleDate,
-        sale.kaporaDate
-      ].join(','))
-    ].join('\n');
+    // Profesyonel HTML tablosu oluştur
+    const today = new Date().toLocaleDateString('tr-TR');
+    const reportTitle = `Yaklaşan Girişler Raporu - ${daysAhead} Gün İçinde`;
+    
+    let htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${reportTitle}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              margin: 20px;
+              background-color: #f8f9fa;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding: 20px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              border-radius: 10px;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 600;
+            }
+            .header p {
+              margin: 10px 0 0 0;
+              font-size: 14px;
+              opacity: 0.9;
+            }
+            .summary {
+              background: white;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              text-align: center;
+            }
+            .summary-item {
+              display: inline-block;
+              margin: 0 20px;
+              padding: 10px 15px;
+              background: #e3f2fd;
+              border-radius: 6px;
+              border-left: 4px solid #2196f3;
+            }
+            .summary-item strong {
+              color: #1976d2;
+              font-size: 18px;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse;
+              background: white;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            th { 
+              background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+              color: white;
+              padding: 15px 12px;
+              text-align: left;
+              font-weight: 600;
+              font-size: 13px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+            }
+            td { 
+              padding: 12px;
+              border-bottom: 1px solid #e0e0e0;
+              font-size: 13px;
+              vertical-align: middle;
+            }
+            tr:nth-child(even) { 
+              background-color: #f8f9fa; 
+            }
+            tr:hover { 
+              background-color: #e3f2fd; 
+            }
+            .date-cell {
+              background: #fff3e0;
+              border-left: 4px solid #ff9800;
+              font-weight: 600;
+              color: #e65100;
+            }
+            .customer-cell {
+              font-weight: 600;
+              color: #1976d2;
+            }
+            .phone-cell {
+              color: #388e3c;
+              font-family: monospace;
+            }
+            .location-cell {
+              background: #f3e5f5;
+              color: #7b1fa2;
+              text-align: center;
+              font-weight: 500;
+            }
+            .price-cell {
+              text-align: right;
+              font-weight: 600;
+              color: #d32f2f;
+            }
+            .salesperson-cell {
+              background: #e8f5e8;
+              color: #2e7d32;
+              font-weight: 500;
+            }
+            .contract-cell {
+              font-family: monospace;
+              color: #5d4037;
+              text-align: center;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              color: #666;
+              font-size: 12px;
+              padding: 20px;
+              background: white;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .urgent { 
+              background: #ffebee !important; 
+              border-left: 4px solid #f44336;
+            }
+            .soon { 
+              background: #fff8e1 !important; 
+              border-left: 4px solid #ff9800;
+            }
+            .normal { 
+              background: #e8f5e8 !important; 
+              border-left: 4px solid #4caf50;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🏢 ${reportTitle}</h1>
+            <p>Rapor Tarihi: ${today} | Toplam Kayıt: ${allSales.length}</p>
+          </div>
+          
+          <div class="summary">
+            <div class="summary-item">
+              <div><strong>${upcomingData.totalCount}</strong></div>
+              <div>Toplam Müşteri</div>
+            </div>
+            <div class="summary-item">
+              <div><strong>${upcomingData.sortedDates.length}</strong></div>
+              <div>Farklı Gün</div>
+            </div>
+            <div class="summary-item">
+              <div><strong>${formatCurrency(allSales.reduce((sum, sale) => sum + sale.listPrice, 0))}</strong></div>
+              <div>Toplam Liste Fiyatı</div>
+            </div>
+          </div>
 
-    // BOM ekle (Türkçe karakterler için)
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+          <table>
+            <thead>
+              <tr>
+                <th>📅 Giriş Tarihi</th>
+                <th>👤 Müşteri Adı</th>
+                <th>📞 Telefon</th>
+                <th>📍 Blok</th>
+                <th>🏠 Daire</th>
+                <th>💰 Liste Fiyatı</th>
+                <th>🎯 Aktivite Fiyatı</th>
+                <th>👨‍💼 Temsilci</th>
+                <th>📄 Sözleşme No</th>
+                <th>📅 Satış Tarihi</th>
+                <th>💳 Kapora Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    // Satırları ekle
+    allSales.forEach((sale, index) => {
+      const today = new Date();
+      const [day, month] = sale.entryDate.split('/').map(Number);
+      const entryDate = new Date(today.getFullYear(), month - 1, day);
+      const diffDays = Math.ceil((entryDate - today) / (1000 * 60 * 60 * 24));
+      
+      let rowClass = 'normal';
+      if (diffDays <= 0) rowClass = 'urgent';
+      else if (diffDays <= 2) rowClass = 'soon';
+      
+      htmlContent += `
+        <tr class="${rowClass}">
+          <td class="date-cell">${sale.entryDate}</td>
+          <td class="customer-cell">${sale.customerName}</td>
+          <td class="phone-cell">${sale.phone}</td>
+          <td class="location-cell">${sale.blockNo}</td>
+          <td class="location-cell">${sale.apartmentNo}</td>
+          <td class="price-cell">${formatCurrency(sale.listPrice)}</td>
+          <td class="price-cell">${formatCurrency(sale.activityPrice)}</td>
+          <td class="salesperson-cell">${sale.salesperson}</td>
+          <td class="contract-cell">${sale.contractNo}</td>
+          <td>${sale.saleDate}</td>
+          <td>${sale.kaporaDate}</td>
+        </tr>`;
+    });
+
+    htmlContent += `
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            <p><strong>MOLA CRM Sistemi</strong> - Yaklaşan Girişler Raporu</p>
+            <p>Bu rapor ${today} tarihinde otomatik olarak oluşturulmuştur.</p>
+            <p style="margin-top: 10px;">
+              <span style="background: #ffebee; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">🔴 Bugün/Geçmiş</span>
+              <span style="background: #fff8e1; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">🟡 2 Gün İçinde</span>
+              <span style="background: #e8f5e8; padding: 4px 8px; border-radius: 4px;">🟢 Normal</span>
+            </p>
+          </div>
+        </body>
+      </html>`;
+
+    // Excel dosyası olarak indir
+    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const filename = `yaklasan-girisler-${daysAhead}-gun-${today.replace(/\./g, '-')}.xls`;
     
-    // Dosya adı oluştur
-    const today = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
-    const filename = `yaklasan-girisler-${daysAhead}-gun-${today}.csv`;
-    
-    // İndir
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -165,7 +355,7 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
     link.click();
     document.body.removeChild(link);
     
-    toast.success(`${allSales.length} kayıt CSV olarak indirildi`);
+    toast.success(`${allSales.length} kayıt Excel raporu olarak indirildi`);
   };
 
   return (
@@ -209,12 +399,12 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
                 </Button>
                 <Button 
                   variant="outline-success" 
-                  onClick={exportToCSV}
+                  onClick={exportToExcel}
                   disabled={loading || !upcomingData || upcomingData.totalCount === 0}
-                  title="Listeyi CSV olarak indir"
+                  title="Profesyonel Excel raporu olarak indir"
                 >
                   <FiDownload className="me-2" />
-                  Export
+                  Excel Raporu
                 </Button>
               </div>
             </Form.Group>
@@ -254,7 +444,7 @@ const UpcomingEntriesModal = ({ show, onHide }) => {
                     </div>
                     <div className="text-muted small">
                       <FiDownload className="me-1" />
-                      Export butonuna tıklayarak CSV olarak indirebilirsiniz
+                      Excel Raporu butonuna tıklayarak profesyonel rapor indirebilirsiniz
                     </div>
                   </div>
                 </Alert>
