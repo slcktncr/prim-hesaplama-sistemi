@@ -260,9 +260,33 @@ const saleSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
+    modificationType: {
+      type: String,
+      default: 'comprehensive_update'
+    },
     reason: {
       type: String,
       trim: true
+    },
+    // Prim farkı bilgileri
+    primDifference: {
+      type: Number,
+      default: 0
+    },
+    oldPrimAmount: {
+      type: Number,
+      default: 0
+    },
+    newPrimAmount: {
+      type: Number,
+      default: 0
+    },
+    // Değişiklik özeti
+    changesSummary: {
+      locationChange: String,
+      periodChange: String,
+      priceChange: String,
+      activityPriceChange: String
     },
     previousData: {
       blockNo: String,

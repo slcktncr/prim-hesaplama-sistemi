@@ -1837,21 +1837,32 @@ router.put('/transaction/:transactionId/period', [auth, adminAuth], [
 });
 
 // @route   PUT /api/sales/:id/modify
-// @desc    Satış modifikasyonu (fiyat değişikliği)
+// @desc    Satış modifikasyonu (tam güncelleme)
 // @access  Private
 router.put('/:id/modify', [
   auth,
-  body('modificationType').isIn(['price_increase', 'price_decrease', 'other']).withMessage('Geçerli bir modifikasyon türü seçiniz'),
-  body('newListPrice').isNumeric().withMessage('Yeni liste fiyatı sayısal olmalıdır'),
-  body('modificationReason').trim().isLength({ min: 1 }).withMessage('Modifikasyon nedeni gereklidir')
+  body('blockNo').optional().trim().isLength({ min: 1 }).withMessage('Blok no gereklidir'),
+  body('apartmentNo').optional().trim().isLength({ min: 1 }).withMessage('Daire no gereklidir'),
+  body('periodNo').optional().trim().isLength({ min: 1 }).withMessage('Dönem no gereklidir'),
+  body('listPrice').optional().isNumeric().withMessage('Liste fiyatı sayısal olmalıdır'),
+  body('activitySalePrice').optional().isNumeric().withMessage('Aktivite satış fiyatı sayısal olmalıdır'),
+  body('reason').trim().isLength({ min: 1 }).withMessage('Değişiklik nedeni gereklidir')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.log('❌ Modify validation errors:', errors.array());
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: errors.array(),
+        details: errors.array().map(err => `${err.param}: ${err.msg}`).join(', ')
+      });
     }
 
-    const { modificationType, newListPrice, modificationReason, newActivitySalePrice } = req.body;
+    const { 
+      blockNo, apartmentNo, periodNo, listPrice, discountRate, activitySalePrice, 
+      contractNo, saleDate, kaporaDate, entryDate, exitDate, reason 
+    } = req.body;
 
     const sale = await Sale.findById(req.params.id);
     if (!sale) {
@@ -1863,32 +1874,66 @@ router.put('/:id/modify', [
       return res.status(403).json({ message: 'Bu satışı modifiye etme yetkiniz yok' });
     }
 
-    const oldListPrice = sale.listPrice;
-    const oldActivitySalePrice = sale.activitySalePrice;
+    // Eski değerleri sakla
+    const oldValues = {
+      blockNo: sale.blockNo,
+      apartmentNo: sale.apartmentNo,
+      periodNo: sale.periodNo,
+      listPrice: sale.listPrice,
+      discountRate: sale.discountRate,
+      activitySalePrice: sale.activitySalePrice,
+      contractNo: sale.contractNo,
+      saleDate: sale.saleDate,
+      kaporaDate: sale.kaporaDate,
+      entryDate: sale.entryDate,
+      exitDate: sale.exitDate
+    };
 
-    // Modifikasyon geçmişi
-    sale.modificationHistory = sale.modificationHistory || [];
-    sale.modificationHistory.push({
-      modificationType,
-      oldListPrice,
-      newListPrice: parseFloat(newListPrice),
-      oldActivitySalePrice,
-      newActivitySalePrice: parseFloat(newActivitySalePrice) || 0,
-      reason: modificationReason,
-      modifiedBy: req.user._id,
-      modifiedAt: new Date()
+    // Yeni değerleri uygula (sadece gönderilen alanlar)
+    const updateData = {};
+    const allowedFields = [
+      'blockNo', 'apartmentNo', 'periodNo', 'listPrice', 'discountRate', 
+      'activitySalePrice', 'contractNo', 'saleDate', 'kaporaDate', 'entryDate', 'exitDate'
+    ];
+
+    // Prim yeniden hesaplanması gerekip gerekmediğini kontrol et
+    let needsPrimRecalculation = false;
+    const primAffectingFields = ['listPrice', 'discountRate', 'activitySalePrice'];
+
+    allowedFields.forEach(field => {
+      if (req.body.hasOwnProperty(field) && req.body[field] !== undefined) {
+        const newValue = typeof req.body[field] === 'string' ? req.body[field].trim() : req.body[field];
+        
+        // Değişiklik var mı kontrol et
+        if (sale[field] !== newValue) {
+          updateData[field] = newValue;
+          
+          // Prim hesaplamasını etkileyen alanlar değişti mi?
+          if (primAffectingFields.includes(field)) {
+            needsPrimRecalculation = true;
+          }
+        }
+      }
     });
 
-    // Yeni fiyatları uygula
-    sale.listPrice = parseFloat(newListPrice);
-    if (newActivitySalePrice) {
-      sale.activitySalePrice = parseFloat(newActivitySalePrice);
-    }
+    // Güncelleme verilerini uygula
+    Object.keys(updateData).forEach(key => {
+      if (key === 'listPrice' || key === 'discountRate' || key === 'activitySalePrice') {
+        sale[key] = parseFloat(updateData[key]) || 0;
+      } else {
+        sale[key] = updateData[key];
+      }
+    });
 
-    // Prim yeniden hesaplama (kapora değilse)
-    if (!isKaporaType(sale.saleType)) {
+    // Prim farkı hesaplama ve PrimTransaction oluşturma
+    let primDifference = 0;
+    let oldPrimAmount = oldValues.primAmount || 0;
+    let newPrimAmount = oldPrimAmount;
+
+    // Prim yeniden hesaplama (kapora değilse ve fiyat değişikliği varsa)
+    if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
       const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (currentPrimRate) {
+      if (currentPrimRate) {
         const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
         const discountRateNum = parseFloat(sale.discountRate) || 0;
         const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
@@ -1905,12 +1950,80 @@ router.put('/:id/modify', [
         if (activitySalePriceNum > 0) validPrices.push(activitySalePriceNum);
 
         const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-        const primAmount = basePrimPrice * (currentPrimRate.rate / 100);
+        newPrimAmount = basePrimPrice * (currentPrimRate.rate / 100);
+
+        // Prim farkını hesapla
+        primDifference = newPrimAmount - oldPrimAmount;
+
+        console.log('💰 Modify Prim calculation:', {
+          basePrimPrice,
+          systemRate: currentPrimRate.rate,
+          oldPrimAmount,
+          newPrimAmount,
+          primDifference,
+          validPrices
+        });
 
         sale.primRate = currentPrimRate.rate;
         sale.basePrimPrice = basePrimPrice;
-        sale.primAmount = primAmount;
+        sale.primAmount = newPrimAmount;
       }
+    }
+
+    // Detaylı modifikasyon geçmişi
+    const modificationEntry = {
+      modificationType: 'comprehensive_update',
+      previousData: oldValues,
+      newData: updateData,
+      primDifference: primDifference,
+      oldPrimAmount: oldPrimAmount,
+      newPrimAmount: newPrimAmount,
+      reason: reason,
+      modifiedBy: req.user._id,
+      modifiedAt: new Date(),
+      // Değişiklik özeti
+      changesSummary: {
+        locationChange: (oldValues.blockNo !== sale.blockNo || oldValues.apartmentNo !== sale.apartmentNo) ? 
+          `${oldValues.blockNo}/${oldValues.apartmentNo} → ${sale.blockNo}/${sale.apartmentNo}` : null,
+        periodChange: oldValues.periodNo !== sale.periodNo ? 
+          `Dönem ${oldValues.periodNo} → ${sale.periodNo}` : null,
+        priceChange: oldValues.listPrice !== sale.listPrice ? 
+          `Liste: ${oldValues.listPrice} → ${sale.listPrice} TL` : null,
+        activityPriceChange: oldValues.activitySalePrice !== sale.activitySalePrice ? 
+          `Aktivite: ${oldValues.activitySalePrice} → ${sale.activitySalePrice} TL` : null
+      }
+    };
+
+    sale.modificationHistory = sale.modificationHistory || [];
+    sale.modificationHistory.push(modificationEntry);
+    sale.isModified = true; // Değişiklik yapıldığını işaretle
+
+    // PrimTransaction oluştur (prim farkı varsa ve temsilciye prim ödenmişse)
+    if (primDifference !== 0 && sale.primStatus === 'ödendi') {
+      const PrimTransaction = require('../models/PrimTransaction');
+      
+      const transactionType = primDifference > 0 ? 'kazanç' : 'kesinti';
+      const absoluteAmount = Math.abs(primDifference);
+      
+      const primTransaction = new PrimTransaction({
+        salesperson: sale.salesperson,
+        sale: sale._id,
+        primPeriod: sale.primPeriod,
+        transactionType: transactionType,
+        amount: absoluteAmount,
+        description: `Satış değişikliği prim farkı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`,
+        status: 'onaylandı',
+        deductionStatus: transactionType === 'kesinti' ? 'beklemede' : undefined,
+        createdBy: req.user._id
+      });
+
+      await primTransaction.save();
+
+      console.log(`💳 PrimTransaction oluşturuldu: ${transactionType} - ${absoluteAmount} TL`, {
+        salesperson: sale.salesperson,
+        sale: sale._id,
+        primDifference
+      });
     }
 
     sale.updatedAt = new Date();
@@ -1922,14 +2035,65 @@ router.put('/:id/modify', [
       .populate('modificationHistory.modifiedBy', 'name email');
 
 
+    // Response mesajı oluştur
+    let responseMessage = 'Satış başarıyla güncellendi';
+    const changes = [];
+    
+    // Değişiklikleri özetle
+    if (modificationEntry.changesSummary.locationChange) {
+      changes.push(`Konum: ${modificationEntry.changesSummary.locationChange}`);
+    }
+    if (modificationEntry.changesSummary.periodChange) {
+      changes.push(modificationEntry.changesSummary.periodChange);
+    }
+    if (modificationEntry.changesSummary.priceChange) {
+      changes.push(modificationEntry.changesSummary.priceChange);
+    }
+    if (modificationEntry.changesSummary.activityPriceChange) {
+      changes.push(modificationEntry.changesSummary.activityPriceChange);
+    }
+    
+    if (primDifference !== 0) {
+      const primChangeText = primDifference > 0 ? 
+        `+${primDifference.toFixed(2)} TL prim artışı` : 
+        `${primDifference.toFixed(2)} TL prim azalışı`;
+      changes.push(primChangeText);
+    }
+
+    if (changes.length > 0) {
+      responseMessage += `. Değişiklikler: ${changes.join(', ')}`;
+    }
+
     res.json({
-      message: 'Satış başarıyla modifiye edildi',
-      sale: updatedSale
+      message: responseMessage,
+      sale: updatedSale,
+      modificationSummary: {
+        modifiedFields: Object.keys(updateData),
+        changes: changes,
+        primDifference: primDifference,
+        primTransactionCreated: primDifference !== 0 && sale.primStatus === 'ödendi',
+        changesSummary: modificationEntry.changesSummary
+      }
     });
 
   } catch (error) {
     console.error('Sale modification error:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    console.error('Error stack:', error.stack);
+    
+    // Validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Doğrulama hatası',
+        errors: validationErrors,
+        details: validationErrors.join(', ')
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Sunucu hatası',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
