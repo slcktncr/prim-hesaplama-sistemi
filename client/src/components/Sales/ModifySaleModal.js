@@ -221,6 +221,9 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
       
       console.log('🔄 Sale modification response:', response);
       console.log('🔄 Updated sale data:', response.data?.sale);
+      console.log('🔄 Updated listPrice:', response.data?.sale?.listPrice);
+      console.log('🔄 Updated originalListPrice:', response.data?.sale?.originalListPrice);
+      console.log('🔄 Updated activitySalePrice:', response.data?.sale?.activitySalePrice);
       
       toast.success('Satış başarıyla güncellendi');
       onModified();

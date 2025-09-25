@@ -1985,9 +1985,14 @@ router.put('/:id/modify', [
     });
 
     // Güncelleme verilerini uygula
+    console.log('🔧 UpdateData keys:', Object.keys(updateData));
+    console.log('🔧 UpdateData:', updateData);
+    
     Object.keys(updateData).forEach(key => {
       if (key === 'listPrice' || key === 'discountRate' || key === 'activitySalePrice') {
+        const oldValue = sale[key];
         sale[key] = parseFloat(updateData[key]) || 0;
+        console.log(`📝 Updated ${key}: ${oldValue} → ${sale[key]}`);
         
         // ListPrice değişirse originalListPrice'ı da güncelle
         if (key === 'listPrice') {
@@ -1997,6 +2002,12 @@ router.put('/:id/modify', [
       } else {
         sale[key] = updateData[key];
       }
+    });
+    
+    console.log('🔧 Final sale values:', {
+      listPrice: sale.listPrice,
+      originalListPrice: sale.originalListPrice,
+      activitySalePrice: sale.activitySalePrice
     });
 
     // Prim farkı hesaplama ve PrimTransaction oluşturma
@@ -2203,6 +2214,15 @@ router.put('/:id/modify', [
     if (changes.length > 0) {
       responseMessage += `. Değişiklikler: ${changes.join(', ')}`;
     }
+
+    console.log('📤 Sending modify response:', {
+      saleId: updatedSale._id,
+      customerName: updatedSale.customerName,
+      listPrice: updatedSale.listPrice,
+      originalListPrice: updatedSale.originalListPrice,
+      activitySalePrice: updatedSale.activitySalePrice,
+      primAmount: updatedSale.primAmount
+    });
 
     res.json({
       message: responseMessage,

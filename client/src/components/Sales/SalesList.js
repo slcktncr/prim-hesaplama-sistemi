@@ -117,6 +117,19 @@ const SalesList = () => {
       console.log('📋 Sales fetch response:', response.data);
       console.log('📋 First sale in response:', response.data.sales?.[0]);
       console.log('📋 First sale modificationHistory:', response.data.sales?.[0]?.modificationHistory);
+      
+      // DENEME DENEME satışını özellikle logla
+      const denemeUser = response.data.sales?.find(s => s.customerName === 'DENEME DENEME');
+      if (denemeUser) {
+        console.log('🎯 DENEME DENEME satışı detayları:', {
+          listPrice: denemeUser.listPrice,
+          originalListPrice: denemeUser.originalListPrice,
+          activitySalePrice: denemeUser.activitySalePrice,
+          primAmount: denemeUser.primAmount,
+          hasModifications: denemeUser.hasModifications,
+          modificationHistory: denemeUser.modificationHistory
+        });
+      }
       setSales(response.data.sales || []);
       setPagination({
         totalPages: response.data.totalPages || 1,
