@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { Modal, Form, Button, Row, Col, Alert, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FiEdit, FiSave, FiX } from 'react-icons/fi';
 
 import { salesAPI, primsAPI } from '../../utils/api';
 import { formatCurrency } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 
 const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role && user.role.name === 'admin';
+  
   const [formData, setFormData] = useState({
     blockNo: '',
     apartmentNo: '',
@@ -22,7 +26,10 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
     reason: ''
   });
   const [primRate, setPrimRate] = useState(0);
+  const [customPrimRate, setCustomPrimRate] = useState('');
+  const [useCustomPrimRate, setUseCustomPrimRate] = useState(false);
   const [calculatedPrim, setCalculatedPrim] = useState(0);
+  const [primDifference, setPrimDifference] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -48,7 +55,7 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
 
   useEffect(() => {
     calculatePrim();
-  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate]);
+  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate, customPrimRate, useCustomPrimRate]);
 
   const fetchPrimRate = async () => {
     try {
@@ -66,6 +73,7 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
 
     if (listPrice === 0) {
       setCalculatedPrim(0);
+      setPrimDifference(0);
       return;
     }
 
@@ -77,9 +85,19 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
     // En düşük fiyatı bul
     const basePrimPrice = Math.min(discountedListPrice, activitySalePrice || discountedListPrice);
 
-    // Prim tutarını hesapla
-    const primAmount = basePrimPrice * (primRate / 100);
-    setCalculatedPrim(primAmount);
+    // Prim oranını belirle (admin özel oran kullanabilir)
+    const effectivePrimRate = useCustomPrimRate && isAdmin && customPrimRate ? 
+      parseFloat(customPrimRate) : 
+      primRate;
+
+    // Yeni prim tutarını hesapla
+    const newPrimAmount = basePrimPrice * (effectivePrimRate / 100);
+    setCalculatedPrim(newPrimAmount);
+
+    // Prim farkını hesapla (eski prim ile karşılaştır)
+    const oldPrimAmount = sale?.primAmount || 0;
+    const difference = newPrimAmount - oldPrimAmount;
+    setPrimDifference(difference);
   };
 
   const handleInputChange = (field, value) => {
@@ -217,6 +235,11 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
         activitySalePrice: parseFloat(formData.activitySalePrice)
       };
 
+      // Admin özel prim oranı kullanıyorsa ekle
+      if (useCustomPrimRate && isAdmin && customPrimRate) {
+        modificationData.customPrimRate = parseFloat(customPrimRate);
+      }
+
       const response = await salesAPI.modifySale(sale._id, modificationData);
       
       console.log('🔄 Sale modification response:', response);
@@ -271,6 +294,21 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
             <Alert variant="info" className="mb-4">
               <strong>Değişiklik Yapılacak Satış:</strong><br />
               {sale.customerName} - {sale.blockNo}/{sale.apartmentNo} - Dönem: {sale.periodNo}
+              <hr className="my-2" />
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Mevcut Prim Oranı:</strong> %{primRate}
+                  <br />
+                  <small className="text-muted">Ek prim/kesinti hesaplamasında kullanılacak oran</small>
+                </div>
+                <div className="text-end">
+                  <strong>Mevcut Prim:</strong> {formatCurrency(sale.primAmount || 0)}
+                  <br />
+                  <Badge bg={sale.primStatus === 'ödendi' ? 'success' : 'warning'}>
+                    {sale.primStatus}
+                  </Badge>
+                </div>
+              </div>
             </Alert>
           )}
 
@@ -535,18 +573,69 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
             </Form.Control.Feedback>
           </Form.Group>
 
+          {/* Admin Özel Prim Oranı */}
+          {isAdmin && (
+            <Row className="mb-3">
+              <Col>
+                <Form.Check
+                  type="checkbox"
+                  label="Özel Prim Oranı Kullan"
+                  checked={useCustomPrimRate}
+                  onChange={(e) => setUseCustomPrimRate(e.target.checked)}
+                  className="mb-2"
+                />
+                {useCustomPrimRate && (
+                  <Form.Group>
+                    <Form.Label>Özel Prim Oranı (%)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={customPrimRate}
+                      onChange={(e) => setCustomPrimRate(e.target.value)}
+                      placeholder="Örn: 8.5"
+                    />
+                    <Form.Text className="text-muted">
+                      Sistem oranı: %{primRate} | Bu değişiklik sadece ek prim/kesinti hesaplamasında kullanılır
+                    </Form.Text>
+                  </Form.Group>
+                )}
+              </Col>
+            </Row>
+          )}
+
           {/* Prim Hesaplama Önizlemesi */}
-          <Alert variant="success" className="mb-0">
+          <Alert variant={primDifference >= 0 ? "success" : "warning"} className="mb-0">
             <div className="d-flex justify-content-between align-items-center">
               <span><strong>Yeni Prim Tutarı:</strong></span>
               <span className="h5 mb-0">{formatCurrency(calculatedPrim)}</span>
             </div>
+            
+            {/* Prim Farkı Gösterimi */}
+            {sale?.primAmount && (
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <span>Mevcut Prim:</span>
+                <span>{formatCurrency(sale.primAmount)}</span>
+              </div>
+            )}
+            
+            {primDifference !== 0 && (
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <span><strong>Prim Farkı:</strong></span>
+                <span className={`h6 mb-0 ${primDifference > 0 ? 'text-success' : 'text-danger'}`}>
+                  {primDifference > 0 ? '+' : ''}{formatCurrency(primDifference)}
+                </span>
+              </div>
+            )}
+            
             <small className="text-muted">
-              Prim Oranı: %{primRate} | 
+              Prim Oranı: %{useCustomPrimRate && isAdmin && customPrimRate ? customPrimRate : primRate}
+              {useCustomPrimRate && isAdmin && customPrimRate && ` (Özel Oran)`} | 
               {formData.discountRate > 0 && ` İndirimli Liste: ${formatCurrency((parseFloat(formData.listPrice) || 0) * (1 - (parseFloat(formData.discountRate) || 0) / 100))} |`}
               {` Base Prim: ${formatCurrency(Math.min(
-                formData.discountRate > 0 ? 
-                  (parseFloat(formData.listPrice) || 0) * (1 - (parseFloat(formData.discountRate) || 0) / 100) : 
+                formData.discountRate > 0 ?
+                  (parseFloat(formData.listPrice) || 0) * (1 - (parseFloat(formData.discountRate) || 0) / 100) :
                   (parseFloat(formData.listPrice) || 0),
                 parseFloat(formData.activitySalePrice) || (parseFloat(formData.listPrice) || 0)
               ))}`}

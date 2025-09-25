@@ -678,10 +678,36 @@ const SalesList = () => {
                               // Kapora ise prim yok
                               if (sale.saleType === 'kapora') return 0;
                               
-                              // Mevcut prim tutarını kullan (backend'den güncel)
+                              // Değişiklik varsa ve prim ödendiyse, yeni prim tutarını hesapla
+                              if (sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0) {
+                                const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
+                                if (lastModification.primDifference && lastModification.primDifference !== 0) {
+                                  // Yeni prim tutarı = eski prim + fark
+                                  const oldPrimAmount = lastModification.oldPrimAmount || 0;
+                                  const newPrimAmount = oldPrimAmount + lastModification.primDifference;
+                                  return newPrimAmount;
+                                }
+                              }
+                              
+                              // Normal durum - mevcut prim tutarı
                               return sale.primAmount || 0;
                             })())}
                           </div>
+                          
+                          {/* Prim Türü Gösterimi */}
+                          {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
+                            (() => {
+                              const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
+                              if (lastModification.primDifference && lastModification.primDifference !== 0 && sale.primStatus === 'ödendi') {
+                                return (
+                                  <small className="text-muted">
+                                    (Yeni Prim Tutarı)
+                                  </small>
+                                );
+                              }
+                              return null;
+                            })()
+                          )}
                           
                           {/* Prim Durumu Badge */}
                           <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
@@ -692,20 +718,30 @@ const SalesList = () => {
                           {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
                             (() => {
                               const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
-                              if (lastModification.primDifference && lastModification.primDifference !== 0 && sale.primStatus === 'ödendi') {
+                              if (lastModification.primDifference && lastModification.primDifference !== 0) {
                                 return (
                                   <div className="mt-1">
-                                    <small className="text-muted">
-                                      Önceki Prim: {formatCurrency(lastModification.oldPrimAmount || 0)}
-                                    </small>
-                                    <br />
-                                    {lastModification.primDifference > 0 ? (
-                                      <small className="text-success">
-                                        <strong>Ek Prim: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
-                                      </small>
+                                    {sale.primStatus === 'ödendi' ? (
+                                      // Prim ödendi durumu - ödenen miktar sabit, yeni hesaplama göster
+                                      <>
+                                        <small className="text-muted">
+                                          Ödenen: {formatCurrency(lastModification.oldPrimAmount || 0)}
+                                        </small>
+                                        <br />
+                                        {lastModification.primDifference > 0 ? (
+                                          <small className="text-info">
+                                            <strong>Bekleyen Ödeme: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                          </small>
+                                        ) : (
+                                          <small className="text-warning">
+                                            <strong>Bekleyen Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                          </small>
+                                        )}
+                                      </>
                                     ) : (
-                                      <small className="text-warning">
-                                        <strong>Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                      // Prim ödenmedi durumu - sadece yeni prim tutarı
+                                      <small className="text-muted">
+                                        Güncellenmiş prim tutarı
                                       </small>
                                     )}
                                   </div>

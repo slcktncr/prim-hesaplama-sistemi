@@ -2035,7 +2035,12 @@ router.put('/:id/modify', [
         if (activitySalePriceNum > 0) validPrices.push(activitySalePriceNum);
 
         const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-        newPrimAmount = basePrimPrice * (currentPrimRate.rate / 100);
+        
+        // Admin özel prim oranı kontrolü
+        const customPrimRate = parseFloat(req.body.customPrimRate) || 0;
+        const effectivePrimRate = customPrimRate > 0 ? customPrimRate : currentPrimRate.rate;
+        
+        newPrimAmount = basePrimPrice * (effectivePrimRate / 100);
 
         // Prim farkını hesapla
         primDifference = newPrimAmount - oldPrimAmount;
@@ -2043,6 +2048,8 @@ router.put('/:id/modify', [
         console.log('💰 Modify Prim calculation:', {
           basePrimPrice,
           systemRate: currentPrimRate.rate,
+          customPrimRate,
+          effectivePrimRate,
           oldPrimAmount,
           newPrimAmount,
           primDifference,
@@ -2107,10 +2114,14 @@ router.put('/:id/modify', [
       let transactionType, transactionDescription, transactionStatus, deductionStatus;
       const absoluteAmount = Math.abs(primDifference);
       
+      // Özel prim oranı kullanıldı mı?
+      const customPrimRate = parseFloat(req.body.customPrimRate) || 0;
+      const rateInfo = customPrimRate > 0 ? ` (Özel oran: %${customPrimRate})` : ` (Sistem oran: %${currentPrimRate.rate})`;
+      
       if (primDifference > 0) {
         // Prim artışı - temsilcinin alacak bakiyesine eklenmeli
         transactionType = 'kazanç';
-        transactionDescription = `Satış değişikliği prim artışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`;
+        transactionDescription = `Satış değişikliği prim artışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo})${rateInfo} - ${reason}`;
         transactionStatus = 'beklemede'; // Ödenmesi bekleniyor
         deductionStatus = undefined;
         
@@ -2118,7 +2129,7 @@ router.put('/:id/modify', [
       } else {
         // Prim azalışı - temsilci borçlanmalı
         transactionType = 'kesinti';
-        transactionDescription = `Satış değişikliği prim azalışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`;
+        transactionDescription = `Satış değişikliği prim azalışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo})${rateInfo} - ${reason}`;
         transactionStatus = 'onaylandı'; // Kesinti otomatik onaylanır
         deductionStatus = 'beklemede'; // Kesinti beklemede
         
