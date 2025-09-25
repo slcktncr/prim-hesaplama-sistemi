@@ -167,6 +167,10 @@ const PrimEarnings = () => {
     return (earnings || []).reduce((sum, earning) => sum + (earning?.transactionCount || 0), 0);
   };
 
+  const calculateTotalPendingEarnings = () => {
+    return (earnings || []).reduce((sum, earning) => sum + (earning?.pendingEarnings || 0), 0);
+  };
+
   const getEarningsBadgeVariant = (amount) => {
     if (amount > 0) return 'success';
     if (amount < 0) return 'danger';
@@ -372,9 +376,9 @@ const PrimEarnings = () => {
             <Card className="text-center">
               <Card.Body>
                 <div className="h4 text-warning mb-1">
-                  {earnings.length}
+                  {formatCurrency(calculateTotalPendingEarnings())}
                 </div>
-                <div className="text-muted small">Toplam Kayıt</div>
+                <div className="text-muted small">Bekleyen Ek Ödeme</div>
               </Card.Body>
             </Card>
           </Col>
@@ -546,11 +550,59 @@ const PrimEarnings = () => {
                         <div className="small text-muted">
                           {earning.totalEarnings >= 0 ? 'Net Hakediş' : 'Net Borç'}
                         </div>
-                        <div className="small text-info">
-                          <div>Satış: {formatCurrency(earning.salesEarnings || 0)}</div>
-                          {earning.pendingEarnings > 0 && (
-                            <div className="text-warning">Bekleyen: +{formatCurrency(earning.pendingEarnings)}</div>
+                        
+                        {/* Hakediş Detayları */}
+                        <div className="small mt-2">
+                          <div className="d-flex justify-content-between mb-1">
+                            <span className="text-muted">Satış Primi:</span>
+                            <span className="text-primary">{formatCurrency(earning.salesEarnings || 0)}</span>
+                          </div>
+                          
+                          {earning.additionalEarnings > 0 && (
+                            <div className="d-flex justify-content-between mb-1">
+                              <span className="text-success">Ek Prim (Ödendi):</span>
+                              <span className="text-success">+{formatCurrency(earning.additionalEarnings)}</span>
+                            </div>
                           )}
+                          
+                          {earning.pendingEarnings > 0 && (
+                            <div className="d-flex justify-content-between mb-1">
+                              <span className="text-warning">
+                                <FiClock size={12} className="me-1" />
+                                Bekleyen Ek Ödeme:
+                              </span>
+                              <span className="text-warning fw-bold">+{formatCurrency(earning.pendingEarnings)}</span>
+                            </div>
+                          )}
+                          
+                          {earning.deductions > 0 && (
+                            <div className="d-flex justify-content-between mb-1">
+                              <span className="text-danger">Kesinti (Yapıldı):</span>
+                              <span className="text-danger">-{formatCurrency(earning.deductions)}</span>
+                            </div>
+                          )}
+                          
+                          {earning.pendingDeductions > 0 && (
+                            <div className="d-flex justify-content-between mb-1">
+                              <span className="text-warning">
+                                <FiClock size={12} className="me-1" />
+                                Bekleyen Kesinti:
+                              </span>
+                              <span className="text-warning fw-bold">-{formatCurrency(earning.pendingDeductions)}</span>
+                            </div>
+                          )}
+                          
+                          {/* Net Hesaplama Gösterimi */}
+                          {(earning.pendingEarnings > 0 || earning.pendingDeductions > 0 || earning.additionalEarnings > 0 || earning.deductions > 0) && (
+                            <hr className="my-2" style={{margin: '8px 0'}} />
+                          )}
+                          
+                          <div className="d-flex justify-content-between">
+                            <span className="fw-bold text-dark">Toplam Hakediş:</span>
+                            <span className={`fw-bold ${earning.totalEarnings >= 0 ? 'text-success' : 'text-danger'}`}>
+                              {formatCurrency(earning.totalEarnings || 0)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </td>
