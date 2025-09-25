@@ -1109,16 +1109,36 @@ router.get('/earnings-v2', auth, async (req, res) => {
     // 2. PrimTransaction'ları Getir
     let primTransactionQuery = { ...salespersonQuery };
     
-    if (Object.keys(dateQuery).length > 0) {
-      primTransactionQuery.createdAt = dateQuery;
-    }
+    console.log('🔍 PrimTransaction query before date filter:', primTransactionQuery);
 
+    // PrimTransaction'ları Sale ile join ederek satış tarihine göre filtrele
     const primTransactions = await PrimTransaction.aggregate([
       { $match: primTransactionQuery },
+      // Sale bilgilerini getir
+      {
+        $lookup: {
+          from: 'sales',
+          localField: 'sale',
+          foreignField: '_id',
+          as: 'saleInfo'
+        }
+      },
       {
         $addFields: {
-          transactionYear: { $year: '$createdAt' },
-          transactionMonth: { $month: '$createdAt' }
+          saleInfo: { $arrayElemAt: ['$saleInfo', 0] }
+        }
+      },
+      // Tarih filtresi varsa satış tarihine göre filtrele
+      ...(Object.keys(dateQuery).length > 0 ? [{
+        $match: {
+          'saleInfo.saleDate': dateQuery
+        }
+      }] : []),
+      {
+        $addFields: {
+          // Satış tarihinden yıl ve ay çıkar (PrimTransaction'ın tarihinden değil)
+          transactionYear: { $year: '$saleInfo.saleDate' },
+          transactionMonth: { $month: '$saleInfo.saleDate' }
         }
       },
       {
@@ -1136,6 +1156,21 @@ router.get('/earnings-v2', auth, async (req, res) => {
         }
       }
     ]);
+
+    console.log('📊 Sales earnings count:', salesEarnings.length);
+    console.log('📊 PrimTransactions count:', primTransactions.length);
+    
+    // Debug: PrimTransaction detayları
+    console.log('🔍 PrimTransactions details:', primTransactions.map(pt => ({
+      salesperson: pt._id.salesperson,
+      year: pt._id.year,
+      month: pt._id.month,
+      type: pt._id.transactionType,
+      status: pt._id.status,
+      deductionStatus: pt._id.deductionStatus,
+      amount: pt.amount,
+      count: pt.count
+    })));
 
     // 3. Sonuçları Birleştir
     const earningsMap = new Map();
@@ -1205,7 +1240,17 @@ router.get('/earnings-v2', auth, async (req, res) => {
       try {
         const user = await User.findById(earning.salesperson).select('name email');
         
-        const totalEarnings = earning.salesEarnings + earning.additionalEarnings - earning.deductions;
+        // Bekleyen primler de hakediş hesabına dahil edilmeli
+        const totalEarnings = earning.salesEarnings + earning.additionalEarnings + earning.pendingEarnings - earning.deductions - earning.pendingDeductions;
+        
+        console.log(`💰 ${user?.name} - ${earning.month}/${earning.year}:`, {
+          salesEarnings: earning.salesEarnings,
+          additionalEarnings: earning.additionalEarnings,
+          pendingEarnings: earning.pendingEarnings,
+          deductions: earning.deductions,
+          pendingDeductions: earning.pendingDeductions,
+          totalEarnings
+        });
         
         finalEarnings.push({
           salesperson: user,
