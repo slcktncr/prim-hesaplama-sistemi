@@ -116,6 +116,7 @@ const SalesList = () => {
       const response = await salesAPI.getSales(params);
       console.log('📋 Sales fetch response:', response.data);
       console.log('📋 First sale in response:', response.data.sales?.[0]);
+      console.log('📋 First sale modificationHistory:', response.data.sales?.[0]?.modificationHistory);
       setSales(response.data.sales || []);
       setPagination({
         totalPages: response.data.totalPages || 1,
@@ -643,29 +644,48 @@ const SalesList = () => {
                       </td>
                       <td>
                         <div>
+                          {/* Güncel Prim Tutarı */}
                           <div className="fw-bold text-success">
                             {formatCurrency((() => {
                               // Kapora ise prim yok
                               if (sale.saleType === 'kapora') return 0;
                               
-                              // Gerçek zamanlı prim hesaplama
-                              const originalListPrice = sale.originalListPrice || sale.listPrice || 0;
-                              const discountedPrice = sale.discountedListPrice || (sale.discountRate > 0 ? originalListPrice * (1 - sale.discountRate / 100) : 0);
-                              const activityPrice = sale.activitySalePrice || 0;
-                              const primRate = sale.primRate || 1; // Default %1
-                              
-                              const validPrices = [];
-                              if (originalListPrice > 0) validPrices.push(originalListPrice);
-                              if (discountedPrice > 0) validPrices.push(discountedPrice);
-                              if (activityPrice > 0) validPrices.push(activityPrice);
-                              
-                              const basePrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-                              return basePrice * (primRate / 100); // Doğru hesaplama
+                              // Mevcut prim tutarını kullan (backend'den güncel)
+                              return sale.primAmount || 0;
                             })())}
                           </div>
+                          
+                          {/* Prim Durumu Badge */}
                           <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
                             {sale.primStatus}
                           </Badge>
+                          
+                          {/* Değişiklik Geçmişi Varsa Ek Bilgi Göster */}
+                          {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
+                            (() => {
+                              const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
+                              if (lastModification.primDifference && lastModification.primDifference !== 0 && sale.primStatus === 'ödendi') {
+                                return (
+                                  <div className="mt-1">
+                                    <small className="text-muted">
+                                      Önceki Prim: {formatCurrency(lastModification.oldPrimAmount || 0)}
+                                    </small>
+                                    <br />
+                                    {lastModification.primDifference > 0 ? (
+                                      <small className="text-success">
+                                        <strong>Ek Prim: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                      </small>
+                                    ) : (
+                                      <small className="text-warning">
+                                        <strong>Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                      </small>
+                                    )}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()
+                          )}
                         </div>
                       </td>
                       <td>

@@ -1988,6 +1988,12 @@ router.put('/:id/modify', [
     Object.keys(updateData).forEach(key => {
       if (key === 'listPrice' || key === 'discountRate' || key === 'activitySalePrice') {
         sale[key] = parseFloat(updateData[key]) || 0;
+        
+        // ListPrice değişirse originalListPrice'ı da güncelle
+        if (key === 'listPrice') {
+          sale.originalListPrice = parseFloat(updateData[key]) || 0;
+          console.log(`📝 Updated originalListPrice: ${sale.originalListPrice}`);
+        }
       } else {
         sale[key] = updateData[key];
       }
