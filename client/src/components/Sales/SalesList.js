@@ -769,9 +769,9 @@ const SalesList = () => {
                               </Dropdown.Item>
                             )}
 
-                            {/* Değişiklik Geçmişi - Sadece değiştirilmiş satışlar için */}
-                            {sale.isModified && (
-                              <Dropdown.Item 
+                            {/* Değişiklik Geçmişi - Admin tüm değişiklikleri, kullanıcı sadece kendi değişikliklerini görebilir */}
+                            {sale.isModified && (isAdmin || sale.salesperson?._id === user?._id) && (
+                              <Dropdown.Item
                                 onClick={() => openHistoryModal(sale)}
                                 className="text-info"
                               >

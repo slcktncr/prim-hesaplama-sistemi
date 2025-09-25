@@ -2051,7 +2051,15 @@ router.put('/:id/modify', [
 
         sale.primRate = currentPrimRate.rate;
         sale.basePrimPrice = basePrimPrice;
-        sale.primAmount = newPrimAmount;
+        
+        // Eğer prim ödenmemişse, yeni prim tutarını güncelle
+        // Eğer prim ödenmişse, eski prim tutarı sabit kalır, fark PrimTransaction'da takip edilir
+        if (sale.primStatus !== 'ödendi') {
+          sale.primAmount = newPrimAmount;
+          console.log('💰 Prim ödenmediği için primAmount güncellendi:', newPrimAmount);
+        } else {
+          console.log('💰 Prim ödendi, primAmount sabit kalıyor:', sale.primAmount, 'Fark:', primDifference);
+        }
       }
     }
 
