@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FiCheckCircle, FiClock, FiUser } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { validateEmail, validateRequired, validateMinLength } from '../../utils/helpers';
 import DeveloperSignature from '../Common/DeveloperSignature';
@@ -15,8 +16,11 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
 
   const { register, error, clearErrors } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     clearErrors();
@@ -75,11 +79,87 @@ const Register = () => {
     setLoading(false);
 
     if (result.success) {
-      toast.success('Başarıyla kayıt oldunuz!');
+      setRegistrationSuccess(true);
+      setRegistrationData(result.data);
+      
+      // 5 saniye sonra login sayfasına yönlendir
+      setTimeout(() => {
+        navigate('/login');
+      }, 5000);
     } else {
       toast.error(result.message);
     }
   };
+
+  const handleGoToLogin = () => {
+    navigate('/login');
+  };
+
+  // Başarılı kayıt sonrası görünüm
+  if (registrationSuccess) {
+    return (
+      <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+        <Row className="w-100">
+          <Col md={6} lg={5} className="mx-auto">
+            <Card className="border-success">
+              <Card.Body className="p-4 text-center">
+                <div className="mb-4">
+                  <FiCheckCircle size={64} className="text-success mb-3" />
+                  <h2 className="text-success mb-3">Kayıt Başarılı!</h2>
+                </div>
+
+                <Alert variant="success" className="mb-4">
+                  <div className="d-flex align-items-start">
+                    <FiUser className="me-2 mt-1" size={18} />
+                    <div className="text-start">
+                      <strong>Merhaba {registrationData?.user?.name}!</strong>
+                      <div className="mt-2">
+                        Kayıt başvurunuz başarıyla alınmıştır.
+                      </div>
+                    </div>
+                  </div>
+                </Alert>
+
+                <Alert variant="info" className="mb-4">
+                  <div className="d-flex align-items-start">
+                    <FiClock className="me-2 mt-1" size={18} />
+                    <div className="text-start">
+                      <strong>Onay Süreci</strong>
+                      <div className="mt-2">
+                        Hesabınız admin onayı beklemektedir. 
+                        Onay süreci için lütfen sistem yöneticisi ile görüşünüz.
+                      </div>
+                      <div className="mt-2 small text-muted">
+                        Onaylandıktan sonra email adresiniz ile sisteme giriş yapabileceksiniz.
+                      </div>
+                    </div>
+                  </div>
+                </Alert>
+
+                <div className="mb-4">
+                  <p className="text-muted mb-2">5 saniye sonra otomatik olarak giriş sayfasına yönlendirileceksiniz.</p>
+                  <Button 
+                    variant="primary" 
+                    onClick={handleGoToLogin}
+                    className="me-2"
+                  >
+                    Hemen Giriş Sayfasına Git
+                  </Button>
+                </div>
+
+                <div className="text-center">
+                  <small className="text-muted">
+                    Email: <strong>{registrationData?.user?.email}</strong>
+                  </small>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+        <DeveloperSignature />
+      </Container>
+    );
+  }
 
   return (
     <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>

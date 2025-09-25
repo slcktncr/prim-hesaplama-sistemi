@@ -131,13 +131,23 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       const res = await axios.post('/api/auth/register', userData);
       
-      dispatch({
-        type: 'REGISTER_SUCCESS',
-        payload: res.data
-      });
+      // Eğer token varsa (ilk admin kullanıcı), login yap
+      if (res.data.token) {
+        dispatch({
+          type: 'REGISTER_SUCCESS',
+          payload: res.data
+        });
+        setAuthToken(res.data.token);
+      } else {
+        // Token yoksa (normal kullanıcı), sadece loading'i false yap
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
       
-      setAuthToken(res.data.token);
-      return { success: true };
+      return { 
+        success: true, 
+        data: res.data,
+        message: res.data.message 
+      };
     } catch (error) {
       const message = error.response?.data?.message || 'Kayıt hatası';
       dispatch({

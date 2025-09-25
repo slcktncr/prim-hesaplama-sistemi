@@ -1888,22 +1888,74 @@ router.put('/:id/modify', [
       return res.status(403).json({ message: 'Bu satışı modifiye etme yetkiniz yok' });
     }
 
-    // Eski değerleri sakla
+    // Eski değerleri sakla (eski satışlarda eksik alanları 0 olarak ayarla)
     const oldValues = {
       blockNo: sale.blockNo,
       apartmentNo: sale.apartmentNo,
       periodNo: sale.periodNo,
-      listPrice: sale.listPrice,
-      discountRate: sale.discountRate,
-      activitySalePrice: sale.activitySalePrice,
+      listPrice: sale.listPrice || 0,
+      discountRate: sale.discountRate || 0,
+      activitySalePrice: sale.activitySalePrice || 0,
       contractNo: sale.contractNo,
       saleDate: sale.saleDate,
       kaporaDate: sale.kaporaDate,
       entryDate: sale.entryDate,
       exitDate: sale.exitDate,
-      primAmount: sale.primAmount,
-      basePrimPrice: sale.basePrimPrice
+      primAmount: sale.primAmount || 0, // Eski satışlarda eksik olabilir
+      basePrimPrice: sale.basePrimPrice || 0 // Eski satışlarda eksik olabilir
     };
+
+    console.log('💾 Old values captured for sale:', sale._id, {
+      hasPrimAmount: sale.primAmount !== undefined,
+      hasBasePrimPrice: sale.basePrimPrice !== undefined,
+      oldPrimAmount: oldValues.primAmount,
+      oldBasePrimPrice: oldValues.basePrimPrice
+    });
+
+    // Eski satışlarda eksik prim bilgilerini tamamla
+    if ((sale.primAmount === undefined || sale.primAmount === null || sale.basePrimPrice === undefined || sale.basePrimPrice === null) && !isKaporaType(sale.saleType)) {
+      console.log('🔧 Completing missing prim information for old sale...');
+      
+      const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+      if (currentPrimRate) {
+        const listPriceNum = parseFloat(sale.listPrice) || 0;
+        const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
+        const discountRateNum = parseFloat(sale.discountRate) || 0;
+        const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
+
+        let discountedListPriceNum = 0;
+        if (discountRateNum > 0 && originalListPriceNum > 0) {
+          discountedListPriceNum = originalListPriceNum * (1 - discountRateNum / 100);
+        }
+
+        const validPrices = [];
+        if (originalListPriceNum > 0) validPrices.push(originalListPriceNum);
+        if (discountRateNum > 0 && discountedListPriceNum > 0) validPrices.push(discountedListPriceNum);
+        if (activitySalePriceNum > 0) validPrices.push(activitySalePriceNum);
+
+        const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+        const calculatedPrimAmount = basePrimPrice * (currentPrimRate.rate / 100);
+
+        // Eksik alanları doldur
+        if (sale.basePrimPrice === undefined || sale.basePrimPrice === null) {
+          sale.basePrimPrice = basePrimPrice;
+          oldValues.basePrimPrice = basePrimPrice;
+        }
+        if (sale.primAmount === undefined || sale.primAmount === null) {
+          sale.primAmount = calculatedPrimAmount;
+          oldValues.primAmount = calculatedPrimAmount;
+        }
+        if (sale.primRate === undefined || sale.primRate === null) {
+          sale.primRate = currentPrimRate.rate;
+        }
+
+        console.log('🔧 Completed missing prim info:', {
+          basePrimPrice: sale.basePrimPrice,
+          primAmount: sale.primAmount,
+          primRate: sale.primRate
+        });
+      }
+    }
 
     // Yeni değerleri uygula (sadece gönderilen alanlar)
     const updateData = {};
