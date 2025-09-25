@@ -50,6 +50,7 @@ import NotesModal from './NotesModal';
 import ConvertToSaleModal from './ConvertToSaleModal';
 import ModifySaleModal from './ModifySaleModal';
 import ModificationHistoryModal from './ModificationHistoryModal';
+import PrimTransactionStatusModal from './PrimTransactionStatusModal';
 import Loading from '../Common/Loading';
 
 const SalesList = () => {
@@ -87,10 +88,12 @@ const SalesList = () => {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showPrimStatusModal, setShowPrimStatusModal] = useState(false);
   
   // Cancel modal state
   const [cancelReason, setCancelReason] = useState('');
   const [selectedSale, setSelectedSale] = useState(null);
+  const [selectedPrimTransaction, setSelectedPrimTransaction] = useState(null);
 
   const { user } = useAuth();
   const isAdmin = user?.role && user.role.name === 'admin';
@@ -672,83 +675,88 @@ const SalesList = () => {
                       </td>
                       <td>
                         <div>
-                          {/* Güncel Prim Tutarı */}
-                          <div className="fw-bold text-success">
-                            {formatCurrency((() => {
-                              // Kapora ise prim yok
-                              if (sale.saleType === 'kapora') return 0;
-                              
-                              // Değişiklik varsa ve prim ödendiyse, yeni prim tutarını hesapla
-                              if (sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0) {
-                                const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
-                                if (lastModification.primDifference && lastModification.primDifference !== 0) {
-                                  // Yeni prim tutarı = eski prim + fark
-                                  const oldPrimAmount = lastModification.oldPrimAmount || 0;
-                                  const newPrimAmount = oldPrimAmount + lastModification.primDifference;
-                                  return newPrimAmount;
-                                }
-                              }
-                              
-                              // Normal durum - mevcut prim tutarı
-                              return sale.primAmount || 0;
-                            })())}
-                          </div>
-                          
-                          {/* Prim Türü Gösterimi */}
+                          {/* Prim Tutarı ve Durumu */}
                           {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
                             (() => {
                               const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
-                              if (lastModification.primDifference && lastModification.primDifference !== 0 && sale.primStatus === 'ödendi') {
+                              if (lastModification.primDifference && lastModification.primDifference !== 0) {
+                                // Değişiklik var - detaylı gösterim
+                                const oldPrimAmount = lastModification.oldPrimAmount || 0;
+                                const newPrimAmount = oldPrimAmount + lastModification.primDifference;
+                                
                                 return (
-                                  <small className="text-muted">
-                                    (Yeni Prim Tutarı)
-                                  </small>
+                                  <>
+                                    {/* Yeni Toplam Prim */}
+                                    <div className="fw-bold text-success">
+                                      {formatCurrency(newPrimAmount)}
+                                    </div>
+                                    <small className="text-muted">(Yeni Prim Tutarı)</small>
+                                    
+                                    {/* Ödenen Kısım */}
+                                    <div className="mt-1">
+                                      <small className="text-muted">
+                                        Ödenen: {formatCurrency(oldPrimAmount)}
+                                      </small>
+                                      <Badge bg="success" size="sm" className="ms-1">
+                                        ödendi
+                                      </Badge>
+                                    </div>
+                                    
+                                    {/* Bekleyen Kısım */}
+                                    <div className="mt-1">
+                                      {lastModification.primDifference > 0 ? (
+                                        <small className="text-info">
+                                          <strong>Bekleyen: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                        </small>
+                                      ) : (
+                                        <small className="text-warning">
+                                          <strong>Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                        </small>
+                                      )}
+                                      {isAdmin && (
+                                        <Badge 
+                                          bg="warning" 
+                                          size="sm" 
+                                          className="ms-1" 
+                                          style={{ cursor: 'pointer' }}
+                                          onClick={() => {
+                                            setSelectedPrimTransaction({
+                                              primDifference: lastModification.primDifference,
+                                              customerName: sale.customerName,
+                                              blockNo: sale.blockNo,
+                                              apartmentNo: sale.apartmentNo,
+                                              salespersonName: sale.salesperson?.name
+                                            });
+                                            setShowPrimStatusModal(true);
+                                          }}
+                                        >
+                                          {lastModification.primDifference > 0 ? 'ödenmedi' : 'kesilmedi'} 🔘
+                                        </Badge>
+                                      )}
+                                      {!isAdmin && (
+                                        <Badge bg="warning" size="sm" className="ms-1">
+                                          {lastModification.primDifference > 0 ? 'ödenmedi' : 'kesilmedi'}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </>
                                 );
                               }
                               return null;
                             })()
                           )}
                           
-                          {/* Prim Durumu Badge */}
-                          <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
-                            {sale.primStatus}
-                          </Badge>
-                          
-                          {/* Değişiklik Geçmişi Varsa Ek Bilgi Göster */}
-                          {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
-                            (() => {
-                              const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
-                              if (lastModification.primDifference && lastModification.primDifference !== 0) {
-                                return (
-                                  <div className="mt-1">
-                                    {sale.primStatus === 'ödendi' ? (
-                                      // Prim ödendi durumu - ödenen miktar sabit, yeni hesaplama göster
-                                      <>
-                                        <small className="text-muted">
-                                          Ödenen: {formatCurrency(lastModification.oldPrimAmount || 0)}
-                                        </small>
-                                        <br />
-                                        {lastModification.primDifference > 0 ? (
-                                          <small className="text-info">
-                                            <strong>Bekleyen Ödeme: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
-                                          </small>
-                                        ) : (
-                                          <small className="text-warning">
-                                            <strong>Bekleyen Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
-                                          </small>
-                                        )}
-                                      </>
-                                    ) : (
-                                      // Prim ödenmedi durumu - sadece yeni prim tutarı
-                                      <small className="text-muted">
-                                        Güncellenmiş prim tutarı
-                                      </small>
-                                    )}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()
+                          {/* Normal Prim Gösterimi (değişiklik yoksa) */}
+                          {!(sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && 
+                             sale.modificationHistory[sale.modificationHistory.length - 1].primDifference !== 0) && (
+                            <>
+                              <div className="fw-bold text-success">
+                                {formatCurrency(sale.saleType === 'kapora' ? 0 : (sale.primAmount || 0))}
+                              </div>
+                              <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
+                                {sale.primStatus}
+                              </Badge>
+                            </>
                           )}
                         </div>
                       </td>
@@ -1066,6 +1074,20 @@ const SalesList = () => {
           show={showHistoryModal}
           onHide={() => setShowHistoryModal(false)}
           sale={selectedSale}
+        />
+      )}
+
+      {/* Prim Transaction Status Modal */}
+      {showPrimStatusModal && (
+        <PrimTransactionStatusModal
+          show={showPrimStatusModal}
+          onHide={() => setShowPrimStatusModal(false)}
+          transaction={selectedPrimTransaction}
+          onStatusUpdate={(status) => {
+            console.log('Prim status updated:', status);
+            // Refresh sales list
+            fetchSales();
+          }}
         />
       )}
     </div>
