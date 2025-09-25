@@ -722,6 +722,7 @@ const SalesList = () => {
                                           onClick={() => {
                                             setSelectedPrimTransaction({
                                               primDifference: lastModification.primDifference,
+                                              primTransactionId: lastModification.primTransaction,
                                               customerName: sale.customerName,
                                               blockNo: sale.blockNo,
                                               apartmentNo: sale.apartmentNo,

@@ -3,6 +3,7 @@ import { Modal, Button, Alert, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FiCheck, FiX, FiDollarSign, FiMinus } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/helpers';
+import { primsAPI } from '../../utils/api';
 
 const PrimTransactionStatusModal = ({ show, onHide, transaction, onStatusUpdate }) => {
   const [loading, setLoading] = useState(false);
@@ -13,10 +14,19 @@ const PrimTransactionStatusModal = ({ show, onHide, transaction, onStatusUpdate 
   const amount = Math.abs(transaction.primDifference);
 
   const handleStatusUpdate = async (newStatus) => {
+    if (!transaction.primTransactionId) {
+      toast.error('PrimTransaction ID bulunamadı');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: API call to update PrimTransaction status
-      // await primTransactionAPI.updateStatus(transaction.id, newStatus);
+      console.log('🔄 Updating PrimTransaction status:', {
+        transactionId: transaction.primTransactionId,
+        newStatus
+      });
+
+      await primsAPI.updateTransactionStatus(transaction.primTransactionId, newStatus);
       
       toast.success(
         isPositive 
@@ -28,7 +38,7 @@ const PrimTransactionStatusModal = ({ show, onHide, transaction, onStatusUpdate 
       onHide();
     } catch (error) {
       console.error('Status update error:', error);
-      toast.error('Durum güncellenirken hata oluştu');
+      toast.error(error.response?.data?.message || 'Durum güncellenirken hata oluştu');
     } finally {
       setLoading(false);
     }

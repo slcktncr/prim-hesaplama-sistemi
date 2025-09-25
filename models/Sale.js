@@ -281,6 +281,11 @@ const saleSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    // İlgili PrimTransaction
+    primTransaction: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PrimTransaction'
+    },
     // Değişiklik özeti
     changesSummary: {
       locationChange: String,

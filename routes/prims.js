@@ -950,4 +950,91 @@ router.put('/deductions/:id/cancel', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   PUT /api/prims/transactions/:id/status
+// @desc    PrimTransaction durumunu güncelle
+// @access  Private (Admin only)
+router.put('/transactions/:id/status', [
+  auth,
+  adminAuth,
+  body('status').isIn(['paid', 'unpaid', 'deducted', 'not_deducted']).withMessage('Geçersiz durum')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veri',
+        errors: errors.array() 
+      });
+    }
+
+    const { status } = req.body;
+    const transactionId = req.params.id;
+
+    // PrimTransaction'ı bul
+    const transaction = await PrimTransaction.findById(transactionId)
+      .populate('salesperson', 'name email')
+      .populate('sale', 'customerName blockNo apartmentNo');
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'İşlem bulunamadı' });
+    }
+
+    console.log('🔄 PrimTransaction durum güncelleme:', {
+      transactionId,
+      currentStatus: transaction.status,
+      currentDeductionStatus: transaction.deductionStatus,
+      newStatus: status,
+      transactionType: transaction.transactionType,
+      amount: transaction.amount
+    });
+
+    // Durumu güncelle
+    if (status === 'paid') {
+      // Ek prim ödendi
+      transaction.status = 'onaylandı';
+      transaction.deductionStatus = undefined;
+    } else if (status === 'unpaid') {
+      // Ek prim ödenmedi
+      transaction.status = 'beklemede';
+      transaction.deductionStatus = undefined;
+    } else if (status === 'deducted') {
+      // Kesinti yapıldı
+      transaction.status = 'onaylandı';
+      transaction.deductionStatus = 'yapıldı';
+    } else if (status === 'not_deducted') {
+      // Kesinti yapılmadı
+      transaction.status = 'beklemede';
+      transaction.deductionStatus = 'beklemede';
+    }
+
+    await transaction.save();
+
+    console.log('✅ PrimTransaction durumu güncellendi:', {
+      transactionId,
+      newStatus: transaction.status,
+      newDeductionStatus: transaction.deductionStatus,
+      salesperson: transaction.salesperson.name,
+      amount: transaction.amount,
+      type: transaction.transactionType
+    });
+
+    res.json({
+      message: 'İşlem durumu başarıyla güncellendi',
+      transaction: {
+        _id: transaction._id,
+        status: transaction.status,
+        deductionStatus: transaction.deductionStatus,
+        transactionType: transaction.transactionType,
+        amount: transaction.amount,
+        salesperson: transaction.salesperson,
+        sale: transaction.sale
+      }
+    });
+
+  } catch (error) {
+    console.error('PrimTransaction status update error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;

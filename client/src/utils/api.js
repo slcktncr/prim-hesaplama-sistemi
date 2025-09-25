@@ -84,6 +84,7 @@ export const primsAPI = {
   cleanupDuplicateDeductions: () => API.post('/prims/cleanup-duplicate-deductions'),
   approveDeduction: (id) => API.put(`/prims/deductions/${id}/approve`),
   cancelDeduction: (id) => API.put(`/prims/deductions/${id}/cancel`),
+  updateTransactionStatus: (id, status) => API.put(`/prims/transactions/${id}/status`, { status }),
 };
 
 // Reports API calls

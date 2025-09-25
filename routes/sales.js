@@ -2150,12 +2150,19 @@ router.put('/:id/modify', [
 
       await primTransaction.save();
 
+      // ModificationHistory'ye PrimTransaction ID'sini kaydet
+      if (sale.modificationHistory && sale.modificationHistory.length > 0) {
+        const lastModification = sale.modificationHistory[sale.modificationHistory.length - 1];
+        lastModification.primTransaction = primTransaction._id;
+      }
+
       console.log(`💳 PrimTransaction oluşturuldu: ${transactionType} - ${absoluteAmount} TL`, {
         salesperson: sale.salesperson,
         sale: sale._id,
         primDifference,
         transactionStatus,
-        deductionStatus
+        deductionStatus,
+        transactionId: primTransaction._id
       });
     } else if (primDifference !== 0 && sale.primStatus === 'ödenmedi') {
       console.log(`ℹ️ Prim henüz ödenmediği için PrimTransaction oluşturulmadı. Prim farkı: ${primDifference} TL`);
