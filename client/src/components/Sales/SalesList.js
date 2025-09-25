@@ -130,6 +130,21 @@ const SalesList = () => {
           modificationHistory: denemeUser.modificationHistory
         });
       }
+
+      // Modification history kontrolü için ilk satışı logla
+      const firstSale = response.data.sales?.[0];
+      if (firstSale) {
+        console.log('🔍 First sale modification check:', {
+          customerName: firstSale.customerName,
+          hasModifications: firstSale.hasModifications,
+          isModified: firstSale.isModified,
+          modificationHistoryLength: firstSale.modificationHistory?.length,
+          salespersonId: firstSale.salesperson?._id,
+          currentUserId: user?._id,
+          isAdmin: isAdmin,
+          showHistoryButton: (firstSale.hasModifications || firstSale.isModified) && (isAdmin || firstSale.salesperson?._id === user?._id)
+        });
+      }
       setSales(response.data.sales || []);
       setPagination({
         totalPages: response.data.totalPages || 1,
@@ -770,7 +785,7 @@ const SalesList = () => {
                             )}
 
                             {/* Değişiklik Geçmişi - Admin tüm değişiklikleri, kullanıcı sadece kendi değişikliklerini görebilir */}
-                            {sale.isModified && (isAdmin || sale.salesperson?._id === user?._id) && (
+                            {(sale.hasModifications || sale.isModified) && (isAdmin || sale.salesperson?._id === user?._id) && (
                               <Dropdown.Item
                                 onClick={() => openHistoryModal(sale)}
                                 className="text-info"
