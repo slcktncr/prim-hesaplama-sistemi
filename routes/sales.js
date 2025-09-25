@@ -2079,8 +2079,26 @@ router.put('/:id/modify', [
     if (primDifference !== 0 && sale.primStatus === 'ödendi') {
       const PrimTransaction = require('../models/PrimTransaction');
       
-      const transactionType = primDifference > 0 ? 'kazanç' : 'kesinti';
+      let transactionType, transactionDescription, transactionStatus, deductionStatus;
       const absoluteAmount = Math.abs(primDifference);
+      
+      if (primDifference > 0) {
+        // Prim artışı - temsilcinin alacak bakiyesine eklenmeli
+        transactionType = 'kazanç';
+        transactionDescription = `Satış değişikliği prim artışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`;
+        transactionStatus = 'beklemede'; // Ödenmesi bekleniyor
+        deductionStatus = undefined;
+        
+        console.log(`📈 Prim artışı tespit edildi: +${absoluteAmount} TL - temsilcinin alacak bakiyesine eklenecek`);
+      } else {
+        // Prim azalışı - temsilci borçlanmalı
+        transactionType = 'kesinti';
+        transactionDescription = `Satış değişikliği prim azalışı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`;
+        transactionStatus = 'onaylandı'; // Kesinti otomatik onaylanır
+        deductionStatus = 'beklemede'; // Kesinti beklemede
+        
+        console.log(`📉 Prim azalışı tespit edildi: -${absoluteAmount} TL - temsilci borçlanacak`);
+      }
       
       const primTransaction = new PrimTransaction({
         salesperson: sale.salesperson,
@@ -2088,9 +2106,9 @@ router.put('/:id/modify', [
         primPeriod: sale.primPeriod,
         transactionType: transactionType,
         amount: absoluteAmount,
-        description: `Satış değişikliği prim farkı - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo}) - ${reason}`,
-        status: 'onaylandı',
-        deductionStatus: transactionType === 'kesinti' ? 'beklemede' : undefined,
+        description: transactionDescription,
+        status: transactionStatus,
+        deductionStatus: deductionStatus,
         createdBy: req.user._id
       });
 
@@ -2099,8 +2117,12 @@ router.put('/:id/modify', [
       console.log(`💳 PrimTransaction oluşturuldu: ${transactionType} - ${absoluteAmount} TL`, {
         salesperson: sale.salesperson,
         sale: sale._id,
-        primDifference
+        primDifference,
+        transactionStatus,
+        deductionStatus
       });
+    } else if (primDifference !== 0 && sale.primStatus === 'ödenmedi') {
+      console.log(`ℹ️ Prim henüz ödenmediği için PrimTransaction oluşturulmadı. Prim farkı: ${primDifference} TL`);
     }
 
     console.log('💾 Preparing to save sale...');

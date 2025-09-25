@@ -217,7 +217,10 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
         activitySalePrice: parseFloat(formData.activitySalePrice)
       };
 
-      await salesAPI.modifySale(sale._id, modificationData);
+      const response = await salesAPI.modifySale(sale._id, modificationData);
+      
+      console.log('🔄 Sale modification response:', response);
+      console.log('🔄 Updated sale data:', response.data?.sale);
       
       toast.success('Satış başarıyla güncellendi');
       onModified();

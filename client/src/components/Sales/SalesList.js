@@ -114,6 +114,8 @@ const SalesList = () => {
         sortOrder: sorting.direction
       };
       const response = await salesAPI.getSales(params);
+      console.log('📋 Sales fetch response:', response.data);
+      console.log('📋 First sale in response:', response.data.sales?.[0]);
       setSales(response.data.sales || []);
       setPagination({
         totalPages: response.data.totalPages || 1,
