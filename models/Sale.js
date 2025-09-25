@@ -247,7 +247,7 @@ const saleSchema = new mongoose.Schema({
   },
   
   // Değişiklik geçmişi
-  isModified: {
+  hasModifications: {
     type: Boolean,
     default: false
   },

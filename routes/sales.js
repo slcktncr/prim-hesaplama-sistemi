@@ -2019,7 +2019,7 @@ router.put('/:id/modify', [
     console.log('📚 Adding to modification history...');
     sale.modificationHistory = sale.modificationHistory || [];
     sale.modificationHistory.push(modificationEntry);
-    sale.isModified = true; // Değişiklik yapıldığını işaretle
+    sale.hasModifications = true; // Değişiklik yapıldığını işaretle
     
     console.log('✅ Modification entry added. Total history entries:', sale.modificationHistory.length);
 
