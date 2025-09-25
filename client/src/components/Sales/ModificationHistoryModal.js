@@ -72,7 +72,7 @@ const ModificationHistoryModal = ({ show, onHide, sale }) => {
                 </h6>
                 <div className="text-muted small">
                   <FiUser className="me-1" />
-                  {modification.modifiedBy?.name || 'Bilinmeyen Kullanıcı'} - {formatDate(modification.modifiedAt)}
+                  {modification.modifiedBy?.name || modification.modifiedBy || 'Sistem'} - {formatDate(modification.modifiedAt)}
                 </div>
               </div>
             </Card.Header>

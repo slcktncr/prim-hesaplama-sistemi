@@ -1987,6 +1987,12 @@ router.put('/:id/modify', [
     }
 
     // Detaylı modifikasyon geçmişi
+    console.log('📝 Creating modification entry...', {
+      userId: req.user._id,
+      userType: typeof req.user._id,
+      primDifference: primDifference
+    });
+    
     const modificationEntry = {
       modificationType: 'comprehensive_update',
       previousData: oldValues,
@@ -2010,9 +2016,12 @@ router.put('/:id/modify', [
       }
     };
 
+    console.log('📚 Adding to modification history...');
     sale.modificationHistory = sale.modificationHistory || [];
     sale.modificationHistory.push(modificationEntry);
     sale.isModified = true; // Değişiklik yapıldığını işaretle
+    
+    console.log('✅ Modification entry added. Total history entries:', sale.modificationHistory.length);
 
     // PrimTransaction oluştur (prim farkı varsa ve temsilciye prim ödenmişse)
     if (primDifference !== 0 && sale.primStatus === 'ödendi') {
@@ -2042,13 +2051,48 @@ router.put('/:id/modify', [
       });
     }
 
-    sale.updatedAt = new Date();
-    await sale.save();
-
-    const updatedSale = await Sale.findById(sale._id)
-      .populate('salesperson', 'name email')
-      .populate('primPeriod', 'name')
-      .populate('modificationHistory.modifiedBy', 'name email');
+    console.log('💾 Preparing to save sale...');
+    
+    try {
+      sale.updatedAt = new Date();
+      await sale.save();
+      console.log('✅ Sale saved successfully');
+    } catch (saveError) {
+      console.error('❌ Sale save error:', saveError);
+      console.error('❌ Sale data at error:', {
+        id: sale._id,
+        modificationHistoryLength: sale.modificationHistory?.length,
+        lastModification: sale.modificationHistory?.[sale.modificationHistory.length - 1]
+      });
+      throw saveError; // Re-throw to be caught by main catch block
+    }
+    
+    let updatedSale;
+    try {
+      updatedSale = await Sale.findById(sale._id)
+        .populate('salesperson', 'name email')
+        .populate('primPeriod', 'name');
+      
+      console.log('✅ Basic sale populated successfully');
+      
+      // modificationHistory'yi ayrı populate et (daha güvenli)
+      if (updatedSale.modificationHistory && updatedSale.modificationHistory.length > 0) {
+        try {
+          await updatedSale.populate({
+            path: 'modificationHistory.modifiedBy',
+            select: 'name email'
+          });
+          console.log('✅ Modification history populated');
+        } catch (populateError) {
+          console.warn('⚠️ Could not populate modification history users:', populateError.message);
+          // Continue without populating - not critical
+        }
+      }
+      
+    } catch (populateError) {
+      console.error('❌ Error populating updated sale:', populateError);
+      throw populateError;
+    }
 
 
     // Response mesajı oluştur
