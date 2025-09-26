@@ -113,9 +113,15 @@ const SalesList = () => {
       setLoading(true);
       const params = {
         ...filters,
+        primPeriod: filters.period, // period → primPeriod
         sortBy: sorting.field,
         sortOrder: sorting.direction
       };
+      
+      // period parametresini kaldır (çünkü primPeriod olarak gönderiyoruz)
+      delete params.period;
+      
+      console.log('📋 Sales API params:', params);
       const response = await salesAPI.getSales(params);
       console.log('📋 Sales fetch response:', response.data);
       console.log('📋 First sale in response:', response.data.sales?.[0]);

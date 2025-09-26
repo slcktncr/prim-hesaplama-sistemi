@@ -876,8 +876,17 @@ router.get('/', auth, async (req, res) => {
 
     // Prim dönemi filtresi
     if (primPeriod) {
-      query.primPeriod = primPeriod;
+      query.primPeriod = new mongoose.Types.ObjectId(primPeriod);
     }
+    
+    console.log('📋 Sales query with filters:', {
+      search,
+      primPeriod,
+      salesperson,
+      primStatus,
+      status,
+      queryKeys: Object.keys(query)
+    });
 
     // Sıralama - Karma tarih sıralaması için aggregation pipeline
     let pipeline = [];

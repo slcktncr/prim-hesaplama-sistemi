@@ -1501,14 +1501,27 @@ router.get('/earnings-simple', auth, async (req, res) => {
           t.transactionType === 'kazanç' && t.status === 'beklemede'
         );
         
-        // Bu dönem en son dönem mi kontrol et (en yüksek tarihli)
-        const isLatestPeriod = !salesByPeriod.some(other => 
-          other._id.salesperson.toString() === earning._id.salesperson.toString() &&
-          other.periodName > earning.periodName
-        );
+        // Bekleyen ödemeleri en güncel döneme dahil et
+        // Temsilcinin en son dönemi bul
+        const userPeriods = salesByPeriod.filter(s => 
+          s._id.salesperson.toString() === earning._id.salesperson.toString()
+        ).sort((a, b) => b.periodName.localeCompare(a.periodName));
         
+        const isLatestPeriod = userPeriods.length > 0 && userPeriods[0].periodName === earning.periodName;
+        
+        // Bekleyen ödemeler sadece en son dönemde gösterilir
         const pendingAmount = isLatestPeriod ? 
           pendingTransactions.reduce((sum, t) => sum + t.amount, 0) : 0;
+
+        // Debug: Bekleyen ödeme varsa logla
+        if (pendingAmount > 0) {
+          console.log(`🎯 BEKLEYEN ÖDEME BULUNDU - ${earning.salespersonName} - ${earning.periodName}:`, {
+            isLatestPeriod,
+            pendingAmount,
+            pendingTransactionsCount: pendingTransactions.length,
+            allUserPeriods: userPeriods.map(p => p.periodName)
+          });
+        }
 
         // Kesintiler (sadece bu dönemle ilgili)
         const deductionAmount = periodTransactions
@@ -1564,6 +1577,18 @@ router.get('/earnings-simple', auth, async (req, res) => {
     );
 
     console.log('💰 Zenginleştirilmiş hakediş verileri:', enrichedEarnings.length, 'kayıt');
+    
+    // Debug: Bekleyen ödemesi olan kayıtları özellikle logla
+    const recordsWithPending = enrichedEarnings.filter(e => e.pendingAmount > 0);
+    if (recordsWithPending.length > 0) {
+      console.log('🔔 BEKLEYEN ÖDEMELİ KAYITLAR:', recordsWithPending.map(r => ({
+        name: r.salespersonName,
+        period: r.periodName,
+        pendingAmount: r.pendingAmount
+      })));
+    } else {
+      console.log('❌ Hiçbir kayıtta bekleyen ödeme bulunamadı!');
+    }
 
     res.json(enrichedEarnings);
   } catch (error) {

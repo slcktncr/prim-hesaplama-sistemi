@@ -92,6 +92,7 @@ function generateDailyHistoricalData(historicalYears, startDate, endDate, salesp
 // @access  Private
 router.get('/dashboard', auth, async (req, res) => {
   try {
+    console.log('📊 Dashboard API çağrıldı:', req.query);
     let query = {};
     const { period, startDate, endDate } = req.query;
     
@@ -385,6 +386,16 @@ router.get('/dashboard', auth, async (req, res) => {
       } else if (item._id === 'ödenmedi') {
         primBreakdown.unpaid = item;
       }
+    });
+
+    console.log('📊 Dashboard response data:', {
+      totalSales,
+      cancelledSales,
+      totalSalesAmount: totalSalesAmount[0]?.total || 0,
+      totalPrimAmount: totalPrimAmount[0]?.total || 0,
+      thisMonthSales,
+      paidPrims,
+      unpaidPrims
     });
 
     res.json({
