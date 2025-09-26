@@ -171,7 +171,13 @@ const PrimEarnings = () => {
   };
 
   const calculateTotalPendingEarnings = () => {
-    return (earnings || []).reduce((sum, earning) => sum + (earning?.pendingEarnings || 0), 0);
+    const total = (earnings || []).reduce((sum, earning) => sum + (earning?.pendingEarnings || 0), 0);
+    console.log('🔢 Toplam bekleyen ödeme hesaplaması:', {
+      earnings: earnings?.length,
+      total,
+      details: earnings?.map(e => ({ name: e.salesperson?.name, pending: e.pendingEarnings }))
+    });
+    return total;
   };
 
   const getEarningsBadgeVariant = (amount) => {
@@ -478,71 +484,42 @@ const PrimEarnings = () => {
                     </td>
                     <td>
                       <div className="text-end">
-                        {/* Bekleyen Ek Ödeme - EN ÖNEMLİ */}
+                        {/* SADECE BEKLEYEN ÖDEMELER VE KESİNTİLER */}
+                        
+                        {/* Ödenecek Ek Prim */}
                         {earning.pendingEarnings > 0 && (
                           <div className="mb-2">
                             <div className="d-flex justify-content-between mb-1">
-                              <span className="text-warning small fw-bold">
+                              <span className="text-success small fw-bold">
                                 <FiClock size={12} className="me-1" />
-                                Bekleyen Ek Ödeme:
+                                Ödenecek Ek Prim:
                               </span>
-                              <span className="text-warning fw-bold">
+                              <span className="text-success fw-bold">
                                 +{formatCurrency(earning.pendingEarnings)}
                               </span>
                             </div>
                           </div>
                         )}
 
-                        {/* Bekleyen Kesinti */}
+                        {/* Kesilecek Prim */}
                         {earning.pendingDeductions > 0 && (
                           <div className="mb-2">
                             <div className="d-flex justify-content-between mb-1">
-                              <span className="text-warning small fw-bold">
+                              <span className="text-danger small fw-bold">
                                 <FiClock size={12} className="me-1" />
-                                Bekleyen Kesinti:
+                                Kesilecek Prim:
                               </span>
-                              <span className="text-warning fw-bold">
+                              <span className="text-danger fw-bold">
                                 -{formatCurrency(earning.pendingDeductions)}
                               </span>
                             </div>
                           </div>
                         )}
-                        
-                        {/* Ödenen Ek Prim (daha az önemli) */}
-                        {earning.additionalEarnings > 0 && (
-                          <div className="mb-1">
-                            <div className="d-flex justify-content-between">
-                              <span className="text-success small">
-                                <FiTrendingUp size={12} className="me-1" />
-                                Ödenen Ek Prim:
-                              </span>
-                              <span className="text-success">
-                                +{formatCurrency(earning.additionalEarnings)}
-                              </span>
-                            </div>
-                          </div>
-                        )}
 
-                        {/* Yapılan Kesinti (daha az önemli) */}
-                        {earning.deductions > 0 && (
-                          <div className="mb-1">
-                            <div className="d-flex justify-content-between">
-                              <span className="text-danger small">
-                                <FiTrendingDown size={12} className="me-1" />
-                                Yapılan Kesinti:
-                              </span>
-                              <span className="text-danger">
-                                -{formatCurrency(earning.deductions)}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Hiçbir ek işlem yoksa */}
-                        {earning.additionalEarnings === 0 && earning.pendingEarnings === 0 && 
-                         earning.deductions === 0 && earning.pendingDeductions === 0 && (
+                        {/* Hiçbir bekleyen işlem yoksa */}
+                        {earning.pendingEarnings === 0 && earning.pendingDeductions === 0 && (
                           <div className="text-muted small">
-                            <em>Ek işlem yok</em>
+                            <em>Bekleyen işlem yok</em>
                           </div>
                         )}
                       </div>
@@ -565,42 +542,30 @@ const PrimEarnings = () => {
                             <span className="text-primary">{formatCurrency(earning.salesEarnings || 0)}</span>
                           </div>
                           
-                          {earning.additionalEarnings > 0 && (
-                            <div className="d-flex justify-content-between mb-1">
-                              <span className="text-success">Ek Prim (Ödendi):</span>
-                              <span className="text-success">+{formatCurrency(earning.additionalEarnings)}</span>
-                            </div>
-                          )}
+                          {/* SADECE BEKLEYEN ÖDEMELER VE KESİNTİLER */}
                           
                           {earning.pendingEarnings > 0 && (
                             <div className="d-flex justify-content-between mb-1">
-                              <span className="text-warning">
+                              <span className="text-success">
                                 <FiClock size={12} className="me-1" />
-                                Bekleyen Ek Ödeme:
+                                Ödenecek Ek Prim:
                               </span>
-                              <span className="text-warning fw-bold">+{formatCurrency(earning.pendingEarnings)}</span>
-                            </div>
-                          )}
-                          
-                          {earning.deductions > 0 && (
-                            <div className="d-flex justify-content-between mb-1">
-                              <span className="text-danger">Kesinti (Yapıldı):</span>
-                              <span className="text-danger">-{formatCurrency(earning.deductions)}</span>
+                              <span className="text-success fw-bold">+{formatCurrency(earning.pendingEarnings)}</span>
                             </div>
                           )}
                           
                           {earning.pendingDeductions > 0 && (
                             <div className="d-flex justify-content-between mb-1">
-                              <span className="text-warning">
+                              <span className="text-danger">
                                 <FiClock size={12} className="me-1" />
-                                Bekleyen Kesinti:
+                                Kesilecek Prim:
                               </span>
-                              <span className="text-warning fw-bold">-{formatCurrency(earning.pendingDeductions)}</span>
+                              <span className="text-danger fw-bold">-{formatCurrency(earning.pendingDeductions)}</span>
                             </div>
                           )}
                           
                           {/* Net Hesaplama Gösterimi */}
-                          {(earning.pendingEarnings > 0 || earning.pendingDeductions > 0 || earning.additionalEarnings > 0 || earning.deductions > 0) && (
+                          {(earning.pendingEarnings > 0 || earning.pendingDeductions > 0) && (
                             <hr className="my-2" style={{margin: '8px 0'}} />
                           )}
                           

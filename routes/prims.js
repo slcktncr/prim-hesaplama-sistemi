@@ -1113,7 +1113,14 @@ router.get('/earnings-v2', auth, async (req, res) => {
     
     // Debug: Tüm PrimTransaction'ları listele
     const allPrimTransactions = await PrimTransaction.find({}).populate('salesperson', 'name').populate('sale', 'saleDate customerName');
-    console.log('📋 Tüm PrimTransaction\'lar:', allPrimTransactions.map(pt => ({
+    console.log('📋 Tüm PrimTransaction\'lar COUNT:', allPrimTransactions.length);
+    
+    // Özellikle Anıl'ın transaction'larını bul
+    const anilTransactions = allPrimTransactions.filter(pt => 
+      pt.salesperson?.name?.includes('Anıl') || pt.salesperson?.name?.includes('ANILA')
+    );
+    
+    console.log('🎯 Anıl\'ın PrimTransaction\'ları:', anilTransactions.map(pt => ({
       id: pt._id,
       salesperson: pt.salesperson?.name,
       transactionType: pt.transactionType,
@@ -1123,8 +1130,13 @@ router.get('/earnings-v2', auth, async (req, res) => {
       sale: {
         customerName: pt.sale?.customerName,
         saleDate: pt.sale?.saleDate
-      }
+      },
+      createdAt: pt.createdAt
     })));
+    
+    if (anilTransactions.length === 0) {
+      console.log('❌ Anıl için hiç PrimTransaction bulunamadı!');
+    }
 
     // PrimTransaction'ları Sale ile join ederek satış tarihine göre filtrele
     const primTransactions = await PrimTransaction.aggregate([
