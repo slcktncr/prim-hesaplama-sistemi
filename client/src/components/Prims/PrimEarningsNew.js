@@ -50,11 +50,17 @@ const PrimEarningsNew = () => {
       const uniquePeriods = [...new Set(data.map(item => item.periodName))].sort();
       setPeriods(uniquePeriods);
       
-      // Temsilcileri çıkar
-      const uniqueSalespersons = [...new Set(data.map(item => ({ 
-        id: item.salespersonId, 
-        name: item.salespersonName 
-      })))];
+      // Temsilcileri çıkar (tekrarları önle)
+      const salespersonMap = new Map();
+      data.forEach(item => {
+        if (item.salespersonId && item.salespersonName) {
+          salespersonMap.set(item.salespersonId, {
+            id: item.salespersonId,
+            name: item.salespersonName
+          });
+        }
+      });
+      const uniqueSalespersons = Array.from(salespersonMap.values()).sort((a, b) => a.name.localeCompare(b.name));
       setSalespersons(uniqueSalespersons);
       
       console.log('📊 Filtre verileri:', {
