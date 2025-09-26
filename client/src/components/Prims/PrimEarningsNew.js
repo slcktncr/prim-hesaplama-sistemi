@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import { AuthContext } from '../../context/AuthContext';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+import { primsAPI } from '../../utils/api';
 import { toast } from 'react-toastify';
 import PrimTransactionStatusModal from '../Sales/PrimTransactionStatusModal';
 
@@ -210,7 +211,7 @@ const PrimEarningsNew = () => {
             <Card.Body>
               <FiClock size={24} className="text-warning mb-2" />
               <h4 className="text-warning">{formatCurrency(totals.totalPending)}</h4>
-              <small className="text-muted">Bekleyen Ödeme</small>
+              <small className="text-muted">Ek Prim Ödemesi</small>
             </Card.Body>
           </Card>
         </Col>
@@ -219,7 +220,7 @@ const PrimEarningsNew = () => {
             <Card.Body>
               <FiTrendingDown size={24} className="text-danger mb-2" />
               <h4 className="text-danger">{formatCurrency(totals.totalDeductions)}</h4>
-              <small className="text-muted">Kesintiler</small>
+              <small className="text-muted">Değişiklik Kesintisi</small>
             </Card.Body>
           </Card>
         </Col>
@@ -239,8 +240,8 @@ const PrimEarningsNew = () => {
                 <th>Satış Sayısı</th>
                 <th>Satış Tutarı</th>
                 <th>Satış Primi</th>
-                <th>Ek Ödemeler</th>
-                <th>Kesintiler</th>
+                <th>Ek Prim Ödemesi</th>
+                <th>Değişiklik Kesintisi</th>
                 <th>Net Hakediş</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
@@ -292,7 +293,7 @@ const PrimEarningsNew = () => {
                           variant="outline-warning" 
                           size="sm"
                           onClick={() => {
-                            // Bekleyen transaction'ı bul
+                            // Ek prim ödemesi transaction'ı bul
                             const pendingTransaction = earning.transactions?.find(t => 
                               t.type === 'kazanç' && t.status === 'beklemede'
                             );
@@ -359,8 +360,8 @@ const PrimEarningsNew = () => {
       <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {modalData?.type === 'pending' && '⏰ Bekleyen Ödemeler'}
-            {modalData?.type === 'deduction' && '📉 Kesintiler'}
+            {modalData?.type === 'pending' && '💰 Ek Prim Ödemesi'}
+            {modalData?.type === 'deduction' && '📉 Değişiklik Kesintisi'}
             {modalData?.type === 'detail' && '📊 Hakediş Detayı'}
           </Modal.Title>
         </Modal.Header>
@@ -469,7 +470,7 @@ const PrimEarningsNew = () => {
                               </td>
                               <td>
                                 <Badge bg={transaction.type === 'kazanç' ? 'success' : 'danger'}>
-                                  {transaction.type === 'kazanç' ? '📈 Ek Prim' : '📉 Kesinti'}
+                                  {transaction.type === 'kazanç' ? '💰 Ek Prim Ödemesi' : '📉 Değişiklik Kesintisi'}
                                 </Badge>
                               </td>
                               <td>
