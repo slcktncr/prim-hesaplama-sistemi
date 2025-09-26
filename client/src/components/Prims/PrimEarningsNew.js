@@ -10,6 +10,7 @@ import {
 import { AuthContext } from '../../context/AuthContext';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { toast } from 'react-toastify';
+import PrimTransactionStatusModal from '../Sales/PrimTransactionStatusModal';
 
 const PrimEarningsNew = () => {
   const { user } = useContext(AuthContext);
@@ -22,6 +23,8 @@ const PrimEarningsNew = () => {
   const [selectedSalesperson, setSelectedSalesperson] = useState('all');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [modalData, setModalData] = useState(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   // Prim hakedişlerini getir
   const fetchEarnings = async () => {
@@ -105,6 +108,13 @@ const PrimEarningsNew = () => {
   const openDetailModal = (type, data) => {
     setModalData({ type, data });
     setShowDetailModal(true);
+  };
+
+  // Status update callback
+  const handleStatusUpdate = (newStatus) => {
+    console.log('✅ Status updated:', newStatus);
+    // Veriyi yeniden getir
+    fetchEarnings();
   };
 
   // Özet hesaplamaları
@@ -291,7 +301,21 @@ const PrimEarningsNew = () => {
                         <Button 
                           variant="outline-warning" 
                           size="sm"
-                          onClick={() => openDetailModal('pending', earning)}
+                          onClick={() => {
+                            // Bekleyen transaction'ı bul
+                            const pendingTransaction = earning.transactions?.find(t => 
+                              t.type === 'kazanç' && t.status === 'beklemede'
+                            );
+                            if (pendingTransaction) {
+                              setSelectedTransaction({
+                                primTransactionId: pendingTransaction.id,
+                                primDifference: pendingTransaction.amount,
+                                salesperson: earning.salespersonName,
+                                period: earning.periodName
+                              });
+                              setShowStatusModal(true);
+                            }
+                          }}
                         >
                           <FiClock className="me-1" />
                           +{formatCurrency(earning.pendingAmount)}
@@ -365,6 +389,14 @@ const PrimEarningsNew = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Prim Transaction Status Modal */}
+      <PrimTransactionStatusModal
+        show={showStatusModal}
+        onHide={() => setShowStatusModal(false)}
+        transaction={selectedTransaction}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </Container>
   );
 };

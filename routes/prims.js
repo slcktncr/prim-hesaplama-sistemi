@@ -1465,25 +1465,65 @@ router.get('/earnings-simple', auth, async (req, res) => {
       })));
     }
 
-    // 2. Her dönem için ek ödemeler ve kesintileri hesapla
+    // 2. Tüm PrimTransaction'ları temsilciye göre al
+    const allTransactionsByUser = await Promise.all(
+      [...new Set(salesByPeriod.map(s => s._id.salesperson.toString()))].map(async (salespersonId) => {
+        const allTransactions = await PrimTransaction.find({
+          salesperson: salespersonId
+        }).populate('sale', 'customerName saleDate contractNo primPeriod');
+        
+        return {
+          salespersonId,
+          transactions: allTransactions
+        };
+      })
+    );
+
+    // Transaction'ları temsilci ID'ye göre map'e çevir
+    const transactionMap = new Map();
+    allTransactionsByUser.forEach(({ salespersonId, transactions }) => {
+      transactionMap.set(salespersonId, transactions);
+    });
+
+    // 3. Her dönem için ek ödemeler ve kesintileri hesapla
     const enrichedEarnings = await Promise.all(
       salesByPeriod.map(async (earning) => {
-        // Bu dönem ve temsilci için PrimTransaction'ları bul
-        const transactions = await PrimTransaction.find({
-          salesperson: earning._id.salesperson,
-          // Sale'in primPeriod'una göre filtrele
-          sale: { $in: earning.sales.map(s => s._id) }
-        });
+        // Bu temsilcinin tüm transaction'ları
+        const allUserTransactions = transactionMap.get(earning._id.salesperson.toString()) || [];
+        
+        // Bu dönemdeki satışlarla ilgili transaction'lar
+        const periodTransactions = allUserTransactions.filter(t => 
+          earning.sales.some(s => s._id.toString() === t.sale?._id?.toString())
+        );
 
-        // Bekleyen ödemeler (ek prim)
-        const pendingAmount = transactions
-          .filter(t => t.transactionType === 'kazanç' && t.status === 'beklemede')
-          .reduce((sum, t) => sum + t.amount, 0);
+        // Bekleyen ödemeler (ek prim) - tüm bekleyen transaction'ları en son döneme dahil et
+        const pendingTransactions = allUserTransactions.filter(t => 
+          t.transactionType === 'kazanç' && t.status === 'beklemede'
+        );
+        
+        // Bu dönem en son dönem mi kontrol et (en yüksek tarihli)
+        const isLatestPeriod = !salesByPeriod.some(other => 
+          other._id.salesperson.toString() === earning._id.salesperson.toString() &&
+          other.periodName > earning.periodName
+        );
+        
+        const pendingAmount = isLatestPeriod ? 
+          pendingTransactions.reduce((sum, t) => sum + t.amount, 0) : 0;
 
-        // Kesintiler (bekleyen + yapılan)
-        const deductionAmount = transactions
+        // Kesintiler (sadece bu dönemle ilgili)
+        const deductionAmount = periodTransactions
           .filter(t => t.transactionType === 'kesinti')
           .reduce((sum, t) => sum + t.amount, 0);
+
+        // Debug: Transaction'ları logla
+        if (pendingAmount > 0 || deductionAmount > 0) {
+          console.log(`💰 ${earning.salespersonName} - ${earning.periodName}:`, {
+            isLatestPeriod,
+            pendingAmount,
+            deductionAmount,
+            pendingTransactions: pendingTransactions.length
+          });
+        }
 
         // Net hakediş
         const netAmount = earning.totalCommissions + pendingAmount - deductionAmount;
@@ -1505,13 +1545,19 @@ router.get('/earnings-simple', auth, async (req, res) => {
           deductionAmount,
           netAmount,
           status,
-          transactions: transactions.map(t => ({
+          transactions: pendingTransactions.concat(periodTransactions).map(t => ({
             id: t._id,
             type: t.transactionType,
             amount: t.amount,
             status: t.status,
+            deductionStatus: t.deductionStatus,
             description: t.description,
-            createdAt: t.createdAt
+            createdAt: t.createdAt,
+            sale: {
+              customerName: t.sale?.customerName,
+              contractNo: t.sale?.contractNo,
+              saleDate: t.sale?.saleDate
+            }
           }))
         };
       })
