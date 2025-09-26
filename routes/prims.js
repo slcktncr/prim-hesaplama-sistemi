@@ -1501,37 +1501,76 @@ router.get('/earnings-simple', auth, async (req, res) => {
           t.transactionType === 'kazanç' && t.status === 'beklemede'
         );
         
-        // Bekleyen ödemeleri en güncel döneme dahil et
-        // Temsilcinin en son dönemi bul
+        // Bekleyen ödemeleri BUGÜNE EN YAKIN döneme dahil et
+        // Temsilcinin tüm dönemlerini tarih bazında sırala
         const userPeriods = salesByPeriod.filter(s => 
           s._id.salesperson.toString() === earning._id.salesperson.toString()
-        ).sort((a, b) => b.periodName.localeCompare(a.periodName));
+        );
         
-        const isLatestPeriod = userPeriods.length > 0 && userPeriods[0].periodName === earning.periodName;
+        // PrimPeriod bilgilerini getir ve tarih bazında sırala
+        const periodsWithDates = await Promise.all(
+          userPeriods.map(async (up) => {
+            const periodInfo = await PrimPeriod.findById(up._id.primPeriod);
+            return {
+              ...up,
+              startDate: periodInfo?.startDate || new Date('1900-01-01'),
+              endDate: periodInfo?.endDate || new Date('2100-12-31')
+            };
+          })
+        );
         
-        // Bekleyen ödemeler sadece en son dönemde gösterilir
-        const pendingAmount = isLatestPeriod ? 
+        // Bugüne en yakın dönemi bul (bugünden sonraki en yakın dönem)
+        const today = new Date();
+        const futureOrCurrentPeriods = periodsWithDates.filter(p => p.endDate >= today);
+        const nearestPeriod = futureOrCurrentPeriods.length > 0 
+          ? futureOrCurrentPeriods.sort((a, b) => a.startDate - b.startDate)[0]
+          : periodsWithDates.sort((a, b) => b.endDate - a.endDate)[0]; // Eğer gelecek dönem yoksa en son geçmiş dönem
+        
+        const isNearestPeriod = nearestPeriod && nearestPeriod._id.primPeriod.toString() === earning._id.primPeriod.toString();
+        
+        // Bekleyen ödemeler sadece bugüne en yakın dönemde gösterilir
+        const pendingAmount = isNearestPeriod ? 
           pendingTransactions.reduce((sum, t) => sum + t.amount, 0) : 0;
 
         // Debug: Bekleyen ödeme varsa logla
         if (pendingAmount > 0) {
           console.log(`🎯 BEKLEYEN ÖDEME BULUNDU - ${earning.salespersonName} - ${earning.periodName}:`, {
-            isLatestPeriod,
+            isNearestPeriod,
+            nearestPeriodName: nearestPeriod?.periodName,
+            currentPeriodName: earning.periodName,
             pendingAmount,
             pendingTransactionsCount: pendingTransactions.length,
-            allUserPeriods: userPeriods.map(p => p.periodName)
+            allUserPeriodsWithDates: periodsWithDates.map(p => ({
+              name: p.periodName,
+              startDate: p.startDate,
+              endDate: p.endDate
+            }))
           });
         }
 
         // Kesintiler (sadece bu dönemle ilgili)
-        const deductionAmount = periodTransactions
-          .filter(t => t.transactionType === 'kesinti')
-          .reduce((sum, t) => sum + t.amount, 0);
+        const deductionTransactions = periodTransactions.filter(t => t.transactionType === 'kesinti');
+        const deductionAmount = deductionTransactions.reduce((sum, t) => sum + t.amount, 0);
+        
+        // Debug: Kesinti varsa logla
+        if (deductionTransactions.length > 0) {
+          console.log(`🔴 KESINTI BULUNDU - ${earning.salespersonName} - ${earning.periodName}:`, {
+            deductionAmount,
+            deductionTransactionsCount: deductionTransactions.length,
+            deductionTransactions: deductionTransactions.map(t => ({
+              amount: t.amount,
+              status: t.status,
+              deductionStatus: t.deductionStatus,
+              description: t.description,
+              saleCustomerName: t.sale?.customerName
+            }))
+          });
+        }
 
         // Debug: Transaction'ları logla
         if (pendingAmount > 0 || deductionAmount > 0) {
           console.log(`💰 ${earning.salespersonName} - ${earning.periodName}:`, {
-            isLatestPeriod,
+            isNearestPeriod,
             pendingAmount,
             deductionAmount,
             pendingTransactions: pendingTransactions.length
