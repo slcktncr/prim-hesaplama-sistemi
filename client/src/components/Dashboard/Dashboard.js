@@ -18,9 +18,11 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateFilters, setDateFilters] = useState({
-    startDate: getTodayDateString(),
-    endDate: getTodayDateString()
+    startDate: '', // Boş bırak - tüm veriler için
+    endDate: ''    // Boş bırak - tüm veriler için
   });
+  
+  const [activeFilter, setActiveFilter] = useState('all'); // Aktif filtre durumu
   
   const { user } = useAuth();
 
@@ -73,6 +75,46 @@ const Dashboard = () => {
     if (selectedPeriod === 'current') return 'Güncel Dönem';
     const period = periods.find(p => p._id === selectedPeriod);
     return period ? period.name : 'Bilinmeyen Dönem';
+  };
+
+  // Hızlı filtre butonları
+  const handleQuickFilter = (filterType) => {
+    const today = new Date();
+    let startDate = '';
+    let endDate = '';
+
+    switch (filterType) {
+      case 'yesterday':
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        startDate = yesterday.toISOString().split('T')[0];
+        endDate = yesterday.toISOString().split('T')[0];
+        break;
+      case 'today':
+        startDate = today.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+        break;
+      case 'week':
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 7);
+        startDate = weekAgo.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+        break;
+      case 'month':
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(today.getMonth() - 1);
+        startDate = monthAgo.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+        break;
+      case 'all':
+      default:
+        startDate = '';
+        endDate = '';
+        break;
+    }
+
+    setDateFilters({ startDate, endDate });
+    setActiveFilter(filterType);
   };
 
   if (loading) {
@@ -141,7 +183,10 @@ const Dashboard = () => {
                       <Form.Control
                         type="date"
                         value={dateFilters.startDate}
-                        onChange={(e) => setDateFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                        onChange={(e) => {
+                          setDateFilters(prev => ({ ...prev, startDate: e.target.value }));
+                          setActiveFilter('custom');
+                        }}
                       />
                     </Form.Group>
                   </Col>
@@ -151,8 +196,53 @@ const Dashboard = () => {
                       <Form.Control
                         type="date"
                         value={dateFilters.endDate}
-                        onChange={(e) => setDateFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                        onChange={(e) => {
+                          setDateFilters(prev => ({ ...prev, endDate: e.target.value }));
+                          setActiveFilter('custom');
+                        }}
                       />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Hızlı Filtreler</Form.Label>
+                      <div className="d-flex gap-2 flex-wrap">
+                        <Button 
+                          variant={activeFilter === 'all' ? 'primary' : 'outline-primary'} 
+                          size="sm"
+                          onClick={() => handleQuickFilter('all')}
+                        >
+                          Tüm Veriler
+                        </Button>
+                        <Button 
+                          variant={activeFilter === 'yesterday' ? 'primary' : 'outline-primary'} 
+                          size="sm"
+                          onClick={() => handleQuickFilter('yesterday')}
+                        >
+                          Dün
+                        </Button>
+                        <Button 
+                          variant={activeFilter === 'today' ? 'primary' : 'outline-primary'} 
+                          size="sm"
+                          onClick={() => handleQuickFilter('today')}
+                        >
+                          Bugün
+                        </Button>
+                        <Button 
+                          variant={activeFilter === 'week' ? 'primary' : 'outline-primary'} 
+                          size="sm"
+                          onClick={() => handleQuickFilter('week')}
+                        >
+                          Son 1 Hafta
+                        </Button>
+                        <Button 
+                          variant={activeFilter === 'month' ? 'primary' : 'outline-primary'} 
+                          size="sm"
+                          onClick={() => handleQuickFilter('month')}
+                        >
+                          Son 1 Ay
+                        </Button>
+                      </div>
                     </Form.Group>
                   </Col>
                   <Col md={3}>
