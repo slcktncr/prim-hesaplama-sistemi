@@ -86,6 +86,8 @@ export const primsAPI = {
   cancelDeduction: (id) => API.put(`/prims/deductions/${id}/cancel`),
   updateTransactionStatus: (id, status) => API.put(`/prims/transactions/${id}/status`, { status }),
   getEarningsV2: (params) => API.get('/prims/earnings-v2', { params }),
+  getEarningsSimple: (params) => API.get('/prims/earnings-simple', { params }),
+  getEarningsClean: (params) => API.get('/prims/earnings-clean', { params }),
 };
 
 // Reports API calls

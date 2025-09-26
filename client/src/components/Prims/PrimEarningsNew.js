@@ -31,19 +31,9 @@ const PrimEarningsNew = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/prims/earnings-simple', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      console.log('🆕 YENİ TEMİZ SİSTEM - Hakediş verileri getiriliyor...');
+      const response = await primsAPI.getEarningsClean();
+      const data = response.data;
       console.log('✅ Yeni hakediş verileri:', data);
       
       setAllEarnings(data);
@@ -122,8 +112,8 @@ const PrimEarningsNew = () => {
     return earnings.reduce((totals, earning) => ({
       totalSales: totals.totalSales + earning.totalSalesAmount,
       totalCommissions: totals.totalCommissions + earning.totalCommissions,
-      totalPending: totals.totalPending + earning.pendingAmount,
-      totalDeductions: totals.totalDeductions + earning.deductionAmount
+      totalPending: totals.totalPending + earning.pendingEarnings,
+      totalDeductions: totals.totalDeductions + (earning.cancellationAmount + earning.modificationDeductions + earning.pendingDeductions)
     }), {
       totalSales: 0,
       totalCommissions: 0,
@@ -297,7 +287,7 @@ const PrimEarningsNew = () => {
                       </span>
                     </td>
                     <td>
-                      {earning.pendingAmount > 0 ? (
+                      {earning.pendingEarnings > 0 ? (
                         <Button 
                           variant="outline-warning" 
                           size="sm"
@@ -318,29 +308,29 @@ const PrimEarningsNew = () => {
                           }}
                         >
                           <FiClock className="me-1" />
-                          +{formatCurrency(earning.pendingAmount)}
+                          +{formatCurrency(earning.pendingEarnings)}
                         </Button>
                       ) : (
                         <span className="text-muted">-</span>
                       )}
                     </td>
                     <td>
-                      {earning.deductionAmount > 0 ? (
+                      {(earning.cancellationAmount + earning.modificationDeductions + earning.pendingDeductions) > 0 ? (
                         <Button 
                           variant="outline-danger" 
                           size="sm"
                           onClick={() => openDetailModal('deduction', earning)}
                         >
                           <FiTrendingDown className="me-1" />
-                          -{formatCurrency(earning.deductionAmount)}
+                          -{formatCurrency(earning.cancellationAmount + earning.modificationDeductions + earning.pendingDeductions)}
                         </Button>
                       ) : (
                         <span className="text-muted">-</span>
                       )}
                     </td>
                     <td>
-                      <span className={`fw-bold ${earning.netAmount >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {formatCurrency(earning.netAmount)}
+                      <span className={`fw-bold ${earning.totalNet >= 0 ? 'text-success' : 'text-danger'}`}>
+                        {formatCurrency(earning.totalNet)}
                       </span>
                     </td>
                     <td>
@@ -411,7 +401,7 @@ const PrimEarningsNew = () => {
                   <Col md={3}>
                     <Card className="text-center border-dark">
                       <Card.Body className="py-2">
-                        <div className="h6 text-dark mb-1">{formatCurrency(modalData.data.netAmount)}</div>
+                        <div className="h6 text-dark mb-1">{formatCurrency(modalData.data.totalNet)}</div>
                         <small className="text-muted">Net Hakediş</small>
                       </Card.Body>
                     </Card>

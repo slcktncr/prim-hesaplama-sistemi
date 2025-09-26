@@ -1645,4 +1645,415 @@ router.get('/earnings-simple', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/prims/earnings-clean
+// @desc    Temiz prim hakediş sistemi - SIFIRDAN YENİ
+// @access  Private
+router.get('/earnings-clean', auth, async (req, res) => {
+  try {
+    const { salesperson, period } = req.query;
+    
+    // Kullanıcı rolü kontrolü
+    let salespersonFilter = {};
+    const isAdmin = req.user.role && req.user.role.name === 'admin';
+    
+    if (!isAdmin) {
+      salespersonFilter.salesperson = req.user._id;
+    } else if (salesperson && salesperson !== 'all') {
+      salespersonFilter.salesperson = salesperson;
+    }
+
+    console.log('🆕 TEMİZ PRİM HAKEDİŞ SİSTEMİ - Başlıyor:', { salesperson, period, isAdmin });
+
+    // 1. TEMEL SATIŞ PRİMLERİ - Aktif satışların dönemsel gruplaması
+    const salesEarnings = await Sale.aggregate([
+      { 
+        $match: { 
+          status: 'aktif',
+          saleType: { $ne: 'kapora' },
+          ...salespersonFilter 
+        } 
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'salespersonInfo'
+        }
+      },
+      {
+        $lookup: {
+          from: 'primperiods',
+          localField: 'primPeriod',
+          foreignField: '_id',
+          as: 'periodInfo'
+        }
+      },
+      {
+        $addFields: {
+          salespersonInfo: { $arrayElemAt: ['$salespersonInfo', 0] },
+          periodInfo: { $arrayElemAt: ['$periodInfo', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            primPeriod: '$primPeriod'
+          },
+          salespersonName: { $first: '$salespersonInfo.name' },
+          salespersonId: { $first: { $toString: '$salesperson' } },
+          periodName: { $first: '$periodInfo.name' },
+          
+          // Temel istatistikler
+          salesCount: { $sum: 1 },
+          totalSalesAmount: { $sum: '$listPrice' },
+          totalCommissions: { $sum: '$primAmount' },
+          paidCommissions: { 
+            $sum: { 
+              $cond: [{ $eq: ['$primStatus', 'ödendi'] }, '$primAmount', 0] 
+            } 
+          },
+          unpaidCommissions: { 
+            $sum: { 
+              $cond: [{ $eq: ['$primStatus', 'ödenmedi'] }, '$primAmount', 0] 
+            } 
+          },
+          
+          // Detay için satış listesi
+          sales: { $push: '$$ROOT' }
+        }
+      }
+    ]);
+
+    console.log('📊 Temel satış primleri:', salesEarnings.length, 'dönem grubu');
+
+    // 2. İPTAL KESİNTİLERİ - İptal edilen primi ödenen satışlar
+    const cancellationDeductions = await Sale.aggregate([
+      {
+        $match: {
+          status: 'iptal',
+          primStatus: 'ödendi',
+          ...salespersonFilter
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'salespersonInfo'
+        }
+      },
+      {
+        $lookup: {
+          from: 'primperiods',
+          localField: 'primPeriod',
+          foreignField: '_id',
+          as: 'periodInfo'
+        }
+      },
+      {
+        $addFields: {
+          salespersonInfo: { $arrayElemAt: ['$salespersonInfo', 0] },
+          periodInfo: { $arrayElemAt: ['$periodInfo', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            primPeriod: '$primPeriod'
+          },
+          salespersonName: { $first: '$salespersonInfo.name' },
+          salespersonId: { $first: { $toString: '$salesperson' } },
+          periodName: { $first: '$periodInfo.name' },
+          
+          cancellationCount: { $sum: 1 },
+          cancellationAmount: { $sum: '$primAmount' },
+          cancelledSales: { $push: '$$ROOT' }
+        }
+      }
+    ]);
+
+    console.log('🚫 İptal kesintileri:', cancellationDeductions.length, 'dönem grubu');
+
+    // 3. DEĞİŞİKLİK FARKLARI - Modification PrimTransaction'ları
+    const modificationTransactions = await PrimTransaction.aggregate([
+      {
+        $match: {
+          description: { $regex: 'değişiklik', $options: 'i' },
+          ...salespersonFilter
+        }
+      },
+      {
+        $lookup: {
+          from: 'sales',
+          localField: 'sale',
+          foreignField: '_id',
+          as: 'saleInfo'
+        }
+      },
+      {
+        $addFields: {
+          saleInfo: { $arrayElemAt: ['$saleInfo', 0] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'salespersonInfo'
+        }
+      },
+      {
+        $lookup: {
+          from: 'primperiods',
+          localField: 'primPeriod',
+          foreignField: '_id',
+          as: 'periodInfo'
+        }
+      },
+      {
+        $addFields: {
+          salespersonInfo: { $arrayElemAt: ['$salespersonInfo', 0] },
+          periodInfo: { $arrayElemAt: ['$periodInfo', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            primPeriod: '$primPeriod'
+          },
+          salespersonName: { $first: '$salespersonInfo.name' },
+          salespersonId: { $first: { $toString: '$salesperson' } },
+          periodName: { $first: '$periodInfo.name' },
+          
+          // Ek kazançlar (değişiklik sonrası artış)
+          additionalEarnings: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$transactionType', 'kazanç'] }, { $eq: ['$status', 'onaylandı'] }] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          
+          // Bekleyen ek kazançlar
+          pendingEarnings: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$transactionType', 'kazanç'] }, { $eq: ['$status', 'beklemede'] }] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          
+          // Değişiklik kesintileri
+          modificationDeductions: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$transactionType', 'kesinti'] }, { $eq: ['$status', 'onaylandı'] }] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          
+          // Bekleyen kesintiler
+          pendingDeductions: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$transactionType', 'kesinti'] }, { $eq: ['$deductionStatus', 'beklemede'] }] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          
+          modificationTransactions: { $push: '$$ROOT' }
+        }
+      }
+    ]);
+
+    console.log('🔄 Değişiklik işlemleri:', modificationTransactions.length, 'dönem grubu');
+
+    // 4. VERİLERİ BİRLEŞTİR
+    const allEarnings = [];
+    const processedKeys = new Set();
+
+    // Temel satış primlerini ekle
+    salesEarnings.forEach(earning => {
+      const key = `${earning.salespersonId}-${earning._id.primPeriod}`;
+      processedKeys.add(key);
+
+      allEarnings.push({
+        salespersonId: earning.salespersonId,
+        salespersonName: earning.salespersonName,
+        periodName: earning.periodName,
+        periodId: earning._id.primPeriod,
+        
+        // Temel primler
+        salesCount: earning.salesCount,
+        totalSalesAmount: earning.totalSalesAmount,
+        totalCommissions: earning.totalCommissions,
+        paidCommissions: earning.paidCommissions,
+        unpaidCommissions: earning.unpaidCommissions,
+        
+        // İptal kesintileri (başlangıçta sıfır)
+        cancellationCount: 0,
+        cancellationAmount: 0,
+        
+        // Değişiklik farkları (başlangıçta sıfır)
+        additionalEarnings: 0,
+        pendingEarnings: 0,
+        modificationDeductions: 0,
+        pendingDeductions: 0,
+        
+        // Detaylar
+        sales: earning.sales,
+        cancelledSales: [],
+        modificationTransactions: []
+      });
+    });
+
+    // İptal kesintilerini ekle/güncelle
+    cancellationDeductions.forEach(cancellation => {
+      const key = `${cancellation.salespersonId}-${cancellation._id.primPeriod}`;
+      let earning = allEarnings.find(e => 
+        e.salespersonId === cancellation.salespersonId && 
+        e.periodId.toString() === cancellation._id.primPeriod.toString()
+      );
+
+      if (!earning) {
+        // Yeni kayıt oluştur
+        earning = {
+          salespersonId: cancellation.salespersonId,
+          salespersonName: cancellation.salespersonName,
+          periodName: cancellation.periodName,
+          periodId: cancellation._id.primPeriod,
+          salesCount: 0,
+          totalSalesAmount: 0,
+          totalCommissions: 0,
+          paidCommissions: 0,
+          unpaidCommissions: 0,
+          additionalEarnings: 0,
+          pendingEarnings: 0,
+          modificationDeductions: 0,
+          pendingDeductions: 0,
+          sales: [],
+          cancelledSales: [],
+          modificationTransactions: []
+        };
+        allEarnings.push(earning);
+        processedKeys.add(key);
+      }
+
+      earning.cancellationCount = cancellation.cancellationCount;
+      earning.cancellationAmount = cancellation.cancellationAmount;
+      earning.cancelledSales = cancellation.cancelledSales;
+    });
+
+    // Değişiklik işlemlerini ekle/güncelle
+    modificationTransactions.forEach(modification => {
+      const key = `${modification.salespersonId}-${modification._id.primPeriod}`;
+      let earning = allEarnings.find(e => 
+        e.salespersonId === modification.salespersonId && 
+        e.periodId.toString() === modification._id.primPeriod.toString()
+      );
+
+      if (!earning) {
+        // Yeni kayıt oluştur
+        earning = {
+          salespersonId: modification.salespersonId,
+          salespersonName: modification.salespersonName,
+          periodName: modification.periodName,
+          periodId: modification._id.primPeriod,
+          salesCount: 0,
+          totalSalesAmount: 0,
+          totalCommissions: 0,
+          paidCommissions: 0,
+          unpaidCommissions: 0,
+          cancellationCount: 0,
+          cancellationAmount: 0,
+          sales: [],
+          cancelledSales: [],
+          modificationTransactions: []
+        };
+        allEarnings.push(earning);
+        processedKeys.add(key);
+      }
+
+      earning.additionalEarnings = modification.additionalEarnings;
+      earning.pendingEarnings = modification.pendingEarnings;
+      earning.modificationDeductions = modification.modificationDeductions;
+      earning.pendingDeductions = modification.pendingDeductions;
+      earning.modificationTransactions = modification.modificationTransactions;
+    });
+
+    // 5. NET HAKEDİŞ HESAPLA ve SIRAYLA
+    const finalEarnings = allEarnings
+      .map(earning => {
+        // Net hakediş hesaplama
+        const grossEarnings = earning.totalCommissions + earning.additionalEarnings;
+        const totalDeductions = earning.cancellationAmount + earning.modificationDeductions;
+        const netAmount = grossEarnings - totalDeductions;
+        
+        // Bekleyen tutarlar
+        const pendingAmount = earning.pendingEarnings - earning.pendingDeductions;
+        
+        // Toplam net (mevcut + bekleyen)
+        const totalNet = netAmount + pendingAmount;
+        
+        // Durum
+        const hasPending = earning.unpaidCommissions > 0 || earning.pendingEarnings > 0 || earning.pendingDeductions > 0;
+        const status = hasPending ? 'pending' : 'paid';
+
+        return {
+          ...earning,
+          grossEarnings,
+          totalDeductions,
+          netAmount,
+          pendingAmount,
+          totalNet,
+          status
+        };
+      })
+      .sort((a, b) => {
+        // Önce temsilci adına göre sırala
+        if (a.salespersonName !== b.salespersonName) {
+          return a.salespersonName.localeCompare(b.salespersonName);
+        }
+        // Sonra dönem adına göre (tersten - yeni dönemler üstte)
+        return b.periodName.localeCompare(a.periodName);
+      });
+
+    // Debug özeti
+    const summary = {
+      totalRecords: finalEarnings.length,
+      totalSales: finalEarnings.reduce((sum, e) => sum + e.salesCount, 0),
+      totalCommissions: finalEarnings.reduce((sum, e) => sum + e.totalCommissions, 0),
+      totalCancellations: finalEarnings.reduce((sum, e) => sum + e.cancellationCount, 0),
+      totalCancellationAmount: finalEarnings.reduce((sum, e) => sum + e.cancellationAmount, 0),
+      totalPendingEarnings: finalEarnings.reduce((sum, e) => sum + e.pendingEarnings, 0),
+      totalPendingDeductions: finalEarnings.reduce((sum, e) => sum + e.pendingDeductions, 0)
+    };
+
+    console.log('✅ TEMİZ SİSTEM TAMAMLANDI:', summary);
+
+    res.json(finalEarnings);
+
+  } catch (error) {
+    console.error('❌ Temiz prim hakediş sistemi hatası:', error);
+    res.status(500).json({ 
+      message: 'Prim hakediş verileri getirilemedi',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 module.exports = router;
