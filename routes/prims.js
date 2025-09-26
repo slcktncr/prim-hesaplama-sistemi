@@ -1376,7 +1376,9 @@ router.get('/earnings-simple', auth, async (req, res) => {
     
     // Sadece kendi verilerini görebilir (admin hariç)
     let salespersonFilter = {};
-    if (!req.user.roles.includes('admin')) {
+    const isAdmin = req.user.role && req.user.role.name === 'admin';
+    
+    if (!isAdmin) {
       salespersonFilter.salesperson = req.user._id;
     } else if (salesperson && salesperson !== 'all') {
       salespersonFilter.salesperson = salesperson;
@@ -1433,7 +1435,7 @@ router.get('/earnings-simple', auth, async (req, res) => {
           sales: { $push: '$$ROOT' }
         }
       },
-      { $sort: { 'periodInfo.startDate': -1, salespersonName: 1 } }
+      { $sort: { salespersonName: 1, 'periodInfo.name': -1 } }
     ]);
 
     console.log('📊 Dönemsel satış verileri:', salesByPeriod.length, 'kayıt');
