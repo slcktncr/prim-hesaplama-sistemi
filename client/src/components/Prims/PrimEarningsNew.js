@@ -15,6 +15,9 @@ const PrimEarningsNew = () => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [earnings, setEarnings] = useState([]);
+  const [allEarnings, setAllEarnings] = useState([]); // Filtrelenmemiş veri
+  const [periods, setPeriods] = useState([]); // Dönemler
+  const [salespersons, setSalespersons] = useState([]); // Temsilciler
   const [selectedPeriod, setSelectedPeriod] = useState('all');
   const [selectedSalesperson, setSelectedSalesperson] = useState('all');
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -39,7 +42,25 @@ const PrimEarningsNew = () => {
       
       const data = await response.json();
       console.log('✅ Yeni hakediş verileri:', data);
+      
+      setAllEarnings(data);
       setEarnings(data);
+      
+      // Dönemleri çıkar
+      const uniquePeriods = [...new Set(data.map(item => item.periodName))].sort();
+      setPeriods(uniquePeriods);
+      
+      // Temsilcileri çıkar
+      const uniqueSalespersons = [...new Set(data.map(item => ({ 
+        id: item.salespersonId, 
+        name: item.salespersonName 
+      })))];
+      setSalespersons(uniqueSalespersons);
+      
+      console.log('📊 Filtre verileri:', {
+        periods: uniquePeriods,
+        salespersons: uniqueSalespersons.map(s => s.name)
+      });
     } catch (error) {
       console.error('❌ Hakediş getirme hatası:', error);
       toast.error(`Hakediş verileri getirilemedi: ${error.message}`);
@@ -51,6 +72,28 @@ const PrimEarningsNew = () => {
   useEffect(() => {
     fetchEarnings();
   }, []);
+
+  // Filtreleme
+  useEffect(() => {
+    let filtered = allEarnings;
+    
+    if (selectedPeriod !== 'all') {
+      filtered = filtered.filter(earning => earning.periodName === selectedPeriod);
+    }
+    
+    if (selectedSalesperson !== 'all') {
+      filtered = filtered.filter(earning => earning.salespersonId === selectedSalesperson);
+    }
+    
+    console.log('🔍 Filtrelenmiş veri:', {
+      selectedPeriod,
+      selectedSalesperson,
+      originalCount: allEarnings.length,
+      filteredCount: filtered.length
+    });
+    
+    setEarnings(filtered);
+  }, [selectedPeriod, selectedSalesperson, allEarnings]);
 
   // Detay modalını aç
   const openDetailModal = (type, data) => {
@@ -114,9 +157,9 @@ const PrimEarningsNew = () => {
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
               <option value="all">Tüm Dönemler</option>
-              <option value="2025-09">Eylül 2025</option>
-              <option value="2025-08">Ağustos 2025</option>
-              <option value="2025-07">Temmuz 2025</option>
+              {periods.map(period => (
+                <option key={period} value={period}>{period}</option>
+              ))}
             </Form.Select>
           </Form.Group>
         </Col>
@@ -128,7 +171,9 @@ const PrimEarningsNew = () => {
               onChange={(e) => setSelectedSalesperson(e.target.value)}
             >
               <option value="all">Tüm Temsilciler</option>
-              <option value="anil">Anıl DAŞDEMİR</option>
+              {salespersons.map(person => (
+                <option key={person.id} value={person.id}>{person.name}</option>
+              ))}
             </Form.Select>
           </Form.Group>
         </Col>

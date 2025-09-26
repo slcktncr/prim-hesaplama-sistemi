@@ -1384,11 +1384,25 @@ router.get('/earnings-simple', auth, async (req, res) => {
       salespersonFilter.salesperson = salesperson;
     }
 
-    console.log('🎯 Basit hakediş sorgusu:', { salespersonFilter, period, year, month });
+    console.log('🎯 Basit hakediş sorgusu:', { 
+      salespersonFilter, 
+      period, 
+      year, 
+      month,
+      isAdmin,
+      userId: req.user._id,
+      userName: req.user.name
+    });
 
-    // 1. Satışları prim dönemlerine göre grupla
+    // 1. Satışları prim dönemlerine göre grupla (SADECE AKTİF SATIŞLAR)
     const salesByPeriod = await Sale.aggregate([
-      { $match: { status: 'aktif', ...salespersonFilter } },
+      { 
+        $match: { 
+          status: 'aktif',  // Sadece aktif satışlar (kapora değil)
+          saleType: { $ne: 'kapora' }, // Kapora tipini hariç tut
+          ...salespersonFilter 
+        } 
+      },
       {
         $lookup: {
           from: 'users',
@@ -1439,6 +1453,17 @@ router.get('/earnings-simple', auth, async (req, res) => {
     ]);
 
     console.log('📊 Dönemsel satış verileri:', salesByPeriod.length, 'kayıt');
+    
+    // Debug: İlk birkaç kayıtı logla
+    if (salesByPeriod.length > 0) {
+      console.log('📋 İlk 3 satış grubu:', salesByPeriod.slice(0, 3).map(s => ({
+        salesperson: s.salespersonName,
+        period: s.periodName,
+        salesCount: s.salesCount,
+        totalSales: s.totalSalesAmount,
+        totalCommissions: s.totalCommissions
+      })));
+    }
 
     // 2. Her dönem için ek ödemeler ve kesintileri hesapla
     const enrichedEarnings = await Promise.all(
