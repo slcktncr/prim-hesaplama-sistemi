@@ -1727,6 +1727,21 @@ router.get('/earnings-clean', auth, async (req, res) => {
     ]);
 
     console.log('📊 Temel satış primleri:', salesEarnings.length, 'dönem grubu');
+    
+    // Debug: Sibel Çekmez satışını özellikle kontrol et
+    salesEarnings.forEach(earning => {
+      const sibelSale = earning.sales?.find(s => s.customerName?.includes('SİBEL') || s.customerName?.includes('ÇEKMEZ'));
+      if (sibelSale) {
+        console.log('🔍 SİBEL ÇEKMEZ satışı bulundu:', {
+          customerName: sibelSale.customerName,
+          listPrice: sibelSale.listPrice,
+          primAmount: sibelSale.primAmount,
+          primStatus: sibelSale.primStatus,
+          salesperson: earning.salespersonName,
+          period: earning.periodName
+        });
+      }
+    });
 
     // 2. İPTAL KESİNTİLERİ - İptal edilen primi ödenen satışlar
     const cancellationDeductions = await Sale.aggregate([
@@ -1941,6 +1956,8 @@ router.get('/earnings-clean', auth, async (req, res) => {
           totalCommissions: 0,
           paidCommissions: 0,
           unpaidCommissions: 0,
+          cancellationCount: 0,
+          cancellationAmount: 0,
           additionalEarnings: 0,
           pendingEarnings: 0,
           modificationDeductions: 0,
@@ -1958,17 +1975,16 @@ router.get('/earnings-clean', auth, async (req, res) => {
       earning.cancelledSales = cancellation.cancelledSales;
     });
 
-    // Değişiklik işlemlerini ekle/güncelle
-    modificationTransactions.forEach(modification => {
-      const key = `${modification.salespersonId}-${modification._id.primPeriod}`;
-      let earning = allEarnings.find(e => 
-        e.salespersonId === modification.salespersonId && 
-        e.periodId.toString() === modification._id.primPeriod.toString()
+    // Değişiklik işlemlerini ekle/güncelle - BEKLEYEN ÖDEMELERİ EN YAKIN DÖNEME EKLE
+    for (const modification of modificationTransactions) {
+      // Bu temsilcinin tüm dönemlerini bul
+      const userPeriods = allEarnings.filter(e => 
+        e.salespersonId === modification.salespersonId
       );
 
-      if (!earning) {
-        // Yeni kayıt oluştur
-        earning = {
+      if (userPeriods.length === 0) {
+        // Bu temsilcinin hiç satışı yoksa yeni kayıt oluştur
+        const newEarning = {
           salespersonId: modification.salespersonId,
           salespersonName: modification.salespersonName,
           periodName: modification.periodName,
@@ -1980,20 +1996,47 @@ router.get('/earnings-clean', auth, async (req, res) => {
           unpaidCommissions: 0,
           cancellationCount: 0,
           cancellationAmount: 0,
+          additionalEarnings: modification.additionalEarnings,
+          pendingEarnings: modification.pendingEarnings,
+          modificationDeductions: modification.modificationDeductions,
+          pendingDeductions: modification.pendingDeductions,
           sales: [],
           cancelledSales: [],
-          modificationTransactions: []
+          modificationTransactions: modification.modificationTransactions
         };
-        allEarnings.push(earning);
-        processedKeys.add(key);
+        allEarnings.push(newEarning);
+        continue;
       }
 
-      earning.additionalEarnings = modification.additionalEarnings;
-      earning.pendingEarnings = modification.pendingEarnings;
-      earning.modificationDeductions = modification.modificationDeductions;
-      earning.pendingDeductions = modification.pendingDeductions;
-      earning.modificationTransactions = modification.modificationTransactions;
-    });
+      // Bu temsilcinin en son dönemini bul (alfabetik olarak en büyük)
+      const latestPeriod = userPeriods.sort((a, b) => b.periodName.localeCompare(a.periodName))[0];
+      
+      // Orijinal dönemde ek kazançlar ve kesintiler ekle
+      const originalEarning = allEarnings.find(e => 
+        e.salespersonId === modification.salespersonId && 
+        e.periodId.toString() === modification._id.primPeriod.toString()
+      );
+
+      if (originalEarning) {
+        originalEarning.additionalEarnings = modification.additionalEarnings;
+        originalEarning.modificationDeductions = modification.modificationDeductions;
+        originalEarning.modificationTransactions = modification.modificationTransactions;
+      }
+
+      // BEKLEYEN ödemeler/kesintiler en son dönemde gösterilir
+      if (modification.pendingEarnings > 0 || modification.pendingDeductions > 0) {
+        latestPeriod.pendingEarnings += modification.pendingEarnings;
+        latestPeriod.pendingDeductions += modification.pendingDeductions;
+        
+        console.log(`🎯 BEKLEYEN ÖDEME EN SON DÖNEME EKLENDİ:`, {
+          salesperson: modification.salespersonName,
+          originalPeriod: modification.periodName,
+          latestPeriod: latestPeriod.periodName,
+          pendingEarnings: modification.pendingEarnings,
+          pendingDeductions: modification.pendingDeductions
+        });
+      }
+    }
 
     // 5. NET HAKEDİŞ HESAPLA ve SIRAYLA
     const finalEarnings = allEarnings
