@@ -1369,6 +1369,26 @@ router.put('/:id/cancel', auth, async (req, res) => {
     sale.cancelledBy = req.user._id;
     sale.updatedAt = new Date();
 
+    // Eğer prim ödenmişse kesinti PrimTransaction'ı oluştur
+    if (sale.primStatus === 'ödendi' && sale.primAmount > 0) {
+      const PrimTransaction = require('../models/PrimTransaction');
+      
+      const primTransaction = new PrimTransaction({
+        salesperson: sale.salesperson,
+        sale: sale._id,
+        primPeriod: sale.primPeriod,
+        transactionType: 'kesinti',
+        amount: sale.primAmount,
+        description: `Satış iptali kesinti - ${sale.customerName} (${sale.blockNo}/${sale.apartmentNo})`,
+        status: 'onaylandı',
+        deductionStatus: 'beklemede',
+        createdBy: req.user._id
+      });
+
+      await primTransaction.save();
+      console.log(`💳 İptal kesinti PrimTransaction oluşturuldu: ${sale.primAmount} TL`);
+    }
+
     await sale.save();
 
     const updatedSale = await Sale.findById(sale._id)

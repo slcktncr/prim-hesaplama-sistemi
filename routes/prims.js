@@ -1496,9 +1496,11 @@ router.get('/earnings-simple', auth, async (req, res) => {
           earning.sales.some(s => s._id.toString() === t.sale?._id?.toString())
         );
 
-        // Bekleyen ödemeler (ek prim) - tüm bekleyen transaction'ları en son döneme dahil et
+        // Bekleyen ödemeler (sadece değişiklik sonrası ek primler) - tüm bekleyen transaction'ları en son döneme dahil et
         const pendingTransactions = allUserTransactions.filter(t => 
-          t.transactionType === 'kazanç' && t.status === 'beklemede'
+          t.transactionType === 'kazanç' && 
+          t.status === 'beklemede' &&
+          t.description && t.description.includes('değişiklik') // Sadece değişiklik sonrası primler
         );
         
         // Bekleyen ödemeleri BUGÜNE EN YAKIN döneme dahil et
@@ -1548,8 +1550,12 @@ router.get('/earnings-simple', auth, async (req, res) => {
           });
         }
 
-        // Kesintiler (sadece bu dönemle ilgili)
-        const deductionTransactions = periodTransactions.filter(t => t.transactionType === 'kesinti');
+        // Kesintiler (sadece iptal edilen satışlar ve değişiklik sonrası kesintiler)
+        const deductionTransactions = periodTransactions.filter(t => 
+          t.transactionType === 'kesinti' && 
+          t.description && 
+          (t.description.includes('iptal') || t.description.includes('değişiklik')) // Sadece iptal veya değişiklik kesintileri
+        );
         const deductionAmount = deductionTransactions.reduce((sum, t) => sum + t.amount, 0);
         
         // Debug: Kesinti varsa logla

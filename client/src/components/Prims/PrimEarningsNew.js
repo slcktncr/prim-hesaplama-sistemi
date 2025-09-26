@@ -418,6 +418,43 @@ const PrimEarningsNew = () => {
                   </Col>
                 </Row>
 
+                {/* Satışlar Listesi */}
+                {modalData.data.sales && modalData.data.sales.length > 0 && (
+                  <div className="mb-4">
+                    <h6 className="text-secondary mb-3">🏢 Dönem Satışları ({modalData.data.sales.length} adet)</h6>
+                    <div className="table-responsive">
+                      <table className="table table-sm table-hover">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Müşteri</th>
+                            <th>Blok/Daire</th>
+                            <th>Satış Tarihi</th>
+                            <th>Liste Fiyatı</th>
+                            <th>Prim Tutarı</th>
+                            <th>Prim Durumu</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {modalData.data.sales.map((sale, index) => (
+                            <tr key={index}>
+                              <td className="fw-bold">{sale.customerName}</td>
+                              <td><small className="text-muted">{sale.blockNo}/{sale.apartmentNo}</small></td>
+                              <td><small>{formatDate(sale.saleDate)}</small></td>
+                              <td>{formatCurrency(sale.listPrice || 0)}</td>
+                              <td className="text-success">{formatCurrency(sale.primAmount || 0)}</td>
+                              <td>
+                                <Badge bg={sale.primStatus === 'ödendi' ? 'success' : 'warning'}>
+                                  {sale.primStatus === 'ödendi' ? '✅ Ödendi' : '⏰ Ödenmedi'}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
                 {/* Ek İşlemler */}
                 {modalData.data.transactions && modalData.data.transactions.length > 0 && (
                   <div>
