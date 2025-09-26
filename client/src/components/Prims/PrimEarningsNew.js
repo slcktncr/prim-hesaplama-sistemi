@@ -377,9 +377,113 @@ const PrimEarningsNew = () => {
         <Modal.Body>
           {modalData && (
             <div>
-              <h6>{modalData.data.salespersonName} - {modalData.data.periodName}</h6>
-              <p>Modal içeriği burada gösterilecek...</p>
-              {/* TODO: Modal içeriği detaylandırılacak */}
+              <div className="mb-4">
+                <h5 className="text-primary mb-3">
+                  {modalData.data.salespersonName} - {modalData.data.periodName}
+                </h5>
+                
+                {/* Özet Bilgiler */}
+                <Row className="mb-4">
+                  <Col md={3}>
+                    <Card className="text-center border-info">
+                      <Card.Body className="py-2">
+                        <div className="h6 text-info mb-1">{modalData.data.salesCount}</div>
+                        <small className="text-muted">Satış Adedi</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-primary">
+                      <Card.Body className="py-2">
+                        <div className="h6 text-primary mb-1">{formatCurrency(modalData.data.totalSalesAmount)}</div>
+                        <small className="text-muted">Satış Tutarı</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-success">
+                      <Card.Body className="py-2">
+                        <div className="h6 text-success mb-1">{formatCurrency(modalData.data.totalCommissions)}</div>
+                        <small className="text-muted">Satış Primi</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="text-center border-dark">
+                      <Card.Body className="py-2">
+                        <div className="h6 text-dark mb-1">{formatCurrency(modalData.data.netAmount)}</div>
+                        <small className="text-muted">Net Hakediş</small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Ek İşlemler */}
+                {modalData.data.transactions && modalData.data.transactions.length > 0 && (
+                  <div>
+                    <h6 className="text-secondary mb-3">📋 Ek İşlemler</h6>
+                    <div className="table-responsive">
+                      <table className="table table-sm table-hover">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Tarih</th>
+                            <th>İşlem Tipi</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th>Satış</th>
+                            <th>Açıklama</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {modalData.data.transactions.map((transaction, index) => (
+                            <tr key={index}>
+                              <td>
+                                <small>{formatDate(transaction.createdAt)}</small>
+                              </td>
+                              <td>
+                                <Badge bg={transaction.type === 'kazanç' ? 'success' : 'danger'}>
+                                  {transaction.type === 'kazanç' ? '📈 Ek Prim' : '📉 Kesinti'}
+                                </Badge>
+                              </td>
+                              <td>
+                                <span className={transaction.type === 'kazanç' ? 'text-success' : 'text-danger'}>
+                                  {transaction.type === 'kazanç' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                </span>
+                              </td>
+                              <td>
+                                <Badge bg={
+                                  transaction.status === 'beklemede' ? 'warning' :
+                                  transaction.status === 'onaylandı' ? 'success' : 'secondary'
+                                }>
+                                  {transaction.status === 'beklemede' ? '⏰ Bekleyen' :
+                                   transaction.status === 'onaylandı' ? '✅ Onaylandı' : transaction.status}
+                                </Badge>
+                              </td>
+                              <td>
+                                <div>
+                                  <div className="fw-bold">{transaction.sale?.customerName}</div>
+                                  <small className="text-muted">{transaction.sale?.contractNo}</small>
+                                </div>
+                              </td>
+                              <td>
+                                <small className="text-muted">{transaction.description}</small>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ek İşlem Yoksa */}
+                {(!modalData.data.transactions || modalData.data.transactions.length === 0) && (
+                  <Alert variant="info" className="text-center">
+                    <FiUser className="mb-2" size={24} />
+                    <p className="mb-0">Bu dönem için ek işlem bulunmuyor.</p>
+                  </Alert>
+                )}
+              </div>
             </div>
           )}
         </Modal.Body>
