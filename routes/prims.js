@@ -1143,12 +1143,26 @@ router.get('/earnings-v2', auth, async (req, res) => {
           saleInfo: { $arrayElemAt: ['$saleInfo', 0] }
         }
       },
-      // Tarih filtresi varsa satış tarihine göre filtrele
-      ...(Object.keys(dateQuery).length > 0 ? [{
-        $match: {
-          'saleInfo.saleDate': dateQuery
+      // GEÇICI: Tarih filtresini kaldır - debug için
+      // ...(Object.keys(dateQuery).length > 0 ? [{
+      //   $match: {
+      //     'saleInfo.saleDate': dateQuery
+      //   }
+      // }] : []),
+      
+      // Debug: Filtrelemeden önce transaction'ları logla
+      {
+        $addFields: {
+          debugInfo: {
+            salesperson: '$salesperson',
+            transactionType: '$transactionType',
+            amount: '$amount',
+            status: '$status',
+            deductionStatus: '$deductionStatus',
+            saleDate: '$saleInfo.saleDate'
+          }
         }
-      }] : []),
+      },
       {
         $addFields: {
           // Satış tarihinden yıl ve ay çıkar (PrimTransaction'ın tarihinden değil)
