@@ -110,16 +110,19 @@ const PrimEarnings = () => {
       const response = await primsAPI.getEarningsV2(params);
       console.log('📈 Earnings v2 response:', response.data);
       
-      // Debug: Tüm kayıtları detaylı logla
+      // Debug: Özellikle bekleyen ödemeli kayıtları logla
       response.data?.forEach((earning, i) => {
-        console.log(`🔍 ${earning.salesperson?.name} - ${earning.primPeriod?.name}:`, {
-          salesEarnings: earning.salesEarnings,
-          additionalEarnings: earning.additionalEarnings,
-          pendingEarnings: earning.pendingEarnings,
-          deductions: earning.deductions,
-          pendingDeductions: earning.pendingDeductions,
-          totalEarnings: earning.totalEarnings
-        });
+        if (earning.salesperson?.name?.includes('Anıl') || earning.pendingEarnings > 0) {
+          console.log(`🎯 ${earning.salesperson?.name} - ${earning.primPeriod?.name}:`, {
+            salesEarnings: earning.salesEarnings,
+            additionalEarnings: earning.additionalEarnings,
+            pendingEarnings: earning.pendingEarnings,
+            deductions: earning.deductions,
+            pendingDeductions: earning.pendingDeductions,
+            totalEarnings: earning.totalEarnings,
+            hasData: !!(earning.salesEarnings || earning.additionalEarnings || earning.pendingEarnings || earning.deductions || earning.pendingDeductions)
+          });
+        }
       });
       
       setEarnings(response.data || []);

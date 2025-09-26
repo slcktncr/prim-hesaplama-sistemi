@@ -1110,6 +1110,21 @@ router.get('/earnings-v2', auth, async (req, res) => {
     let primTransactionQuery = { ...salespersonQuery };
     
     console.log('🔍 PrimTransaction query before date filter:', primTransactionQuery);
+    
+    // Debug: Tüm PrimTransaction'ları listele
+    const allPrimTransactions = await PrimTransaction.find({}).populate('salesperson', 'name').populate('sale', 'saleDate customerName');
+    console.log('📋 Tüm PrimTransaction\'lar:', allPrimTransactions.map(pt => ({
+      id: pt._id,
+      salesperson: pt.salesperson?.name,
+      transactionType: pt.transactionType,
+      amount: pt.amount,
+      status: pt.status,
+      deductionStatus: pt.deductionStatus,
+      sale: {
+        customerName: pt.sale?.customerName,
+        saleDate: pt.sale?.saleDate
+      }
+    })));
 
     // PrimTransaction'ları Sale ile join ederek satış tarihine göre filtrele
     const primTransactions = await PrimTransaction.aggregate([

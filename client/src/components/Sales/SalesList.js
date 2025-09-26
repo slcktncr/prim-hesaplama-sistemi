@@ -705,12 +705,12 @@ const SalesList = () => {
                                     {/* Bekleyen Kısım */}
                                     <div className="mt-1">
                                       {lastModification.primDifference > 0 ? (
-                                        <small className="text-info">
-                                          <strong>Bekleyen: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                        <small className="text-success">
+                                          <strong>Ödenecek Ek Prim: +{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
                                         </small>
                                       ) : (
-                                        <small className="text-warning">
-                                          <strong>Kesinti: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
+                                        <small className="text-danger">
+                                          <strong>Kesilecek Prim: -{formatCurrency(Math.abs(lastModification.primDifference))}</strong>
                                         </small>
                                       )}
                                       {isAdmin && (
