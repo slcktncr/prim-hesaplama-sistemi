@@ -2143,7 +2143,7 @@ router.put('/:id/modify', [
           validPrices
         });
 
-        sale.primRate = currentPrimRate.rate;
+        sale.primRate = effectivePrimRate;  // Özel oran varsa onu kullan
         sale.basePrimPrice = basePrimPrice;
         
         // Eğer prim ödenmemişse, yeni prim tutarını güncelle

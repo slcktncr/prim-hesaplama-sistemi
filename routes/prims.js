@@ -1736,10 +1736,20 @@ router.get('/earnings-clean', auth, async (req, res) => {
           customerName: sibelSale.customerName,
           listPrice: sibelSale.listPrice,
           primAmount: sibelSale.primAmount,
+          primRate: sibelSale.primRate,
+          basePrimPrice: sibelSale.basePrimPrice,
           primStatus: sibelSale.primStatus,
           salesperson: earning.salespersonName,
-          period: earning.periodName
+          period: earning.periodName,
+          saleId: sibelSale._id
         });
+        
+        // SORUN TESPİT EDİLDİ: Prim oranı %8 olarak kayıtlı, %1 olmalı
+        if (sibelSale.primRate === 8 && sibelSale.primAmount > 10000) {
+          console.log('🚨 SİBEL ÇEKMEZ SORUN TESPİT EDİLDİ: Prim oranı %8, düzeltilmeli!');
+          console.log('📊 Doğru hesaplama: ₺685.400 × %1 = ₺6.854');
+          console.log('❌ Yanlış hesaplama: ₺685.400 × %8 = ₺54.832');
+        }
       }
     });
 
@@ -2094,6 +2104,74 @@ router.get('/earnings-clean', auth, async (req, res) => {
     console.error('❌ Temiz prim hakediş sistemi hatası:', error);
     res.status(500).json({ 
       message: 'Prim hakediş verileri getirilemedi',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   POST /api/prims/fix-sibel-cekmez
+// @desc    Sibel Çekmez satışının prim oranını düzelt
+// @access  Private (Admin only)
+router.post('/fix-sibel-cekmez', [auth, adminAuth], async (req, res) => {
+  try {
+    const Sale = require('../models/Sale');
+    
+    // Sibel Çekmez satışını bul
+    const sibelSale = await Sale.findOne({ 
+      customerName: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    });
+    
+    if (!sibelSale) {
+      return res.status(404).json({ message: 'Sibel Çekmez satışı bulunamadı' });
+    }
+    
+    console.log('🔍 Sibel Çekmez satışı bulundu:', {
+      id: sibelSale._id,
+      customerName: sibelSale.customerName,
+      listPrice: sibelSale.listPrice,
+      currentPrimRate: sibelSale.primRate,
+      currentPrimAmount: sibelSale.primAmount,
+      primStatus: sibelSale.primStatus
+    });
+    
+    // Prim oranını %1'e düzelt ve prim tutarını yeniden hesapla
+    const correctPrimRate = 1;
+    const correctPrimAmount = sibelSale.listPrice * (correctPrimRate / 100);
+    
+    // Eski değerleri kaydet
+    const oldValues = {
+      primRate: sibelSale.primRate,
+      primAmount: sibelSale.primAmount
+    };
+    
+    // Yeni değerleri güncelle
+    sibelSale.primRate = correctPrimRate;
+    sibelSale.primAmount = correctPrimAmount;
+    
+    await sibelSale.save();
+    
+    console.log('✅ Sibel Çekmez satışı düzeltildi:', {
+      oldPrimRate: oldValues.primRate,
+      newPrimRate: correctPrimRate,
+      oldPrimAmount: oldValues.primAmount,
+      newPrimAmount: correctPrimAmount,
+      difference: correctPrimAmount - oldValues.primAmount
+    });
+    
+    res.json({
+      message: 'Sibel Çekmez satışının prim oranı başarıyla düzeltildi',
+      oldValues,
+      newValues: {
+        primRate: correctPrimRate,
+        primAmount: correctPrimAmount
+      },
+      sale: sibelSale
+    });
+    
+  } catch (error) {
+    console.error('Sibel Çekmez düzeltme hatası:', error);
+    res.status(500).json({ 
+      message: 'Düzeltme işlemi başarısız',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
