@@ -1367,4 +1367,139 @@ router.get('/earnings-v2', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/prims/earnings-simple
+// @desc    Basit ve anlaşılır prim hakedişleri
+// @access  Private
+router.get('/earnings-simple', auth, async (req, res) => {
+  try {
+    const { salesperson, period, year, month } = req.query;
+    
+    // Sadece kendi verilerini görebilir (admin hariç)
+    let salespersonFilter = {};
+    if (!req.user.roles.includes('admin')) {
+      salespersonFilter.salesperson = req.user._id;
+    } else if (salesperson && salesperson !== 'all') {
+      salespersonFilter.salesperson = salesperson;
+    }
+
+    console.log('🎯 Basit hakediş sorgusu:', { salespersonFilter, period, year, month });
+
+    // 1. Satışları prim dönemlerine göre grupla
+    const salesByPeriod = await Sale.aggregate([
+      { $match: { status: 'aktif', ...salespersonFilter } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'salespersonInfo'
+        }
+      },
+      {
+        $lookup: {
+          from: 'primperiods',
+          localField: 'primPeriod',
+          foreignField: '_id',
+          as: 'periodInfo'
+        }
+      },
+      {
+        $addFields: {
+          salespersonInfo: { $arrayElemAt: ['$salespersonInfo', 0] },
+          periodInfo: { $arrayElemAt: ['$periodInfo', 0] }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            salesperson: '$salesperson',
+            primPeriod: '$primPeriod'
+          },
+          salespersonName: { $first: '$salespersonInfo.name' },
+          periodName: { $first: '$periodInfo.name' },
+          salesCount: { $sum: 1 },
+          totalSalesAmount: { $sum: '$listPrice' },
+          totalCommissions: { $sum: '$primAmount' },
+          paidCommissions: { 
+            $sum: { 
+              $cond: [{ $eq: ['$primStatus', 'ödendi'] }, '$primAmount', 0] 
+            } 
+          },
+          unpaidCommissions: { 
+            $sum: { 
+              $cond: [{ $eq: ['$primStatus', 'ödenmedi'] }, '$primAmount', 0] 
+            } 
+          },
+          sales: { $push: '$$ROOT' }
+        }
+      },
+      { $sort: { 'periodInfo.startDate': -1, salespersonName: 1 } }
+    ]);
+
+    console.log('📊 Dönemsel satış verileri:', salesByPeriod.length, 'kayıt');
+
+    // 2. Her dönem için ek ödemeler ve kesintileri hesapla
+    const enrichedEarnings = await Promise.all(
+      salesByPeriod.map(async (earning) => {
+        // Bu dönem ve temsilci için PrimTransaction'ları bul
+        const transactions = await PrimTransaction.find({
+          salesperson: earning._id.salesperson,
+          // Sale'in primPeriod'una göre filtrele
+          sale: { $in: earning.sales.map(s => s._id) }
+        });
+
+        // Bekleyen ödemeler (ek prim)
+        const pendingAmount = transactions
+          .filter(t => t.transactionType === 'kazanç' && t.status === 'beklemede')
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        // Kesintiler (bekleyen + yapılan)
+        const deductionAmount = transactions
+          .filter(t => t.transactionType === 'kesinti')
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        // Net hakediş
+        const netAmount = earning.totalCommissions + pendingAmount - deductionAmount;
+
+        // Ödeme durumu
+        const status = earning.unpaidCommissions > 0 || pendingAmount > 0 ? 'pending' : 'paid';
+
+        return {
+          salespersonId: earning._id.salesperson,
+          salespersonName: earning.salespersonName,
+          periodId: earning._id.primPeriod,
+          periodName: earning.periodName,
+          salesCount: earning.salesCount,
+          totalSalesAmount: earning.totalSalesAmount,
+          totalCommissions: earning.totalCommissions,
+          paidCommissions: earning.paidCommissions,
+          unpaidCommissions: earning.unpaidCommissions,
+          pendingAmount,
+          deductionAmount,
+          netAmount,
+          status,
+          transactions: transactions.map(t => ({
+            id: t._id,
+            type: t.transactionType,
+            amount: t.amount,
+            status: t.status,
+            description: t.description,
+            createdAt: t.createdAt
+          }))
+        };
+      })
+    );
+
+    console.log('💰 Zenginleştirilmiş hakediş verileri:', enrichedEarnings.length, 'kayıt');
+
+    res.json(enrichedEarnings);
+  } catch (error) {
+    console.error('Basit hakediş hatası:', error);
+    res.status(500).json({ 
+      message: 'Hakediş verileri getirilemedi',
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;

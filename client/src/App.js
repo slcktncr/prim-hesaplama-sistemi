@@ -14,6 +14,7 @@ import PrimSettings from './components/Prims/PrimSettings';
 import PrimPeriods from './components/Prims/PrimPeriods';
 import PrimTransactions from './components/Prims/PrimTransactions';
 import PrimEarnings from './components/Prims/PrimEarnings';
+import PrimEarningsNew from './components/Prims/PrimEarningsNew';
 import Reports from './components/Reports/Reports';
 import PendingUsers from './components/Admin/PendingUsers';
 import UserPermissions from './components/Admin/UserPermissions';
@@ -113,7 +114,7 @@ function AppContent() {
                     
                     {/* Prim Routes */}
                     <Route path="/prims/transactions" element={<PrimTransactions />} />
-                    <Route path="/prims/earnings" element={<PrimEarnings />} />
+                    <Route path="/prims/earnings" element={<PrimEarningsNew />} />
                     
                     {/* Admin Routes */}
                     <Route
