@@ -1692,7 +1692,29 @@ router.get('/earnings-clean', auth, async (req, res) => {
       {
         $addFields: {
           salespersonInfo: { $arrayElemAt: ['$salespersonInfo', 0] },
-          periodInfo: { $arrayElemAt: ['$periodInfo', 0] }
+          periodInfo: { $arrayElemAt: ['$periodInfo', 0] },
+          // Değişiklik varsa orijinal prim tutarını hesapla
+          originalPrimAmount: {
+            $cond: [
+              { $and: [
+                { $gt: [{ $size: { $ifNull: ['$modificationHistory', []] } }, 0] },
+                { $eq: ['$primStatus', 'ödendi'] }
+              ]},
+              // Eğer değişiklik varsa ve prim ödendiyse, son değişiklikten önceki prim tutarını al
+              { 
+                $let: {
+                  vars: {
+                    lastModification: { 
+                      $arrayElemAt: ['$modificationHistory', -1] 
+                    }
+                  },
+                  in: { $ifNull: ['$$lastModification.oldPrimAmount', '$primAmount'] }
+                }
+              },
+              // Değişiklik yoksa veya ödenmemişse normal prim tutarı
+              '$primAmount'
+            ]
+          }
         }
       },
       {
@@ -1711,7 +1733,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
           totalCommissions: { $sum: '$primAmount' },
           paidCommissions: { 
             $sum: { 
-              $cond: [{ $eq: ['$primStatus', 'ödendi'] }, '$primAmount', 0] 
+              $cond: [{ $eq: ['$primStatus', 'ödendi'] }, '$originalPrimAmount', 0] 
             } 
           },
           unpaidCommissions: { 
@@ -1736,19 +1758,29 @@ router.get('/earnings-clean', auth, async (req, res) => {
           customerName: sibelSale.customerName,
           listPrice: sibelSale.listPrice,
           primAmount: sibelSale.primAmount,
+          originalPrimAmount: sibelSale.originalPrimAmount,
           primRate: sibelSale.primRate,
           basePrimPrice: sibelSale.basePrimPrice,
           primStatus: sibelSale.primStatus,
+          hasModifications: sibelSale.modificationHistory?.length > 0,
+          lastModification: sibelSale.modificationHistory?.[sibelSale.modificationHistory.length - 1],
           salesperson: earning.salespersonName,
           period: earning.periodName,
-          saleId: sibelSale._id
+          saleId: sibelSale._id,
+          paidCommissions: earning.paidCommissions,
+          totalCommissions: earning.totalCommissions
         });
         
-        // SORUN TESPİT EDİLDİ: Prim oranı %8 olarak kayıtlı, %1 olmalı
-        if (sibelSale.primRate === 8 && sibelSale.primAmount > 10000) {
-          console.log('🚨 SİBEL ÇEKMEZ SORUN TESPİT EDİLDİ: Prim oranı %8, düzeltilmeli!');
-          console.log('📊 Doğru hesaplama: ₺685.400 × %1 = ₺6.854');
-          console.log('❌ Yanlış hesaplama: ₺685.400 × %8 = ₺54.832');
+        // Değişiklik sonrası prim farkı kontrolü
+        if (sibelSale.modificationHistory?.length > 0 && sibelSale.primStatus === 'ödendi') {
+          const lastMod = sibelSale.modificationHistory[sibelSale.modificationHistory.length - 1];
+          console.log('💰 SİBEL ÇEKMEZ Prim Farkı Analizi:', {
+            oldPrimAmount: lastMod.oldPrimAmount,
+            newPrimAmount: lastMod.newPrimAmount,
+            primDifference: lastMod.primDifference,
+            odenecekEkPrim: lastMod.primDifference > 0 ? lastMod.primDifference : 0,
+            kesilecekPrim: lastMod.primDifference < 0 ? Math.abs(lastMod.primDifference) : 0
+          });
         }
       }
     });
