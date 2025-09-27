@@ -70,6 +70,19 @@ const SaleForm = () => {
     }
   }, [formData.saleType, saleTypes]);
 
+  // Prim hesaplamasını tetiklemek için useEffect ekle
+  useEffect(() => {
+    // Prim hesaplaması için gerekli değerler değiştiğinde yeniden hesapla
+    // Bu sadece önizleme için, asıl hesaplama backend'de yapılıyor
+    console.log('🔄 Prim hesaplama tetiklendi:', {
+      listPrice: formData.listPrice,
+      discountedListPrice: formData.discountedListPrice,
+      activitySalePrice: formData.activitySalePrice,
+      primRate: formData.primRate,
+      currentRate: currentRate?.rate
+    });
+  }, [formData.listPrice, formData.discountedListPrice, formData.activitySalePrice, formData.primRate, currentRate]);
+
   const fetchPeriods = async () => {
     try {
       const response = await primsAPI.getPeriods();

@@ -513,25 +513,18 @@ router.post('/', auth, [
         validPrices.push(activitySalePriceNum);
       }
       
-      // En düşük fiyat üzerinden prim hesapla
+      // Prim hesaplama kontrolü için geçerli fiyat var mı kontrol et
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
       
-      // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
-      const customPrimRate = parseFloat(primRate) || 0;
-      const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
-      const primAmount = basePrimPrice * (finalPrimRate / 100);
-      
-      console.log('💰 Prim calculation:', {
-        basePrimPrice,
-        systemRate: currentPrimRate.rate,
-        customRate: customPrimRate,
-        finalRate: finalPrimRate,
-        primAmount
-      });
-      
-      // Prim tutarı kontrolü
-      if (!isFinite(primAmount) || primAmount < 0) {
-        return res.status(400).json({ message: 'Prim hesaplamasında hata oluştu' });
+      // Prim tutarı kontrolü (sadece geçerli fiyat varsa)
+      if (basePrimPrice > 0) {
+        const customPrimRate = parseFloat(primRate) || 0;
+        const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
+        const primAmount = basePrimPrice * (finalPrimRate / 100);
+        
+        if (!isFinite(primAmount) || primAmount < 0) {
+          return res.status(400).json({ message: 'Prim hesaplamasında hata oluştu' });
+        }
       }
     }
 
@@ -582,9 +575,22 @@ router.post('/', auth, [
       if (parseFloat(activitySalePrice) > 0) validPrices.push(parseFloat(activitySalePrice));
       
       const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      const primAmount = basePrimPrice * (currentPrimRate.rate / 100);
+      
+      // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
+      const customPrimRate = parseFloat(primRate) || 0;
+      const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
+      const primAmount = basePrimPrice * (finalPrimRate / 100);
+      
+      console.log('💰 CREATE - Prim calculation:', {
+        basePrimPrice,
+        systemRate: currentPrimRate.rate,
+        customRate: customPrimRate,
+        finalRate: finalPrimRate,
+        primAmount,
+        isCustomRate: customPrimRate > 0
+      });
 
-      saleData.primRate = currentPrimRate.rate;
+      saleData.primRate = finalPrimRate; // Özel oran varsa onu kaydet
       saleData.basePrimPrice = basePrimPrice;
       saleData.primAmount = primAmount;
       saleData.primPeriod = primPeriodId;
