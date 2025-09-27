@@ -1539,6 +1539,29 @@ router.put('/:id/transfer', [auth, adminAuth], [
       });
     }
     
+    // PrimTransaction kayıtlarını da yeni temsilciye transfer et
+    const PrimTransaction = require('../models/PrimTransaction');
+    const primTransferResult = await PrimTransaction.updateMany(
+      { 
+        sale: sale._id,
+        salesperson: oldSalespersonId
+      },
+      { 
+        $set: { 
+          salesperson: newSalespersonId,
+          updatedAt: new Date()
+        }
+      }
+    );
+    
+    console.log('💳 PrimTransaction transfer sonucu:', {
+      saleId: sale._id,
+      oldSalesperson: oldSalespersonId,
+      newSalesperson: newSalespersonId,
+      modifiedCount: primTransferResult.modifiedCount,
+      matchedCount: primTransferResult.matchedCount
+    });
+    
     sale.updatedAt = new Date();
     
     console.log('💾 Saving transfer data:', {

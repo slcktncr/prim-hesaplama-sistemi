@@ -2209,4 +2209,87 @@ router.post('/fix-sibel-cekmez', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   POST /api/prims/fix-transfer-transactions
+// @desc    Transfer sonrası PrimTransaction'ları doğru temsilciye ata
+// @access  Private (Admin only)
+router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) => {
+  try {
+    const Sale = require('../models/Sale');
+    const User = require('../models/User');
+    
+    // Sibel Çekmez satışını bul
+    const sibelSale = await Sale.findOne({ 
+      customerName: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email');
+    
+    if (!sibelSale) {
+      return res.status(404).json({ message: 'Sibel Çekmez satışı bulunamadı' });
+    }
+    
+    console.log('🔍 Sibel Çekmez satışı:', {
+      id: sibelSale._id,
+      customerName: sibelSale.customerName,
+      currentSalesperson: sibelSale.salesperson?.name,
+      salespersonId: sibelSale.salesperson?._id
+    });
+    
+    // Bu satışla ilgili PrimTransaction'ları bul
+    const relatedTransactions = await PrimTransaction.find({ 
+      sale: sibelSale._id 
+    }).populate('salesperson', 'name email');
+    
+    console.log('💳 İlgili PrimTransaction\'lar:', {
+      count: relatedTransactions.length,
+      transactions: relatedTransactions.map(t => ({
+        id: t._id,
+        salesperson: t.salesperson?.name,
+        salespersonId: t.salesperson?._id,
+        transactionType: t.transactionType,
+        amount: t.amount,
+        status: t.status,
+        description: t.description
+      }))
+    });
+    
+    // Yanlış temsilciye ait transaction'ları düzelt
+    const fixedTransactions = [];
+    for (const transaction of relatedTransactions) {
+      if (transaction.salesperson?._id?.toString() !== sibelSale.salesperson?._id?.toString()) {
+        const oldSalespersonName = transaction.salesperson?.name;
+        
+        console.log(`🔧 Transaction düzeltiliyor: ${transaction._id}`);
+        console.log(`   Eski temsilci: ${oldSalespersonName}`);
+        console.log(`   Yeni temsilci: ${sibelSale.salesperson?.name}`);
+        
+        transaction.salesperson = sibelSale.salesperson._id;
+        transaction.updatedAt = new Date();
+        await transaction.save();
+        
+        fixedTransactions.push({
+          id: transaction._id,
+          oldSalesperson: oldSalespersonName,
+          newSalesperson: sibelSale.salesperson?.name,
+          amount: transaction.amount,
+          type: transaction.transactionType
+        });
+      }
+    }
+    
+    res.json({
+      message: 'PrimTransaction transfer düzeltmesi tamamlandı',
+      sale: {
+        id: sibelSale._id,
+        customerName: sibelSale.customerName,
+        salesperson: sibelSale.salesperson?.name
+      },
+      fixedTransactions,
+      totalFixed: fixedTransactions.length
+    });
+    
+  } catch (error) {
+    console.error('Fix transfer transactions error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router;
