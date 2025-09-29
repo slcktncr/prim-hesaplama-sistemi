@@ -645,7 +645,7 @@ router.get('/deductions', auth, async (req, res) => {
     console.log('🔍 Deductions request:', { period, salesperson, userRole: req.user.role });
     
     let query = {
-      transactionType: 'kesinti' // Sadece kesinti transaction'ları
+      transactionType: 'kesinti' // Sadece kesinti transactionları
     };
     
     // Admin değilse sadece kendi kesintilerini görsün
@@ -678,7 +678,7 @@ router.get('/deductions', auth, async (req, res) => {
     
     console.log('📊 Deductions query:', query);
 
-    // Kesinti transaction'larını getir ve ilgili satışları kontrol et
+    // Kesinti transactionlarını getir ve ilgili satışları kontrol et
     const deductions = await PrimTransaction.aggregate([
       { $match: query },
       // İlgili satışı getir
@@ -807,13 +807,13 @@ router.put('/sales/:id/period', [auth, adminAuth], [
 });
 
 // @route   POST /api/prims/cleanup-duplicate-deductions
-// @desc    Yinelenen kesinti transaction'larını temizle
+// @desc    Yinelenen kesinti transactionlarını temizle
 // @access  Private (Admin only)
 router.post('/cleanup-duplicate-deductions', [auth, adminAuth], async (req, res) => {
   try {
     console.log('🧹 Duplicate deductions cleanup started by:', req.user?.email);
 
-    // Aynı satış için birden fazla kesinti transaction'ı olan kayıtları bul
+    // Aynı satış için birden fazla kesinti transactionı olan kayıtları bul
     const duplicateDeductions = await PrimTransaction.aggregate([
       {
         $match: {
@@ -1115,7 +1115,7 @@ router.get('/earnings-v2', auth, async (req, res) => {
     const allPrimTransactions = await PrimTransaction.find({}).populate('salesperson', 'name').populate('sale', 'saleDate customerName');
     console.log('📋 Tüm PrimTransaction\'lar COUNT:', allPrimTransactions.length);
     
-    // Özellikle Anıl'ın transaction'larını bul
+    // Özellikle Anılın transactionlarını bul
     const anilTransactions = allPrimTransactions.filter(pt => 
       pt.salesperson?.name?.includes('Anıl') || pt.salesperson?.name?.includes('ANILA')
     );
@@ -1162,7 +1162,7 @@ router.get('/earnings-v2', auth, async (req, res) => {
       //   }
       // }] : []),
       
-      // Debug: Filtrelemeden önce transaction'ları logla
+      // Debug: Filtrelemeden önce transactionları logla
       {
         $addFields: {
           debugInfo: {
@@ -1488,15 +1488,15 @@ router.get('/earnings-simple', auth, async (req, res) => {
     // 3. Her dönem için ek ödemeler ve kesintileri hesapla
     const enrichedEarnings = await Promise.all(
       salesByPeriod.map(async (earning) => {
-        // Bu temsilcinin tüm transaction'ları
+        // Bu temsilcinin tüm transactionları
         const allUserTransactions = transactionMap.get(earning._id.salesperson.toString()) || [];
         
-        // Bu dönemdeki satışlarla ilgili transaction'lar
+        // Bu dönemdeki satışlarla ilgili transactionlar
         const periodTransactions = allUserTransactions.filter(t => 
           earning.sales.some(s => s._id.toString() === t.sale?._id?.toString())
         );
 
-        // Bekleyen ödemeler (sadece değişiklik sonrası ek primler) - tüm bekleyen transaction'ları en son döneme dahil et
+        // Bekleyen ödemeler (sadece değişiklik sonrası ek primler) - tüm bekleyen transactionları en son döneme dahil et
         const pendingTransactions = allUserTransactions.filter(t => 
           t.transactionType === 'kazanç' && 
           t.status === 'beklemede' &&
@@ -2210,7 +2210,7 @@ router.post('/fix-sibel-cekmez', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   GET /api/prims/debug-sibel-transactions
-// @desc    Sibel Çekmez ile ilgili tüm transaction'ları debug et
+// @desc    Sibel Çekmez ile ilgili tüm transactionları debug et
 // @access  Private (Admin only)
 router.get('/debug-sibel-transactions', [auth, adminAuth], async (req, res) => {
   try {
@@ -2230,7 +2230,7 @@ router.get('/debug-sibel-transactions', [auth, adminAuth], async (req, res) => {
       sale: sibelSale._id 
     }).populate('salesperson', 'name email');
     
-    // Tüm Sibel Çekmez transaction'larını bul
+    // Tüm Sibel Çekmez transactionlarını bul
     const allSibelTransactions = await PrimTransaction.find({ 
       description: { $regex: /SİBEL.*ÇEKMEZ/i } 
     }).populate('salesperson', 'name email').populate('sale', 'customerName salesperson');
@@ -2327,7 +2327,7 @@ router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) =>
       }))
     });
     
-    // Ayrıca tüm Sibel Çekmez ile ilgili transaction'ları bul
+    // Ayrıca tüm Sibel Çekmez ile ilgili transactionları bul
     const allSibelTransactions = await PrimTransaction.find({ 
       description: { $regex: /SİBEL.*ÇEKMEZ/i } 
     }).populate('salesperson', 'name email').populate('sale', 'customerName salesperson');
@@ -2348,7 +2348,7 @@ router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) =>
       }))
     });
     
-    // Yanlış temsilciye ait transaction'ları düzelt
+    // Yanlış temsilciye ait transactionları düzelt
     const fixedTransactions = [];
     for (const transaction of relatedTransactions) {
       if (transaction.salesperson?._id?.toString() !== sibelSale.salesperson?._id?.toString()) {
@@ -2390,7 +2390,7 @@ router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) =>
 });
 
 // @route   POST /api/prims/cleanup-sibel-transactions
-// @desc    Sibel Çekmez için eski/çoklu transaction'ları temizle
+// @desc    Sibel Çekmez için eski/çoklu transactionları temizle
 // @access  Private (Admin only)
 router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) => {
   try {
@@ -2419,7 +2419,7 @@ router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) =
       sale: sibelSale._id 
     }).populate('salesperson', 'name email');
 
-    console.log('💳 Tüm transaction'lar:', {
+    console.log('💳 Tüm transactionlar:', {
       count: allTransactions.length,
       transactions: allTransactions.map(t => ({
         id: t._id,
@@ -2441,7 +2441,7 @@ router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) =
       });
     }
 
-    // En son (en güncel) transaction'ı bul
+    // En son (en güncel) transactionı bul
     const latestTransaction = allTransactions
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
 
@@ -2453,12 +2453,12 @@ router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) =
       createdAt: latestTransaction.createdAt
     });
 
-    // Diğer transaction'ları iptal et (en son hariç)
+    // Diğer transactionları iptal et (en son hariç)
     const transactionsToCancel = allTransactions.filter(t => 
       t._id.toString() !== latestTransaction._id.toString()
     );
 
-    console.log('🗑️ İptal edilecek transaction'lar:', transactionsToCancel.length);
+    console.log('🗑️ İptal edilecek transactionlar:', transactionsToCancel.length);
 
     let cancelledCount = 0;
     for (const transaction of transactionsToCancel) {
