@@ -111,12 +111,14 @@ const PrimEarningsNew = () => {
   // Transfer düzeltmesi
   const handleFixTransfer = async () => {
     try {
+      console.log('🔧 Transfer düzeltmesi başlatılıyor...');
       const response = await primsAPI.fixTransferTransactions();
-      console.log('✅ Transfer düzeltmesi:', response.data);
-      toast.success('Transfer düzeltmesi tamamlandı');
+      console.log('✅ Transfer düzeltmesi response:', response.data);
+      toast.success(`Transfer düzeltmesi tamamlandı: ${response.data.totalFixed} transaction güncellendi`);
       fetchEarnings(); // Veriyi yenile
     } catch (error) {
       console.error('❌ Transfer düzeltme hatası:', error);
+      console.error('❌ Error response:', error.response?.data);
       toast.error('Transfer düzeltmesi başarısız: ' + (error.response?.data?.message || error.message));
     }
   };
