@@ -2389,4 +2389,121 @@ router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) =>
   }
 });
 
+// @route   POST /api/prims/cleanup-sibel-transactions
+// @desc    Sibel Çekmez için eski/çoklu transaction'ları temizle
+// @access  Private (Admin only)
+router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🧹 Sibel Çekmez transaction temizliği başlıyor...');
+    
+    const Sale = require('../models/Sale');
+    
+    // Sibel Çekmez satışını bul
+    const sibelSale = await Sale.findOne({ 
+      customerName: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email');
+    
+    if (!sibelSale) {
+      return res.status(404).json({ message: 'Sibel Çekmez satışı bulunamadı' });
+    }
+
+    console.log('🔍 Sibel Çekmez satışı bulundu:', {
+      id: sibelSale._id,
+      customerName: sibelSale.customerName,
+      currentSalesperson: sibelSale.salesperson?.name,
+      salespersonId: sibelSale.salesperson?._id
+    });
+
+    // Bu satışla ilgili tüm PrimTransaction'ları bul
+    const allTransactions = await PrimTransaction.find({ 
+      sale: sibelSale._id 
+    }).populate('salesperson', 'name email');
+
+    console.log('💳 Tüm transaction'lar:', {
+      count: allTransactions.length,
+      transactions: allTransactions.map(t => ({
+        id: t._id,
+        salesperson: t.salesperson?.name,
+        salespersonId: t.salesperson?._id,
+        amount: t.amount,
+        status: t.status,
+        transactionType: t.transactionType,
+        createdAt: t.createdAt,
+        description: t.description
+      }))
+    });
+
+    if (allTransactions.length <= 1) {
+      return res.json({
+        success: true,
+        message: 'Temizlik gerekmez, sadece 1 veya 0 transaction var',
+        totalTransactions: allTransactions.length
+      });
+    }
+
+    // En son (en güncel) transaction'ı bul
+    const latestTransaction = allTransactions
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+    console.log('📅 En son transaction (korunacak):', {
+      id: latestTransaction._id,
+      salesperson: latestTransaction.salesperson?.name,
+      amount: latestTransaction.amount,
+      status: latestTransaction.status,
+      createdAt: latestTransaction.createdAt
+    });
+
+    // Diğer transaction'ları iptal et (en son hariç)
+    const transactionsToCancel = allTransactions.filter(t => 
+      t._id.toString() !== latestTransaction._id.toString()
+    );
+
+    console.log('🗑️ İptal edilecek transaction'lar:', transactionsToCancel.length);
+
+    let cancelledCount = 0;
+    for (const transaction of transactionsToCancel) {
+      const oldStatus = transaction.status;
+      transaction.status = 'iptal';
+      transaction.description += ' - [OTOMATIK İPTAL: Çoklu transaction temizliği]';
+      await transaction.save();
+      cancelledCount++;
+      
+      console.log(`❌ Transaction iptal edildi:`, {
+        id: transaction._id,
+        salesperson: transaction.salesperson?.name,
+        amount: transaction.amount,
+        oldStatus: oldStatus,
+        newStatus: 'iptal'
+      });
+    }
+
+    console.log('✅ Transaction temizliği tamamlandı:', {
+      totalTransactions: allTransactions.length,
+      cancelledTransactions: cancelledCount,
+      activeTransactionId: latestTransaction._id
+    });
+
+    res.json({
+      success: true,
+      message: 'Sibel Çekmez transaction temizliği tamamlandı',
+      totalTransactions: allTransactions.length,
+      cancelledTransactions: cancelledCount,
+      activeTransaction: {
+        id: latestTransaction._id,
+        salesperson: latestTransaction.salesperson?.name,
+        amount: latestTransaction.amount,
+        status: latestTransaction.status,
+        transactionType: latestTransaction.transactionType
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Sibel transaction temizlik hatası:', error);
+    res.status(500).json({ 
+      message: 'Transaction temizliği başarısız', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;

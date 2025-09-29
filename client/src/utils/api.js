@@ -90,6 +90,7 @@ export const primsAPI = {
   getEarningsClean: (params) => API.get('/prims/earnings-clean', { params }),
   fixTransferTransactions: () => API.post('/prims/fix-transfer-transactions'),
   debugSibelTransactions: () => API.get('/prims/debug-sibel-transactions'),
+  cleanupSibelTransactions: () => API.post('/prims/cleanup-sibel-transactions'),
 };
 
 // Reports API calls

@@ -721,7 +721,14 @@ const SalesList = () => {
                                       )}
                                       {isAdmin && (
                                         <Badge 
-                                          bg="warning" 
+                                          bg={(() => {
+                                            const transactionStatus = lastModification.primTransactionStatus;
+                                            if (lastModification.primDifference > 0) {
+                                              return transactionStatus?.status === 'onaylandı' ? 'success' : 'warning';
+                                            } else {
+                                              return transactionStatus?.deductionStatus === 'yapıldı' ? 'danger' : 'warning';
+                                            }
+                                          })()} 
                                           size="sm" 
                                           className="ms-1" 
                                           style={{ cursor: 'pointer' }}
@@ -744,12 +751,40 @@ const SalesList = () => {
                                             setShowPrimStatusModal(true);
                                           }}
                                         >
-                                          {lastModification.primDifference > 0 ? 'ödenmedi' : 'kesilmedi'} 🔘
+                                          {(() => {
+                                            const transactionStatus = lastModification.primTransactionStatus;
+                                            if (lastModification.primDifference > 0) {
+                                              // Pozitif fark - ek prim ödemesi
+                                              return transactionStatus?.status === 'onaylandı' ? 'ödendi' : 'ödenmedi';
+                                            } else {
+                                              // Negatif fark - kesinti
+                                              return transactionStatus?.deductionStatus === 'yapıldı' ? 'kesildi' : 'kesilmedi';
+                                            }
+                                          })()} 🔘
                                         </Badge>
                                       )}
                                       {!isAdmin && (
-                                        <Badge bg="warning" size="sm" className="ms-1">
-                                          {lastModification.primDifference > 0 ? 'ödenmedi' : 'kesilmedi'}
+                                        <Badge 
+                                          bg={(() => {
+                                            const transactionStatus = lastModification.primTransactionStatus;
+                                            if (lastModification.primDifference > 0) {
+                                              return transactionStatus?.status === 'onaylandı' ? 'success' : 'warning';
+                                            } else {
+                                              return transactionStatus?.deductionStatus === 'yapıldı' ? 'danger' : 'warning';
+                                            }
+                                          })()} 
+                                          size="sm" 
+                                          className="ms-1">
+                                          {(() => {
+                                            const transactionStatus = lastModification.primTransactionStatus;
+                                            if (lastModification.primDifference > 0) {
+                                              // Pozitif fark - ek prim ödemesi
+                                              return transactionStatus?.status === 'onaylandı' ? 'ödendi' : 'ödenmedi';
+                                            } else {
+                                              // Negatif fark - kesinti
+                                              return transactionStatus?.deductionStatus === 'yapıldı' ? 'kesildi' : 'kesilmedi';
+                                            }
+                                          })()}
                                         </Badge>
                                       )}
                                     </div>

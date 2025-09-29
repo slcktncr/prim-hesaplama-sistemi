@@ -991,10 +991,47 @@ router.get('/', auth, async (req, res) => {
       }
     });
     
-    // Remove the temporary field
+    // PrimTransaction durumlarını da getir
+    pipeline.push({
+      $lookup: {
+        from: 'primtransactions',
+        localField: 'modificationHistory.primTransaction',
+        foreignField: '_id',
+        as: 'primTransactionDetails',
+        pipeline: [{ $project: { status: 1, deductionStatus: 1, transactionType: 1 } }]
+      }
+    });
+    
+    // ModificationHistory'ye transaction durumlarını ekle
+    pipeline.push({
+      $addFields: {
+        modificationHistory: {
+          $map: {
+            input: "$modificationHistory",
+            as: "mod",
+            in: {
+              $mergeObjects: [
+                "$$mod",
+                {
+                  primTransactionStatus: {
+                    $arrayElemAt: [
+                      "$primTransactionDetails",
+                      { $indexOfArray: ["$primTransactionDetails._id", "$$mod.primTransaction"] }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    });
+    
+    // Remove the temporary fields
     pipeline.push({
       $project: {
-        modifiedByUsers: 0
+        modifiedByUsers: 0,
+        primTransactionDetails: 0
       }
     });
 

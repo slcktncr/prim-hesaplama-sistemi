@@ -136,6 +136,28 @@ const PrimEarningsNew = () => {
     }
   };
 
+  const handleCleanupSibel = async () => {
+    if (!window.confirm('Sibel Çekmez için eski/çoklu transaction\'ları temizlemek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      console.log('🧹 Sibel Çekmez transaction temizliği başlatılıyor...');
+      const response = await primsAPI.cleanupSibelTransactions();
+      console.log('✅ Temizlik sonucu:', response.data);
+      
+      if (response.data.success) {
+        toast.success(`Temizlik tamamlandı: ${response.data.cancelledTransactions} transaction iptal edildi`);
+        fetchEarnings(); // Veriyi yenile
+      } else {
+        toast.info(response.data.message);
+      }
+    } catch (error) {
+      console.error('❌ Temizlik hatası:', error);
+      toast.error('Temizlik başarısız: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Özet hesaplamaları
   const calculateTotals = () => {
     return earnings.reduce((totals, earning) => ({
@@ -175,9 +197,12 @@ const PrimEarningsNew = () => {
               <p className="text-muted">Temsilci bazında prim hakediş özeti</p>
             </div>
             <div className="d-flex gap-2">
-              <Button variant="info" size="sm" onClick={handleDebugSibel}>
-                🔍 Debug Sibel
-              </Button>
+        <Button variant="info" size="sm" onClick={handleDebugSibel}>
+          🔍 Debug Sibel
+        </Button>
+        <Button variant="danger" size="sm" onClick={handleCleanupSibel}>
+          🧹 Temizle
+        </Button>
               <Button variant="warning" size="sm" onClick={handleFixTransfer}>
                 🔧 Transfer Düzelt
               </Button>
