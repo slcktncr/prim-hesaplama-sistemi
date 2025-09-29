@@ -2414,10 +2414,23 @@ router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) =
       salespersonId: sibelSale.salesperson?._id
     });
 
-    // Bu satışla ilgili tüm PrimTransaction'ları bul
-    const allTransactions = await PrimTransaction.find({ 
+    // Bu satışla ilgili tüm PrimTransaction'ları bul (hem sale ID'si hem de description'da geçenler)
+    const saleTransactions = await PrimTransaction.find({ 
       sale: sibelSale._id 
     }).populate('salesperson', 'name email');
+    
+    const descriptionTransactions = await PrimTransaction.find({ 
+      description: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email');
+    
+    // İki listeyi birleştir ve duplicate'leri kaldır
+    const allTransactionsMap = new Map();
+    
+    [...saleTransactions, ...descriptionTransactions].forEach(transaction => {
+      allTransactionsMap.set(transaction._id.toString(), transaction);
+    });
+    
+    const allTransactions = Array.from(allTransactionsMap.values());
 
     console.log('💳 Tüm transactionlar:', {
       count: allTransactions.length,
