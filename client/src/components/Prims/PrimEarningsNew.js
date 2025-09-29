@@ -158,6 +158,28 @@ const PrimEarningsNew = () => {
     }
   };
 
+  const handleFixSibelStatus = async () => {
+    if (!window.confirm('Sibel Çekmez transaction durumunu "ödendi" olarak işaretlemek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      console.log('🔧 Sibel Çekmez transaction durum düzeltmesi başlatılıyor...');
+      const response = await primsAPI.fixSibelStatus();
+      console.log('✅ Durum düzeltme sonucu:', response.data);
+      
+      if (response.data.success) {
+        toast.success(`Transaction durumu düzeltildi: ${response.data.transaction.oldStatus} → ${response.data.transaction.newStatus}`);
+        fetchEarnings(); // Veriyi yenile
+      } else {
+        toast.info(response.data.message);
+      }
+    } catch (error) {
+      console.error('❌ Durum düzeltme hatası:', error);
+      toast.error('Durum düzeltme başarısız: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Özet hesaplamaları
   const calculateTotals = () => {
     return earnings.reduce((totals, earning) => ({
@@ -202,6 +224,9 @@ const PrimEarningsNew = () => {
         </Button>
         <Button variant="danger" size="sm" onClick={handleCleanupSibel}>
           🧹 Temizle
+        </Button>
+        <Button variant="primary" size="sm" onClick={handleFixSibelStatus}>
+          🔧 Durum Düzelt
         </Button>
               <Button variant="warning" size="sm" onClick={handleFixTransfer}>
                 🔧 Transfer Düzelt

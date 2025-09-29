@@ -2506,4 +2506,84 @@ router.post('/cleanup-sibel-transactions', [auth, adminAuth], async (req, res) =
   }
 });
 
+// @route   POST /api/prims/fix-sibel-status
+// @desc    Sibel Çekmez transaction durumunu manuel düzelt
+// @access  Private (Admin only)
+router.post('/fix-sibel-status', [auth, adminAuth], async (req, res) => {
+  try {
+    console.log('🔧 Sibel Çekmez transaction durum düzeltmesi başlıyor...');
+    
+    const Sale = require('../models/Sale');
+    
+    // Sibel Çekmez satışını bul
+    const sibelSale = await Sale.findOne({ 
+      customerName: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email');
+    
+    if (!sibelSale) {
+      return res.status(404).json({ message: 'Sibel Çekmez satışı bulunamadı' });
+    }
+
+    console.log('🔍 Sibel Çekmez satışı bulundu:', {
+      id: sibelSale._id,
+      customerName: sibelSale.customerName,
+      currentSalesperson: sibelSale.salesperson?.name
+    });
+
+    // Bu satışla ilgili aktif PrimTransaction'ı bul
+    const activeTransaction = await PrimTransaction.findOne({ 
+      sale: sibelSale._id,
+      status: { $ne: 'iptal' } // İptal edilmemiş transaction
+    }).populate('salesperson', 'name email');
+
+    if (!activeTransaction) {
+      return res.json({
+        success: false,
+        message: 'Aktif transaction bulunamadı'
+      });
+    }
+
+    console.log('💳 Aktif transaction bulundu:', {
+      id: activeTransaction._id,
+      salesperson: activeTransaction.salesperson?.name,
+      amount: activeTransaction.amount,
+      currentStatus: activeTransaction.status,
+      transactionType: activeTransaction.transactionType
+    });
+
+    // Transaction durumunu 'onaylandı' yap
+    const oldStatus = activeTransaction.status;
+    activeTransaction.status = 'onaylandı';
+    await activeTransaction.save();
+
+    console.log('✅ Transaction durumu güncellendi:', {
+      id: activeTransaction._id,
+      oldStatus: oldStatus,
+      newStatus: 'onaylandı',
+      salesperson: activeTransaction.salesperson?.name,
+      amount: activeTransaction.amount
+    });
+
+    res.json({
+      success: true,
+      message: 'Sibel Çekmez transaction durumu düzeltildi',
+      transaction: {
+        id: activeTransaction._id,
+        salesperson: activeTransaction.salesperson?.name,
+        amount: activeTransaction.amount,
+        oldStatus: oldStatus,
+        newStatus: 'onaylandı',
+        transactionType: activeTransaction.transactionType
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Sibel transaction durum düzeltme hatası:', error);
+    res.status(500).json({ 
+      message: 'Transaction durum düzeltmesi başarısız', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;
