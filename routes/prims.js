@@ -2050,30 +2050,28 @@ router.get('/earnings-clean', auth, async (req, res) => {
         continue;
       }
 
-      // Bu temsilcinin en son dönemini bul (alfabetik olarak en büyük)
+      // Bu temsilcinin en son dönemini bul (tarih olarak en büyük)
       const latestPeriod = userPeriods.sort((a, b) => b.periodName.localeCompare(a.periodName))[0];
       
-      // Orijinal dönemde ek kazançlar ve kesintiler ekle
-      const originalEarning = allEarnings.find(e => 
-        e.salespersonId === modification.salespersonId && 
-        e.periodId.toString() === modification._id.primPeriod.toString()
-      );
+      console.log(`🔄 ${modification.salespersonName} için değişiklik işlemi:`, {
+        originalPeriod: modification.periodName,
+        latestPeriod: latestPeriod.periodName,
+        additionalEarnings: modification.additionalEarnings,
+        pendingEarnings: modification.pendingEarnings
+      });
 
-      if (originalEarning) {
-        originalEarning.additionalEarnings = modification.additionalEarnings;
-        originalEarning.modificationDeductions = modification.modificationDeductions;
-        originalEarning.modificationTransactions = modification.modificationTransactions;
-      }
-
-      // BEKLEYEN ödemeler/kesintiler en son dönemde gösterilir
-      if (modification.pendingEarnings > 0 || modification.pendingDeductions > 0) {
+      // SADECE BEKLEYEN ödemeler/kesintiler en son dönemde gösterilir
+      // Onaylanmış ek primler orijinal döneme GİTMEZ, güncel döneme gider
+      if (modification.pendingEarnings > 0 || modification.pendingDeductions > 0 || modification.additionalEarnings > 0) {
         latestPeriod.pendingEarnings += modification.pendingEarnings;
         latestPeriod.pendingDeductions += modification.pendingDeductions;
+        latestPeriod.additionalEarnings += modification.additionalEarnings; // Onaylanmış ek primler de güncel döneme
         
-        console.log(`🎯 BEKLEYEN ÖDEME EN SON DÖNEME EKLENDİ:`, {
+        console.log(`🎯 EK PRİM ÖDEMESİ EN SON DÖNEME EKLENDİ:`, {
           salesperson: modification.salespersonName,
           originalPeriod: modification.periodName,
           latestPeriod: latestPeriod.periodName,
+          additionalEarnings: modification.additionalEarnings,
           pendingEarnings: modification.pendingEarnings,
           pendingDeductions: modification.pendingDeductions
         });
