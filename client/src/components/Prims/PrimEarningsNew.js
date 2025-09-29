@@ -108,6 +108,19 @@ const PrimEarningsNew = () => {
     fetchEarnings();
   };
 
+  // Transfer düzeltmesi
+  const handleFixTransfer = async () => {
+    try {
+      const response = await primsAPI.fixTransferTransactions();
+      console.log('✅ Transfer düzeltmesi:', response.data);
+      toast.success('Transfer düzeltmesi tamamlandı');
+      fetchEarnings(); // Veriyi yenile
+    } catch (error) {
+      console.error('❌ Transfer düzeltme hatası:', error);
+      toast.error('Transfer düzeltmesi başarısız: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Özet hesaplamaları
   const calculateTotals = () => {
     return earnings.reduce((totals, earning) => ({
@@ -146,10 +159,15 @@ const PrimEarningsNew = () => {
               <h2 className="mb-1">💰 Prim Hakedişleri</h2>
               <p className="text-muted">Temsilci bazında prim hakediş özeti</p>
             </div>
-            <Button variant="success" onClick={() => {}}>
-              <FiDownload className="me-2" />
-              Rapor Al
-            </Button>
+            <div className="d-flex gap-2">
+              <Button variant="warning" size="sm" onClick={handleFixTransfer}>
+                🔧 Transfer Düzelt
+              </Button>
+              <Button variant="success" onClick={() => {}}>
+                <FiDownload className="me-2" />
+                Rapor Al
+              </Button>
+            </div>
           </div>
         </Col>
       </Row>
