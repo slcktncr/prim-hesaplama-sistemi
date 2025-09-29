@@ -726,6 +726,13 @@ const SalesList = () => {
                                           className="ms-1" 
                                           style={{ cursor: 'pointer' }}
                                           onClick={() => {
+                                            console.log('🔍 Prim Transaction Modal açılıyor:', {
+                                              saleId: sale._id,
+                                              customerName: sale.customerName,
+                                              primDifference: lastModification.primDifference,
+                                              primTransactionId: lastModification.primTransaction,
+                                              lastModification: lastModification
+                                            });
                                             setSelectedPrimTransaction({
                                               primDifference: lastModification.primDifference,
                                               primTransactionId: lastModification.primTransaction,

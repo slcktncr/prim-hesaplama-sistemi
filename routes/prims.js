@@ -2247,7 +2247,29 @@ router.post('/fix-transfer-transactions', [auth, adminAuth], async (req, res) =>
         transactionType: t.transactionType,
         amount: t.amount,
         status: t.status,
+        deductionStatus: t.deductionStatus,
         description: t.description
+      }))
+    });
+    
+    // Ayrıca tüm Sibel Çekmez ile ilgili transaction'ları bul
+    const allSibelTransactions = await PrimTransaction.find({ 
+      description: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email').populate('sale', 'customerName salesperson');
+    
+    console.log('🔍 Tüm Sibel Çekmez transaction\'ları:', {
+      count: allSibelTransactions.length,
+      transactions: allSibelTransactions.map(t => ({
+        id: t._id,
+        salesperson: t.salesperson?.name,
+        salespersonId: t.salesperson?._id,
+        saleOwner: t.sale?.salesperson,
+        transactionType: t.transactionType,
+        amount: t.amount,
+        status: t.status,
+        deductionStatus: t.deductionStatus,
+        description: t.description,
+        createdAt: t.createdAt
       }))
     });
     
