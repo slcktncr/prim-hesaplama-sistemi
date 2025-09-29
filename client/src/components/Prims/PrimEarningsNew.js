@@ -123,6 +123,19 @@ const PrimEarningsNew = () => {
     }
   };
 
+  // Debug Sibel transactions
+  const handleDebugSibel = async () => {
+    try {
+      console.log('🔍 Sibel Çekmez transaction debug başlatılıyor...');
+      const response = await primsAPI.debugSibelTransactions();
+      console.log('📊 SIBEL ÇEKMEZ DEBUG SONUCU:', response.data);
+      toast.info('Debug sonucu console\'da görüntülendi');
+    } catch (error) {
+      console.error('❌ Debug hatası:', error);
+      toast.error('Debug başarısız: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Özet hesaplamaları
   const calculateTotals = () => {
     return earnings.reduce((totals, earning) => ({
@@ -162,6 +175,9 @@ const PrimEarningsNew = () => {
               <p className="text-muted">Temsilci bazında prim hakediş özeti</p>
             </div>
             <div className="d-flex gap-2">
+              <Button variant="info" size="sm" onClick={handleDebugSibel}>
+                🔍 Debug Sibel
+              </Button>
               <Button variant="warning" size="sm" onClick={handleFixTransfer}>
                 🔧 Transfer Düzelt
               </Button>

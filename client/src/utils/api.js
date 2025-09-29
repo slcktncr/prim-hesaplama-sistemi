@@ -89,6 +89,7 @@ export const primsAPI = {
   getEarningsSimple: (params) => API.get('/prims/earnings-simple', { params }),
   getEarningsClean: (params) => API.get('/prims/earnings-clean', { params }),
   fixTransferTransactions: () => API.post('/prims/fix-transfer-transactions'),
+  debugSibelTransactions: () => API.get('/prims/debug-sibel-transactions'),
 };
 
 // Reports API calls

@@ -2209,6 +2209,81 @@ router.post('/fix-sibel-cekmez', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route   GET /api/prims/debug-sibel-transactions
+// @desc    Sibel Çekmez ile ilgili tüm transaction'ları debug et
+// @access  Private (Admin only)
+router.get('/debug-sibel-transactions', [auth, adminAuth], async (req, res) => {
+  try {
+    const Sale = require('../models/Sale');
+    
+    // Sibel Çekmez satışını bul
+    const sibelSale = await Sale.findOne({ 
+      customerName: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email');
+    
+    if (!sibelSale) {
+      return res.json({ message: 'Sibel Çekmez satışı bulunamadı' });
+    }
+    
+    // Bu satışla ilgili PrimTransaction'ları bul
+    const saleTransactions = await PrimTransaction.find({ 
+      sale: sibelSale._id 
+    }).populate('salesperson', 'name email');
+    
+    // Tüm Sibel Çekmez transaction'larını bul
+    const allSibelTransactions = await PrimTransaction.find({ 
+      description: { $regex: /SİBEL.*ÇEKMEZ/i } 
+    }).populate('salesperson', 'name email').populate('sale', 'customerName salesperson');
+    
+    // ModificationHistory'den transaction ID'sini al
+    const modHistory = sibelSale.modificationHistory || [];
+    const lastMod = modHistory[modHistory.length - 1];
+    
+    res.json({
+      sale: {
+        id: sibelSale._id,
+        customerName: sibelSale.customerName,
+        salesperson: sibelSale.salesperson?.name,
+        salespersonId: sibelSale.salesperson?._id,
+        modificationHistory: modHistory.length,
+        lastModification: lastMod ? {
+          primTransaction: lastMod.primTransaction,
+          primDifference: lastMod.primDifference,
+          modifiedAt: lastMod.modifiedAt,
+          modifiedBy: lastMod.modifiedBy
+        } : null
+      },
+      saleTransactions: saleTransactions.map(t => ({
+        id: t._id,
+        salesperson: t.salesperson?.name,
+        salespersonId: t.salesperson?._id,
+        transactionType: t.transactionType,
+        amount: t.amount,
+        status: t.status,
+        deductionStatus: t.deductionStatus,
+        description: t.description,
+        createdAt: t.createdAt
+      })),
+      allSibelTransactions: allSibelTransactions.map(t => ({
+        id: t._id,
+        salesperson: t.salesperson?.name,
+        salespersonId: t.salesperson?._id,
+        saleOwner: t.sale?.salesperson,
+        transactionType: t.transactionType,
+        amount: t.amount,
+        status: t.status,
+        deductionStatus: t.deductionStatus,
+        description: t.description,
+        createdAt: t.createdAt
+      }))
+    });
+    
+  } catch (error) {
+    console.error('Debug Sibel transactions error:', error);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+  }
+});
+
 // @route   POST /api/prims/fix-transfer-transactions
 // @desc    Transfer sonrası PrimTransaction'ları doğru temsilciye ata
 // @access  Private (Admin only)
