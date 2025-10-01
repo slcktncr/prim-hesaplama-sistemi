@@ -180,6 +180,28 @@ const PrimEarningsNew = () => {
     }
   };
 
+  const handleResetSibelStatus = async () => {
+    if (!window.confirm('Sibel Çekmez transaction durumunu "beklemede" olarak sıfırlamak istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      console.log('🔄 Sibel Çekmez transaction durumu sıfırlanıyor...');
+      const response = await primsAPI.resetSibelStatus();
+      console.log('✅ Durum sıfırlama sonucu:', response.data);
+      
+      if (response.data.success) {
+        toast.success(`Transaction durumu sıfırlandı: ${response.data.transaction.oldStatus} → ${response.data.transaction.newStatus}`);
+        fetchEarnings(); // Veriyi yenile
+      } else {
+        toast.info(response.data.message);
+      }
+    } catch (error) {
+      console.error('❌ Durum sıfırlama hatası:', error);
+      toast.error('Durum sıfırlama başarısız: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   // Özet hesaplamaları
   const calculateTotals = () => {
     return earnings.reduce((totals, earning) => ({
@@ -227,6 +249,9 @@ const PrimEarningsNew = () => {
         </Button>
         <Button variant="primary" size="sm" onClick={handleFixSibelStatus}>
           🔧 Durum Düzelt
+        </Button>
+        <Button variant="secondary" size="sm" onClick={handleResetSibelStatus}>
+          🔄 Beklemede Yap
         </Button>
               <Button variant="warning" size="sm" onClick={handleFixTransfer}>
                 🔧 Transfer Düzelt

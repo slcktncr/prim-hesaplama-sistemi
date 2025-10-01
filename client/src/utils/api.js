@@ -92,6 +92,7 @@ export const primsAPI = {
   debugSibelTransactions: () => API.get('/prims/debug-sibel-transactions'),
   cleanupSibelTransactions: () => API.post('/prims/cleanup-sibel-transactions'),
   fixSibelStatus: () => API.post('/prims/fix-sibel-status'),
+  resetSibelStatus: () => API.post('/prims/reset-sibel-status'),
 };
 
 // Reports API calls
