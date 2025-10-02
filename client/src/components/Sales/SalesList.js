@@ -698,15 +698,17 @@ const SalesList = () => {
                                     </div>
                                     <small className="text-muted">(Yeni Prim Tutarı)</small>
                                     
-                                    {/* Ödenen Kısım */}
-                                    <div className="mt-1">
-                                      <small className="text-muted">
-                                        Ödenen: {formatCurrency(oldPrimAmount)}
-                                      </small>
-                                      <Badge bg="success" size="sm" className="ms-1">
-                                        ödendi
-                                      </Badge>
-                                    </div>
+                                    {/* Ödenen Kısım - sadece prim ödenmişse göster */}
+                                    {sale.primStatus === 'ödendi' && (
+                                      <div className="mt-1">
+                                        <small className="text-muted">
+                                          Ödenen: {formatCurrency(oldPrimAmount)}
+                                        </small>
+                                        <Badge bg="success" size="sm" className="ms-1">
+                                          ödendi
+                                        </Badge>
+                                      </div>
+                                    )}
                                     
                                     {/* Bekleyen Kısım */}
                                     <div className="mt-1">

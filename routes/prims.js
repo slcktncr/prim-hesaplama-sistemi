@@ -1836,12 +1836,16 @@ router.get('/earnings-clean', auth, async (req, res) => {
     console.log('🚫 İptal kesintileri:', cancellationDeductions.length, 'dönem grubu');
 
     // 3. DEĞİŞİKLİK FARKLARI - Modification PrimTransaction'ları
+    console.log('🔍 PrimTransaction aggregation başlıyor...');
+    const matchCriteria = {
+      description: { $regex: 'değişiklik', $options: 'i' },
+      ...salespersonFilter
+    };
+    console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
+    
     const modificationTransactions = await PrimTransaction.aggregate([
       {
-        $match: {
-          description: { $regex: 'değişiklik', $options: 'i' },
-          ...salespersonFilter
-        }
+        $match: matchCriteria
       },
       {
         $lookup: {
@@ -1938,6 +1942,26 @@ router.get('/earnings-clean', auth, async (req, res) => {
     ]);
 
     console.log('🔄 Değişiklik işlemleri:', modificationTransactions.length, 'dönem grubu');
+    
+    // Debug: Yeni test satışı için PrimTransaction kontrol et
+    if (modificationTransactions.length > 0) {
+      const testTransaction = modificationTransactions.find(t => 
+        t.modificationTransactions.some(mt => 
+          mt.sale && mt.sale.toString().includes('68de4fe1') // Test satışı ID'si
+        )
+      );
+      if (testTransaction) {
+        console.log('🔍 Test satışı PrimTransaction bulundu:', {
+          salesperson: testTransaction.salespersonName,
+          period: testTransaction.periodName,
+          pendingEarnings: testTransaction.pendingEarnings,
+          additionalEarnings: testTransaction.additionalEarnings,
+          transactionCount: testTransaction.modificationTransactions.length
+        });
+      } else {
+        console.log('❌ Test satışı PrimTransaction bulunamadı!');
+      }
+    }
 
     // 4. VERİLERİ BİRLEŞTİR
     const allEarnings = [];
