@@ -1837,18 +1837,6 @@ router.get('/earnings-clean', auth, async (req, res) => {
 
     // 3. DEĞİŞİKLİK FARKLARI - Modification PrimTransaction'ları
     console.log('🔍 PrimTransaction aggregation başlıyor...');
-    const matchCriteria = {
-      sale: { $in: activeSaleIds }, // SADECE AKTİF SATIŞLAR
-      $or: [
-        { description: { $regex: 'değişiklik', $options: 'i' } },
-        { description: { $regex: 'degisiklik', $options: 'i' } },
-        { description: { $regex: 'modification', $options: 'i' } },
-        { description: { $regex: 'prim artışı', $options: 'i' } },
-        { description: { $regex: 'prim azalışı', $options: 'i' } }
-      ],
-      ...salespersonFilter
-    };
-    console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
     
     // DOĞRU YAKLAŞIM: Önce aktif satışları bul, sonra transaction'larını al
     const mongoose = require('mongoose');
@@ -1861,6 +1849,19 @@ router.get('/earnings-clean', auth, async (req, res) => {
     
     const activeSaleIds = activeSales.map(s => s._id);
     console.log('🔍 Aktif satış sayısı:', activeSales.length);
+    
+    const matchCriteria = {
+      sale: { $in: activeSaleIds }, // SADECE AKTİF SATIŞLAR
+      $or: [
+        { description: { $regex: 'değişiklik', $options: 'i' } },
+        { description: { $regex: 'degisiklik', $options: 'i' } },
+        { description: { $regex: 'modification', $options: 'i' } },
+        { description: { $regex: 'prim artışı', $options: 'i' } },
+        { description: { $regex: 'prim azalışı', $options: 'i' } }
+      ],
+      ...salespersonFilter
+    };
+    console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
     
     // Sadece aktif satışlara ait PrimTransaction'ları al
     const directTestTransactions = await PrimTransaction.find({
