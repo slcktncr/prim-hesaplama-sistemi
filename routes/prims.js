@@ -1843,6 +1843,24 @@ router.get('/earnings-clean', auth, async (req, res) => {
     };
     console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
     
+    // Debug: Yeni test transaction'larını direkt kontrol et
+    const mongoose = require('mongoose');
+    const testSaleIds = ['68de540d9e35fb71eb355fd5', '68de4fe1dc91b6c762f831f4'];
+    const directTestTransactions = await PrimTransaction.find({
+      sale: { $in: testSaleIds.map(id => new mongoose.Types.ObjectId(id)) }
+    }).populate('salesperson', 'name').populate('primPeriod', 'name');
+    
+    console.log('🔍 Direct test transactions:', directTestTransactions.map(t => ({
+      id: t._id,
+      sale: t.sale,
+      salesperson: t.salesperson?.name,
+      period: t.primPeriod?.name,
+      description: t.description,
+      amount: t.amount,
+      status: t.status,
+      transactionType: t.transactionType
+    })));
+    
     const modificationTransactions = await PrimTransaction.aggregate([
       {
         $match: matchCriteria
@@ -1945,21 +1963,37 @@ router.get('/earnings-clean', auth, async (req, res) => {
     
     // Debug: Yeni test satışı için PrimTransaction kontrol et
     if (modificationTransactions.length > 0) {
+      // Yeni test satışı ID'leri (BİDAHA DENEMEE)
+      const testSaleIds = ['68de540d9e35fb71eb355fd5', '68de4fe1dc91b6c762f831f4'];
+      
       const testTransaction = modificationTransactions.find(t => 
         t.modificationTransactions.some(mt => 
-          mt.sale && mt.sale.toString().includes('68de4fe1') // Test satışı ID'si
+          mt.sale && testSaleIds.some(id => mt.sale.toString().includes(id))
         )
       );
+      
       if (testTransaction) {
         console.log('🔍 Test satışı PrimTransaction bulundu:', {
           salesperson: testTransaction.salespersonName,
           period: testTransaction.periodName,
           pendingEarnings: testTransaction.pendingEarnings,
           additionalEarnings: testTransaction.additionalEarnings,
-          transactionCount: testTransaction.modificationTransactions.length
+          transactionCount: testTransaction.modificationTransactions.length,
+          transactions: testTransaction.modificationTransactions.map(mt => ({
+            id: mt._id,
+            description: mt.description,
+            amount: mt.amount,
+            status: mt.status
+          }))
         });
       } else {
         console.log('❌ Test satışı PrimTransaction bulunamadı!');
+        console.log('🔍 Bulunan tüm modification transactions:', modificationTransactions.map(t => ({
+          salesperson: t.salespersonName,
+          period: t.periodName,
+          transactionCount: t.modificationTransactions.length,
+          sampleDescriptions: t.modificationTransactions.slice(0, 2).map(mt => mt.description)
+        })));
       }
     }
 
