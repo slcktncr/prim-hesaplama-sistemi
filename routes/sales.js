@@ -2023,6 +2023,12 @@ router.put('/:id/modify', [
       contractNo, saleDate, kaporaDate, entryDate, exitDate, reason 
     } = req.body;
 
+    // Aktif prim oranını al (function başında tanımla - scope sorununu önlemek için)
+    const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    if (!currentPrimRate) {
+      return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+    }
+
     const sale = await Sale.findById(req.params.id);
     if (!sale) {
       console.log('❌ Sale not found:', req.params.id);
@@ -2069,7 +2075,6 @@ router.put('/:id/modify', [
     if ((sale.primAmount === undefined || sale.primAmount === null || sale.basePrimPrice === undefined || sale.basePrimPrice === null) && !isKaporaType(sale.saleType)) {
       console.log('🔧 Completing missing prim information for old sale...');
       
-      const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
       if (currentPrimRate) {
         const listPriceNum = parseFloat(sale.listPrice) || 0;
         const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
@@ -2168,11 +2173,7 @@ router.put('/:id/modify', [
     let oldPrimAmount = oldValues.primAmount || 0;
     let newPrimAmount = oldPrimAmount;
     
-    // Aktif prim oranını al (PrimTransaction oluştururken de kullanılacak)
-    const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!currentPrimRate) {
-      return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
-    }
+    // currentPrimRate zaten function başında tanımlandı
 
     // Prim yeniden hesaplama (kapora değilse ve fiyat değişikliği varsa)
     if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
