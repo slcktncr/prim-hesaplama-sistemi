@@ -2167,11 +2167,15 @@ router.put('/:id/modify', [
     let primDifference = 0;
     let oldPrimAmount = oldValues.primAmount || 0;
     let newPrimAmount = oldPrimAmount;
+    
+    // Aktif prim oranını al (PrimTransaction oluştururken de kullanılacak)
+    const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    if (!currentPrimRate) {
+      return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+    }
 
     // Prim yeniden hesaplama (kapora değilse ve fiyat değişikliği varsa)
     if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
-      const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-      if (currentPrimRate) {
         const originalListPriceNum = parseFloat(sale.originalListPrice || sale.listPrice) || 0;
         const discountRateNum = parseFloat(sale.discountRate) || 0;
         const activitySalePriceNum = parseFloat(sale.activitySalePrice) || 0;
@@ -2220,7 +2224,6 @@ router.put('/:id/modify', [
         } else {
           console.log('💰 Prim ödendi, primAmount sabit kalıyor:', sale.primAmount, 'Fark:', primDifference);
         }
-      }
     }
 
     // Detaylı modifikasyon geçmişi
