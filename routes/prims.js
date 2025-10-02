@@ -1838,7 +1838,13 @@ router.get('/earnings-clean', auth, async (req, res) => {
     // 3. DEĞİŞİKLİK FARKLARI - Modification PrimTransaction'ları
     console.log('🔍 PrimTransaction aggregation başlıyor...');
     const matchCriteria = {
-      description: { $regex: 'değişiklik', $options: 'i' },
+      $or: [
+        { description: { $regex: 'değişiklik', $options: 'i' } },
+        { description: { $regex: 'degisiklik', $options: 'i' } },
+        { description: { $regex: 'modification', $options: 'i' } },
+        { description: { $regex: 'prim artışı', $options: 'i' } },
+        { description: { $regex: 'prim azalışı', $options: 'i' } }
+      ],
       ...salespersonFilter
     };
     console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
@@ -1977,6 +1983,73 @@ router.get('/earnings-clean', auth, async (req, res) => {
     ]);
 
     console.log('🔄 Değişiklik işlemleri:', modificationTransactions.length, 'dönem grubu');
+    
+    // MANUEL FIX: Yeni test transaction'larını aggregation'a ekle
+    if (directTestTransactions.length > 0) {
+      console.log('🔧 Manuel olarak test transaction\'larını ekliyoruz...');
+      
+      for (const testTx of directTestTransactions) {
+        // Bu transaction zaten aggregation'da var mı?
+        const existsInAggregation = modificationTransactions.some(mt => 
+          mt.modificationTransactions.some(tx => tx._id.toString() === testTx._id.toString())
+        );
+        
+        if (!existsInAggregation) {
+          console.log('🔧 Eksik transaction ekleniyor:', {
+            id: testTx._id,
+            salesperson: testTx.salesperson?.name,
+            period: testTx.primPeriod?.name,
+            amount: testTx.amount,
+            status: testTx.status
+          });
+          
+          // Bu temsilci + dönem kombinasyonu için group bul veya oluştur
+          let targetGroup = modificationTransactions.find(mt => 
+            mt.salespersonId === testTx.salesperson._id.toString() &&
+            mt.periodName === testTx.primPeriod?.name
+          );
+          
+          if (!targetGroup) {
+            // Yeni group oluştur
+            targetGroup = {
+              _id: {
+                salesperson: testTx.salesperson._id,
+                primPeriod: testTx.primPeriod._id
+              },
+              salespersonName: testTx.salesperson.name,
+              salespersonId: testTx.salesperson._id.toString(),
+              periodName: testTx.primPeriod?.name,
+              additionalEarnings: 0,
+              pendingEarnings: 0,
+              modificationDeductions: 0,
+              pendingDeductions: 0,
+              modificationTransactions: []
+            };
+            modificationTransactions.push(targetGroup);
+          }
+          
+          // Transaction'ı gruba ekle
+          targetGroup.modificationTransactions.push(testTx);
+          
+          // Tutarları güncelle
+          if (testTx.transactionType === 'kazanç') {
+            if (testTx.status === 'beklemede') {
+              targetGroup.pendingEarnings += testTx.amount;
+            } else if (testTx.status === 'onaylandı') {
+              targetGroup.additionalEarnings += testTx.amount;
+            }
+          } else if (testTx.transactionType === 'kesinti') {
+            if (testTx.status === 'onaylandı') {
+              targetGroup.modificationDeductions += testTx.amount;
+            } else if (testTx.deductionStatus === 'beklemede') {
+              targetGroup.pendingDeductions += testTx.amount;
+            }
+          }
+        }
+      }
+      
+      console.log('🔧 Manuel ekleme sonrası değişiklik işlemleri:', modificationTransactions.length, 'dönem grubu');
+    }
     
     // Debug: Yeni test satışı için PrimTransaction kontrol et
     if (modificationTransactions.length > 0) {
