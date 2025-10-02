@@ -1861,6 +1861,23 @@ router.get('/earnings-clean', auth, async (req, res) => {
       transactionType: t.transactionType
     })));
     
+    // Debug: Aggregation'a giren tüm transaction'ları logla
+    const allMatchingTransactions = await PrimTransaction.find(matchCriteria)
+      .populate('salesperson', 'name')
+      .populate('primPeriod', 'name');
+    
+    console.log('🔍 Aggregation match eden tüm transactions:', allMatchingTransactions.map(t => ({
+      id: t._id,
+      sale: t.sale,
+      salesperson: t.salesperson?.name,
+      period: t.primPeriod?.name,
+      description: t.description,
+      amount: t.amount,
+      status: t.status,
+      transactionType: t.transactionType,
+      matchesTestSale: testSaleIds.includes(t.sale.toString())
+    })));
+    
     const modificationTransactions = await PrimTransaction.aggregate([
       {
         $match: matchCriteria
