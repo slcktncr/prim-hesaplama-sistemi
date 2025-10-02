@@ -2260,8 +2260,8 @@ router.put('/:id/modify', [
     
     console.log('✅ Modification entry added. Total history entries:', sale.modificationHistory.length);
 
-    // PrimTransaction oluştur (prim farkı varsa ve temsilciye prim ödenmişse)
-    if (primDifference !== 0 && sale.primStatus === 'ödendi') {
+    // PrimTransaction oluştur (prim farkı varsa)
+    if (primDifference !== 0) {
       const PrimTransaction = require('../models/PrimTransaction');
       
       let transactionType, transactionDescription, transactionStatus, deductionStatus;
@@ -2410,7 +2410,7 @@ router.put('/:id/modify', [
         modifiedFields: Object.keys(updateData),
         changes: changes,
         primDifference: primDifference,
-        primTransactionCreated: primDifference !== 0 && sale.primStatus === 'ödendi',
+        primTransactionCreated: primDifference !== 0,
         changesSummary: modificationEntry.changesSummary
       }
     });
