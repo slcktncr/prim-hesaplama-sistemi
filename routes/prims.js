@@ -1843,7 +1843,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
     
     console.log('🔍 Aktif satışları buluyoruz...');
     const activeSales = await Sale.find({ 
-      status: 'active',
+      status: 'aktif', // Türkçe: 'aktif' (not 'active')
       salesperson: salespersonFilter.salesperson || { $exists: true }
     }).select('_id customerName salesperson');
     
