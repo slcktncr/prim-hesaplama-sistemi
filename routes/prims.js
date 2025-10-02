@@ -1893,8 +1893,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
       description: t.description,
       amount: t.amount,
       status: t.status,
-      transactionType: t.transactionType,
-      matchesTestSale: testSaleIds.includes(t.sale.toString())
+      transactionType: t.transactionType
     })));
     
     const modificationTransactions = await PrimTransaction.aggregate([
@@ -2066,36 +2065,19 @@ router.get('/earnings-clean', auth, async (req, res) => {
     
     // Debug: Yeni test satışı için PrimTransaction kontrol et
     if (modificationTransactions.length > 0) {
-      // Yeni test satışı ID'leri (BİDAHA DENEMEE)
-      const testSaleIds = ['68de540d9e35fb71eb355fd5', '68de4fe1dc91b6c762f831f4'];
+      console.log('🔍 Bulunan modification transactions:', modificationTransactions.length, 'dönem grubu');
       
-      const testTransaction = modificationTransactions.find(t => 
-        t.modificationTransactions.some(mt => 
-          mt.sale && testSaleIds.some(id => mt.sale.toString().includes(id))
-        )
+      // Selçuk TUNÇER'in transaction'larını kontrol et
+      const selcukTransactions = modificationTransactions.filter(t => 
+        t.salespersonName === 'Selçuk TUNÇER'
       );
       
-      if (testTransaction) {
-        console.log('🔍 Test satışı PrimTransaction bulundu:', {
-          salesperson: testTransaction.salespersonName,
-          period: testTransaction.periodName,
-          pendingEarnings: testTransaction.pendingEarnings,
-          additionalEarnings: testTransaction.additionalEarnings,
-          transactionCount: testTransaction.modificationTransactions.length,
-          transactions: testTransaction.modificationTransactions.map(mt => ({
-            id: mt._id,
-            description: mt.description,
-            amount: mt.amount,
-            status: mt.status
-          }))
-        });
-      } else {
-        console.log('❌ Test satışı PrimTransaction bulunamadı!');
-        console.log('🔍 Bulunan tüm modification transactions:', modificationTransactions.map(t => ({
-          salesperson: t.salespersonName,
+      if (selcukTransactions.length > 0) {
+        console.log('🔍 Selçuk TUNÇER transaction\'ları:', selcukTransactions.map(t => ({
           period: t.periodName,
-          transactionCount: t.modificationTransactions.length,
-          sampleDescriptions: t.modificationTransactions.slice(0, 2).map(mt => mt.description)
+          pendingEarnings: t.pendingEarnings,
+          additionalEarnings: t.additionalEarnings,
+          transactionCount: t.modificationTransactions.length
         })));
       }
     }
