@@ -1838,6 +1838,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
     // 3. DEĞİŞİKLİK FARKLARI - Modification PrimTransaction'ları
     console.log('🔍 PrimTransaction aggregation başlıyor...');
     const matchCriteria = {
+      sale: { $in: activeSaleIds }, // SADECE AKTİF SATIŞLAR
       $or: [
         { description: { $regex: 'değişiklik', $options: 'i' } },
         { description: { $regex: 'degisiklik', $options: 'i' } },
@@ -1849,11 +1850,22 @@ router.get('/earnings-clean', auth, async (req, res) => {
     };
     console.log('🔍 PrimTransaction match kriterleri:', matchCriteria);
     
-    // Debug: Yeni test transaction'larını direkt kontrol et
+    // DOĞRU YAKLAŞIM: Önce aktif satışları bul, sonra transaction'larını al
     const mongoose = require('mongoose');
-    const testSaleIds = ['68de540d9e35fb71eb355fd5', '68de4fe1dc91b6c762f831f4'];
+    
+    console.log('🔍 Aktif satışları buluyoruz...');
+    const activeSales = await Sale.find({ 
+      status: 'active',
+      salesperson: salespersonFilter.salesperson || { $exists: true }
+    }).select('_id customerName salesperson');
+    
+    const activeSaleIds = activeSales.map(s => s._id);
+    console.log('🔍 Aktif satış sayısı:', activeSales.length);
+    
+    // Sadece aktif satışlara ait PrimTransaction'ları al
     const directTestTransactions = await PrimTransaction.find({
-      sale: { $in: testSaleIds.map(id => new mongoose.Types.ObjectId(id)) }
+      sale: { $in: activeSaleIds },
+      description: { $regex: 'değişiklik', $options: 'i' }
     }).populate('salesperson', 'name').populate('primPeriod', 'name');
     
     console.log('🔍 Direct test transactions:', directTestTransactions.map(t => ({
