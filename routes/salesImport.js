@@ -967,24 +967,29 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       const totalCount = await CommunicationRecord.countDocuments();
       console.log(`📊 Total communication records in DB: ${totalCount}`);
       
-      // Debug: Collection adını ve diğer collection'ları kontrol et
-      const db = CommunicationRecord.db;
-      const collections = await db.listCollections().toArray();
-      console.log(`📊 Available collections:`, collections.map(c => c.name));
-      
       // Debug: CommunicationRecord collection'ının gerçek adını kontrol et
       const actualCollectionName = CommunicationRecord.collection.name;
       console.log(`📊 CommunicationRecord collection name: ${actualCollectionName}`);
       
-      // Debug: Farklı collection adları ile deneme
-      const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
-      for (const altName of alternativeNames) {
-        try {
-          const altCount = await db.collection(altName).countDocuments();
-          console.log(`📊 Collection ${altName} count: ${altCount}`);
-        } catch (error) {
-          console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
+      // Debug: Mongoose connection üzerinden collection'ları kontrol et
+      try {
+        const mongoose = require('mongoose');
+        const db = mongoose.connection.db;
+        const collections = await db.listCollections().toArray();
+        console.log(`📊 Available collections:`, collections.map(c => c.name));
+        
+        // Debug: Farklı collection adları ile deneme
+        const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
+        for (const altName of alternativeNames) {
+          try {
+            const altCount = await db.collection(altName).countDocuments();
+            console.log(`📊 Collection ${altName} count: ${altCount}`);
+          } catch (error) {
+            console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
+          }
         }
+      } catch (error) {
+        console.log(`📊 Error listing collections: ${error.message}`);
       }
       
       // Debug: Son 10 kaydı kontrol et
