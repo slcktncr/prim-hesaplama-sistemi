@@ -583,16 +583,12 @@ const SalesList = () => {
                             <small className="text-muted">
                               Dönem: {sale.periodNo}
                             </small>
-                            {(sale.entryDate || sale.exitDate) && (
-                              <>
-                                <br />
-                                <small className="text-info">
-                                  {sale.entryDate && `Giriş: ${sale.entryDate}`}
-                                  {sale.entryDate && sale.exitDate && ' | '}
-                                  {sale.exitDate && `Çıkış: ${sale.exitDate}`}
-                                </small>
-                              </>
-                            )}
+                            <br />
+                            <small className="text-info">
+                              Giriş: {sale.entryDate}
+                              {' | '}
+                              Çıkış: {sale.exitDate}
+                            </small>
                           </div>
                         </div>
                       </td>
