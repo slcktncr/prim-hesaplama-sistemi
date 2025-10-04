@@ -132,7 +132,26 @@ const CommunicationReport = () => {
   };
 
   const getCommunicationValue = (communication, typeCode) => {
-    return communication[typeCode] || 0;
+    // Önce dinamik alanı kontrol et
+    if (communication[typeCode] !== undefined) {
+      return communication[typeCode];
+    }
+    
+    // Eğer dinamik alan yoksa, eski alanları kontrol et
+    const legacyMapping = {
+      'WHATSAPP_INCOMING': 'whatsappIncoming',
+      'CALL_INCOMING': 'callIncoming', 
+      'CALL_OUTGOING': 'callOutgoing',
+      'MEETING_NEW_CUSTOMER': 'meetingNewCustomer',
+      'MEETING_AFTER_SALE': 'meetingAfterSale'
+    };
+    
+    const legacyField = legacyMapping[typeCode];
+    if (legacyField && communication[legacyField] !== undefined) {
+      return communication[legacyField];
+    }
+    
+    return 0;
   };
 
   const calculateTotalCommunication = (communication) => {

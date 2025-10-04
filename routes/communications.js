@@ -429,6 +429,16 @@ router.get('/report', auth, async (req, res) => {
         recordCount: 0
       };
 
+      // Eski alanları dinamik alanlara map et
+      const mappedDailyData = {
+        ...dailyData,
+        WHATSAPP_INCOMING: dailyData.whatsappIncoming || 0,
+        CALL_INCOMING: dailyData.callIncoming || 0,
+        CALL_OUTGOING: dailyData.callOutgoing || 0,
+        MEETING_NEW_CUSTOMER: dailyData.meetingNewCustomer || 0,
+        MEETING_AFTER_SALE: dailyData.meetingAfterSale || 0
+      };
+
       // Geçmiş yıl verilerinden veri
       let historicalData = {
         whatsappIncoming: 0,
@@ -488,12 +498,22 @@ router.get('/report', auth, async (req, res) => {
         }
       });
 
+      // Geçmiş verileri de map et
+      const mappedHistoricalData = {
+        ...historicalData,
+        WHATSAPP_INCOMING: historicalData.whatsappIncoming || 0,
+        CALL_INCOMING: historicalData.callIncoming || 0,
+        CALL_OUTGOING: historicalData.callOutgoing || 0,
+        MEETING_NEW_CUSTOMER: historicalData.meetingNewCustomer || 0,
+        MEETING_AFTER_SALE: historicalData.meetingAfterSale || 0
+      };
+
       // Toplam veri - dinamik
       const totalData = {};
       
       // Her iletişim türü için toplam hesapla
       reportTypes.forEach(type => {
-        totalData[type.code] = (dailyData[type.code] || 0) + (historicalData[type.code] || 0);
+        totalData[type.code] = (mappedDailyData[type.code] || 0) + (mappedHistoricalData[type.code] || 0);
       });
       
       // Eski alanları da ekle (geriye uyumluluk)
@@ -501,6 +521,13 @@ router.get('/report', auth, async (req, res) => {
       legacyFields.forEach(field => {
         totalData[field] = (dailyData[field] || 0) + (historicalData[field] || 0);
       });
+      
+      // Eski alanları dinamik alanlara da map et
+      totalData.WHATSAPP_INCOMING = totalData.whatsappIncoming || 0;
+      totalData.CALL_INCOMING = totalData.callIncoming || 0;
+      totalData.CALL_OUTGOING = totalData.callOutgoing || 0;
+      totalData.MEETING_NEW_CUSTOMER = totalData.meetingNewCustomer || 0;
+      totalData.MEETING_AFTER_SALE = totalData.meetingAfterSale || 0;
       
       totalData.totalCommunication = dailyData.totalCommunication + historicalData.totalCommunication;
 
