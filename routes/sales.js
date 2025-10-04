@@ -1261,7 +1261,8 @@ router.put('/:id', auth, [
     const allowedFields = [
       'customerName', 'phone', 'blockNo', 'apartmentNo', 'periodNo', 'contractNo',
       'saleType', 'saleDate', 'kaporaDate', 'listPrice', 'originalListPrice',
-      'discountRate', 'discountedListPrice', 'activitySalePrice', 'paymentType', 'primRate'
+      'discountRate', 'discountedListPrice', 'activitySalePrice', 'paymentType', 'primRate',
+      'entryDate', 'exitDate', 'notes'
     ];
 
     // Prim yeniden hesaplanması gerekip gerekmediğini kontrol et
