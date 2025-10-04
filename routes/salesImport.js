@@ -978,16 +978,39 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
         const collections = await db.listCollections().toArray();
         console.log(`📊 Available collections:`, collections.map(c => c.name));
         
-        // Debug: Farklı collection adları ile deneme
-        const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
-        for (const altName of alternativeNames) {
-          try {
-            const altCount = await db.collection(altName).countDocuments();
-            console.log(`📊 Collection ${altName} count: ${altCount}`);
-          } catch (error) {
-            console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
-          }
+      // Debug: Farklı collection adları ile deneme
+      const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
+      for (const altName of alternativeNames) {
+        try {
+          const altCount = await db.collection(altName).countDocuments();
+          console.log(`📊 Collection ${altName} count: ${altCount}`);
+        } catch (error) {
+          console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
         }
+      }
+      
+      // Debug: Tüm collection'ları kontrol et ve iletişim içerenleri bul
+      console.log(`📊 Checking all collections for communication data...`);
+      for (const collection of collections) {
+        try {
+          const count = await db.collection(collection.name).countDocuments();
+          if (count > 0) {
+            // İletişim verisi olabilecek collection'ları kontrol et
+            const sample = await db.collection(collection.name).findOne({});
+            if (sample && (
+              sample.whatsappIncoming !== undefined || 
+              sample.callIncoming !== undefined || 
+              sample.totalCommunication !== undefined ||
+              sample.communication !== undefined
+            )) {
+              console.log(`📊 Potential communication collection: ${collection.name} (${count} records)`);
+              console.log(`📊 Sample data:`, JSON.stringify(sample, null, 2).substring(0, 500));
+            }
+          }
+        } catch (error) {
+          // Collection okunamıyor, devam et
+        }
+      }
       } catch (error) {
         console.log(`📊 Error listing collections: ${error.message}`);
       }
