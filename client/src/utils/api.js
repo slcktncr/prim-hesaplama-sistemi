@@ -276,4 +276,10 @@ export const penaltiesAPI = {
   checkMissedEntries: () => API.post('/penalties/check-missed-entries')
 };
 
+// Communication Year API calls
+export const communicationYearAPI = {
+  getCurrentSettings: () => API.get('/communication-year/current'),
+  updateSettings: (settings) => API.put('/communication-year/current/settings', settings)
+};
+
 export default API;

@@ -53,6 +53,7 @@ app.use('/api/migration', require('./routes/migration'));
 app.use('/api/sales-import', require('./routes/salesImport'));
 app.use('/api/cancelled-sales-import', require('./routes/cancelledSalesImport'));
 app.use('/api/roles', require('./routes/roles'));
+app.use('/api/communication-year', require('./routes/communicationYear'));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
