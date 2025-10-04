@@ -24,7 +24,7 @@ import {
   FiCalendar
 } from 'react-icons/fi';
 
-import { communicationsAPI, dailyStatusAPI } from '../../utils/api';
+import { communicationsAPI, dailyStatusAPI, communicationYearAPI } from '../../utils/api';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
@@ -35,6 +35,7 @@ const DailyCommunicationEntry = () => {
   const [saving, setSaving] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [history, setHistory] = useState([]);
+  const [deadlineHour, setDeadlineHour] = useState(23); // Varsayılan 23:00
   const [formData, setFormData] = useState({
     whatsappIncoming: 0,
     callIncoming: 0,
@@ -46,6 +47,7 @@ const DailyCommunicationEntry = () => {
   useEffect(() => {
     fetchTodayData();
     fetchDailyStatus();
+    fetchDeadlineSettings();
   }, []);
 
   const fetchTodayData = async () => {
@@ -79,6 +81,16 @@ const DailyCommunicationEntry = () => {
       setDailyStatus(response.data);
     } catch (error) {
       console.error('Daily status fetch error:', error);
+    }
+  };
+
+  const fetchDeadlineSettings = async () => {
+    try {
+      const response = await communicationYearAPI.getCurrentSettings();
+      setDeadlineHour(response.data.settings.entryDeadlineHour);
+    } catch (error) {
+      console.error('Deadline settings fetch error:', error);
+      // Hata durumunda varsayılan değeri koru
     }
   };
 
@@ -136,12 +148,12 @@ const DailyCommunicationEntry = () => {
     const now = new Date();
     const hour = now.getHours();
     
-    if (hour >= 23) {
+    if (hour >= deadlineHour) {
       return { variant: 'danger', text: 'Son tarih geçti!' };
-    } else if (hour >= 22) {
+    } else if (hour >= deadlineHour - 1) {
       return { variant: 'warning', text: 'Son 1 saat!' };
-    } else if (hour >= 20) {
-      return { variant: 'info', text: `${23 - hour} saat kaldı` };
+    } else if (hour >= deadlineHour - 3) {
+      return { variant: 'info', text: `${deadlineHour - hour} saat kaldı` };
     } else {
       return { variant: 'success', text: 'Zamanında' };
     }
@@ -191,7 +203,7 @@ const DailyCommunicationEntry = () => {
       {!isExempt && (
         <Alert variant={deadlineStatus.variant} className="mb-4">
           <FiClock className="me-2" />
-          <strong>Son Tarih:</strong> Saat 23:00'a kadar girmeniz gerekiyor. ({deadlineStatus.text})
+          <strong>Son Tarih:</strong> Saat {deadlineHour.toString().padStart(2, '0')}:00'a kadar girmeniz gerekiyor. ({deadlineStatus.text})
         </Alert>
       )}
 

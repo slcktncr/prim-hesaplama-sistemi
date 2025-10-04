@@ -243,10 +243,10 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
     const checkDate = req.body.date ? new Date(req.body.date) : new Date();
     console.log('📅 Check date:', checkDate);
     
-    // Dün 23:00'dan önceki günleri kontrol et
+    // Dün deadline saatinden önceki günleri kontrol et
     const yesterday = new Date(checkDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(23, 0, 0, 0);
+    yesterday.setHours(settings.entryDeadlineHour, 0, 0, 0);
 
     // Son 7 günü kontrol et (ayarlanabilir)
     const checkStartDate = new Date(yesterday);
@@ -474,14 +474,46 @@ async function updateUserPenaltyStats(userId) {
 }
 
 async function getPenaltySettings() {
-  // Bu fonksiyon sistem ayarlarından penalty ayarlarını alır
-  // Şimdilik default değerler döndürüyoruz, daha sonra SystemSettings model'inde saklanabilir
-  return {
-    dailyPenaltyPoints: 1,
-    maxPenaltyPoints: 10,
-    autoDeactivateEnabled: true,
-    penaltyResetDays: 30
-  };
+  try {
+    // CommunicationYear ayarlarını al
+    const CommunicationYear = require('../models/CommunicationYear');
+    const currentYear = await CommunicationYear.findOne({ 
+      isActive: true,
+      type: 'active'
+    });
+
+    if (currentYear && currentYear.settings) {
+      return {
+        dailyPenaltyPoints: currentYear.settings.dailyPenaltyPoints || 1,
+        maxPenaltyPoints: currentYear.settings.maxPenaltyPoints || 10,
+        autoDeactivateEnabled: true,
+        penaltyResetDays: 30,
+        entryDeadlineHour: currentYear.settings.entryDeadlineHour || 23,
+        penaltySystemActive: currentYear.settings.penaltySystemActive || true
+      };
+    }
+
+    // Fallback: default değerler
+    return {
+      dailyPenaltyPoints: 1,
+      maxPenaltyPoints: 10,
+      autoDeactivateEnabled: true,
+      penaltyResetDays: 30,
+      entryDeadlineHour: 23,
+      penaltySystemActive: true
+    };
+  } catch (error) {
+    console.error('Get penalty settings error:', error);
+    // Hata durumunda default değerler
+    return {
+      dailyPenaltyPoints: 1,
+      maxPenaltyPoints: 10,
+      autoDeactivateEnabled: true,
+      penaltyResetDays: 30,
+      entryDeadlineHour: 23,
+      penaltySystemActive: true
+    };
+  }
 }
 
 async function savePenaltySettings(settings) {
