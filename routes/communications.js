@@ -272,21 +272,29 @@ router.get('/report', auth, async (req, res) => {
 
     // Her iletişim türü için alan ekle
     reportTypes.forEach(type => {
-      groupFields[type.code] = { $sum: `$${type.code}` };
+      groupFields[type.code] = { $sum: { $ifNull: [`$${type.code}`, 0] } };
     });
 
     // Eski alanları da ekle (geriye uyumluluk için)
     const legacyFields = ['whatsappIncoming', 'callIncoming', 'callOutgoing', 'meetingNewCustomer', 'meetingAfterSale'];
     legacyFields.forEach(field => {
       if (!groupFields[field]) {
-        groupFields[field] = { $sum: `$${field}` };
+        groupFields[field] = { $sum: { $ifNull: [`$${field}`, 0] } };
       }
     });
+
+    console.log('=== AGGREGATION PIPELINE DEBUG ===');
+    console.log('Query:', JSON.stringify(query, null, 2));
+    console.log('Group fields:', JSON.stringify(groupFields, null, 2));
+    console.log('Report types:', reportTypes.map(t => ({ code: t.code, name: t.name })));
 
     const dailyRecords = await CommunicationRecord.aggregate([
       { $match: query },
       { $group: groupFields }
     ]);
+
+    console.log('Aggregation result count:', dailyRecords.length);
+    console.log('=== AGGREGATION PIPELINE DEBUG END ===');
 
     // Geçmiş yıl verilerini sadece gerekli durumlarda al
     const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
@@ -346,6 +354,35 @@ router.get('/report', auth, async (req, res) => {
     console.log('Historical years:', historicalYears.map(y => ({ year: y.year, type: y.type })));
     console.log('Daily records found:', dailyRecords.length);
     console.log('Daily records user IDs:', dailyRecords.map(r => r._id));
+    
+    // Detaylı debug - her kayıt için
+    if (dailyRecords.length > 0) {
+      console.log('=== DAILY RECORDS DETAIL ===');
+      dailyRecords.forEach((record, index) => {
+        console.log(`Record ${index + 1}:`);
+        console.log('  User ID:', record._id);
+        console.log('  Total Communication:', record.totalCommunication);
+        console.log('  Record Count:', record.recordCount);
+        console.log('  WhatsApp:', record.whatsappIncoming);
+        console.log('  Call Incoming:', record.callIncoming);
+        console.log('  Call Outgoing:', record.callOutgoing);
+        console.log('  Meeting New:', record.meetingNewCustomer);
+        console.log('  Meeting After:', record.meetingAfterSale);
+        
+        // Dinamik alanları kontrol et
+        const dynamicFields = Object.keys(record).filter(key => 
+          !['_id', 'totalCommunication', 'recordCount', 'whatsappIncoming', 'callIncoming', 'callOutgoing', 'meetingNewCustomer', 'meetingAfterSale'].includes(key)
+        );
+        if (dynamicFields.length > 0) {
+          console.log('  Dynamic fields:', dynamicFields);
+          dynamicFields.forEach(field => {
+            console.log(`    ${field}:`, record[field]);
+          });
+        }
+        console.log('---');
+      });
+    }
+    
     console.log('=== BACKEND DEBUG END ===');
 
     // Geçmiş kullanıcıları sadece geçmiş yıl verileri varsa topla

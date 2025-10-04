@@ -191,6 +191,13 @@ const CommunicationReport = () => {
         summary: summaryResponse.data?.data?.length || 0
       });
       
+      // Detaylı debug
+      console.log('=== FRONTEND DEBUG START ===');
+      console.log('Daily response:', dailyResponse.data);
+      console.log('Monthly response:', monthlyResponse.data);
+      console.log('Summary response:', summaryResponse.data);
+      console.log('=== FRONTEND DEBUG END ===');
+      
       console.log('📊 Raw API responses:', {
         dailyResponse: dailyResponse.data,
         monthlyResponse: monthlyResponse.data,

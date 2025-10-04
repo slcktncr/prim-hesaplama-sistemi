@@ -112,6 +112,9 @@ const communicationRecordSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  strict: false, // Dinamik alanları destekle
+  collection: 'communicationrecords' // Collection adını belirt
 });
 
 // Toplam değerleri hesaplama middleware (Dinamik + Legacy uyumlu)
