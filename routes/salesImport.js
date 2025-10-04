@@ -1012,6 +1012,7 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       console.log(`📊 Communication records date range:`, dateRange[0]);
       
       // Tüm kayıtları al (populate olmadan önce)
+      console.log(`📊 About to query CommunicationRecord.find({})`);
       data = await CommunicationRecord.find({})
         .populate({
           path: 'salesperson',
@@ -1020,6 +1021,8 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
         })
         .sort({ date: -1 })
         .lean(); // Performance için
+      
+      console.log(`📊 Query completed, found ${data.length} records`);
       
       backupDescription = `Manuel iletişim yedeği - ${backupDescription}`;
       console.log(`📊 Found ${data.length} communication records for backup (Total in DB: ${totalCount})`);
