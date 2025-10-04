@@ -967,6 +967,50 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       const totalCount = await CommunicationRecord.countDocuments();
       console.log(`📊 Total communication records in DB: ${totalCount}`);
       
+      // Debug: Collection adını ve diğer collection'ları kontrol et
+      const db = CommunicationRecord.db;
+      const collections = await db.listCollections().toArray();
+      console.log(`📊 Available collections:`, collections.map(c => c.name));
+      
+      // Debug: CommunicationRecord collection'ının gerçek adını kontrol et
+      const actualCollectionName = CommunicationRecord.collection.name;
+      console.log(`📊 CommunicationRecord collection name: ${actualCollectionName}`);
+      
+      // Debug: Farklı collection adları ile deneme
+      const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
+      for (const altName of alternativeNames) {
+        try {
+          const altCount = await db.collection(altName).countDocuments();
+          console.log(`📊 Collection ${altName} count: ${altCount}`);
+        } catch (error) {
+          console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
+        }
+      }
+      
+      // Debug: Son 10 kaydı kontrol et
+      const recentRecords = await CommunicationRecord.find({})
+        .sort({ date: -1 })
+        .limit(10)
+        .select('date salesperson totalCommunication');
+      console.log(`📊 Recent 10 communication records:`, recentRecords.map(r => ({
+        date: r.date,
+        salesperson: r.salesperson,
+        totalCommunication: r.totalCommunication
+      })));
+      
+      // Debug: Tarih aralığını kontrol et
+      const dateRange = await CommunicationRecord.aggregate([
+        {
+          $group: {
+            _id: null,
+            minDate: { $min: '$date' },
+            maxDate: { $max: '$date' },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+      console.log(`📊 Communication records date range:`, dateRange[0]);
+      
       // Tüm kayıtları al (populate olmadan önce)
       data = await CommunicationRecord.find({})
         .populate({
@@ -979,6 +1023,17 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       
       backupDescription = `Manuel iletişim yedeği - ${backupDescription}`;
       console.log(`📊 Found ${data.length} communication records for backup (Total in DB: ${totalCount})`);
+      
+      // Debug: İlk 5 kaydın detaylarını göster
+      if (data.length > 0) {
+        console.log(`📊 First 5 records sample:`, data.slice(0, 5).map(r => ({
+          date: r.date,
+          salesperson: r.salesperson?.name || 'Unknown',
+          totalCommunication: r.totalCommunication,
+          whatsappIncoming: r.whatsappIncoming,
+          callIncoming: r.callIncoming
+        })));
+      }
       
     } else {
       return res.status(400).json({
