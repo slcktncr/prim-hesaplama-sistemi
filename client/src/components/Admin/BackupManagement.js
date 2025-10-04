@@ -14,6 +14,9 @@ const BackupManagement = () => {
   const [confirmText, setConfirmText] = useState('');
   const [creatingBackup, setCreatingBackup] = useState(false);
   const [backupDescription, setBackupDescription] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingBackup, setDeletingBackup] = useState(false);
+  const [backupToDelete, setBackupToDelete] = useState(null);
 
   useEffect(() => {
     fetchBackups();
@@ -123,6 +126,36 @@ const BackupManagement = () => {
       setError('Manuel yedek hatası: ' + (error.response?.data?.message || error.message));
     } finally {
       setCreatingBackup(false);
+    }
+  };
+
+  const handleDeleteClick = (backup) => {
+    setBackupToDelete(backup);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      setDeletingBackup(true);
+      setError('');
+      
+      const response = await salesImportAPI.deleteBackup(backupToDelete.filename);
+      
+      if (response.data.success) {
+        setSuccess(`✅ ${response.data.message}`);
+        setShowDeleteModal(false);
+        setBackupToDelete(null);
+        
+        // Yedek listesini yenile
+        await fetchBackups();
+      } else {
+        setError('Yedek silinemedi: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Delete backup error:', error);
+      setError('Yedek silme hatası: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setDeletingBackup(false);
     }
   };
 
@@ -363,6 +396,15 @@ const BackupManagement = () => {
                                 <FaHistory className="me-1" />
                                 Geri Yükle
                               </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleDeleteClick(backup)}
+                                title="Bu yedek dosyasını sil"
+                              >
+                                <FaTrash className="me-1" />
+                                Sil
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -444,6 +486,65 @@ const BackupManagement = () => {
               <>
                 <FaHistory className="me-2" />
                 Geri Yükle
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Silme Onay Modalı */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaTrash className="me-2 text-danger" />
+            Yedek Dosyasını Sil
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="warning">
+            <FaExclamationTriangle className="me-2" />
+            <strong>Dikkat!</strong> Bu işlem geri alınamaz.
+          </Alert>
+          
+          <p>
+            <strong>Dosya:</strong> <code>{backupToDelete?.filename}</code>
+          </p>
+          
+          <p>
+            <strong>Kayıt Sayısı:</strong> {backupToDelete?.count?.toLocaleString() || 'Bilinmiyor'}
+          </p>
+          
+          <p>
+            <strong>Boyut:</strong> {backupToDelete ? formatFileSize(backupToDelete.size) : 'Bilinmiyor'}
+          </p>
+          
+          <p className="text-muted">
+            Bu yedek dosyasını silmek istediğinizden emin misiniz? 
+            Bu işlem geri alınamaz ve dosya kalıcı olarak silinecektir.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowDeleteModal(false)}
+            disabled={deletingBackup}
+          >
+            İptal
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={handleDeleteConfirm}
+            disabled={deletingBackup}
+          >
+            {deletingBackup ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                Siliniyor...
+              </>
+            ) : (
+              <>
+                <FaTrash className="me-2" />
+                Sil
               </>
             )}
           </Button>

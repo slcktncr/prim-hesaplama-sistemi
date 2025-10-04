@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const User = require('../models/User');
 const PrimTransaction = require('../models/PrimTransaction');
+const Backup = require('../models/Backup');
 const fs = require('fs');
 const path = require('path');
 const { auth, adminAuth } = require('../middleware/auth');
@@ -27,34 +28,125 @@ const upload = multer({
   }
 });
 
-// Helper function: Kayıtları yedekle
-async function backupSales(salesData, backupType = 'rollback') {
+// Helper function: Kayıtları MongoDB'de yedekle
+async function backupSales(salesData, backupType = 'rollback', createdBy = null, description = '') {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupDir = path.join(__dirname, '../backups');
-    
-    // Backup klasörü yoksa oluştur
-    if (!fs.existsSync(backupDir)) {
-      fs.mkdirSync(backupDir, { recursive: true });
-    }
-    
     const filename = `${backupType}_${timestamp}.json`;
-    const filepath = path.join(backupDir, filename);
+    
+    // Veri boyutunu hesapla
+    const jsonString = JSON.stringify(salesData);
+    const fileSize = Buffer.byteLength(jsonString, 'utf8');
     
     const backupData = {
-      timestamp: new Date().toISOString(),
+      filename: filename,
       type: backupType,
-      count: salesData.length,
-      data: salesData
+      description: description || `${backupType} yedeği`,
+      data: salesData,
+      recordCount: salesData.length,
+      fileSize: fileSize,
+      createdBy: createdBy,
+      metadata: {
+        originalTimestamp: new Date().toISOString(),
+        backupVersion: '1.0',
+        compression: 'none'
+      }
     };
     
-    fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
-    console.log(`💾 Backup created: ${filename} (${salesData.length} records)`);
+    const backup = new Backup(backupData);
+    await backup.save();
+    
+    console.log(`💾 Backup created in MongoDB: ${filename} (${salesData.length} records, ${(fileSize / 1024).toFixed(2)} KB)`);
     
     return filename;
   } catch (error) {
-    console.error('❌ Backup error:', error);
+    console.error('❌ MongoDB Backup error:', error);
     return null;
+  }
+}
+
+// Helper function: Yedek verisinden geri yükleme
+async function restoreFromBackupData(backupData, adminUserId, backupType) {
+  try {
+    console.log(`🔄 Restoring ${backupData.length} records from backup`);
+    
+    let restoredRecords = 0;
+    let errors = [];
+    
+    if (backupType.includes('sales') || backupType === 'manual') {
+      // Satış kayıtlarını geri yükle
+      for (const saleData of backupData) {
+        try {
+          // Mevcut kaydı kontrol et
+          const existingSale = await Sale.findOne({ contractNo: saleData.contractNo });
+          
+          if (existingSale) {
+            // Mevcut kaydı güncelle
+            Object.assign(existingSale, saleData);
+            existingSale.updatedAt = new Date();
+            await existingSale.save();
+          } else {
+            // Yeni kayıt oluştur
+            const newSale = new Sale(saleData);
+            await newSale.save();
+          }
+          
+          restoredRecords++;
+        } catch (error) {
+          console.error(`❌ Error restoring sale ${saleData.contractNo}:`, error);
+          errors.push({
+            contractNo: saleData.contractNo,
+            error: error.message
+          });
+        }
+      }
+    } else if (backupType.includes('communications')) {
+      // İletişim kayıtlarını geri yükle
+      const CommunicationRecord = require('../models/CommunicationRecord');
+      
+      for (const commData of backupData) {
+        try {
+          // Mevcut kaydı kontrol et
+          const existingComm = await CommunicationRecord.findOne({ 
+            salesperson: commData.salesperson,
+            date: commData.date 
+          });
+          
+          if (existingComm) {
+            // Mevcut kaydı güncelle
+            Object.assign(existingComm, commData);
+            existingComm.updatedAt = new Date();
+            await existingComm.save();
+          } else {
+            // Yeni kayıt oluştur
+            const newComm = new CommunicationRecord(commData);
+            await newComm.save();
+          }
+          
+          restoredRecords++;
+        } catch (error) {
+          console.error(`❌ Error restoring communication record:`, error);
+          errors.push({
+            salesperson: commData.salesperson,
+            date: commData.date,
+            error: error.message
+          });
+        }
+      }
+    }
+    
+    console.log(`✅ Restore completed: ${restoredRecords} records restored, ${errors.length} errors`);
+    
+    return {
+      restoredRecords,
+      errors,
+      totalRecords: backupData.length,
+      successRate: ((restoredRecords / backupData.length) * 100).toFixed(2) + '%'
+    };
+    
+  } catch (error) {
+    console.error('❌ Restore error:', error);
+    throw error;
   }
 }
 
@@ -713,156 +805,46 @@ router.delete('/rollback', [auth, adminAuth], async (req, res) => {
 });
 
 // Helper function: Yedek dosyalarını listele
-async function listBackupFiles() {
-  try {
-    const backupDir = path.join(__dirname, '../backups');
-    
-    if (!fs.existsSync(backupDir)) {
-      return [];
-    }
-    
-    const files = fs.readdirSync(backupDir)
-      .filter(file => file.endsWith('.json'))
-      .map(file => {
-        const filepath = path.join(backupDir, file);
-        const stats = fs.statSync(filepath);
-        
-        try {
-          const content = JSON.parse(fs.readFileSync(filepath, 'utf8'));
-          return {
-            filename: file,
-            filepath: filepath,
-            size: stats.size,
-            created: stats.ctime,
-            modified: stats.mtime,
-            type: content.type || 'unknown',
-            count: content.count || 0,
-            timestamp: content.timestamp
-          };
-        } catch (error) {
-          return {
-            filename: file,
-            filepath: filepath,
-            size: stats.size,
-            created: stats.ctime,
-            modified: stats.mtime,
-            type: 'corrupted',
-            count: 0,
-            timestamp: null,
-            error: error.message
-          };
-        }
-      })
-      .sort((a, b) => new Date(b.created) - new Date(a.created));
-    
-    return files;
-  } catch (error) {
-    console.error('❌ List backup files error:', error);
-    return [];
-  }
-}
+// Eski dosya tabanlı fonksiyon kaldırıldı - artık MongoDB kullanıyoruz
 
-// Helper function: Yedek dosyasını geri yükle
-async function restoreFromBackup(filename, adminUserId) {
-  try {
-    const backupDir = path.join(__dirname, '../backups');
-    const filepath = path.join(backupDir, filename);
-    
-    if (!fs.existsSync(filepath)) {
-      throw new Error('Yedek dosyası bulunamadı');
-    }
-    
-    const backupData = JSON.parse(fs.readFileSync(filepath, 'utf8'));
-    
-    if (!backupData.data || !Array.isArray(backupData.data)) {
-      throw new Error('Geçersiz yedek dosyası formatı');
-    }
-    
-    console.log(`📋 Restoring ${backupData.data.length} records from ${filename}`);
-    
-    const results = {
-      totalRecords: backupData.data.length,
-      restoredRecords: 0,
-      skippedRecords: 0,
-      errors: []
-    };
-    
-    // Mevcut kayıtları yedekle (restore işlemi öncesi)
-    const currentSales = await Sale.find({}).select('_id customerName contractNo');
-    const preRestoreBackup = await backupSales(currentSales, 'pre-restore');
-    
-    for (const saleData of backupData.data) {
-      try {
-        // MongoDB ObjectId'lerini temizle
-        delete saleData._id;
-        delete saleData.__v;
-        
-        // Restore bilgilerini ekle
-        saleData.isRestored = true;
-        saleData.restoredAt = new Date();
-        saleData.restoredBy = adminUserId;
-        saleData.restoredFrom = filename;
-        
-        // Kullanıcı ID'sini kontrol et
-        if (saleData.salesperson) {
-          const userExists = await User.findById(saleData.salesperson);
-          if (!userExists) {
-            saleData.salesperson = adminUserId; // Admin'e ata
-            results.errors.push(`Kullanıcı bulunamadı, admin'e atandı: ${saleData.customerName}`);
-          }
-        }
-        
-        // Kayıt oluştur
-        await Sale.create(saleData);
-        results.restoredRecords++;
-        
-      } catch (error) {
-        results.errors.push(`${saleData.customerName || 'Bilinmeyen'}: ${error.message}`);
-        results.skippedRecords++;
-      }
-    }
-    
-    console.log(`✅ Restore completed: ${results.restoredRecords} restored, ${results.skippedRecords} skipped`);
-    
-    return {
-      ...results,
-      preRestoreBackup,
-      backupInfo: {
-        filename: backupData.type || 'unknown',
-        timestamp: backupData.timestamp,
-        originalCount: backupData.count
-      }
-    };
-    
-  } catch (error) {
-    console.error('❌ Restore error:', error);
-    throw error;
-  }
-}
+// Eski dosya tabanlı restore fonksiyonu kaldırıldı - artık MongoDB kullanıyoruz
 
 // @route   GET /api/sales-import/backups
-// @desc    Yedek dosyalarını listele
+// @desc    Yedek dosyalarını listele (MongoDB'den)
 // @access  Admin only
 router.get('/backups', [auth, adminAuth], async (req, res) => {
   try {
     console.log('📋 Backup files list request by:', req.user.email);
     
-    const backupDir = path.join(__dirname, '../backups');
-    console.log('📁 Backup directory:', backupDir);
-    console.log('📁 Directory exists:', fs.existsSync(backupDir));
+    const backups = await Backup.getActiveBackups({ limit: 100 });
+    console.log('📊 Found backups in MongoDB:', backups.length);
     
-    const backups = await listBackupFiles();
-    console.log('📊 Found backups:', backups.length);
+    // Frontend uyumluluğu için format dönüşümü
+    const formattedBackups = backups.map(backup => ({
+      filename: backup.filename,
+      type: backup.type,
+      count: backup.recordCount,
+      size: backup.fileSize,
+      created: backup.createdAt,
+      timestamp: backup.metadata.originalTimestamp || backup.createdAt.toISOString(),
+      description: backup.description,
+      createdBy: backup.createdBy ? {
+        name: backup.createdBy.name,
+        email: backup.createdBy.email
+      } : null,
+      formattedSize: backup.formattedSize,
+      ageInDays: backup.ageInDays
+    }));
     
     res.json({
       success: true,
-      backups: backups,
-      totalBackups: backups.length,
-      backupDirectory: backupDir,
+      backups: formattedBackups,
+      totalBackups: formattedBackups.length,
+      storage: 'MongoDB',
       debug: {
-        directoryExists: fs.existsSync(backupDir),
         user: req.user.email,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        storageType: 'MongoDB'
       }
     });
     
@@ -878,7 +860,7 @@ router.get('/backups', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   POST /api/sales-import/restore/:filename
-// @desc    Yedek dosyasından verileri geri yükle
+// @desc    Yedek dosyasından verileri geri yükle (MongoDB'den)
 // @access  Admin only
 router.post('/restore/:filename', [auth, adminAuth], async (req, res) => {
   try {
@@ -894,12 +876,42 @@ router.post('/restore/:filename', [auth, adminAuth], async (req, res) => {
     
     console.log(`🔄 Starting restore from ${filename} by ${req.user.email}`);
     
-    const results = await restoreFromBackup(filename, req.user._id);
+    // MongoDB'den yedek dosyasını bul
+    const backup = await Backup.findOne({ 
+      filename: filename, 
+      isActive: true 
+    });
+    
+    if (!backup) {
+      return res.status(404).json({
+        success: false,
+        message: 'Yedek dosyası bulunamadı'
+      });
+    }
+    
+    // Yedek verisini al
+    const backupData = backup.data;
+    
+    if (!backupData || !Array.isArray(backupData)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Yedek dosyası bozuk veya geçersiz'
+      });
+    }
+    
+    // Geri yükleme işlemini başlat
+    const results = await restoreFromBackupData(backupData, req.user._id, backup.type);
     
     res.json({
       success: true,
       message: `${results.restoredRecords} kayıt başarıyla geri yüklendi`,
-      results: results
+      results: results,
+      backupInfo: {
+        filename: backup.filename,
+        type: backup.type,
+        description: backup.description,
+        originalCount: backup.recordCount
+      }
     });
     
   } catch (error) {
@@ -969,8 +981,8 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       });
     }
     
-    // Yedek dosyası oluştur
-    const backupFilename = await backupSales(data, `${backupType}_${type}`);
+    // Yedek dosyası oluştur (MongoDB'de)
+    const backupFilename = await backupSales(data, `${backupType}_${type}`, req.user.id, backupDescription);
     
     if (!backupFilename) {
       return res.status(500).json({
@@ -998,12 +1010,13 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   GET /api/sales-import/download/:filename
-// @desc    Yedek dosyasını indir
+// @desc    Yedek dosyasını indir (MongoDB'den)
 // @access  Admin only
-router.get('/download/:filename', [auth, adminAuth], (req, res) => {
+router.get('/download/:filename', [auth, adminAuth], async (req, res) => {
   try {
     const { filename } = req.params;
-    const backupPath = path.join(__dirname, '../backups', filename);
+    
+    console.log(`📥 Download backup request by ${req.user.email}, filename: ${filename}`);
     
     // Dosya güvenlik kontrolü
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
@@ -1013,30 +1026,89 @@ router.get('/download/:filename', [auth, adminAuth], (req, res) => {
       });
     }
     
-    // Dosya varlık kontrolü
-    if (!fs.existsSync(backupPath)) {
+    // MongoDB'den yedek dosyasını bul
+    const backup = await Backup.findOne({ 
+      filename: filename, 
+      isActive: true 
+    });
+    
+    if (!backup) {
       return res.status(404).json({
         success: false,
         message: 'Yedek dosyası bulunamadı'
       });
     }
     
-    // Dosyayı indir
-    res.download(backupPath, filename, (err) => {
-      if (err) {
-        console.error('Download error:', err);
-        res.status(500).json({
-          success: false,
-          message: 'Dosya indirilemedi'
-        });
-      }
-    });
+    // JSON formatında yedek verisini hazırla
+    const backupData = backup.toBackupFormat();
+    const jsonString = JSON.stringify(backupData, null, 2);
+    
+    // Response headers ayarla
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(jsonString, 'utf8'));
+    
+    // JSON verisini gönder
+    res.send(jsonString);
+    
+    console.log(`✅ Backup downloaded: ${filename} (${backup.recordCount} records)`);
     
   } catch (error) {
-    console.error('Download backup error:', error);
+    console.error('❌ Download backup error:', error);
     res.status(500).json({
       success: false,
       message: 'Dosya indirme hatası: ' + error.message
+    });
+  }
+});
+
+// @route   DELETE /api/sales-import/backup/:filename
+// @desc    Yedek dosyasını sil (MongoDB'den)
+// @access  Admin only
+router.delete('/backup/:filename', [auth, adminAuth], async (req, res) => {
+  try {
+    const { filename } = req.params;
+    
+    console.log(`🗑️ Delete backup request by ${req.user.email}, filename: ${filename}`);
+    
+    // Dosya güvenlik kontrolü
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçersiz dosya adı'
+      });
+    }
+    
+    // MongoDB'den yedek dosyasını bul ve sil
+    const backup = await Backup.findOne({ 
+      filename: filename, 
+      isActive: true 
+    });
+    
+    if (!backup) {
+      return res.status(404).json({
+        success: false,
+        message: 'Yedek dosyası bulunamadı'
+      });
+    }
+    
+    // Yedek dosyasını soft delete yap (isActive: false)
+    backup.isActive = false;
+    await backup.save();
+    
+    console.log(`✅ Backup deleted from MongoDB: ${filename}`);
+    
+    res.json({
+      success: true,
+      message: 'Yedek dosyası başarıyla silindi',
+      filename: filename
+    });
+    
+  } catch (error) {
+    console.error('❌ Delete backup error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Dosya silme hatası: ' + error.message
     });
   }
 });

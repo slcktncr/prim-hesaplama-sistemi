@@ -241,6 +241,8 @@ export const salesImportAPI = {
   getBackups: () => API.get('/sales-import/backups'),
   restoreFromBackup: (filename, confirmRestore = true) => API.post(`/sales-import/restore/${filename}`, { confirmRestore }),
   createManualBackup: (type, description) => API.post('/sales-import/create-backup', { type, description }),
+  downloadBackup: (filename) => API.get(`/sales-import/download/${filename}`, { responseType: 'blob' }),
+  deleteBackup: (filename) => API.delete(`/sales-import/backup/${filename}`),
 };
 
 // Cancelled Sales Import API
