@@ -24,7 +24,7 @@ import {
   FiCalendar
 } from 'react-icons/fi';
 
-import { communicationsAPI, dailyStatusAPI, communicationYearAPI } from '../../utils/api';
+import { communicationsAPI, dailyStatusAPI, communicationYearAPI, communicationTypesAPI } from '../../utils/api';
 import { formatDate, formatDateTime } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
@@ -36,18 +36,14 @@ const DailyCommunicationEntry = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [history, setHistory] = useState([]);
   const [deadlineHour, setDeadlineHour] = useState(23); // Varsayılan 23:00
-  const [formData, setFormData] = useState({
-    whatsappIncoming: 0,
-    callIncoming: 0,
-    callOutgoing: 0,
-    meetingNewCustomer: 0,
-    meetingAfterSale: 0
-  });
+  const [communicationTypes, setCommunicationTypes] = useState([]);
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
     fetchTodayData();
     fetchDailyStatus();
     fetchDeadlineSettings();
+    fetchCommunicationTypes();
   }, []);
 
   const fetchTodayData = async () => {
@@ -94,6 +90,24 @@ const DailyCommunicationEntry = () => {
     }
   };
 
+  const fetchCommunicationTypes = async () => {
+    try {
+      const response = await communicationTypesAPI.getAll({ active: 'true' });
+      const types = response.data || [];
+      setCommunicationTypes(types);
+      
+      // FormData'yı iletişim türlerine göre initialize et
+      const initialFormData = {};
+      types.forEach(type => {
+        initialFormData[type.code] = 0;
+      });
+      setFormData(initialFormData);
+    } catch (error) {
+      console.error('Fetch communication types error:', error);
+      toast.error('İletişim türleri yüklenirken hata oluştu');
+    }
+  };
+
   const handleInputChange = (field, value) => {
     const numValue = Math.max(0, parseInt(value) || 0);
     setFormData(prev => ({
@@ -137,11 +151,46 @@ const DailyCommunicationEntry = () => {
   };
 
   const getTotalMeetings = () => {
-    return formData.meetingNewCustomer + formData.meetingAfterSale;
+    return communicationTypes
+      .filter(type => type.category === 'meeting')
+      .reduce((total, type) => total + (formData[type.code] || 0), 0);
   };
 
   const getTotalCommunication = () => {
-    return formData.whatsappIncoming + formData.callIncoming + formData.callOutgoing + getTotalMeetings();
+    return communicationTypes
+      .reduce((total, type) => total + (formData[type.code] || 0), 0);
+  };
+
+  const getIconComponent = (iconName) => {
+    const iconMap = {
+      FiMessageCircle: FiMessageSquare,
+      FiPhone: FiPhone,
+      FiPhoneCall: FiPhoneCall,
+      FiUsers: FiUsers,
+      FiMail: FiMessageSquare,
+      FiVideo: FiUsers,
+      FiMapPin: FiUsers,
+      FiUser: FiUsers,
+      FiUserCheck: FiUsers,
+      FiTrendingUp: FiUsers,
+      FiTarget: FiUsers,
+      FiAward: FiUsers,
+      FiStar: FiUsers,
+      FiHeart: FiUsers
+    };
+    
+    const IconComponent = iconMap[iconName] || FiMessageSquare;
+    return <IconComponent />;
+  };
+
+  const getCategoryColor = (category) => {
+    const colorMap = {
+      incoming: 'text-success',
+      outgoing: 'text-primary', 
+      meeting: 'text-info',
+      other: 'text-secondary'
+    };
+    return colorMap[category] || 'text-secondary';
   };
 
   const getDeadlineStatus = () => {
@@ -225,110 +274,42 @@ const DailyCommunicationEntry = () => {
             <Card.Body>
               <Form>
                 <Row>
-                  {/* WhatsApp */}
-                  <Col md={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label>
-                        <FiMessageSquare className="me-2 text-success" />
-                        Gelen WhatsApp
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={formData.whatsappIncoming}
-                        onChange={(e) => handleInputChange('whatsappIncoming', e.target.value)}
-                        placeholder="0"
-                        disabled={isExempt}
-                      />
-                      <Form.Text className="text-muted">
-                        Bugün aldığınız WhatsApp mesaj sayısı
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
+                  {communicationTypes.map((type, index) => (
+                    <Col md={6} className="mb-3" key={type._id}>
+                      <Form.Group>
+                        <Form.Label>
+                          <span className={`me-2 ${getCategoryColor(type.category)}`} style={{ color: type.color }}>
+                            {getIconComponent(type.icon)}
+                          </span>
+                          {type.name}
+                          {type.isRequired && <span className="text-danger ms-1">*</span>}
+                        </Form.Label>
+                        <Form.Control
+                          type="number"
+                          min={type.minValue}
+                          max={type.maxValue || undefined}
+                          value={formData[type.code] || 0}
+                          onChange={(e) => handleInputChange(type.code, e.target.value)}
+                          placeholder="0"
+                          disabled={isExempt}
+                          required={type.isRequired}
+                        />
+                        <Form.Text className="text-muted">
+                          {type.description}
+                        </Form.Text>
+                      </Form.Group>
+                    </Col>
+                  ))}
+                  
+                  {communicationTypes.length === 0 && (
+                    <Col md={12}>
+                      <Alert variant="info" className="text-center">
+                        <FiMessageSquare className="me-2" />
+                        Henüz iletişim türü tanımlanmamış. Lütfen sistem yöneticisi ile iletişime geçin.
+                      </Alert>
+                    </Col>
+                  )}
 
-                  {/* Gelen Arama */}
-                  <Col md={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label>
-                        <FiPhone className="me-2 text-primary" />
-                        Gelen Arama
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={formData.callIncoming}
-                        onChange={(e) => handleInputChange('callIncoming', e.target.value)}
-                        placeholder="0"
-                        disabled={isExempt}
-                      />
-                      <Form.Text className="text-muted">
-                        Size gelen telefon araması sayısı
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-
-                  {/* Giden Arama */}
-                  <Col md={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label>
-                        <FiPhoneCall className="me-2 text-warning" />
-                        Giden Arama
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={formData.callOutgoing}
-                        onChange={(e) => handleInputChange('callOutgoing', e.target.value)}
-                        placeholder="0"
-                        disabled={isExempt}
-                      />
-                      <Form.Text className="text-muted">
-                        Yaptığınız telefon araması sayısı
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-
-                  {/* Yeni Müşteri Görüşmesi */}
-                  <Col md={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label>
-                        <FiUsers className="me-2 text-info" />
-                        Yeni Müşteri Birebir Görüşmesi
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={formData.meetingNewCustomer}
-                        onChange={(e) => handleInputChange('meetingNewCustomer', e.target.value)}
-                        placeholder="0"
-                        disabled={isExempt}
-                      />
-                      <Form.Text className="text-muted">
-                        Yeni müşterilerle birebir görüşme sayısı
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
-
-                  {/* Satış Sonrası Görüşme */}
-                  <Col md={12} className="mb-3">
-                    <Form.Group>
-                      <Form.Label>
-                        <FiUsers className="me-2 text-secondary" />
-                        Eski Müşteri Birebir Görüşme
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="0"
-                        value={formData.meetingAfterSale}
-                        onChange={(e) => handleInputChange('meetingAfterSale', e.target.value)}
-                        placeholder="0"
-                        disabled={isExempt}
-                      />
-                      <Form.Text className="text-muted">
-                        Eski müşterilerle birebir görüşme sayısı
-                      </Form.Text>
-                    </Form.Group>
-                  </Col>
                 </Row>
 
                 {!isExempt && (
@@ -382,11 +363,11 @@ const DailyCommunicationEntry = () => {
                 <div className="mb-2">
                   <strong>Detay:</strong>
                 </div>
-                <div>WhatsApp: {formData.whatsappIncoming}</div>
-                <div>Gelen Arama: {formData.callIncoming}</div>
-                <div>Giden Arama: {formData.callOutgoing}</div>
-                <div>Yeni Müşteri Birebir: {formData.meetingNewCustomer}</div>
-                <div>Eski Müşteri Birebir: {formData.meetingAfterSale}</div>
+                {communicationTypes.map(type => (
+                  <div key={type._id}>
+                    {type.name}: {formData[type.code] || 0}
+                  </div>
+                ))}
               </div>
 
               {!isExempt && getTotalCommunication() === 0 && (
@@ -437,11 +418,9 @@ const DailyCommunicationEntry = () => {
             <thead>
               <tr>
                 <th>Tarih</th>
-                <th>WhatsApp</th>
-                <th>Gelen</th>
-                <th>Giden</th>
-                <th>Yeni Müşteri</th>
-                <th>Satış Sonrası</th>
+                {communicationTypes.map(type => (
+                  <th key={type._id}>{type.name}</th>
+                ))}
                 <th>Toplam</th>
               </tr>
             </thead>
@@ -449,11 +428,9 @@ const DailyCommunicationEntry = () => {
               {history.map((record) => (
                 <tr key={record._id}>
                   <td>{formatDate(record.date)}</td>
-                  <td>{record.whatsappIncoming}</td>
-                  <td>{record.callIncoming}</td>
-                  <td>{record.callOutgoing}</td>
-                  <td>{record.meetingNewCustomer}</td>
-                  <td>{record.meetingAfterSale}</td>
+                  {communicationTypes.map(type => (
+                    <td key={type._id}>{record[type.code] || 0}</td>
+                  ))}
                   <td>
                     <Badge bg="primary">{record.totalCommunication}</Badge>
                   </td>

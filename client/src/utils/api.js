@@ -282,4 +282,16 @@ export const communicationYearAPI = {
   updateSettings: (settings) => API.put('/communication-year/current/settings', settings)
 };
 
+// Communication Types API calls
+export const communicationTypesAPI = {
+  getAll: (params = {}) => API.get('/communication-types', { params }),
+  getById: (id) => API.get(`/communication-types/${id}`),
+  create: (typeData) => API.post('/communication-types', typeData),
+  update: (id, typeData) => API.put(`/communication-types/${id}`, typeData),
+  delete: (id) => API.delete(`/communication-types/${id}`),
+  toggle: (id) => API.put(`/communication-types/${id}/toggle`),
+  reorder: (types) => API.put('/communication-types/reorder', { types }),
+  createDefaults: () => API.post('/communication-types/create-defaults')
+};
+
 export default API;

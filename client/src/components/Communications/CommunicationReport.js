@@ -28,7 +28,7 @@ import {
   FiActivity
 } from 'react-icons/fi';
 
-import { communicationsAPI, usersAPI } from '../../utils/api';
+import { communicationsAPI, usersAPI, communicationTypesAPI } from '../../utils/api';
 import { formatDate, formatNumber, getQuickDateFilters } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -53,6 +53,7 @@ const CommunicationReport = () => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [reportData, setReportData] = useState(null);
+  const [communicationTypes, setCommunicationTypes] = useState([]);
 
   // Sadeleştirilmiş filtre sistemi
   const [filters, setFilters] = useState({
@@ -65,6 +66,7 @@ const CommunicationReport = () => {
 
   useEffect(() => {
     fetchUsers();
+    fetchCommunicationTypes();
   }, []);
 
   useEffect(() => {
@@ -84,6 +86,59 @@ const CommunicationReport = () => {
       console.error('Users fetch error:', error);
       toast.error('Kullanıcılar yüklenirken hata oluştu');
     }
+  };
+
+  const fetchCommunicationTypes = async () => {
+    try {
+      const response = await communicationTypesAPI.getAll({ active: 'true' });
+      setCommunicationTypes(response.data || []);
+    } catch (error) {
+      console.error('Communication types fetch error:', error);
+      toast.error('İletişim türleri yüklenirken hata oluştu');
+    }
+  };
+
+  // Dinamik iletişim türleri için yardımcı fonksiyonlar
+  const getIconComponent = (iconName) => {
+    const iconMap = {
+      FiMessageCircle: FiMessageSquare,
+      FiPhone: FiPhone,
+      FiPhoneCall: FiPhone,
+      FiUsers: FiUsers,
+      FiMail: FiMessageSquare,
+      FiVideo: FiUsers,
+      FiMapPin: FiUsers,
+      FiUser: FiUsers,
+      FiUserCheck: FiUsers,
+      FiTrendingUp: FiUsers,
+      FiTarget: FiUsers,
+      FiAward: FiUsers,
+      FiStar: FiUsers,
+      FiHeart: FiUsers
+    };
+    
+    const IconComponent = iconMap[iconName] || FiMessageSquare;
+    return <IconComponent />;
+  };
+
+  const getCategoryColor = (category) => {
+    const colorMap = {
+      incoming: 'success',
+      outgoing: 'primary', 
+      meeting: 'info',
+      other: 'secondary'
+    };
+    return colorMap[category] || 'secondary';
+  };
+
+  const getCommunicationValue = (communication, typeCode) => {
+    return communication[typeCode] || 0;
+  };
+
+  const calculateTotalCommunication = (communication) => {
+    return communicationTypes.reduce((total, type) => {
+      return total + getCommunicationValue(communication, type.code);
+    }, 0);
   };
 
   const fetchCommunicationData = async () => {
@@ -133,7 +188,7 @@ const CommunicationReport = () => {
       console.log('📊 Communication data received:', {
         daily: dailyResponse.data?.length || 0,
         monthly: monthlyResponse.data?.length || 0,
-        summary: summaryResponse.data?.length || 0
+        summary: summaryResponse.data?.data?.length || 0
       });
       
       console.log('📊 Raw API responses:', {
@@ -142,11 +197,17 @@ const CommunicationReport = () => {
         summaryResponse: summaryResponse.data
       });
 
+      // Response'dan iletişim türlerini al
+      const reportCommunicationTypes = summaryResponse.data?.communicationTypes || communicationTypes;
+      const legacyFields = summaryResponse.data?.legacyFields || [];
+
       // Veriyi işle
       const processedData = processCommunicationData(
-        summaryResponse.data || [], 
+        summaryResponse.data?.data || summaryResponse.data || [], 
         dailyResponse.data || [],
-        monthlyResponse.data || []
+        monthlyResponse.data || [],
+        reportCommunicationTypes,
+        legacyFields
       );
       setReportData(processedData);
 
@@ -158,7 +219,7 @@ const CommunicationReport = () => {
     }
   };
 
-  const processCommunicationData = (summaryData, dailyData, monthlyData) => {
+  const processCommunicationData = (summaryData, dailyData, monthlyData, reportTypes = [], legacyFields = []) => {
     console.log('🔄 Processing communication data:', { summaryData, dailyData, monthlyData });
     console.log('📊 Daily data length:', dailyData?.length);
     console.log('📊 Monthly data length:', monthlyData?.length);
@@ -167,15 +228,30 @@ const CommunicationReport = () => {
     const userBasedData = summaryData.map(item => {
       const comm = item.communication || {};
       
-      const communicationData = {
-        whatsappIncoming: comm.whatsappIncoming || 0,
-        callIncoming: comm.callIncoming || 0,
-        callOutgoing: comm.callOutgoing || 0,
-        meetingNewCustomer: comm.meetingNewCustomer || 0,
-        meetingAfterSale: comm.meetingAfterSale || 0,
-        total: (comm.whatsappIncoming || 0) + (comm.callIncoming || 0) + (comm.callOutgoing || 0) + 
-               (comm.meetingNewCustomer || 0) + (comm.meetingAfterSale || 0)
-      };
+      // Dinamik iletişim verisi oluştur
+      const communicationData = {};
+      let total = 0;
+      
+      // Rapor türlerini kullan (backend'den gelen)
+      const typesToUse = reportTypes.length > 0 ? reportTypes : communicationTypes;
+      
+      typesToUse.forEach(type => {
+        const value = getCommunicationValue(comm, type.code);
+        communicationData[type.code] = value;
+        total += value;
+      });
+      
+      // Eski alanları da ekle (geriye uyumluluk)
+      legacyFields.forEach(field => {
+        if (comm[field] !== undefined) {
+          communicationData[field] = comm[field];
+          if (!communicationData[field]) {
+            total += comm[field] || 0;
+          }
+        }
+      });
+      
+      communicationData.total = total;
 
       return {
         user: item.salesperson || { name: 'Bilinmeyen', email: '' },
@@ -184,21 +260,33 @@ const CommunicationReport = () => {
       };
     });
 
-    // Toplam istatistikler - hem özet hem dönem bazlı
-    const summaryTotals = userBasedData.reduce((acc, item) => ({
-      whatsappIncoming: acc.whatsappIncoming + item.communication.whatsappIncoming,
-      callIncoming: acc.callIncoming + item.communication.callIncoming,
-      callOutgoing: acc.callOutgoing + item.communication.callOutgoing,
-      meetingNewCustomer: acc.meetingNewCustomer + item.communication.meetingNewCustomer,
-      meetingAfterSale: acc.meetingAfterSale + item.communication.meetingAfterSale,
-      total: acc.total + item.communication.total,
-      activeUsers: acc.activeUsers + (item.communication.total > 0 ? 1 : 0)
-    }), {
-      whatsappIncoming: 0,
-      callIncoming: 0,
-      callOutgoing: 0,
-      meetingNewCustomer: 0,
-      meetingAfterSale: 0,
+    // Toplam istatistikler - dinamik
+    const summaryTotals = userBasedData.reduce((acc, item) => {
+      const newAcc = { ...acc };
+      
+      // Rapor türlerini kullan
+      const typesToUse = reportTypes.length > 0 ? reportTypes : communicationTypes;
+      
+      typesToUse.forEach(type => {
+        if (!newAcc[type.code]) {
+          newAcc[type.code] = 0;
+        }
+        newAcc[type.code] += item.communication[type.code] || 0;
+      });
+      
+      // Eski alanları da ekle
+      legacyFields.forEach(field => {
+        if (!newAcc[field]) {
+          newAcc[field] = 0;
+        }
+        newAcc[field] += item.communication[field] || 0;
+      });
+      
+      newAcc.total += item.communication.total;
+      newAcc.activeUsers += (item.communication.total > 0 ? 1 : 0);
+      
+      return newAcc;
+    }, {
       total: 0,
       activeUsers: 0
     });
@@ -210,21 +298,22 @@ const CommunicationReport = () => {
     console.log('📊 Processed daily data:', processedDailyData.length, 'items');
     console.log('📊 Processed monthly data:', processedMonthlyData.length, 'items');
 
-    // Günlük veri bazlı toplam istatistikler (en detaylı)
-    const dailyTotals = processedDailyData.reduce((acc, item) => ({
-      whatsappIncoming: acc.whatsappIncoming + (item.communication.whatsappIncoming || 0),
-      callIncoming: acc.callIncoming + (item.communication.callIncoming || 0),
-      callOutgoing: acc.callOutgoing + (item.communication.callOutgoing || 0),
-      meetingNewCustomer: acc.meetingNewCustomer + (item.communication.meetingNewCustomer || 0),
-      meetingAfterSale: acc.meetingAfterSale + (item.communication.meetingAfterSale || 0),
-      total: acc.total + (item.communication.totalCommunication || 0),
-      activeUsers: new Set(processedDailyData.map(p => p.salesperson?._id).filter(Boolean)).size
-    }), {
-      whatsappIncoming: 0,
-      callIncoming: 0,
-      callOutgoing: 0,
-      meetingNewCustomer: 0,
-      meetingAfterSale: 0,
+    // Günlük veri bazlı toplam istatistikler (en detaylı) - dinamik
+    const dailyTotals = processedDailyData.reduce((acc, item) => {
+      const newAcc = { ...acc };
+      
+      communicationTypes.forEach(type => {
+        if (!newAcc[type.code]) {
+          newAcc[type.code] = 0;
+        }
+        newAcc[type.code] += getCommunicationValue(item.communication, type.code);
+      });
+      
+      newAcc.total += item.communication.totalCommunication || 0;
+      newAcc.activeUsers = new Set(processedDailyData.map(p => p.salesperson?._id).filter(Boolean)).size;
+      
+      return newAcc;
+    }, {
       total: 0,
       activeUsers: 0
     });

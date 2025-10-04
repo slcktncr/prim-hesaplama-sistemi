@@ -8,7 +8,9 @@ import {
   Form, 
   Alert,
   Row,
-  Col
+  Col,
+  Nav,
+  Tab
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { 
@@ -19,12 +21,14 @@ import {
   FiAlertTriangle,
   FiInfo,
   FiSettings,
-  FiClock
+  FiClock,
+  FiList
 } from 'react-icons/fi';
 
 import { usersAPI, communicationYearAPI } from '../../utils/api';
 import { formatDate } from '../../utils/helpers';
 import Loading from '../Common/Loading';
+import CommunicationTypesManagement from './CommunicationTypesManagement';
 
 const CommunicationRequirements = () => {
   const [users, setUsers] = useState([]);
@@ -164,10 +168,10 @@ const CommunicationRequirements = () => {
         <div>
           <h4>
             <FiUsers className="me-2" />
-            İletişim Kaydı Zorunlulukları
+            İletişim Yönetimi
           </h4>
           <p className="text-muted mb-0">
-            Hangi temsilcilerin günlük iletişim kaydı girmesi gerektiğini yönetin
+            İletişim türleri ve zorunlulukları yönetin
           </p>
         </div>
         <Button 
@@ -179,6 +183,26 @@ const CommunicationRequirements = () => {
           İletişim Ayarları
         </Button>
       </div>
+
+      {/* Tab Navigation */}
+      <Tab.Container defaultActiveKey="requirements">
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link eventKey="requirements">
+              <FiUsers className="me-1" />
+              Zorunluluklar
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="types">
+              <FiList className="me-1" />
+              İletişim Türleri
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        <Tab.Content>
+          <Tab.Pane eventKey="requirements">
 
       {/* Info Alert */}
       <Alert variant="info" className="mb-4">
@@ -504,6 +528,14 @@ const CommunicationRequirements = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="types">
+            <CommunicationTypesManagement />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
     </div>
   );
 };

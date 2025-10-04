@@ -4,9 +4,11 @@ const mongoose = require('mongoose');
 
 const CommunicationRecord = require('../models/CommunicationRecord');
 const CommunicationYear = require('../models/CommunicationYear');
+const CommunicationType = require('../models/CommunicationType');
 const PenaltyRecord = require('../models/PenaltyRecord');
 const User = require('../models/User');
 const Sale = require('../models/Sale');
+const { mapLegacyToDynamic, mapDynamicToLegacy, calculateTotalCommunication, getReportTypes } = require('../utils/communicationMapping');
 
 const { auth, adminAuth } = require('../middleware/auth');
 
@@ -212,6 +214,10 @@ router.get('/report', auth, async (req, res) => {
       salesperson
     } = req.query;
 
+    // İletişim türlerini getir
+    const communicationTypes = await CommunicationType.find({ isActive: true }).sort({ sortOrder: 1 });
+    const reportTypes = getReportTypes(communicationTypes);
+
     let query = {};
     let salesQuery = {};
 
@@ -233,21 +239,29 @@ router.get('/report', auth, async (req, res) => {
       };
     }
 
-    // Önce günlük kayıtlardan veri al
+    // Dinamik aggregation pipeline oluştur
+    const groupFields = {
+      _id: '$salesperson',
+      totalCommunication: { $sum: '$totalCommunication' },
+      recordCount: { $sum: 1 }
+    };
+
+    // Her iletişim türü için alan ekle
+    reportTypes.forEach(type => {
+      groupFields[type.code] = { $sum: `$${type.code}` };
+    });
+
+    // Eski alanları da ekle (geriye uyumluluk için)
+    const legacyFields = ['whatsappIncoming', 'callIncoming', 'callOutgoing', 'meetingNewCustomer', 'meetingAfterSale'];
+    legacyFields.forEach(field => {
+      if (!groupFields[field]) {
+        groupFields[field] = { $sum: `$${field}` };
+      }
+    });
+
     const dailyRecords = await CommunicationRecord.aggregate([
       { $match: query },
-      {
-        $group: {
-          _id: '$salesperson',
-          whatsappIncoming: { $sum: '$whatsappIncoming' },
-          callIncoming: { $sum: '$callIncoming' },
-          callOutgoing: { $sum: '$callOutgoing' },
-          meetingNewCustomer: { $sum: '$meetingNewCustomer' },
-          meetingAfterSale: { $sum: '$meetingAfterSale' },
-          totalCommunication: { $sum: '$totalCommunication' },
-          recordCount: { $sum: 1 }
-        }
-      }
+      { $group: groupFields }
     ]);
 
     // Geçmiş yıl verilerini sadece gerekli durumlarda al
@@ -413,15 +427,21 @@ router.get('/report', auth, async (req, res) => {
         }
       });
 
-      // Toplam veri
-      const totalData = {
-        whatsappIncoming: dailyData.whatsappIncoming + historicalData.whatsappIncoming,
-        callIncoming: dailyData.callIncoming + historicalData.callIncoming,
-        callOutgoing: dailyData.callOutgoing + historicalData.callOutgoing,
-        meetingNewCustomer: dailyData.meetingNewCustomer + historicalData.meetingNewCustomer,
-        meetingAfterSale: dailyData.meetingAfterSale + historicalData.meetingAfterSale,
-        totalCommunication: dailyData.totalCommunication + historicalData.totalCommunication
-      };
+      // Toplam veri - dinamik
+      const totalData = {};
+      
+      // Her iletişim türü için toplam hesapla
+      reportTypes.forEach(type => {
+        totalData[type.code] = (dailyData[type.code] || 0) + (historicalData[type.code] || 0);
+      });
+      
+      // Eski alanları da ekle (geriye uyumluluk)
+      const legacyFields = ['whatsappIncoming', 'callIncoming', 'callOutgoing', 'meetingNewCustomer', 'meetingAfterSale'];
+      legacyFields.forEach(field => {
+        totalData[field] = (dailyData[field] || 0) + (historicalData[field] || 0);
+      });
+      
+      totalData.totalCommunication = dailyData.totalCommunication + historicalData.totalCommunication;
 
       return {
         salesperson: {
@@ -460,7 +480,14 @@ router.get('/report', auth, async (req, res) => {
       return res.json(zeroData);
     }
 
-    res.json(userBasedData);
+    // Response'a iletişim türlerini ekle
+    const response = {
+      data: userBasedData,
+      communicationTypes: reportTypes,
+      legacyFields: ['whatsappIncoming', 'callIncoming', 'callOutgoing', 'meetingNewCustomer', 'meetingAfterSale']
+    };
+
+    res.json(response);
 
   } catch (error) {
     console.error('Communication report error:', error);
