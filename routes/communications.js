@@ -48,19 +48,14 @@ router.get('/today', auth, async (req, res) => {
 });
 
 // @route   POST /api/communications/daily
-// @desc    Günlük iletişim kaydı oluştur/güncelle
+// @desc    Günlük iletişim kaydı oluştur/güncelle (Dinamik sistem)
 // @access  Private
 router.post('/daily', [
   auth,
-  body('whatsappIncoming').isInt({ min: 0 }).withMessage('WhatsApp gelen sayısı 0 veya pozitif olmalıdır'),
-  body('callIncoming').isInt({ min: 0 }).withMessage('Gelen arama sayısı 0 veya pozitif olmalıdır'),
-  body('callOutgoing').isInt({ min: 0 }).withMessage('Giden arama sayısı 0 veya pozitif olmalıdır'),
-  body('meetingNewCustomer').isInt({ min: 0 }).withMessage('Yeni müşteri görüşme sayısı 0 veya pozitif olmalıdır'),
-  body('meetingAfterSale').isInt({ min: 0 }).withMessage('Satış sonrası görüşme sayısı 0 veya pozitif olmalıdır'),
   body('date').optional().isISO8601().withMessage('Geçerli bir tarih giriniz')
 ], async (req, res) => {
   try {
-    console.log('=== DAILY SAVE REQUEST ===');
+    console.log('=== DAILY SAVE REQUEST (DYNAMIC) ===');
     console.log('Request body:', req.body);
     console.log('User ID:', req.user.id);
     
@@ -73,19 +68,44 @@ router.post('/daily', [
       });
     }
 
-    const {
-      whatsappIncoming,
-      callIncoming,
-      callOutgoing,
-      meetingNewCustomer,
-      meetingAfterSale,
-      date,
-      notes
-    } = req.body;
+    const { date, notes, ...dynamicData } = req.body;
 
     // Eğer date gönderilmemişse bugünün tarihini kullan
     const recordDate = date ? new Date(date) : new Date();
     recordDate.setHours(0, 0, 0, 0);
+
+    // Dinamik verileri validate et
+    const communicationTypes = await CommunicationType.find({ isActive: true });
+    const validationErrors = [];
+    
+    for (const [field, value] of Object.entries(dynamicData)) {
+      if (field === 'notes') continue; // notes alanını atla
+      
+      const type = communicationTypes.find(t => t.code === field);
+      if (type) {
+        const numValue = parseInt(value) || 0;
+        
+        // Min/max değer kontrolü
+        if (type.minValue > 0 && numValue < type.minValue) {
+          validationErrors.push(`${type.name} minimum ${type.minValue} olmalıdır`);
+        }
+        if (type.maxValue > 0 && numValue > type.maxValue) {
+          validationErrors.push(`${type.name} maksimum ${type.maxValue} olmalıdır`);
+        }
+        
+        // Negatif değer kontrolü
+        if (numValue < 0) {
+          validationErrors.push(`${type.name} negatif olamaz`);
+        }
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ 
+        message: 'Geçersiz veri',
+        errors: validationErrors.map(error => ({ msg: error }))
+      });
+    }
 
     // Mevcut kaydı bul veya yeni oluştur
     let record = await CommunicationRecord.findOne({
@@ -94,41 +114,45 @@ router.post('/daily', [
     });
 
     if (record) {
-      // Mevcut kaydı güncelle
-      record.whatsappIncoming = whatsappIncoming;
-      record.callIncoming = callIncoming;
-      record.callOutgoing = callOutgoing;
-      record.meetingNewCustomer = meetingNewCustomer;
-      record.meetingAfterSale = meetingAfterSale;
-      record.notes = notes;
+      // Mevcut kaydı güncelle - dinamik alanları güncelle
+      for (const [field, value] of Object.entries(dynamicData)) {
+        if (field !== 'notes') {
+          record[field] = parseInt(value) || 0;
+        }
+      }
+      record.notes = notes || '';
       record.isEntered = true;
       record.enteredAt = new Date();
       record.enteredBy = req.user.id;
     } else {
-      // Yeni kayıt oluştur
-      record = new CommunicationRecord({
+      // Yeni kayıt oluştur - dinamik alanları ekle
+      const recordData = {
         date: recordDate,
         year: recordDate.getFullYear(),
         month: recordDate.getMonth() + 1,
         day: recordDate.getDate(),
         salesperson: req.user.id,
-        whatsappIncoming,
-        callIncoming,
-        callOutgoing,
-        meetingNewCustomer,
-        meetingAfterSale,
-        notes,
+        notes: notes || '',
         isEntered: true,
         enteredAt: new Date(),
         enteredBy: req.user.id
-      });
+      };
+
+      // Dinamik alanları ekle
+      for (const [field, value] of Object.entries(dynamicData)) {
+        if (field !== 'notes') {
+          recordData[field] = parseInt(value) || 0;
+        }
+      }
+
+      record = new CommunicationRecord(recordData);
     }
 
     await record.save();
 
     res.json({
       message: 'İletişim kaydı başarıyla kaydedildi',
-      record
+      data: record
     });
 
   } catch (error) {

@@ -33,7 +33,7 @@ const communicationRecordSchema = new mongoose.Schema({
     index: true
   },
   
-  // İletişim verileri
+  // İletişim verileri (Legacy - geriye uyumluluk için)
   whatsappIncoming: {
     type: Number,
     default: 0,
@@ -59,6 +59,10 @@ const communicationRecordSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  
+  // Dinamik iletişim türleri için genel alan
+  // Bu alanlar CommunicationType.code değerlerine göre dinamik olarak eklenir
+  // Örnek: { WHATSAPP_IN: 5, CALL_OUT: 3, MEETING_NEW: 2 }
   
   // Toplam hesaplanan değerler
   totalMeetings: {
@@ -110,12 +114,44 @@ const communicationRecordSchema = new mongoose.Schema({
   }
 });
 
-// Toplam değerleri hesaplama middleware
-communicationRecordSchema.pre('save', function(next) {
-  this.totalMeetings = (this.meetingNewCustomer || 0) + (this.meetingAfterSale || 0);
-  this.totalCommunication = (this.whatsappIncoming || 0) + (this.callIncoming || 0) + (this.callOutgoing || 0) + this.totalMeetings;
-  this.updatedAt = Date.now();
-  next();
+// Toplam değerleri hesaplama middleware (Dinamik + Legacy uyumlu)
+communicationRecordSchema.pre('save', async function(next) {
+  try {
+    // Legacy alanları hesapla
+    const legacyMeetings = (this.meetingNewCustomer || 0) + (this.meetingAfterSale || 0);
+    const legacyCommunication = (this.whatsappIncoming || 0) + (this.callIncoming || 0) + (this.callOutgoing || 0) + legacyMeetings;
+    
+    // Dinamik alanları hesapla
+    let dynamicMeetings = 0;
+    let dynamicCommunication = 0;
+    
+    // CommunicationType'ları al ve dinamik hesaplamaları yap
+    const CommunicationType = require('./CommunicationType');
+    const communicationTypes = await CommunicationType.find({ isActive: true });
+    
+    for (const type of communicationTypes) {
+      const value = this[type.code] || 0;
+      dynamicCommunication += value;
+      
+      if (type.category === 'meeting') {
+        dynamicMeetings += value;
+      }
+    }
+    
+    // Toplam değerleri güncelle
+    this.totalMeetings = legacyMeetings + dynamicMeetings;
+    this.totalCommunication = legacyCommunication + dynamicCommunication;
+    this.updatedAt = Date.now();
+    
+    next();
+  } catch (error) {
+    console.error('Communication record pre-save error:', error);
+    // Hata durumunda legacy hesaplamayı kullan
+    this.totalMeetings = (this.meetingNewCustomer || 0) + (this.meetingAfterSale || 0);
+    this.totalCommunication = (this.whatsappIncoming || 0) + (this.callIncoming || 0) + (this.callOutgoing || 0) + this.totalMeetings;
+    this.updatedAt = Date.now();
+    next();
+  }
 });
 
 // Benzersiz indeks: Bir temsilci için günde sadece bir kayıt

@@ -38,9 +38,21 @@ async function backupSales(salesData, backupType = 'rollback', createdBy = null,
     const jsonString = JSON.stringify(salesData);
     const fileSize = Buffer.byteLength(jsonString, 'utf8');
     
+    // backupType'ı enum değerlerine uygun hale getir
+    let validType = 'manual'; // default
+    if (backupType === 'rollback') {
+      validType = 'rollback';
+    } else if (backupType === 'manual_sales' || backupType === 'manual_communications') {
+      validType = 'manual';
+    } else if (backupType.includes('sales')) {
+      validType = 'sales';
+    } else if (backupType.includes('communications')) {
+      validType = 'communications';
+    }
+    
     const backupData = {
       filename: filename,
-      type: backupType,
+      type: validType,
       description: description || `${backupType} yedeği`,
       data: salesData,
       recordCount: salesData.length,
@@ -49,7 +61,8 @@ async function backupSales(salesData, backupType = 'rollback', createdBy = null,
       metadata: {
         originalTimestamp: new Date().toISOString(),
         backupVersion: '1.0',
-        compression: 'none'
+        compression: 'none',
+        originalType: backupType // Orijinal tipi metadata'da sakla
       }
     };
     
@@ -73,7 +86,7 @@ async function restoreFromBackupData(backupData, adminUserId, backupType) {
     let restoredRecords = 0;
     let errors = [];
     
-    if (backupType.includes('sales') || backupType === 'manual') {
+    if (backupType.includes('sales') || backupType === 'manual' || backupType === 'rollback') {
       // Satış kayıtlarını geri yükle
       for (const saleData of backupData) {
         try {
@@ -982,7 +995,7 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
     }
     
     // Yedek dosyası oluştur (MongoDB'de)
-    const backupFilename = await backupSales(data, `${backupType}_${type}`, req.user.id, backupDescription);
+    const backupFilename = await backupSales(data, `manual_${type}`, req.user.id, backupDescription);
     
     if (!backupFilename) {
       return res.status(500).json({
