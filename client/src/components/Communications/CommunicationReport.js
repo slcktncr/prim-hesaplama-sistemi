@@ -840,11 +840,18 @@ const CommunicationReport = () => {
                     <thead className="table-light">
                       <tr>
                         <th>Temsilci</th>
-                        <th>WhatsApp</th>
-                        <th>Gelen Arama</th>
-                        <th>Giden Arama</th>
-                        <th>Yeni Müşteri</th>
-                        <th>Satış Sonrası</th>
+                        {/* Dinamik iletişim türleri başlıkları */}
+                        {communicationTypes
+                          .filter(type => type.isActive)
+                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                          .map(type => (
+                            <th key={type._id} className="text-center">
+                              <div className="d-flex align-items-center justify-content-center">
+                                {getIconComponent(type.icon)}
+                                <span className="ms-1">{type.name}</span>
+                              </div>
+                            </th>
+                          ))}
                         <th>Toplam</th>
                         <th>Kayıt Günü</th>
                       </tr>
@@ -866,32 +873,34 @@ const CommunicationReport = () => {
                               </div>
                               <small className="text-muted">{item.user.email}</small>
                             </td>
-                          <td>
-                            <Badge bg="success">{formatNumber(item.communication.whatsappIncoming)}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="primary">{formatNumber(item.communication.callIncoming)}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="warning">{formatNumber(item.communication.callOutgoing)}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="info">{formatNumber(item.communication.meetingNewCustomer)}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="secondary">{formatNumber(item.communication.meetingAfterSale)}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="dark" className="fs-6">{formatNumber(item.communication.total)}</Badge>
-                          </td>
-                          <td>
-                            <span className="text-muted">{item.recordCount} gün</span>
-                          </td>
-                        </tr>
+                            {/* Dinamik iletişim türleri verileri */}
+                            {communicationTypes
+                              .filter(type => type.isActive)
+                              .sort((a, b) => a.sortOrder - b.sortOrder)
+                              .map(type => {
+                                const value = getCommunicationValue(item.communication, type.code);
+                                return (
+                                  <td key={type._id} className="text-center">
+                                    <Badge 
+                                      bg={getCategoryColor(type.category)}
+                                      className="fs-6"
+                                    >
+                                      {formatNumber(value)}
+                                    </Badge>
+                                  </td>
+                                );
+                              })}
+                            <td>
+                              <Badge bg="dark" className="fs-6">{formatNumber(item.communication.total)}</Badge>
+                            </td>
+                            <td>
+                              <span className="text-muted">{item.recordCount} gün</span>
+                            </td>
+                          </tr>
                       ))}
                       {reportData.users.filter(item => item.communication.total > 0).length === 0 && (
                         <tr>
-                          <td colSpan="8" className="text-center py-4 text-muted">
+                          <td colSpan={3 + communicationTypes.filter(type => type.isActive).length} className="text-center py-4 text-muted">
                             Seçilen kriterlere uygun veri bulunamadı
                           </td>
                         </tr>
@@ -1036,123 +1045,74 @@ const CommunicationReport = () => {
               <Card>
                 <Card.Body>
                   <Row>
-                    {/* WhatsApp Detayı */}
-                    <Col md={4} className="mb-4">
-                      <Card className="h-100">
-                        <Card.Header className="bg-success text-white">
-                          <h6 className="mb-0">
-                            <FiMessageSquare className="me-2" />
-                            WhatsApp İletişimi
-                          </h6>
-                        </Card.Header>
-                        <Card.Body>
-                          <div className="text-center mb-3">
-                            <h3 className="text-success">{formatNumber(reportData.totals.whatsappIncoming)}</h3>
-                            <p className="text-muted mb-0">Toplam Mesaj</p>
-                          </div>
-                          <Table size="sm" className="mb-0">
-                            <tbody>
-                              {reportData.users
-                                .filter(item => item.communication.whatsappIncoming > 0)
-                                .sort((a, b) => b.communication.whatsappIncoming - a.communication.whatsappIncoming)
-                                .slice(0, 5)
-                                .map((item, index) => (
-                                <tr key={item.user._id}>
-                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
-                                  <td className="text-end">
-                                    <Badge bg="success">{item.communication.whatsappIncoming}</Badge>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </Card.Body>
-                      </Card>
-                    </Col>
+                    {/* Dinamik İletişim Türü Kartları */}
+                    {communicationTypes
+                      .filter(type => type.isActive)
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map(type => {
+                        const totalValue = reportData.users.reduce((sum, item) => {
+                          return sum + getCommunicationValue(item.communication, type.code);
+                        }, 0);
+                        
+                        const usersWithValue = reportData.users
+                          .filter(item => getCommunicationValue(item.communication, type.code) > 0)
+                          .sort((a, b) => getCommunicationValue(b.communication, type.code) - getCommunicationValue(a.communication, type.code))
+                          .slice(0, 5);
+                        
+                        return (
+                          <Col md={4} key={type._id} className="mb-4">
+                            <Card className="h-100">
+                              <Card.Header 
+                                className="text-white" 
+                                style={{ backgroundColor: type.color }}
+                              >
+                                <h6 className="mb-0">
+                                  {getIconComponent(type.icon)}
+                                  <span className="ms-2">{type.name}</span>
+                                </h6>
+                              </Card.Header>
+                              <Card.Body>
+                                <div className="text-center mb-3">
+                                  <h3 style={{ color: type.color }}>
+                                    {formatNumber(totalValue)}
+                                  </h3>
+                                  <p className="text-muted mb-0">Toplam {type.name}</p>
+                                  {type.description && (
+                                    <small className="text-muted">{type.description}</small>
+                                  )}
+                                </div>
+                                <Table size="sm" className="mb-0">
+                                  <tbody>
+                                    {usersWithValue.map((item, index) => {
+                                      const value = getCommunicationValue(item.communication, type.code);
+                                      return (
+                                        <tr key={item.user._id}>
+                                          <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
+                                          <td className="text-end">
+                                            <Badge 
+                                              style={{ backgroundColor: type.color }}
+                                            >
+                                              {value}
+                                            </Badge>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                    {usersWithValue.length === 0 && (
+                                      <tr>
+                                        <td colSpan="2" className="text-center text-muted py-2">
+                                          Veri bulunamadı
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </Table>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        );
+                      })}
 
-                    {/* Arama Detayı */}
-                    <Col md={4} className="mb-4">
-                      <Card className="h-100">
-                        <Card.Header className="bg-primary text-white">
-                          <h6 className="mb-0">
-                            <FiPhone className="me-2" />
-                            Telefon Aramaları
-                          </h6>
-                        </Card.Header>
-                        <Card.Body>
-                          <div className="text-center mb-3">
-                            <h3 className="text-primary">
-                              {formatNumber(reportData.totals.callIncoming + reportData.totals.callOutgoing)}
-                            </h3>
-                            <p className="text-muted mb-0">Toplam Arama</p>
-                            <small className="text-muted">
-                              Gelen: {formatNumber(reportData.totals.callIncoming)} | 
-                              Giden: {formatNumber(reportData.totals.callOutgoing)}
-                            </small>
-                          </div>
-                          <Table size="sm" className="mb-0">
-                            <tbody>
-                              {reportData.users
-                                .filter(item => (item.communication.callIncoming + item.communication.callOutgoing) > 0)
-                                .sort((a, b) => (b.communication.callIncoming + b.communication.callOutgoing) - (a.communication.callIncoming + a.communication.callOutgoing))
-                                .slice(0, 5)
-                                .map((item, index) => (
-                                <tr key={item.user._id}>
-                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
-                                  <td className="text-end">
-                                    <Badge bg="primary">
-                                      {item.communication.callIncoming + item.communication.callOutgoing}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-
-                    {/* Görüşme Detayı */}
-                    <Col md={4} className="mb-4">
-                      <Card className="h-100">
-                        <Card.Header className="bg-warning text-dark">
-                          <h6 className="mb-0">
-                            <FiUsers className="me-2" />
-                            Birebir Görüşmeler
-                          </h6>
-                        </Card.Header>
-                        <Card.Body>
-                          <div className="text-center mb-3">
-                            <h3 className="text-warning">
-                              {formatNumber(reportData.totals.meetingNewCustomer + reportData.totals.meetingAfterSale)}
-                            </h3>
-                            <p className="text-muted mb-0">Toplam Görüşme</p>
-                            <small className="text-muted">
-                              Yeni: {formatNumber(reportData.totals.meetingNewCustomer)} | 
-                              Eski: {formatNumber(reportData.totals.meetingAfterSale)}
-                            </small>
-                          </div>
-                          <Table size="sm" className="mb-0">
-                            <tbody>
-                              {reportData.users
-                                .filter(item => (item.communication.meetingNewCustomer + item.communication.meetingAfterSale) > 0)
-                                .sort((a, b) => (b.communication.meetingNewCustomer + b.communication.meetingAfterSale) - (a.communication.meetingNewCustomer + a.communication.meetingAfterSale))
-                                .slice(0, 5)
-                                .map((item, index) => (
-                                <tr key={item.user._id}>
-                                  <td className="fw-bold">{item.user.name.split(' ')[0]}</td>
-                                  <td className="text-end">
-                                    <Badge bg="warning" text="dark">
-                                      {item.communication.meetingNewCustomer + item.communication.meetingAfterSale}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </Card.Body>
-                      </Card>
-                    </Col>
                   </Row>
 
                   {/* Dönemlik Karşılaştırma */}
