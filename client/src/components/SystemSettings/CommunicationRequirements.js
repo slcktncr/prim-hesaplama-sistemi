@@ -41,7 +41,7 @@ const CommunicationRequirements = () => {
     exemptReason: ''
   });
   const [settingsData, setSettingsData] = useState({
-    entryDeadlineHour: 23,
+    entryDeadlineTime: { hour: 23, minute: 0 },
     dailyEntryRequired: true,
     penaltySystemActive: true,
     dailyPenaltyPoints: 10,
@@ -69,7 +69,22 @@ const CommunicationRequirements = () => {
   const fetchYearSettings = async () => {
     try {
       const response = await communicationYearAPI.getCurrentSettings();
-      setSettingsData(response.data.settings);
+      const settings = response.data.settings;
+      
+      // Eski entryDeadlineHour'u yeni formata çevir
+      let entryDeadlineTime = { hour: 23, minute: 0 };
+      if (settings.entryDeadlineTime) {
+        entryDeadlineTime = settings.entryDeadlineTime;
+      } else if (settings.entryDeadlineHour !== undefined) {
+        // Geriye uyumluluk için eski alanı kullan
+        entryDeadlineTime = { hour: settings.entryDeadlineHour, minute: 0 };
+      }
+      
+      setSettingsData(prev => ({
+        ...prev,
+        ...settings,
+        entryDeadlineTime
+      }));
     } catch (error) {
       console.error('Year settings fetch error:', error);
       toast.error('Yıl ayarları yüklenirken hata oluştu');
@@ -389,19 +404,44 @@ const CommunicationRequirements = () => {
                     <FiClock className="me-2" />
                     Son Giriş Saati
                   </Form.Label>
-                  <Form.Select
-                    value={settingsData.entryDeadlineHour}
-                    onChange={(e) => setSettingsData(prev => ({ 
-                      ...prev, 
-                      entryDeadlineHour: parseInt(e.target.value) 
-                    }))}
-                  >
-                    {Array.from({ length: 24 }, (_, i) => (
-                      <option key={i} value={i}>
-                        {i.toString().padStart(2, '0')}:00
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Select
+                        value={settingsData.entryDeadlineTime.hour}
+                        onChange={(e) => setSettingsData(prev => ({ 
+                          ...prev, 
+                          entryDeadlineTime: {
+                            ...prev.entryDeadlineTime,
+                            hour: parseInt(e.target.value)
+                          }
+                        }))}
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Select
+                        value={settingsData.entryDeadlineTime.minute}
+                        onChange={(e) => setSettingsData(prev => ({ 
+                          ...prev, 
+                          entryDeadlineTime: {
+                            ...prev.entryDeadlineTime,
+                            minute: parseInt(e.target.value)
+                          }
+                        }))}
+                      >
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  </Row>
                   <Form.Text className="text-muted">
                     Temsilciler bu saate kadar günlük veri girişi yapmalıdır
                   </Form.Text>

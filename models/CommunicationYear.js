@@ -51,12 +51,20 @@ const communicationYearSchema = new mongoose.Schema({
       min: 0
     },
     
-    // Veri girişi son saati
-    entryDeadlineHour: {
-      type: Number,
-      default: 23,
-      min: 0,
-      max: 23
+    // Veri girişi son saati (dakika dahil)
+    entryDeadlineTime: {
+      hour: {
+        type: Number,
+        default: 23,
+        min: 0,
+        max: 23
+      },
+      minute: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 59
+      }
     }
   },
   

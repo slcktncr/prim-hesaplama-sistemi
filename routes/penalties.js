@@ -246,7 +246,7 @@ router.post('/check-missed-entries', [auth, adminAuth], async (req, res) => {
     // Dün deadline saatinden önceki günleri kontrol et
     const yesterday = new Date(checkDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(settings.entryDeadlineHour, 0, 0, 0);
+    yesterday.setHours(settings.entryDeadlineTime.hour, settings.entryDeadlineTime.minute, 0, 0);
 
     // Son 7 günü kontrol et (ayarlanabilir)
     const checkStartDate = new Date(yesterday);
@@ -488,7 +488,7 @@ async function getPenaltySettings() {
         maxPenaltyPoints: currentYear.settings.maxPenaltyPoints || 10,
         autoDeactivateEnabled: true,
         penaltyResetDays: 30,
-        entryDeadlineHour: currentYear.settings.entryDeadlineHour || 23,
+        entryDeadlineTime: currentYear.settings.entryDeadlineTime || { hour: 23, minute: 0 },
         penaltySystemActive: currentYear.settings.penaltySystemActive || true
       };
     }
@@ -499,7 +499,7 @@ async function getPenaltySettings() {
       maxPenaltyPoints: 10,
       autoDeactivateEnabled: true,
       penaltyResetDays: 30,
-      entryDeadlineHour: 23,
+      entryDeadlineTime: { hour: 23, minute: 0 },
       penaltySystemActive: true
     };
   } catch (error) {
@@ -510,7 +510,7 @@ async function getPenaltySettings() {
       maxPenaltyPoints: 10,
       autoDeactivateEnabled: true,
       penaltyResetDays: 30,
-      entryDeadlineHour: 23,
+      entryDeadlineTime: { hour: 23, minute: 0 },
       penaltySystemActive: true
     };
   }

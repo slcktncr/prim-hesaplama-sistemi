@@ -35,7 +35,7 @@ const DailyCommunicationEntry = () => {
   const [saving, setSaving] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [history, setHistory] = useState([]);
-  const [deadlineHour, setDeadlineHour] = useState(23); // Varsayılan 23:00
+  const [deadlineTime, setDeadlineTime] = useState({ hour: 23, minute: 0 }); // Varsayılan 23:00
   const [communicationTypes, setCommunicationTypes] = useState([]);
   const [formData, setFormData] = useState({});
 
@@ -83,7 +83,18 @@ const DailyCommunicationEntry = () => {
   const fetchDeadlineSettings = async () => {
     try {
       const response = await communicationYearAPI.getCurrentSettings();
-      setDeadlineHour(response.data.settings.entryDeadlineHour);
+      const settings = response.data.settings;
+      
+      // Eski entryDeadlineHour'u yeni formata çevir
+      let entryDeadlineTime = { hour: 23, minute: 0 };
+      if (settings.entryDeadlineTime) {
+        entryDeadlineTime = settings.entryDeadlineTime;
+      } else if (settings.entryDeadlineHour !== undefined) {
+        // Geriye uyumluluk için eski alanı kullan
+        entryDeadlineTime = { hour: settings.entryDeadlineHour, minute: 0 };
+      }
+      
+      setDeadlineTime(entryDeadlineTime);
     } catch (error) {
       console.error('Deadline settings fetch error:', error);
       // Hata durumunda varsayılan değeri koru
@@ -195,14 +206,23 @@ const DailyCommunicationEntry = () => {
 
   const getDeadlineStatus = () => {
     const now = new Date();
-    const hour = now.getHours();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
     
-    if (hour >= deadlineHour) {
+    const deadlineHour = deadlineTime.hour;
+    const deadlineMinute = deadlineTime.minute;
+    
+    // Mevcut zamanı dakika cinsinden hesapla
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    const deadlineTimeInMinutes = deadlineHour * 60 + deadlineMinute;
+    
+    if (currentTimeInMinutes >= deadlineTimeInMinutes) {
       return { variant: 'danger', text: 'Son tarih geçti!' };
-    } else if (hour >= deadlineHour - 1) {
+    } else if (currentTimeInMinutes >= deadlineTimeInMinutes - 60) { // 1 saat öncesi
       return { variant: 'warning', text: 'Son 1 saat!' };
-    } else if (hour >= deadlineHour - 3) {
-      return { variant: 'info', text: `${deadlineHour - hour} saat kaldı` };
+    } else if (currentTimeInMinutes >= deadlineTimeInMinutes - 180) { // 3 saat öncesi
+      const remainingHours = Math.ceil((deadlineTimeInMinutes - currentTimeInMinutes) / 60);
+      return { variant: 'info', text: `${remainingHours} saat kaldı` };
     } else {
       return { variant: 'success', text: 'Zamanında' };
     }
@@ -252,7 +272,7 @@ const DailyCommunicationEntry = () => {
       {!isExempt && (
         <Alert variant={deadlineStatus.variant} className="mb-4">
           <FiClock className="me-2" />
-          <strong>Son Tarih:</strong> Saat {deadlineHour.toString().padStart(2, '0')}:00'a kadar girmeniz gerekiyor. ({deadlineStatus.text})
+          <strong>Son Tarih:</strong> Saat {deadlineTime.hour.toString().padStart(2, '0')}:{deadlineTime.minute.toString().padStart(2, '0')}'a kadar girmeniz gerekiyor. ({deadlineStatus.text})
         </Alert>
       )}
 

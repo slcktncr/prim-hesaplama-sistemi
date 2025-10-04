@@ -33,7 +33,8 @@ router.get('/current', auth, async (req, res) => {
 // @desc    Aktif iletişim yılı ayarlarını güncelle
 // @access  Private (Admin only)
 router.put('/current/settings', [auth, adminAuth], [
-  body('entryDeadlineHour').isInt({ min: 0, max: 23 }).withMessage('Son saat 0-23 arasında olmalıdır'),
+  body('entryDeadlineTime.hour').isInt({ min: 0, max: 23 }).withMessage('Saat 0-23 arasında olmalıdır'),
+  body('entryDeadlineTime.minute').isInt({ min: 0, max: 59 }).withMessage('Dakika 0-59 arasında olmalıdır'),
   body('dailyEntryRequired').isBoolean().withMessage('Günlük giriş zorunluluğu boolean olmalıdır'),
   body('penaltySystemActive').isBoolean().withMessage('Ceza sistemi boolean olmalıdır'),
   body('dailyPenaltyPoints').isInt({ min: 0 }).withMessage('Günlük ceza puanı 0 veya daha büyük olmalıdır'),
@@ -49,7 +50,7 @@ router.put('/current/settings', [auth, adminAuth], [
     }
 
     const { 
-      entryDeadlineHour, 
+      entryDeadlineTime, 
       dailyEntryRequired, 
       penaltySystemActive, 
       dailyPenaltyPoints, 
@@ -66,7 +67,10 @@ router.put('/current/settings', [auth, adminAuth], [
     }
 
     // Ayarları güncelle
-    currentYear.settings.entryDeadlineHour = parseInt(entryDeadlineHour);
+    currentYear.settings.entryDeadlineTime = {
+      hour: parseInt(entryDeadlineTime.hour),
+      minute: parseInt(entryDeadlineTime.minute)
+    };
     currentYear.settings.dailyEntryRequired = dailyEntryRequired;
     currentYear.settings.penaltySystemActive = penaltySystemActive;
     currentYear.settings.dailyPenaltyPoints = parseInt(dailyPenaltyPoints);

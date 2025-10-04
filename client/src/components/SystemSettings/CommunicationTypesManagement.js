@@ -27,7 +27,18 @@ import {
   FiMessageCircle,
   FiPhone,
   FiUsers,
-  FiMail
+  FiMail,
+  FiVideo,
+  FiCalendar,
+  FiClock,
+  FiMapPin,
+  FiUser,
+  FiUserCheck,
+  FiTrendingUp,
+  FiTarget,
+  FiAward,
+  FiStar,
+  FiHeart
 } from 'react-icons/fi';
 
 import { communicationTypesAPI } from '../../utils/api';
