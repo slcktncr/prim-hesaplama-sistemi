@@ -113,11 +113,26 @@ router.post('/daily', [
       date: recordDate
     });
 
+    // Legacy alan mapping
+    const legacyMapping = {
+      'WHATSAPP_INCOMING': 'whatsappIncoming',
+      'CALL_INCOMING': 'callIncoming',
+      'CALL_OUTGOING': 'callOutgoing',
+      'MEETING_NEW_CUSTOMER': 'meetingNewCustomer',
+      'MEETING_AFTER_SALE': 'meetingAfterSale'
+    };
+
     if (record) {
       // Mevcut kaydı güncelle - dinamik alanları güncelle
       for (const [field, value] of Object.entries(dynamicData)) {
         if (field !== 'notes') {
-          record[field] = parseInt(value) || 0;
+          const numValue = parseInt(value) || 0;
+          record[field] = numValue;
+          
+          // Legacy alanı da güncelle
+          if (legacyMapping[field]) {
+            record[legacyMapping[field]] = numValue;
+          }
         }
       }
       record.notes = notes || '';
@@ -141,7 +156,13 @@ router.post('/daily', [
       // Dinamik alanları ekle
       for (const [field, value] of Object.entries(dynamicData)) {
         if (field !== 'notes') {
-          recordData[field] = parseInt(value) || 0;
+          const numValue = parseInt(value) || 0;
+          recordData[field] = numValue;
+          
+          // Legacy alanı da ekle
+          if (legacyMapping[field]) {
+            recordData[legacyMapping[field]] = numValue;
+          }
         }
       }
 
