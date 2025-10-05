@@ -50,12 +50,26 @@ async function backupSales(salesData, backupType = 'rollback', createdBy = null,
       validType = 'communications';
     }
     
+    // Record count hesaplama (yeni yapı için)
+    let recordCount = 0;
+    if (Array.isArray(salesData)) {
+      recordCount = salesData.length;
+    } else if (salesData && typeof salesData === 'object') {
+      // Kapsamlı iletişim yedeği için
+      if (salesData.backupInfo && salesData.backupInfo.totalRecords) {
+        recordCount = salesData.backupInfo.totalRecords;
+      } else {
+        // Fallback: tüm alanları say
+        recordCount = Object.keys(salesData).length;
+      }
+    }
+
     const backupData = {
       filename: filename,
       type: validType,
       description: description || `${backupType} yedeği`,
       data: salesData,
-      recordCount: salesData.length,
+      recordCount: recordCount,
       fileSize: fileSize,
       createdBy: createdBy,
       metadata: {
@@ -69,7 +83,7 @@ async function backupSales(salesData, backupType = 'rollback', createdBy = null,
     const backup = new Backup(backupData);
     await backup.save();
     
-    console.log(`💾 Backup created in MongoDB: ${filename} (${salesData.length} records, ${(fileSize / 1024).toFixed(2)} KB)`);
+    console.log(`💾 Backup created in MongoDB: ${filename} (${recordCount} records, ${(fileSize / 1024).toFixed(2)} KB)`);
     
     return filename;
   } catch (error) {
@@ -114,36 +128,125 @@ async function restoreFromBackupData(backupData, adminUserId, backupType) {
         }
       }
     } else if (backupType.includes('communications')) {
-      // İletişim kayıtlarını geri yükle
+      // İletişim kayıtlarını geri yükle (yeni kapsamlı yapı)
       const CommunicationRecord = require('../models/CommunicationRecord');
+      const CommunicationYear = require('../models/CommunicationYear');
       
-      for (const commData of backupData) {
-        try {
-          // Mevcut kaydı kontrol et
-          const existingComm = await CommunicationRecord.findOne({ 
-            salesperson: commData.salesperson,
-            date: commData.date 
-          });
-          
-          if (existingComm) {
-            // Mevcut kaydı güncelle
-            Object.assign(existingComm, commData);
-            existingComm.updatedAt = new Date();
-            await existingComm.save();
-          } else {
-            // Yeni kayıt oluştur
-            const newComm = new CommunicationRecord(commData);
-            await newComm.save();
+      // Yeni yapı kontrolü
+      if (backupData.dailyRecords && backupData.historicalYears && backupData.activeYears) {
+        console.log(`🔄 Restoring comprehensive communication data...`);
+        
+        // 1. Günlük kayıtları geri yükle
+        console.log(`📊 Restoring ${backupData.dailyRecords.length} daily records...`);
+        for (const commData of backupData.dailyRecords) {
+          try {
+            const existingComm = await CommunicationRecord.findOne({ 
+              salesperson: commData.salesperson,
+              date: commData.date 
+            });
+            
+            if (existingComm) {
+              Object.assign(existingComm, commData);
+              existingComm.updatedAt = new Date();
+              await existingComm.save();
+            } else {
+              const newComm = new CommunicationRecord(commData);
+              await newComm.save();
+            }
+            
+            restoredRecords++;
+          } catch (error) {
+            console.error(`❌ Error restoring daily communication record:`, error);
+            errors.push({
+              type: 'daily',
+              salesperson: commData.salesperson,
+              date: commData.date,
+              error: error.message
+            });
           }
-          
-          restoredRecords++;
-        } catch (error) {
-          console.error(`❌ Error restoring communication record:`, error);
-          errors.push({
-            salesperson: commData.salesperson,
-            date: commData.date,
-            error: error.message
-          });
+        }
+        
+        // 2. Geçmiş yıl verilerini geri yükle
+        console.log(`📊 Restoring ${backupData.historicalYears.length} historical years...`);
+        for (const yearData of backupData.historicalYears) {
+          try {
+            const existingYear = await CommunicationYear.findOne({ year: yearData.year });
+            
+            if (existingYear) {
+              Object.assign(existingYear, yearData);
+              existingYear.updatedAt = new Date();
+              await existingYear.save();
+            } else {
+              const newYear = new CommunicationYear(yearData);
+              await newYear.save();
+            }
+            
+            restoredRecords++;
+          } catch (error) {
+            console.error(`❌ Error restoring historical year ${yearData.year}:`, error);
+            errors.push({
+              type: 'historical_year',
+              year: yearData.year,
+              error: error.message
+            });
+          }
+        }
+        
+        // 3. Aktif yıl verilerini geri yükle
+        console.log(`📊 Restoring ${backupData.activeYears.length} active years...`);
+        for (const yearData of backupData.activeYears) {
+          try {
+            const existingYear = await CommunicationYear.findOne({ year: yearData.year });
+            
+            if (existingYear) {
+              Object.assign(existingYear, yearData);
+              existingYear.updatedAt = new Date();
+              await existingYear.save();
+            } else {
+              const newYear = new CommunicationYear(yearData);
+              await newYear.save();
+            }
+            
+            restoredRecords++;
+          } catch (error) {
+            console.error(`❌ Error restoring active year ${yearData.year}:`, error);
+            errors.push({
+              type: 'active_year',
+              year: yearData.year,
+              error: error.message
+            });
+          }
+        }
+        
+      } else {
+        // Eski yapı (sadece günlük kayıtlar)
+        console.log(`🔄 Restoring legacy communication data...`);
+        for (const commData of backupData) {
+          try {
+            const existingComm = await CommunicationRecord.findOne({ 
+              salesperson: commData.salesperson,
+              date: commData.date 
+            });
+            
+            if (existingComm) {
+              Object.assign(existingComm, commData);
+              existingComm.updatedAt = new Date();
+              await existingComm.save();
+            } else {
+              const newComm = new CommunicationRecord(commData);
+              await newComm.save();
+            }
+            
+            restoredRecords++;
+          } catch (error) {
+            console.error(`❌ Error restoring communication record:`, error);
+            errors.push({
+              type: 'legacy',
+              salesperson: commData.salesperson,
+              date: commData.date,
+              error: error.message
+            });
+          }
         }
       }
     }
@@ -960,111 +1063,95 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       console.log(`📊 Found ${data.length} sales records for backup`);
       
     } else if (type === 'communications') {
-      // İletişim kayıtlarını al
+      // İletişim kayıtlarını al (günlük kayıtlar + geçmiş yıl verileri)
       const CommunicationRecord = require('../models/CommunicationRecord');
+      const CommunicationYear = require('../models/CommunicationYear');
       
-      // Önce toplam sayıyı kontrol et
-      const totalCount = await CommunicationRecord.countDocuments();
-      console.log(`📊 Total communication records in DB: ${totalCount}`);
+      console.log(`📊 Starting comprehensive communication backup...`);
       
-      // Debug: CommunicationRecord collection'ının gerçek adını kontrol et
-      const actualCollectionName = CommunicationRecord.collection.name;
-      console.log(`📊 CommunicationRecord collection name: ${actualCollectionName}`);
-      
-      // Debug: Mongoose connection üzerinden collection'ları kontrol et
-      try {
-        const mongoose = require('mongoose');
-        const db = mongoose.connection.db;
-        const collections = await db.listCollections().toArray();
-        console.log(`📊 Available collections:`, collections.map(c => c.name));
-        
-      // Debug: Farklı collection adları ile deneme
-      const alternativeNames = ['communicationrecords', 'communicationRecords', 'CommunicationRecord', 'communications'];
-      for (const altName of alternativeNames) {
-        try {
-          const altCount = await db.collection(altName).countDocuments();
-          console.log(`📊 Collection ${altName} count: ${altCount}`);
-        } catch (error) {
-          console.log(`📊 Collection ${altName} not found or error: ${error.message}`);
-        }
-      }
-      
-      // Debug: Tüm collection'ları kontrol et ve iletişim içerenleri bul
-      console.log(`📊 Checking all collections for communication data...`);
-      for (const collection of collections) {
-        try {
-          const count = await db.collection(collection.name).countDocuments();
-          if (count > 0) {
-            // İletişim verisi olabilecek collection'ları kontrol et
-            const sample = await db.collection(collection.name).findOne({});
-            if (sample && (
-              sample.whatsappIncoming !== undefined || 
-              sample.callIncoming !== undefined || 
-              sample.totalCommunication !== undefined ||
-              sample.communication !== undefined
-            )) {
-              console.log(`📊 Potential communication collection: ${collection.name} (${count} records)`);
-              console.log(`📊 Sample data:`, JSON.stringify(sample, null, 2).substring(0, 500));
-            }
-          }
-        } catch (error) {
-          // Collection okunamıyor, devam et
-        }
-      }
-      } catch (error) {
-        console.log(`📊 Error listing collections: ${error.message}`);
-      }
-      
-      // Debug: Son 10 kaydı kontrol et
-      const recentRecords = await CommunicationRecord.find({})
-        .sort({ date: -1 })
-        .limit(10)
-        .select('date salesperson totalCommunication');
-      console.log(`📊 Recent 10 communication records:`, recentRecords.map(r => ({
-        date: r.date,
-        salesperson: r.salesperson,
-        totalCommunication: r.totalCommunication
-      })));
-      
-      // Debug: Tarih aralığını kontrol et
-      const dateRange = await CommunicationRecord.aggregate([
-        {
-          $group: {
-            _id: null,
-            minDate: { $min: '$date' },
-            maxDate: { $max: '$date' },
-            count: { $sum: 1 }
-          }
-        }
-      ]);
-      console.log(`📊 Communication records date range:`, dateRange[0]);
-      
-      // Tüm kayıtları al (populate olmadan önce)
-      console.log(`📊 About to query CommunicationRecord.find({})`);
-      data = await CommunicationRecord.find({})
+      // 1. Günlük iletişim kayıtları (CommunicationRecord)
+      const dailyRecords = await CommunicationRecord.find({})
         .populate({
           path: 'salesperson',
           select: 'name email',
-          options: { strictPopulate: false } // Silinmiş kullanıcılar için
+          options: { strictPopulate: false }
         })
         .sort({ date: -1 })
-        .lean(); // Performance için
+        .lean();
       
-      console.log(`📊 Query completed, found ${data.length} records`);
+      console.log(`📊 Daily communication records: ${dailyRecords.length}`);
       
-      backupDescription = `Manuel iletişim yedeği - ${backupDescription}`;
-      console.log(`📊 Found ${data.length} communication records for backup (Total in DB: ${totalCount})`);
+      // 2. Geçmiş yıl verileri (CommunicationYear)
+      const historicalYears = await CommunicationYear.find({ type: 'historical' })
+        .sort({ year: -1 })
+        .lean();
       
-      // Debug: İlk 5 kaydın detaylarını göster
-      if (data.length > 0) {
-        console.log(`📊 First 5 records sample:`, data.slice(0, 5).map(r => ({
-          date: r.date,
-          salesperson: r.salesperson?.name || 'Unknown',
-          totalCommunication: r.totalCommunication,
-          whatsappIncoming: r.whatsappIncoming,
-          callIncoming: r.callIncoming
-        })));
-      }
+      console.log(`📊 Historical years found: ${historicalYears.length}`);
+      
+      // 3. Aktif yıl verileri (CommunicationYear)
+      const activeYears = await CommunicationYear.find({ type: 'active' })
+        .sort({ year: -1 })
+        .lean();
+      
+      console.log(`📊 Active years found: ${activeYears.length}`);
+      
+      // 4. Tüm verileri birleştir
+      const allCommunicationData = {
+        dailyRecords: dailyRecords,
+        historicalYears: historicalYears,
+        activeYears: activeYears,
+        backupInfo: {
+          dailyRecordsCount: dailyRecords.length,
+          historicalYearsCount: historicalYears.length,
+          activeYearsCount: activeYears.length,
+          totalRecords: dailyRecords.length + historicalYears.length + activeYears.length,
+          backupDate: new Date().toISOString()
+        }
+      };
+      
+      // 5. Toplam iletişim sayısını hesapla
+      let totalCommunicationCount = 0;
+      
+      // Günlük kayıtlardan toplam
+      totalCommunicationCount += dailyRecords.reduce((sum, record) => sum + (record.totalCommunication || 0), 0);
+      
+      // Geçmiş yıllardan toplam
+      historicalYears.forEach(year => {
+        if (year.yearlyCommunicationData) {
+          const yearData = year.yearlyCommunicationData;
+          if (yearData instanceof Map) {
+            yearData.forEach(userData => {
+              totalCommunicationCount += userData.totalCommunication || 0;
+            });
+          } else if (typeof yearData === 'object') {
+            Object.values(yearData).forEach(userData => {
+              totalCommunicationCount += userData.totalCommunication || 0;
+            });
+          }
+        }
+      });
+      
+      // Aktif yıllardan toplam
+      activeYears.forEach(year => {
+        if (year.yearlyCommunicationData) {
+          const yearData = year.yearlyCommunicationData;
+          if (yearData instanceof Map) {
+            yearData.forEach(userData => {
+              totalCommunicationCount += userData.totalCommunication || 0;
+            });
+          } else if (typeof yearData === 'object') {
+            Object.values(yearData).forEach(userData => {
+              totalCommunicationCount += userData.totalCommunication || 0;
+            });
+          }
+        }
+      });
+      
+      console.log(`📊 Total communication count calculated: ${totalCommunicationCount}`);
+      
+      data = allCommunicationData;
+      backupDescription = `Kapsamlı iletişim yedeği - ${backupDescription}`;
+      console.log(`📊 Comprehensive communication backup prepared with ${totalCommunicationCount} total communications`);
       
     } else {
       return res.status(400).json({
