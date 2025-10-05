@@ -1117,15 +1117,26 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       
       // Geçmiş yıllardan toplam
       historicalYears.forEach(year => {
+        console.log(`📊 Processing historical year ${year.year}:`, {
+          hasYearlyData: !!year.yearlyCommunicationData,
+          yearlyDataType: typeof year.yearlyCommunicationData,
+          isMap: year.yearlyCommunicationData instanceof Map,
+          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : []
+        });
+        
         if (year.yearlyCommunicationData) {
           const yearData = year.yearlyCommunicationData;
           if (yearData instanceof Map) {
-            yearData.forEach(userData => {
-              totalCommunicationCount += userData.totalCommunication || 0;
+            yearData.forEach((userData, userId) => {
+              const userTotal = userData.totalCommunication || 0;
+              totalCommunicationCount += userTotal;
+              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications`);
             });
           } else if (typeof yearData === 'object') {
-            Object.values(yearData).forEach(userData => {
-              totalCommunicationCount += userData.totalCommunication || 0;
+            Object.entries(yearData).forEach(([userId, userData]) => {
+              const userTotal = userData.totalCommunication || 0;
+              totalCommunicationCount += userTotal;
+              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications`);
             });
           }
         }
@@ -1133,15 +1144,26 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
       
       // Aktif yıllardan toplam
       activeYears.forEach(year => {
+        console.log(`📊 Processing active year ${year.year}:`, {
+          hasYearlyData: !!year.yearlyCommunicationData,
+          yearlyDataType: typeof year.yearlyCommunicationData,
+          isMap: year.yearlyCommunicationData instanceof Map,
+          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : []
+        });
+        
         if (year.yearlyCommunicationData) {
           const yearData = year.yearlyCommunicationData;
           if (yearData instanceof Map) {
-            yearData.forEach(userData => {
-              totalCommunicationCount += userData.totalCommunication || 0;
+            yearData.forEach((userData, userId) => {
+              const userTotal = userData.totalCommunication || 0;
+              totalCommunicationCount += userTotal;
+              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications`);
             });
           } else if (typeof yearData === 'object') {
-            Object.values(yearData).forEach(userData => {
-              totalCommunicationCount += userData.totalCommunication || 0;
+            Object.entries(yearData).forEach(([userId, userData]) => {
+              const userTotal = userData.totalCommunication || 0;
+              totalCommunicationCount += userTotal;
+              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications`);
             });
           }
         }
