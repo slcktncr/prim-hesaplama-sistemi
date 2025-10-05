@@ -1121,23 +1121,41 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
           hasYearlyData: !!year.yearlyCommunicationData,
           yearlyDataType: typeof year.yearlyCommunicationData,
           isMap: year.yearlyCommunicationData instanceof Map,
-          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : []
+          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : [],
+          hasMonthlyData: !!year.monthlyData,
+          monthlyDataType: typeof year.monthlyData,
+          monthlyDataSize: year.monthlyData ? year.monthlyData.size : 0
         });
         
+        // yearlyCommunicationData'dan toplam
         if (year.yearlyCommunicationData) {
           const yearData = year.yearlyCommunicationData;
           if (yearData instanceof Map) {
             yearData.forEach((userData, userId) => {
               const userTotal = userData.totalCommunication || 0;
               totalCommunicationCount += userTotal;
-              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications`);
+              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications (yearly)`);
             });
           } else if (typeof yearData === 'object') {
             Object.entries(yearData).forEach(([userId, userData]) => {
               const userTotal = userData.totalCommunication || 0;
               totalCommunicationCount += userTotal;
-              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications`);
+              console.log(`📊 Historical year ${year.year}, user ${userId}: ${userTotal} communications (yearly)`);
             });
+          }
+        }
+        
+        // monthlyData'dan toplam
+        if (year.monthlyData && year.monthlyData instanceof Map) {
+          console.log(`📊 Processing monthly data for year ${year.year}, size: ${year.monthlyData.size}`);
+          for (let [month, monthData] of year.monthlyData) {
+            if (monthData && monthData instanceof Map) {
+              for (let [userId, userData] of monthData) {
+                const userTotal = userData.totalCommunication || 0;
+                totalCommunicationCount += userTotal;
+                console.log(`📊 Historical year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+              }
+            }
           }
         }
       });
@@ -1148,23 +1166,41 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
           hasYearlyData: !!year.yearlyCommunicationData,
           yearlyDataType: typeof year.yearlyCommunicationData,
           isMap: year.yearlyCommunicationData instanceof Map,
-          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : []
+          keys: year.yearlyCommunicationData ? Object.keys(year.yearlyCommunicationData) : [],
+          hasMonthlyData: !!year.monthlyData,
+          monthlyDataType: typeof year.monthlyData,
+          monthlyDataSize: year.monthlyData ? year.monthlyData.size : 0
         });
         
+        // yearlyCommunicationData'dan toplam
         if (year.yearlyCommunicationData) {
           const yearData = year.yearlyCommunicationData;
           if (yearData instanceof Map) {
             yearData.forEach((userData, userId) => {
               const userTotal = userData.totalCommunication || 0;
               totalCommunicationCount += userTotal;
-              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications`);
+              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications (yearly)`);
             });
           } else if (typeof yearData === 'object') {
             Object.entries(yearData).forEach(([userId, userData]) => {
               const userTotal = userData.totalCommunication || 0;
               totalCommunicationCount += userTotal;
-              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications`);
+              console.log(`📊 Active year ${year.year}, user ${userId}: ${userTotal} communications (yearly)`);
             });
+          }
+        }
+        
+        // monthlyData'dan toplam
+        if (year.monthlyData && year.monthlyData instanceof Map) {
+          console.log(`📊 Processing monthly data for year ${year.year}, size: ${year.monthlyData.size}`);
+          for (let [month, monthData] of year.monthlyData) {
+            if (monthData && monthData instanceof Map) {
+              for (let [userId, userData] of monthData) {
+                const userTotal = userData.totalCommunication || 0;
+                totalCommunicationCount += userTotal;
+                console.log(`📊 Active year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+              }
+            }
           }
         }
       });
