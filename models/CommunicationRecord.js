@@ -141,9 +141,19 @@ communicationRecordSchema.pre('save', async function(next) {
       }
     }
     
-    // Toplam değerleri güncelle
-    this.totalMeetings = legacyMeetings + dynamicMeetings;
-    this.totalCommunication = legacyCommunication + dynamicCommunication;
+    // NOT: Legacy ve dinamik alanlar aynı veriyi temsil ediyor.
+    // İkisini birlikte toplarsak ikiye katlama olur!
+    // Öncelik: Eğer dinamik alanlar varsa onları kullan, yoksa legacy kullan
+    if (dynamicCommunication > 0) {
+      // Yeni sistem - dinamik alanları kullan
+      this.totalMeetings = dynamicMeetings;
+      this.totalCommunication = dynamicCommunication;
+    } else {
+      // Eski sistem veya dynamik alan yok - legacy alanları kullan
+      this.totalMeetings = legacyMeetings;
+      this.totalCommunication = legacyCommunication;
+    }
+    
     this.updatedAt = Date.now();
     
     next();
