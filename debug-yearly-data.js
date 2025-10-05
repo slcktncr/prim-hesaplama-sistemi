@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// MongoDB bağlantısı
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stwork', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
 async function debugYearlyData() {
   try {
+    // MongoDB bağlantısı
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stwork', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    
     console.log('🔍 CommunicationYear collection verilerini RAW olarak kontrol ediyorum...\n');
     
     // Direkt MongoDB collection'dan oku
