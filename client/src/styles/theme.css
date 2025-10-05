@@ -796,3 +796,65 @@ body {
     font-size: 0.75rem;
   }
 }
+
+/* Announcement Notification Styles */
+.announcement-notification-modal .modal-dialog {
+  max-width: 600px;
+}
+
+.announcement-notification-modal .modal-content {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.announcement-notification-modal .modal-header {
+  border-bottom: none;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.announcement-notification-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.announcement-notification-modal .modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+}
+
+.announcement-content {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Mobile responsive for announcement modal */
+@media (max-width: 768px) {
+  .announcement-notification-modal .modal-dialog {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .announcement-notification-modal .modal-body {
+    padding: 1rem;
+  }
+  
+  .announcement-notification-modal .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+}

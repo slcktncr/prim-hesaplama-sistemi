@@ -4,6 +4,7 @@ import { FiMenu, FiX } from 'react-icons/fi';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import DeveloperSignature from '../Common/DeveloperSignature';
+import AnnouncementNotification from '../Announcements/AnnouncementNotification';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -78,6 +79,9 @@ const Layout = ({ children }) => {
 
       {/* Developer Signature */}
       <DeveloperSignature />
+      
+      {/* Announcement Notification */}
+      <AnnouncementNotification />
     </div>
   );
 };
