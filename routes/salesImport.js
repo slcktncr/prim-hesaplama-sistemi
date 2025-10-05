@@ -63,7 +63,7 @@ async function backupSales(salesData, backupType = 'rollback', createdBy = null,
         recordCount = Object.keys(salesData).length;
       }
     }
-
+    
     const backupData = {
       filename: filename,
       type: validType,
@@ -1162,11 +1162,20 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
             console.log(`📊 Processing monthly data for year ${year.year} (Object), keys: ${Object.keys(year.monthlyData)}`);
             Object.entries(year.monthlyData).forEach(([month, monthData]) => {
               if (monthData && typeof monthData === 'object') {
-                Object.entries(monthData).forEach(([userId, userData]) => {
-                  const userTotal = userData.totalCommunication || 0;
-                  totalCommunicationCount += userTotal;
-                  console.log(`📊 Historical year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
-                });
+                // monthData bir Map olabilir ama Object olarak gelmiş olabilir
+                if (monthData instanceof Map) {
+                  for (let [userId, userData] of monthData) {
+                    const userTotal = userData.totalCommunication || 0;
+                    totalCommunicationCount += userTotal;
+                    console.log(`📊 Historical year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+                  }
+                } else {
+                  Object.entries(monthData).forEach(([userId, userData]) => {
+                    const userTotal = userData.totalCommunication || 0;
+                    totalCommunicationCount += userTotal;
+                    console.log(`📊 Historical year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+                  });
+                }
               }
             });
           }
@@ -1220,11 +1229,20 @@ router.post('/create-backup', [auth, adminAuth], async (req, res) => {
             console.log(`📊 Processing monthly data for year ${year.year} (Object), keys: ${Object.keys(year.monthlyData)}`);
             Object.entries(year.monthlyData).forEach(([month, monthData]) => {
               if (monthData && typeof monthData === 'object') {
-                Object.entries(monthData).forEach(([userId, userData]) => {
-                  const userTotal = userData.totalCommunication || 0;
-                  totalCommunicationCount += userTotal;
-                  console.log(`📊 Active year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
-                });
+                // monthData bir Map olabilir ama Object olarak gelmiş olabilir
+                if (monthData instanceof Map) {
+                  for (let [userId, userData] of monthData) {
+                    const userTotal = userData.totalCommunication || 0;
+                    totalCommunicationCount += userTotal;
+                    console.log(`📊 Active year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+                  }
+                } else {
+                  Object.entries(monthData).forEach(([userId, userData]) => {
+                    const userTotal = userData.totalCommunication || 0;
+                    totalCommunicationCount += userTotal;
+                    console.log(`📊 Active year ${year.year}, month ${month}, user ${userId}: ${userTotal} communications (monthly)`);
+                  });
+                }
               }
             });
           }
@@ -1325,8 +1343,8 @@ router.get('/download/:filename', [auth, adminAuth], async (req, res) => {
     
   } catch (error) {
     console.error('❌ Download backup error:', error);
-    res.status(500).json({
-      success: false,
+        res.status(500).json({
+          success: false,
       message: 'Dosya indirme hatası: ' + error.message
     });
   }
