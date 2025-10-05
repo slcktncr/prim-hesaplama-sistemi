@@ -120,40 +120,14 @@ const communicationRecordSchema = new mongoose.Schema({
 // Toplam değerleri hesaplama middleware (Dinamik + Legacy uyumlu)
 communicationRecordSchema.pre('save', async function(next) {
   try {
-    // Legacy alanları hesapla
+    // Sadece legacy alanları kullanarak hesapla
+    // Çünkü /daily endpoint'i hem legacy hem dinamik alanları kaydediyor
+    // Raporlama tarafı ise dinamik alanları kullanıyor
     const legacyMeetings = (this.meetingNewCustomer || 0) + (this.meetingAfterSale || 0);
     const legacyCommunication = (this.whatsappIncoming || 0) + (this.callIncoming || 0) + (this.callOutgoing || 0) + legacyMeetings;
     
-    // Dinamik alanları hesapla
-    let dynamicMeetings = 0;
-    let dynamicCommunication = 0;
-    
-    // CommunicationType'ları al ve dinamik hesaplamaları yap
-    const CommunicationType = require('./CommunicationType');
-    const communicationTypes = await CommunicationType.find({ isActive: true });
-    
-    for (const type of communicationTypes) {
-      const value = this[type.code] || 0;
-      dynamicCommunication += value;
-      
-      if (type.category === 'meeting') {
-        dynamicMeetings += value;
-      }
-    }
-    
-    // NOT: Legacy ve dinamik alanlar aynı veriyi temsil ediyor.
-    // İkisini birlikte toplarsak ikiye katlama olur!
-    // Öncelik: Eğer dinamik alanlar varsa onları kullan, yoksa legacy kullan
-    if (dynamicCommunication > 0) {
-      // Yeni sistem - dinamik alanları kullan
-      this.totalMeetings = dynamicMeetings;
-      this.totalCommunication = dynamicCommunication;
-    } else {
-      // Eski sistem veya dynamik alan yok - legacy alanları kullan
-      this.totalMeetings = legacyMeetings;
-      this.totalCommunication = legacyCommunication;
-    }
-    
+    this.totalMeetings = legacyMeetings;
+    this.totalCommunication = legacyCommunication;
     this.updatedAt = Date.now();
     
     next();

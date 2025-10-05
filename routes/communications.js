@@ -450,14 +450,14 @@ router.get('/report', auth, async (req, res) => {
         recordCount: 0
       };
 
-      // Eski alanları dinamik alanlara map et
+      // Eski alanları dinamik alanlara map et (önce dinamik alanı kontrol et, yoksa legacy'den al)
       const mappedDailyData = {
         ...dailyData,
-        WHATSAPP_INCOMING: dailyData.whatsappIncoming || 0,
-        CALL_INCOMING: dailyData.callIncoming || 0,
-        CALL_OUTGOING: dailyData.callOutgoing || 0,
-        MEETING_NEW_CUSTOMER: dailyData.meetingNewCustomer || 0,
-        MEETING_AFTER_SALE: dailyData.meetingAfterSale || 0
+        WHATSAPP_INCOMING: dailyData.WHATSAPP_INCOMING || dailyData.whatsappIncoming || 0,
+        CALL_INCOMING: dailyData.CALL_INCOMING || dailyData.callIncoming || 0,
+        CALL_OUTGOING: dailyData.CALL_OUTGOING || dailyData.callOutgoing || 0,
+        MEETING_NEW_CUSTOMER: dailyData.MEETING_NEW_CUSTOMER || dailyData.meetingNewCustomer || 0,
+        MEETING_AFTER_SALE: dailyData.MEETING_AFTER_SALE || dailyData.meetingAfterSale || 0
       };
 
       // Geçmiş yıl verilerinden veri
@@ -519,14 +519,14 @@ router.get('/report', auth, async (req, res) => {
         }
       });
 
-      // Geçmiş verileri de map et
+      // Geçmiş verileri de map et (önce dinamik alanı kontrol et, yoksa legacy'den al)
       const mappedHistoricalData = {
         ...historicalData,
-        WHATSAPP_INCOMING: historicalData.whatsappIncoming || 0,
-        CALL_INCOMING: historicalData.callIncoming || 0,
-        CALL_OUTGOING: historicalData.callOutgoing || 0,
-        MEETING_NEW_CUSTOMER: historicalData.meetingNewCustomer || 0,
-        MEETING_AFTER_SALE: historicalData.meetingAfterSale || 0
+        WHATSAPP_INCOMING: historicalData.WHATSAPP_INCOMING || historicalData.whatsappIncoming || 0,
+        CALL_INCOMING: historicalData.CALL_INCOMING || historicalData.callIncoming || 0,
+        CALL_OUTGOING: historicalData.CALL_OUTGOING || historicalData.callOutgoing || 0,
+        MEETING_NEW_CUSTOMER: historicalData.MEETING_NEW_CUSTOMER || historicalData.meetingNewCustomer || 0,
+        MEETING_AFTER_SALE: historicalData.MEETING_AFTER_SALE || historicalData.meetingAfterSale || 0
       };
 
       // Toplam veri - dinamik
