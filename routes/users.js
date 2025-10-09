@@ -40,7 +40,10 @@ router.get('/', [auth, adminAuth], async (req, res) => {
       });
     });
 
-    res.json(users);
+    res.json({
+      success: true,
+      data: users
+    });
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
