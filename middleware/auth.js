@@ -91,6 +91,7 @@ const hasAnyPermission = (permissions) => async (req, res, next) => {
 
 // Eski isimlerle de export et (backward compatibility)
 const protect = auth;
+const adminOnly = adminAuth; // Alias for backward compatibility
 const authorize = (roles) => (req, res, next) => {
   const userRole = req.user.role?.name;
   if (!roles.includes(userRole)) {
@@ -102,6 +103,7 @@ const authorize = (roles) => (req, res, next) => {
 module.exports = { 
   auth, 
   adminAuth, 
+  adminOnly,
   hasPermission,
   hasAnyPermission,
   protect, 

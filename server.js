@@ -55,6 +55,7 @@ app.use('/api/cancelled-sales-import', require('./routes/cancelledSalesImport'))
 app.use('/api/roles', require('./routes/roles'));
 app.use('/api/communication-year', require('./routes/communicationYear'));
 app.use('/api/communication-types', require('./routes/communicationTypes'));
+app.use('/api/teams', require('./routes/teams'));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {

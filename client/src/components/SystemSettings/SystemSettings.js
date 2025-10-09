@@ -20,7 +20,9 @@ import {
   FiBell,
   FiRefreshCw,
   FiX,
-  FiAlertTriangle
+  FiAlertTriangle,
+  FiUserCheck,
+  FiActivity
 } from 'react-icons/fi';
 
 import SaleTypesManagement from './SaleTypesManagement';
@@ -41,6 +43,8 @@ import RoleManagement from '../Admin/RoleManagement';
 import BulkPrimStatusManagement from '../Admin/BulkPrimStatusManagement';
 import UserManagement from '../Admin/UserManagement';
 import PenaltyManagement from '../Admin/PenaltyManagement';
+import TeamManagement from './TeamManagement';
+import TeamPerformance from './TeamPerformance';
 import ErrorBoundary from '../Common/ErrorBoundary';
 
 const SystemSettings = () => {
@@ -233,6 +237,18 @@ const SystemSettings = () => {
                   Ceza Yönetimi
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="team-management">
+                  <FiUserCheck className="me-2" />
+                  Takım Yönetimi
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="team-performance">
+                  <FiActivity className="me-2" />
+                  Takım Performansı
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
 
             <div className="p-4">
@@ -325,6 +341,16 @@ const SystemSettings = () => {
                 <Tab.Pane eventKey="penalty-management">
                   <ErrorBoundary onError={handleComponentError}>
                     <PenaltyManagement />
+                  </ErrorBoundary>
+                </Tab.Pane>
+                <Tab.Pane eventKey="team-management">
+                  <ErrorBoundary onError={handleComponentError}>
+                    <TeamManagement />
+                  </ErrorBoundary>
+                </Tab.Pane>
+                <Tab.Pane eventKey="team-performance">
+                  <ErrorBoundary onError={handleComponentError}>
+                    <TeamPerformance />
                   </ErrorBoundary>
                 </Tab.Pane>
               </Tab.Content>
