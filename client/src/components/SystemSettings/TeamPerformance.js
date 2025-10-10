@@ -267,22 +267,18 @@ const TeamPerformance = () => {
                       </thead>
                       <tbody>
                         {Object.entries(performanceData.userPerformance).map(([userId, perf]) => {
-                          const user = performanceData.team.teamLeader._id === userId 
-                            ? performanceData.team.teamLeader 
-                            : null;
+                          const isLeader = performanceData.team.teamLeader._id === userId;
+                          const userName = perf.user?.name || 
+                                          (perf.user?.firstName && perf.user?.lastName 
+                                            ? `${perf.user.firstName} ${perf.user.lastName}` 
+                                            : 'Kullanıcı');
                           
                           return (
                             <tr key={userId}>
                               <td>
-                                {user ? (
-                                  <>
-                                    {user.name || `${user.firstName} ${user.lastName}`}
-                                    {performanceData.team.teamLeader._id === userId && (
-                                      <Badge bg="primary" className="ms-2">Lider</Badge>
-                                    )}
-                                  </>
-                                ) : (
-                                  <span className="text-muted">Kullanıcı</span>
+                                {userName}
+                                {isLeader && (
+                                  <Badge bg="primary" className="ms-2">Lider</Badge>
                                 )}
                               </td>
                               <td>
@@ -336,17 +332,21 @@ const TeamPerformance = () => {
                 </Tab>
 
                 <Tab eventKey="detailed" title="Detaylı Analiz">
-                  {Object.entries(performanceData.userPerformance).map(([userId, perf]) => {
-                    const user = performanceData.team.teamLeader._id === userId 
-                      ? performanceData.team.teamLeader 
-                      : null;
+                  {Object.entries(performanceData.userPerformance)
+                    .sort((a, b) => b[1].metrics.scores.overallScore - a[1].metrics.scores.overallScore)
+                    .map(([userId, perf]) => {
+                    const isLeader = performanceData.team.teamLeader._id === userId;
+                    const userName = perf.user?.name || 
+                                    (perf.user?.firstName && perf.user?.lastName 
+                                      ? `${perf.user.firstName} ${perf.user.lastName}` 
+                                      : 'Kullanıcı');
 
                     return (
                       <Card key={userId} className="mb-3">
                         <Card.Header className="d-flex justify-content-between align-items-center">
                           <h6 className="mb-0">
-                            {user ? (user.name || `${user.firstName} ${user.lastName}`) : 'Kullanıcı'}
-                            {performanceData.team.teamLeader._id === userId && (
+                            {userName}
+                            {isLeader && (
                               <Badge bg="primary" className="ms-2">Takım Lideri</Badge>
                             )}
                           </h6>
@@ -444,6 +444,222 @@ const TeamPerformance = () => {
                       </Card>
                     );
                   })}
+                </Tab>
+
+                <Tab eventKey="ranking" title="Performans Sıralaması">
+                  {/* En İyi ve En Kötü Performanslar */}
+                  <Row className="mb-4">
+                    <Col md={6}>
+                      <Card className="border-success">
+                        <Card.Header className="bg-success text-white">
+                          <h6 className="mb-0">
+                            <FiTrendingUp className="me-2" />
+                            En İyi Performans
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          {(() => {
+                            const sortedUsers = Object.entries(performanceData.userPerformance)
+                              .sort((a, b) => b[1].metrics.scores.overallScore - a[1].metrics.scores.overallScore);
+                            const topPerformer = sortedUsers[0];
+                            if (!topPerformer) return <p className="text-muted">Veri yok</p>;
+                            
+                            const [userId, perf] = topPerformer;
+                            const userName = perf.user?.name || 
+                                            (perf.user?.firstName && perf.user?.lastName 
+                                              ? `${perf.user.firstName} ${perf.user.lastName}` 
+                                              : 'Kullanıcı');
+                            
+                            return (
+                              <>
+                                <h5 className="text-success mb-3">{userName}</h5>
+                                <div className="mb-2">
+                                  <strong>Genel Performans:</strong>
+                                  <ProgressBar 
+                                    now={perf.metrics.scores.overallScore} 
+                                    variant="success"
+                                    label={`${perf.metrics.scores.overallScore}%`}
+                                    className="mt-1"
+                                  />
+                                </div>
+                                <Row className="mt-3">
+                                  <Col xs={4} className="text-center border-end">
+                                    <h4 className="text-primary">{perf.phoneCalls}</h4>
+                                    <small className="text-muted">Telefon</small>
+                                  </Col>
+                                  <Col xs={4} className="text-center border-end">
+                                    <h4 className="text-info">{perf.inPersonMeetings}</h4>
+                                    <small className="text-muted">Görüşme</small>
+                                  </Col>
+                                  <Col xs={4} className="text-center">
+                                    <h4 className="text-success">{perf.totalSales}</h4>
+                                    <small className="text-muted">Satış</small>
+                                  </Col>
+                                </Row>
+                                <div className="mt-3">
+                                  <strong>Başarı Faktörleri:</strong>
+                                  <ul className="mt-2">
+                                    {perf.metrics.success.factors.map((factor, idx) => (
+                                      <li key={idx} className="text-success small">{factor}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    <Col md={6}>
+                      <Card className="border-danger">
+                        <Card.Header className="bg-danger text-white">
+                          <h6 className="mb-0">
+                            <FiTrendingDown className="me-2" />
+                            Gelişim Gerektirenler
+                          </h6>
+                        </Card.Header>
+                        <Card.Body>
+                          {(() => {
+                            const sortedUsers = Object.entries(performanceData.userPerformance)
+                              .sort((a, b) => a[1].metrics.scores.overallScore - b[1].metrics.scores.overallScore);
+                            const bottomPerformer = sortedUsers[0];
+                            if (!bottomPerformer) return <p className="text-muted">Veri yok</p>;
+                            
+                            const [userId, perf] = bottomPerformer;
+                            const userName = perf.user?.name || 
+                                            (perf.user?.firstName && perf.user?.lastName 
+                                              ? `${perf.user.firstName} ${perf.user.lastName}` 
+                                              : 'Kullanıcı');
+                            
+                            return (
+                              <>
+                                <h5 className="text-danger mb-3">{userName}</h5>
+                                <div className="mb-2">
+                                  <strong>Genel Performans:</strong>
+                                  <ProgressBar 
+                                    now={perf.metrics.scores.overallScore} 
+                                    variant="danger"
+                                    label={`${perf.metrics.scores.overallScore}%`}
+                                    className="mt-1"
+                                  />
+                                </div>
+                                <Row className="mt-3">
+                                  <Col xs={4} className="text-center border-end">
+                                    <h4 className="text-primary">{perf.phoneCalls}</h4>
+                                    <small className="text-muted">Telefon</small>
+                                  </Col>
+                                  <Col xs={4} className="text-center border-end">
+                                    <h4 className="text-info">{perf.inPersonMeetings}</h4>
+                                    <small className="text-muted">Görüşme</small>
+                                  </Col>
+                                  <Col xs={4} className="text-center">
+                                    <h4 className="text-success">{perf.totalSales}</h4>
+                                    <small className="text-muted">Satış</small>
+                                  </Col>
+                                </Row>
+                                <div className="mt-3">
+                                  <strong>Risk Faktörleri:</strong>
+                                  <ul className="mt-2">
+                                    {perf.metrics.risk.factors.map((factor, idx) => (
+                                      <li key={idx} className="text-danger small">{factor}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+
+                  {/* Sıralı Liste - Tüm Üyeler */}
+                  <Card>
+                    <Card.Header>
+                      <h6 className="mb-0">Performans Sıralaması (Tüm Takım Üyeleri)</h6>
+                    </Card.Header>
+                    <Card.Body>
+                      <Table hover responsive>
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Kullanıcı</th>
+                            <th>Genel Skor</th>
+                            <th>Telefon</th>
+                            <th>Görüşme</th>
+                            <th>Satış</th>
+                            <th>Dönüşüm Oranları</th>
+                            <th>Durum</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(performanceData.userPerformance)
+                            .sort((a, b) => b[1].metrics.scores.overallScore - a[1].metrics.scores.overallScore)
+                            .map(([userId, perf], index) => {
+                              const isLeader = performanceData.team.teamLeader._id === userId;
+                              const userName = perf.user?.name || 
+                                              (perf.user?.firstName && perf.user?.lastName 
+                                                ? `${perf.user.firstName} ${perf.user.lastName}` 
+                                                : 'Kullanıcı');
+                              
+                              let rankBadge = '';
+                              let rankVariant = 'secondary';
+                              if (index === 0) {
+                                rankBadge = '🥇';
+                                rankVariant = 'warning';
+                              } else if (index === 1) {
+                                rankBadge = '🥈';
+                                rankVariant = 'secondary';
+                              } else if (index === 2) {
+                                rankBadge = '🥉';
+                                rankVariant = 'secondary';
+                              }
+
+                              return (
+                                <tr key={userId} className={index === 0 ? 'table-success' : index === Object.keys(performanceData.userPerformance).length - 1 ? 'table-danger' : ''}>
+                                  <td>
+                                    <Badge bg={rankVariant}>
+                                      {rankBadge || (index + 1)}
+                                    </Badge>
+                                  </td>
+                                  <td>
+                                    <strong>{userName}</strong>
+                                    {isLeader && (
+                                      <Badge bg="primary" className="ms-2">Lider</Badge>
+                                    )}
+                                  </td>
+                                  <td>
+                                    <Badge bg={getScoreColor(perf.metrics.scores.overallScore)} className="fs-6">
+                                      {perf.metrics.scores.overallScore}%
+                                    </Badge>
+                                  </td>
+                                  <td>{perf.phoneCalls}</td>
+                                  <td>{perf.inPersonMeetings}</td>
+                                  <td>{perf.totalSales}</td>
+                                  <td>
+                                    <small>
+                                      <div>Tel→Gör: {formatPercentage(perf.metrics.conversionRates.phoneToMeeting)}</div>
+                                      <div>Gör→Sat: {formatPercentage(perf.metrics.conversionRates.meetingToSales)}</div>
+                                    </small>
+                                  </td>
+                                  <td>
+                                    <div>
+                                      <Badge bg={getSuccessBadgeVariant(perf.metrics.success.level)} className="me-1">
+                                        {perf.metrics.success.level}
+                                      </Badge>
+                                      <Badge bg={getRiskBadgeVariant(perf.metrics.risk.level)}>
+                                        Risk: {perf.metrics.risk.level}
+                                      </Badge>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </Table>
+                    </Card.Body>
+                  </Card>
                 </Tab>
               </Tabs>
             </Card.Body>

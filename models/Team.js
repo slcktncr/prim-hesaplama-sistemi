@@ -138,9 +138,16 @@ teamSchema.statics.calculatePerformance = async function(teamId, startDate, endD
   // Kullanıcı bazında performans hesapla
   const userPerformance = {};
   
-  memberIds.forEach(userId => {
-    const userIdStr = userId.toString();
+  team.members.forEach(member => {
+    const userIdStr = member._id.toString();
     userPerformance[userIdStr] = {
+      user: {
+        _id: member._id,
+        name: member.name,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email
+      },
       phoneCalls: 0,
       inPersonMeetings: 0,
       otherCommunications: 0,
