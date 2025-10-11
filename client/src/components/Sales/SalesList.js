@@ -687,6 +687,13 @@ const SalesList = () => {
                       </td>
                       <td>
                         <div>
+                          {/* Prim Ödenmeyecek Badge'i */}
+                          {sale.excludeFromPrim && (
+                            <Badge bg="danger" className="mb-2">
+                              ⛔ Prim Ödenmeyecek
+                            </Badge>
+                          )}
+                          
                           {/* Prim Tutarı ve Durumu */}
                           {sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && (
                             (() => {
@@ -699,7 +706,7 @@ const SalesList = () => {
                                 return (
                                   <>
                                     {/* Yeni Toplam Prim */}
-                                    <div className="fw-bold text-success">
+                                    <div className={`fw-bold ${sale.excludeFromPrim ? 'text-muted text-decoration-line-through' : 'text-success'}`}>
                                       {formatCurrency(newPrimAmount)}
                                     </div>
                                     <small className="text-muted">(Yeni Prim Tutarı)</small>
@@ -807,12 +814,14 @@ const SalesList = () => {
                           {!(sale.hasModifications && sale.modificationHistory && sale.modificationHistory.length > 0 && 
                              sale.modificationHistory[sale.modificationHistory.length - 1].primDifference !== 0) && (
                             <>
-                              <div className="fw-bold text-success">
+                              <div className={`fw-bold ${sale.excludeFromPrim ? 'text-muted text-decoration-line-through' : 'text-success'}`}>
                                 {formatCurrency(sale.saleType === 'kapora' ? 0 : (sale.primAmount || 0))}
                               </div>
-                              <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
-                                {sale.primStatus}
-                              </Badge>
+                              {!sale.excludeFromPrim && (
+                                <Badge bg={getPrimStatusBadgeClass(sale.primStatus)}>
+                                  {sale.primStatus}
+                                </Badge>
+                              )}
                             </>
                           )}
                         </div>

@@ -178,6 +178,10 @@ const saleSchema = new mongoose.Schema({
       return this.saleType !== 'kapora'; // Sadece kapora değilse gerekli
     }
   },
+  excludeFromPrim: {
+    type: Boolean,
+    default: false // Varsayılan olarak prim hesaplamasına dahil
+  },
   
   // Durum bilgileri
   status: {
@@ -338,6 +342,14 @@ const saleSchema = new mongoose.Schema({
 
 // Prim hesaplama middleware
 saleSchema.pre('save', function(next) {
+  // Prim ödenmeyecek olarak işaretlenmişse prim hesaplama
+  if (this.excludeFromPrim) {
+    this.primAmount = 0;
+    this.basePrimPrice = 0;
+    this.updatedAt = Date.now();
+    return next();
+  }
+  
   // Sadece kapora değilse prim hesapla
   if (this.saleType !== 'kapora') {
     // İndirimli liste fiyatını hesapla

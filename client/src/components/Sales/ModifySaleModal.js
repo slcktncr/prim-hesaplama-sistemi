@@ -28,6 +28,7 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
   const [primRate, setPrimRate] = useState(0);
   const [customPrimRate, setCustomPrimRate] = useState('');
   const [useCustomPrimRate, setUseCustomPrimRate] = useState(false);
+  const [excludeFromPrim, setExcludeFromPrim] = useState(false);
   const [calculatedPrim, setCalculatedPrim] = useState(0);
   const [primDifference, setPrimDifference] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -49,13 +50,14 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
         exitDate: sale.exitDate || '',
         reason: ''
       });
+      setExcludeFromPrim(sale.excludeFromPrim || false);
       fetchPrimRate();
     }
   }, [sale, show]);
 
   useEffect(() => {
     calculatePrim();
-  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate, customPrimRate, useCustomPrimRate, sale]);
+  }, [formData.listPrice, formData.discountRate, formData.activitySalePrice, primRate, customPrimRate, useCustomPrimRate, excludeFromPrim, sale]);
 
   const fetchPrimRate = async () => {
     try {
@@ -67,6 +69,13 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
   };
 
   const calculatePrim = () => {
+    // Prim ödenmeyecek olarak işaretlenmişse
+    if (excludeFromPrim) {
+      setCalculatedPrim(0);
+      setPrimDifference(0 - (sale?.primAmount || 0)); // Mevcut primden fark
+      return;
+    }
+    
     const listPrice = parseFloat(formData.listPrice) || 0;
     const discountRate = parseFloat(formData.discountRate) || 0;
     const activitySalePrice = parseFloat(formData.activitySalePrice) || 0;
@@ -238,6 +247,11 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
       // Admin özel prim oranı kullanıyorsa ekle
       if (useCustomPrimRate && isAdmin && customPrimRate) {
         modificationData.customPrimRate = parseFloat(customPrimRate);
+      }
+      
+      // Admin prim ödenmeyecek seçeneğini ekle
+      if (isAdmin) {
+        modificationData.excludeFromPrim = excludeFromPrim;
       }
 
       const response = await salesAPI.modifySale(sale._id, modificationData);
@@ -575,41 +589,72 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
 
           {/* Admin Özel Prim Oranı */}
           {isAdmin && (
-            <Row className="mb-3">
-              <Col>
-                <Form.Check
-                  type="checkbox"
-                  label="Özel Prim Oranı Kullan"
-                  checked={useCustomPrimRate}
-                  onChange={(e) => setUseCustomPrimRate(e.target.checked)}
-                  className="mb-2"
-                />
-                {useCustomPrimRate && (
-                  <Form.Group>
-                    <Form.Label>Özel Prim Oranı (%)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="100"
-                      value={customPrimRate}
-                      onChange={(e) => setCustomPrimRate(e.target.value)}
-                      placeholder="Örn: 8.5"
-                    />
-                    <Form.Text className="text-muted">
-                      Sistem oranı: %{primRate} | Bu değişiklik sadece ek prim/kesinti hesaplamasında kullanılır
-                    </Form.Text>
-                  </Form.Group>
-                )}
-              </Col>
-            </Row>
+            <>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Check
+                    type="checkbox"
+                    label="Özel Prim Oranı Kullan"
+                    checked={useCustomPrimRate}
+                    onChange={(e) => setUseCustomPrimRate(e.target.checked)}
+                    className="mb-2"
+                    disabled={excludeFromPrim}
+                  />
+                  {useCustomPrimRate && !excludeFromPrim && (
+                    <Form.Group>
+                      <Form.Label>Özel Prim Oranı (%)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        value={customPrimRate}
+                        onChange={(e) => setCustomPrimRate(e.target.value)}
+                        placeholder="Örn: 8.5"
+                      />
+                      <Form.Text className="text-muted">
+                        Sistem oranı: %{primRate} | Bu değişiklik sadece ek prim/kesinti hesaplamasında kullanılır
+                      </Form.Text>
+                    </Form.Group>
+                  )}
+                </Col>
+              </Row>
+              
+              {/* Prim Ödenmeyecek Seçeneği */}
+              <Row className="mb-3">
+                <Col>
+                  <Form.Check
+                    type="checkbox"
+                    label="Bu satış için prim ödenmeyecek"
+                    checked={excludeFromPrim}
+                    onChange={(e) => setExcludeFromPrim(e.target.checked)}
+                    className="text-danger"
+                  />
+                  <Form.Text className="text-muted">
+                    İşaretlenirse bu satış prim hesaplamasına ve hakedişe dahil edilmez
+                  </Form.Text>
+                </Col>
+              </Row>
+            </>
           )}
 
           {/* Prim Hesaplama Önizlemesi */}
-          <Alert variant={primDifference >= 0 ? "success" : "warning"} className="mb-0">
+          <Alert variant={excludeFromPrim ? "danger" : (primDifference >= 0 ? "success" : "warning")} className="mb-0">
+            {excludeFromPrim && (
+              <div className="mb-2">
+                <Badge bg="danger">
+                  ⚠️ Prim Ödenmeyecek
+                </Badge>
+                <div className="small text-muted mt-1">
+                  Bu satış için prim hesaplanmayacak ve hakedişe dahil edilmeyecek
+                </div>
+              </div>
+            )}
             <div className="d-flex justify-content-between align-items-center">
               <span><strong>Yeni Prim Tutarı:</strong></span>
-              <span className="h5 mb-0">{formatCurrency(calculatedPrim)}</span>
+              <span className={`h5 mb-0 ${excludeFromPrim ? 'text-decoration-line-through' : ''}`}>
+                {formatCurrency(calculatedPrim)}
+              </span>
             </div>
             
             {/* Prim Farkı Gösterimi */}

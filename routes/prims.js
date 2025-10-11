@@ -1670,6 +1670,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
         $match: { 
           status: 'aktif',
           saleType: { $ne: 'kapora' },
+          excludeFromPrim: { $ne: true }, // Prim ödenmeyecek satışları hariç tut
           ...salespersonFilter 
         } 
       },
@@ -1791,6 +1792,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
         $match: {
           status: 'iptal',
           primStatus: 'ödendi',
+          excludeFromPrim: { $ne: true }, // Prim ödenmeyecek satışları hariç tut
           ...salespersonFilter
         }
       },
@@ -1844,6 +1846,7 @@ router.get('/earnings-clean', auth, async (req, res) => {
     console.log('🔍 Aktif satışları buluyoruz...');
     const activeSales = await Sale.find({ 
       status: 'aktif', // Türkçe: 'aktif' (not 'active')
+      excludeFromPrim: { $ne: true }, // Prim ödenmeyecek satışları hariç tut
       salesperson: salespersonFilter.salesperson || { $exists: true }
     }).select('_id customerName salesperson');
     

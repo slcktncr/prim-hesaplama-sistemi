@@ -108,99 +108,6 @@ const PrimEarningsNew = () => {
     fetchEarnings();
   };
 
-  // Transfer düzeltmesi
-  const handleFixTransfer = async () => {
-    try {
-      console.log('🔧 Transfer düzeltmesi başlatılıyor...');
-      const response = await primsAPI.fixTransferTransactions();
-      console.log('✅ Transfer düzeltmesi response:', response.data);
-      toast.success(`Transfer düzeltmesi tamamlandı: ${response.data.totalFixed} transaction güncellendi`);
-      fetchEarnings(); // Veriyi yenile
-    } catch (error) {
-      console.error('❌ Transfer düzeltme hatası:', error);
-      console.error('❌ Error response:', error.response?.data);
-      toast.error('Transfer düzeltmesi başarısız: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  // Debug Sibel transactions
-  const handleDebugSibel = async () => {
-    try {
-      console.log('🔍 Sibel Çekmez transaction debug başlatılıyor...');
-      const response = await primsAPI.debugSibelTransactions();
-      console.log('📊 SIBEL ÇEKMEZ DEBUG SONUCU:', response.data);
-      toast.info('Debug sonucu console\'da görüntülendi');
-    } catch (error) {
-      console.error('❌ Debug hatası:', error);
-      toast.error('Debug başarısız: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  const handleCleanupSibel = async () => {
-    if (!window.confirm('Sibel Çekmez için eski/çoklu transaction\'ları temizlemek istediğinizden emin misiniz?')) {
-      return;
-    }
-    
-    try {
-      console.log('🧹 Sibel Çekmez transaction temizliği başlatılıyor...');
-      const response = await primsAPI.cleanupSibelTransactions();
-      console.log('✅ Temizlik sonucu:', response.data);
-      
-      if (response.data.success) {
-        toast.success(`Temizlik tamamlandı: ${response.data.cancelledTransactions} transaction iptal edildi`);
-        fetchEarnings(); // Veriyi yenile
-      } else {
-        toast.info(response.data.message);
-      }
-    } catch (error) {
-      console.error('❌ Temizlik hatası:', error);
-      toast.error('Temizlik başarısız: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  const handleFixSibelStatus = async () => {
-    if (!window.confirm('Sibel Çekmez transaction durumunu "ödendi" olarak işaretlemek istediğinizden emin misiniz?')) {
-      return;
-    }
-    
-    try {
-      console.log('🔧 Sibel Çekmez transaction durum düzeltmesi başlatılıyor...');
-      const response = await primsAPI.fixSibelStatus();
-      console.log('✅ Durum düzeltme sonucu:', response.data);
-      
-      if (response.data.success) {
-        toast.success(`Transaction durumu düzeltildi: ${response.data.transaction.oldStatus} → ${response.data.transaction.newStatus}`);
-        fetchEarnings(); // Veriyi yenile
-      } else {
-        toast.info(response.data.message);
-      }
-    } catch (error) {
-      console.error('❌ Durum düzeltme hatası:', error);
-      toast.error('Durum düzeltme başarısız: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  const handleResetSibelStatus = async () => {
-    if (!window.confirm('Sibel Çekmez transaction durumunu "beklemede" olarak sıfırlamak istediğinizden emin misiniz?')) {
-      return;
-    }
-    
-    try {
-      console.log('🔄 Sibel Çekmez transaction durumu sıfırlanıyor...');
-      const response = await primsAPI.resetSibelStatus();
-      console.log('✅ Durum sıfırlama sonucu:', response.data);
-      
-      if (response.data.success) {
-        toast.success(`Transaction durumu sıfırlandı: ${response.data.transaction.oldStatus} → ${response.data.transaction.newStatus}`);
-        fetchEarnings(); // Veriyi yenile
-      } else {
-        toast.info(response.data.message);
-      }
-    } catch (error) {
-      console.error('❌ Durum sıfırlama hatası:', error);
-      toast.error('Durum sıfırlama başarısız: ' + (error.response?.data?.message || error.message));
-    }
-  };
 
   // Özet hesaplamaları
   const calculateTotals = () => {
@@ -241,21 +148,6 @@ const PrimEarningsNew = () => {
               <p className="text-muted">Temsilci bazında prim hakediş özeti</p>
             </div>
             <div className="d-flex gap-2">
-        <Button variant="info" size="sm" onClick={handleDebugSibel}>
-          🔍 Debug Sibel
-        </Button>
-        <Button variant="danger" size="sm" onClick={handleCleanupSibel}>
-          🧹 Temizle
-        </Button>
-        <Button variant="primary" size="sm" onClick={handleFixSibelStatus}>
-          🔧 Durum Düzelt
-        </Button>
-        <Button variant="secondary" size="sm" onClick={handleResetSibelStatus}>
-          🔄 Beklemede Yap
-        </Button>
-              <Button variant="warning" size="sm" onClick={handleFixTransfer}>
-                🔧 Transfer Düzelt
-              </Button>
               <Button variant="success" onClick={() => {}}>
                 <FiDownload className="me-2" />
                 Rapor Al

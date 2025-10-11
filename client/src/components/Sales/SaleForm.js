@@ -39,7 +39,8 @@ const SaleForm = () => {
     entryDate: '', // Giriş tarihi (gün/ay)
     exitDate: '',  // Çıkış tarihi (gün/ay)
     notes: '',     // Notlar
-    primRate: ''   // Admin için özel prim oranı
+    primRate: '',   // Admin için özel prim oranı
+    excludeFromPrim: false // Admin için prim ödenmeyecek seçeneği
   });
 
   const [periods, setPeriods] = useState([]);
@@ -259,7 +260,8 @@ const SaleForm = () => {
           entryDate: sale.entryDate || '',
           exitDate: sale.exitDate || '',
           notes: sale.notes || '',
-          primRate: sale.primRate?.toString() || ''
+          primRate: sale.primRate?.toString() || '',
+          excludeFromPrim: sale.excludeFromPrim || false
         });
         
         // Telefon varsa alanı göster
@@ -564,6 +566,12 @@ const SaleForm = () => {
         console.log('🎯 Adding custom prim rate to saleData:', saleData.primRate);
       }
       
+      // Admin prim ödenmeyecek seçeneğini ekle
+      if (isAdmin) {
+        saleData.excludeFromPrim = formData.excludeFromPrim;
+        console.log('🎯 Adding excludeFromPrim to saleData:', saleData.excludeFromPrim);
+      }
+      
       console.log('📤 Gönderilecek saleData (base):', saleData);
 
       // Satış tipine göre farklı alanlar ekle
@@ -661,6 +669,11 @@ const SaleForm = () => {
 
   // Prim hesaplama - 3 fiyat arasından en düşüğü
   const calculatePrim = () => {
+    // Prim ödenmeyecek olarak işaretlenmişse 0 döndür
+    if (formData.excludeFromPrim) {
+      return 0;
+    }
+    
     const originalListPrice = parseFloat(formData.originalListPrice || formData.listPrice) || 0;
     const discountedListPrice = parseFloat(formData.discountedListPrice) || 0;
     const activityPrice = parseFloat(formData.activitySalePrice) || 0;
@@ -1328,9 +1341,30 @@ const SaleForm = () => {
                         onChange={handleChange}
                         placeholder="Varsayılan oranı kullan"
                         size="sm"
+                        disabled={formData.excludeFromPrim}
                       />
                       <Form.Text className="text-muted">
                         Boş bırakılırsa sistem oranı (%{currentRate.rate.toFixed(2)}) kullanılır
+                      </Form.Text>
+                    </div>
+                  )}
+                  
+                  {/* Admin için prim ödenmeyecek seçeneği */}
+                  {isAdmin && (
+                    <div className="mb-3">
+                      <Form.Check
+                        type="checkbox"
+                        name="excludeFromPrim"
+                        label="Bu satış için prim ödenmeyecek"
+                        checked={formData.excludeFromPrim}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          excludeFromPrim: e.target.checked 
+                        }))}
+                        className="text-danger"
+                      />
+                      <Form.Text className="text-muted">
+                        İşaretlenirse bu satış prim hesaplamasına ve hakedişe dahil edilmez
                       </Form.Text>
                     </div>
                   )}
@@ -1384,8 +1418,18 @@ const SaleForm = () => {
                   
                   <div>
                     <small className="text-muted">Hesaplanan Prim</small>
-                    <div className="h4 text-success">
-                      {formatCurrency(primAmount)}
+                    <div className={`h4 ${formData.excludeFromPrim ? 'text-danger' : 'text-success'}`}>
+                      {formData.excludeFromPrim ? (
+                        <span>
+                          <del>{formatCurrency(primAmount)}</del>
+                          <br />
+                          <Badge bg="danger" className="mt-2">
+                            Prim Ödenmeyecek
+                          </Badge>
+                        </span>
+                      ) : (
+                        formatCurrency(primAmount)
+                      )}
                     </div>
                   </div>
                 </div>
