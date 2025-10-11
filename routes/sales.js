@@ -448,7 +448,8 @@ router.post('/', auth, [
     const {
       customerName, phone, blockNo, apartmentNo, periodNo, contractNo,
       saleType, saleDate, kaporaDate, listPrice, originalListPrice, 
-      discountRate, discountedListPrice, activitySalePrice, paymentType, primRate
+      discountRate, discountedListPrice, activitySalePrice, paymentType, primRate,
+      excludeFromPrim
     } = req.body;
 
     let currentPrimRate = null;
@@ -474,14 +475,19 @@ router.post('/', auth, [
 
     // Kapora değilse prim hesapla
     if (!isKaporaType(saleType)) {
-      // Aktif prim oranını al
-      currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
-      if (!currentPrimRate) {
-        return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
-      }
-
-      // Prim dönemini belirle
+      // Prim dönemini belirle (önce)
       primPeriodId = await getOrCreatePrimPeriod(saleDate, req.user._id);
+      
+      // Prim ödenmeyecek kontrolü
+      if (excludeFromPrim) {
+        console.log('⛔ CREATE - Bu satış için prim ödenmeyecek');
+        // İndirim ve prim hesaplama kısımlarını atla
+      } else {
+        // Aktif prim oranını al
+        currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        if (!currentPrimRate) {
+          return res.status(400).json({ message: 'Aktif prim oranı bulunamadı' });
+        }
 
       // İndirim hesaplama
       if (discountRateNum > 0 && originalListPriceNum > 0) {
@@ -526,6 +532,7 @@ router.post('/', auth, [
           return res.status(400).json({ message: 'Prim hesaplamasında hata oluştu' });
         }
       }
+      } // excludeFromPrim kontrolü kapanışı
     }
 
     // Satış kaydını oluştur
@@ -552,7 +559,12 @@ router.post('/', auth, [
     // Admin özel prim oranı varsa ekle
     if (primRate && parseFloat(primRate) > 0) {
       saleData.primRate = parseFloat(primRate);
-    };
+    }
+    
+    // Admin excludeFromPrim seçeneğini ekle
+    if (excludeFromPrim !== undefined) {
+      saleData.excludeFromPrim = excludeFromPrim;
+    }
 
     // Debug: Kapora için saleData'yı logla
     if (saleType === 'kapora') {
@@ -567,32 +579,41 @@ router.post('/', auth, [
     }
 
     // Kapora değilse prim bilgilerini ekle
-    if (!isKaporaType(saleType) && currentPrimRate) {
-      const validPrices = [];
-      
-      if (originalListPriceNum > 0) validPrices.push(originalListPriceNum);
-      if (discountRateNum > 0 && discountedListPriceNum > 0) validPrices.push(discountedListPriceNum);
-      if (parseFloat(activitySalePrice) > 0) validPrices.push(parseFloat(activitySalePrice));
-      
-      const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
-      
-      // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
-      const customPrimRate = parseFloat(primRate) || 0;
-      const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
-      const primAmount = basePrimPrice * (finalPrimRate / 100);
-      
-      console.log('💰 CREATE - Prim calculation:', {
-        basePrimPrice,
-        systemRate: currentPrimRate.rate,
-        customRate: customPrimRate,
-        finalRate: finalPrimRate,
-        primAmount,
-        isCustomRate: customPrimRate > 0
-      });
+    if (!isKaporaType(saleType)) {
+      if (excludeFromPrim) {
+        // Prim ödenmeyecek - 0 değerleri ata
+        console.log('⛔ CREATE - Prim ödenmeyecek, değerler 0 yapılıyor');
+        saleData.primRate = 0;
+        saleData.basePrimPrice = 0;
+        saleData.primAmount = 0;
+      } else if (currentPrimRate) {
+        // Normal prim hesaplama
+        const validPrices = [];
+        
+        if (originalListPriceNum > 0) validPrices.push(originalListPriceNum);
+        if (discountRateNum > 0 && discountedListPriceNum > 0) validPrices.push(discountedListPriceNum);
+        if (parseFloat(activitySalePrice) > 0) validPrices.push(parseFloat(activitySalePrice));
+        
+        const basePrimPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+        
+        // Admin özel prim oranı varsa onu kullan, yoksa sistem oranını kullan
+        const customPrimRate = parseFloat(primRate) || 0;
+        const finalPrimRate = (customPrimRate > 0) ? customPrimRate : currentPrimRate.rate;
+        const primAmount = basePrimPrice * (finalPrimRate / 100);
+        
+        console.log('💰 CREATE - Prim calculation:', {
+          basePrimPrice,
+          systemRate: currentPrimRate.rate,
+          customRate: customPrimRate,
+          finalRate: finalPrimRate,
+          primAmount,
+          isCustomRate: customPrimRate > 0
+        });
 
-      saleData.primRate = finalPrimRate; // Özel oran varsa onu kaydet
-      saleData.basePrimPrice = basePrimPrice;
-      saleData.primAmount = primAmount;
+        saleData.primRate = finalPrimRate; // Özel oran varsa onu kaydet
+        saleData.basePrimPrice = basePrimPrice;
+        saleData.primAmount = primAmount;
+      }
       saleData.primPeriod = primPeriodId;
       saleData.primStatus = 'ödenmedi';
     }
@@ -1262,7 +1283,7 @@ router.put('/:id', auth, [
       'customerName', 'phone', 'blockNo', 'apartmentNo', 'periodNo', 'contractNo',
       'saleType', 'saleDate', 'kaporaDate', 'listPrice', 'originalListPrice',
       'discountRate', 'discountedListPrice', 'activitySalePrice', 'paymentType', 'primRate',
-      'entryDate', 'exitDate', 'notes'
+      'entryDate', 'exitDate', 'notes', 'excludeFromPrim'
     ];
 
     // Prim yeniden hesaplanması gerekip gerekmediğini kontrol et
@@ -1288,6 +1309,30 @@ router.put('/:id', auth, [
     // Prim yeniden hesaplama
     if (needsPrimRecalculation && !isKaporaType(sale.saleType)) {
       // console.log('💰 Prim yeniden hesaplanıyor...');
+      
+      // Prim ödenmeyecek kontrolü
+      const excludeFromPrim = updateData.hasOwnProperty('excludeFromPrim') ? updateData.excludeFromPrim : sale.excludeFromPrim;
+      if (excludeFromPrim) {
+        console.log('⛔ Bu satış için prim ödenmeyecek - prim tutarı 0 yapılıyor');
+        sale.primAmount = 0;
+        sale.basePrimPrice = 0;
+        sale.excludeFromPrim = true;
+        // Güncelleme işlemine devam et ama prim hesaplama
+        Object.keys(updateData).forEach(key => {
+          sale[key] = updateData[key];
+        });
+        sale.updatedAt = new Date();
+        await sale.save();
+        
+        const updatedSale = await Sale.findById(sale._id)
+          .populate('salesperson', 'name email')
+          .populate('primPeriod', 'name');
+        
+        return res.json({
+          message: 'Satış başarıyla güncellendi (Prim ödenmeyecek)',
+          sale: updatedSale
+        });
+      }
       
       // Aktif prim oranını al
       const currentPrimRate = await PrimRate.findOne({ isActive: true }).sort({ createdAt: -1 });
