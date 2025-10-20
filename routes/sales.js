@@ -449,7 +449,7 @@ router.post('/', auth, [
       customerName, phone, blockNo, apartmentNo, periodNo, contractNo,
       saleType, saleDate, kaporaDate, listPrice, originalListPrice, 
       discountRate, discountedListPrice, activitySalePrice, paymentType, primRate,
-      excludeFromPrim
+      excludeFromPrim, entryDate, exitDate, notes
     } = req.body;
 
     let currentPrimRate = null;
@@ -552,6 +552,9 @@ router.post('/', auth, [
       discountedListPrice: discountedListPriceNum,
       activitySalePrice: parseFloat(activitySalePrice) || 0,
       paymentType: paymentType || '',
+      entryDate: entryDate || '',
+      exitDate: exitDate || '',
+      notes: notes || '',
       salesperson: req.user._id,
       createdBy: req.user._id
     };
