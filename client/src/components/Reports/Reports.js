@@ -19,7 +19,8 @@ import {
   FiTarget,
   FiDownload,
   FiFileText,
-  FiXCircle
+  FiXCircle,
+  FiActivity
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
@@ -32,6 +33,7 @@ import TopPerformersReport from './TopPerformersReport';
 import CancellationPerformanceReport from './CancellationPerformanceReport';
 import DetailedReport from './DetailedReport';
 import DailyReport from './DailyReport';
+import SalesEfficiencyReport from './SalesEfficiencyReport';
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('sales-summary');
@@ -265,6 +267,19 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               <CancellationPerformanceReport />
             </Tab>
 
+            {/* Sales Efficiency Tab */}
+            <Tab 
+              eventKey="sales-efficiency" 
+              title={
+                <span>
+                  <FiActivity className="me-2" />
+                  Verimlilik Analizi
+                </span>
+              }
+            >
+              <SalesEfficiencyReport />
+            </Tab>
+
             {/* Daily Report Tab */}
             <Tab 
               eventKey="daily-report" 
@@ -373,6 +388,22 @@ Gerçek PDF oluşturma için jsPDF kütüphanesi kullanılabilir.`;
               <div className="h6 mb-1">Liderlik</div>
               <div className="small text-muted">
                 En başarılı temsilciler
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
+          <Card 
+            className="text-center report-card h-100 shadow-sm" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setActiveTab('sales-efficiency')}
+          >
+            <Card.Body className="p-3">
+              <FiActivity size={24} className="text-primary mb-2" />
+              <div className="h6 mb-1">Verimlilik</div>
+              <div className="small text-muted">
+                İletişim-satış analizi
               </div>
             </Card.Body>
           </Card>

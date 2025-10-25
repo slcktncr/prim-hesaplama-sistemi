@@ -2110,6 +2110,410 @@ router.post('/export', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/reports/sales-efficiency
+// @desc    Satış ve iletişim verimlilik analizi raporu
+// @access  Private
+router.get('/sales-efficiency', auth, async (req, res) => {
+  try {
+    const { startDate, endDate, salesperson, period = 'monthly' } = req.query;
+    
+    console.log('📊 Sales efficiency request:', { startDate, endDate, salesperson, period });
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: 'Başlangıç ve bitiş tarihleri gereklidir' });
+    }
+    
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    // Kullanıcı filtresi
+    let userFilter = {};
+    if (salesperson && salesperson !== '' && salesperson !== 'all') {
+      userFilter.salesperson = new mongoose.Types.ObjectId(salesperson);
+    }
+    
+    // Legacy user'ı hariç tut
+    const legacyUser = await User.findOne({ email: 'eski.satis@legacy.system' });
+    const excludeUserIds = legacyUser ? [legacyUser._id] : [];
+    
+    // İletişim verilerini al
+    const CommunicationRecord = require('../models/CommunicationRecord');
+    const communicationData = await CommunicationRecord.aggregate([
+      {
+        $match: {
+          date: { $gte: start, $lte: end },
+          ...(userFilter.salesperson ? { salesperson: userFilter.salesperson } : {}),
+          ...(excludeUserIds.length > 0 ? { salesperson: { $nin: excludeUserIds } } : {})
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $group: {
+          _id: {
+            userId: '$salesperson',
+            date: '$date'
+          },
+          userName: { $first: '$user.name' },
+          userEmail: { $first: '$user.email' },
+          date: { $first: '$date' },
+          // Legacy alanlar
+          whatsappIncoming: { $sum: '$whatsappIncoming' },
+          callIncoming: { $sum: '$callIncoming' },
+          callOutgoing: { $sum: '$callOutgoing' },
+          meetingNewCustomer: { $sum: '$meetingNewCustomer' },
+          meetingAfterSale: { $sum: '$meetingAfterSale' },
+          totalCommunication: { $sum: '$totalCommunication' },
+          // Dinamik alanlar için tüm belgeyi tut
+          records: { $push: '$$ROOT' }
+        }
+      }
+    ]);
+    
+    console.log('📞 Communication data count:', communicationData.length);
+    
+    // Satış verilerini al (kapora dahil tüm satış türleri)
+    const salesData = await Sale.aggregate([
+      {
+        $match: {
+          $or: [
+            { saleDate: { $gte: start, $lte: end } },
+            { kaporaDate: { $gte: start, $lte: end } }
+          ],
+          status: 'aktif',
+          ...(userFilter.salesperson ? { salesperson: userFilter.salesperson } : {}),
+          ...(excludeUserIds.length > 0 ? { salesperson: { $nin: excludeUserIds } } : {})
+        }
+      },
+      {
+        $addFields: {
+          effectiveDate: {
+            $cond: {
+              if: { $ne: ['$saleDate', null] },
+              then: '$saleDate',
+              else: '$kaporaDate'
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'salesperson',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $group: {
+          _id: {
+            userId: '$salesperson',
+            date: {
+              $dateToString: { format: '%Y-%m-%d', date: '$effectiveDate' }
+            }
+          },
+          userName: { $first: '$user.name' },
+          userEmail: { $first: '$user.email' },
+          date: { $first: '$effectiveDate' },
+          totalSales: { $sum: 1 },
+          // Satış türlerine göre breakdown
+          salesByType: {
+            $push: {
+              saleType: '$saleType',
+              amount: '$basePrimPrice',
+              primAmount: '$primAmount'
+            }
+          }
+        }
+      }
+    ]);
+    
+    console.log('💰 Sales data count:', salesData.length);
+    
+    // İletişim türlerini al
+    const CommunicationType = require('../models/CommunicationType');
+    const communicationTypes = await CommunicationType.find({ isActive: true }).sort({ sortOrder: 1 });
+    
+    // Satış türlerini al
+    const SaleType = require('../models/SaleType');
+    const saleTypes = await SaleType.find({ isActive: true }).sort({ sortOrder: 1 });
+    
+    // Kullanıcı bazında verileri birleştir
+    const userMap = new Map();
+    
+    // İletişim verilerini işle
+    communicationData.forEach(comm => {
+      const userId = comm._id.userId.toString();
+      const dateKey = new Date(comm.date).toISOString().split('T')[0];
+      const userKey = `${userId}_${dateKey}`;
+      
+      if (!userMap.has(userKey)) {
+        userMap.set(userKey, {
+          userId: userId,
+          userName: comm.userName,
+          userEmail: comm.userEmail,
+          date: comm.date,
+          dateKey: dateKey,
+          communications: {
+            total: 0,
+            byType: {}
+          },
+          sales: {
+            total: 0,
+            byType: {}
+          },
+          efficiency: 0
+        });
+      }
+      
+      const userData = userMap.get(userKey);
+      userData.communications.total += comm.totalCommunication || 0;
+      
+      // İletişim türlerine göre breakdown
+      userData.communications.byType['whatsappIncoming'] = (userData.communications.byType['whatsappIncoming'] || 0) + (comm.whatsappIncoming || 0);
+      userData.communications.byType['callIncoming'] = (userData.communications.byType['callIncoming'] || 0) + (comm.callIncoming || 0);
+      userData.communications.byType['callOutgoing'] = (userData.communications.byType['callOutgoing'] || 0) + (comm.callOutgoing || 0);
+      userData.communications.byType['meetingNewCustomer'] = (userData.communications.byType['meetingNewCustomer'] || 0) + (comm.meetingNewCustomer || 0);
+      userData.communications.byType['meetingAfterSale'] = (userData.communications.byType['meetingAfterSale'] || 0) + (comm.meetingAfterSale || 0);
+      
+      // Dinamik iletişim türleri
+      comm.records.forEach(record => {
+        communicationTypes.forEach(type => {
+          if (record[type.code] !== undefined) {
+            userData.communications.byType[type.code] = (userData.communications.byType[type.code] || 0) + (record[type.code] || 0);
+          }
+        });
+      });
+    });
+    
+    // Satış verilerini işle
+    salesData.forEach(sale => {
+      const userId = sale._id.userId.toString();
+      const dateKey = sale._id.date;
+      const userKey = `${userId}_${dateKey}`;
+      
+      if (!userMap.has(userKey)) {
+        userMap.set(userKey, {
+          userId: userId,
+          userName: sale.userName,
+          userEmail: sale.userEmail,
+          date: sale.date,
+          dateKey: dateKey,
+          communications: {
+            total: 0,
+            byType: {}
+          },
+          sales: {
+            total: 0,
+            byType: {}
+          },
+          efficiency: 0
+        });
+      }
+      
+      const userData = userMap.get(userKey);
+      userData.sales.total += sale.totalSales || 0;
+      
+      // Satış türlerine göre breakdown
+      sale.salesByType.forEach(s => {
+        userData.sales.byType[s.saleType] = (userData.sales.byType[s.saleType] || 0) + 1;
+      });
+    });
+    
+    // Verimlilik hesapla ve kullanıcı bazında topla
+    const userSummaryMap = new Map();
+    
+    Array.from(userMap.values()).forEach(data => {
+      // Verimlilik oranı: satış / iletişim * 100
+      data.efficiency = data.communications.total > 0 
+        ? (data.sales.total / data.communications.total * 100) 
+        : 0;
+      
+      // Kullanıcı bazında toplam
+      if (!userSummaryMap.has(data.userId)) {
+        userSummaryMap.set(data.userId, {
+          userId: data.userId,
+          userName: data.userName,
+          userEmail: data.userEmail,
+          totalCommunications: 0,
+          totalSales: 0,
+          averageEfficiency: 0,
+          communicationsByType: {},
+          salesByType: {},
+          timeline: []
+        });
+      }
+      
+      const summary = userSummaryMap.get(data.userId);
+      summary.totalCommunications += data.communications.total;
+      summary.totalSales += data.sales.total;
+      
+      // İletişim türlerini topla
+      Object.entries(data.communications.byType).forEach(([type, count]) => {
+        summary.communicationsByType[type] = (summary.communicationsByType[type] || 0) + count;
+      });
+      
+      // Satış türlerini topla
+      Object.entries(data.sales.byType).forEach(([type, count]) => {
+        summary.salesByType[type] = (summary.salesByType[type] || 0) + count;
+      });
+      
+      // Timeline'a ekle
+      summary.timeline.push({
+        date: data.dateKey,
+        communications: data.communications.total,
+        sales: data.sales.total,
+        efficiency: data.efficiency
+      });
+    });
+    
+    // Ortalama verimlilik hesapla
+    userSummaryMap.forEach(summary => {
+      summary.averageEfficiency = summary.totalCommunications > 0 
+        ? (summary.totalSales / summary.totalCommunications * 100) 
+        : 0;
+      
+      // Timeline'ı tarihe göre sırala
+      summary.timeline.sort((a, b) => new Date(a.date) - new Date(b.date));
+    });
+    
+    // Sonuçları diziye çevir ve verimlilik oranına göre sırala
+    const results = Array.from(userSummaryMap.values()).sort((a, b) => {
+      // Önce satış sayısına göre
+      if (b.totalSales !== a.totalSales) {
+        return b.totalSales - a.totalSales;
+      }
+      // Sonra verimlilik oranına göre
+      return b.averageEfficiency - a.averageEfficiency;
+    });
+    
+    // Dönemsel analiz (haftalık/aylık/yıllık)
+    const periodAnalysis = calculatePeriodAnalysis(results, period, start, end);
+    
+    // Genel istatistikler
+    const overallStats = {
+      totalUsers: results.length,
+      totalCommunications: results.reduce((sum, r) => sum + r.totalCommunications, 0),
+      totalSales: results.reduce((sum, r) => sum + r.totalSales, 0),
+      averageEfficiency: results.length > 0 
+        ? results.reduce((sum, r) => sum + r.averageEfficiency, 0) / results.length 
+        : 0,
+      topPerformer: results[0] || null,
+      lowestPerformer: results[results.length - 1] || null
+    };
+    
+    console.log('📊 Efficiency analysis completed:', {
+      userCount: results.length,
+      totalCommunications: overallStats.totalCommunications,
+      totalSales: overallStats.totalSales,
+      averageEfficiency: overallStats.averageEfficiency.toFixed(2) + '%'
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        period,
+        startDate: start,
+        endDate: end,
+        overallStats,
+        userPerformance: results,
+        periodAnalysis,
+        communicationTypes: communicationTypes.map(t => ({ code: t.code, name: t.name, color: t.color })),
+        saleTypes: saleTypes.map(t => ({ code: t.code || t.name, name: t.name, color: t.color }))
+      }
+    });
+    
+  } catch (error) {
+    console.error('Sales efficiency error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Verimlilik analizi oluşturulurken hata oluştu',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Helper function: Dönemsel analiz hesaplama
+function calculatePeriodAnalysis(results, period, startDate, endDate) {
+  const periodMap = new Map();
+  
+  results.forEach(user => {
+    user.timeline.forEach(entry => {
+      const date = new Date(entry.date);
+      let periodKey;
+      
+      if (period === 'weekly') {
+        // Haftalık: Yıl ve hafta numarası
+        const weekNumber = getWeekNumber(date);
+        periodKey = `${date.getFullYear()}-W${weekNumber}`;
+      } else if (period === 'monthly') {
+        // Aylık: Yıl ve ay
+        periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      } else if (period === 'yearly') {
+        // Yıllık: Sadece yıl
+        periodKey = `${date.getFullYear()}`;
+      } else {
+        periodKey = entry.date;
+      }
+      
+      if (!periodMap.has(periodKey)) {
+        periodMap.set(periodKey, {
+          period: periodKey,
+          totalCommunications: 0,
+          totalSales: 0,
+          userCount: new Set(),
+          efficiency: 0
+        });
+      }
+      
+      const periodData = periodMap.get(periodKey);
+      periodData.totalCommunications += entry.communications;
+      periodData.totalSales += entry.sales;
+      periodData.userCount.add(user.userId);
+    });
+  });
+  
+  // Verimlilik hesapla ve Set'i sayıya çevir
+  const periodAnalysis = Array.from(periodMap.values()).map(p => ({
+    period: p.period,
+    totalCommunications: p.totalCommunications,
+    totalSales: p.totalSales,
+    userCount: p.userCount.size,
+    efficiency: p.totalCommunications > 0 
+      ? (p.totalSales / p.totalCommunications * 100) 
+      : 0
+  }));
+  
+  // Kronolojik sıralama
+  periodAnalysis.sort((a, b) => a.period.localeCompare(b.period));
+  
+  return periodAnalysis;
+}
+
+// Helper function: Hafta numarası hesaplama
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
 // @route   GET /api/reports/daily-report
 // @desc    Detaylı günlük rapor - tüm hareketler ve istatistikler
 // @access  Private

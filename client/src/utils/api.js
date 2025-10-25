@@ -105,6 +105,7 @@ export const reportsAPI = {
   getCancellationPerformance: (params) => API.get('/reports/cancellation-performance', { params }),
   getDetailedReport: (params) => API.get('/reports/detailed-report', { params }),
   getDailyReport: (params) => API.get('/reports/daily-report', { params }),
+  getSalesEfficiency: (params) => API.get('/reports/sales-efficiency', { params }),
   exportReport: (data) => API.post('/reports/export', data),
   exportExcel: (data) => API.post('/reports/export', data, { responseType: 'blob' }),
   exportPDF: (data) => API.post('/reports/export', data, { responseType: 'blob' })
