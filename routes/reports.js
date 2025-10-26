@@ -2293,8 +2293,8 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       userData.communications.byType['meetingNewCustomer'] = (userData.communications.byType['meetingNewCustomer'] || 0) + (comm.meetingNewCustomer || 0);
       userData.communications.byType['meetingAfterSale'] = (userData.communications.byType['meetingAfterSale'] || 0) + (comm.meetingAfterSale || 0);
       
-      // Toplam birebir görüşme sayısını hesapla
-      userData.communications.meetings += (comm.meetingNewCustomer || 0) + (comm.meetingAfterSale || 0);
+      // Sadece yeni müşteri görüşmelerini say (satış sonrası hariç)
+      userData.communications.meetings += (comm.meetingNewCustomer || 0);
       
       // Dinamik iletişim türleri
       comm.records.forEach(record => {

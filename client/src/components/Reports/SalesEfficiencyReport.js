@@ -172,7 +172,7 @@ const SalesEfficiencyReport = () => {
           tension: 0.4
         },
         {
-          label: 'Birebir Görüşme-Satış Dönüşümü (%)',
+          label: 'Yeni Müşteri Görüşme Dönüşümü (%)',
           data: reportData.periodAnalysis.map(p => p.meetingEfficiency.toFixed(2)),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -188,7 +188,7 @@ const SalesEfficiencyReport = () => {
           tension: 0.4
         },
         {
-          label: 'Birebir Görüşmeler',
+          label: 'Yeni Müşteri Görüşmeleri',
           data: reportData.periodAnalysis.map(p => p.totalMeetings),
           borderColor: 'rgb(153, 102, 255)',
           backgroundColor: 'rgba(153, 102, 255, 0.2)',
@@ -408,7 +408,7 @@ const SalesEfficiencyReport = () => {
                       <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalCommunications.toLocaleString()}</div>
                       <div className="small text-muted">
                         <FiCalendar size={12} className="me-1" />
-                        {reportData.overallStats.totalMeetings} birebir görüşme
+                        {reportData.overallStats.totalMeetings} yeni müşteri görüşmesi
                       </div>
                     </div>
                   </div>
@@ -467,9 +467,9 @@ const SalesEfficiencyReport = () => {
                           <FiTarget size={32} style={{ color: '#9b59b6' }} />
                         </div>
                         <div>
-                          <h5 className="mb-1">Birebir Görüşme Başarı Oranı</h5>
+                          <h5 className="mb-1">Yeni Müşteri Görüşme Başarı Oranı</h5>
                           <p className="mb-0 text-muted">
-                            Her {(100 / reportData.overallStats.averageMeetingEfficiency).toFixed(1)} birebir görüşmeden 
+                            Her {(100 / reportData.overallStats.averageMeetingEfficiency).toFixed(1)} yeni müşteri görüşmesinden 
                             {' '}<strong>1 satış</strong> gerçekleşiyor
                           </p>
                         </div>
@@ -480,7 +480,7 @@ const SalesEfficiencyReport = () => {
                         %{reportData.overallStats.averageMeetingEfficiency.toFixed(1)}
                       </div>
                       <div className="text-muted">
-                        {reportData.overallStats.totalMeetings} birebir görüşme → {reportData.overallStats.totalSales} satış
+                        {reportData.overallStats.totalMeetings} yeni müşteri görüşmesi → {reportData.overallStats.totalSales} satış
                       </div>
                     </Col>
                   </Row>
@@ -540,7 +540,7 @@ const SalesEfficiencyReport = () => {
                       />
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Birebir Görüşme Dönüşümü</div>
+                      <div className="small text-muted mb-1">Yeni Müşteri Görüşme Dönüşümü</div>
                       <ProgressBar
                         now={Math.min(reportData.overallStats.topPerformer.averageMeetingEfficiency, 100)}
                         label={`${reportData.overallStats.topPerformer.averageMeetingEfficiency.toFixed(1)}%`}
@@ -584,7 +584,7 @@ const SalesEfficiencyReport = () => {
                       />
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Birebir Görüşme Dönüşümü</div>
+                      <div className="small text-muted mb-1">Yeni Müşteri Görüşme Dönüşümü</div>
                       <ProgressBar
                         now={Math.min(reportData.overallStats.lowestPerformer.averageMeetingEfficiency, 100)}
                         label={`${reportData.overallStats.lowestPerformer.averageMeetingEfficiency.toFixed(1)}%`}
@@ -618,7 +618,7 @@ const SalesEfficiencyReport = () => {
                     <th className="border-0 text-center">İletişim / Görüşme</th>
                     <th className="border-0 text-center">Satış</th>
                     <th className="border-0 text-center">Genel Verimlilik</th>
-                    <th className="border-0 text-center">Birebir Görüşme Dönüşümü</th>
+                    <th className="border-0 text-center">Yeni Müşteri Görüşme Dönüşümü</th>
                     <th className="border-0 text-center">İletişim Dağılımı</th>
                     <th className="border-0 text-center">Satış Dağılımı</th>
                   </tr>
@@ -791,10 +791,11 @@ const SalesEfficiencyReport = () => {
           
           <Col md={6}>
             <div className="ps-3">
-              <h6 className="mb-2" style={{ color: '#9b59b6' }}>🎯 Birebir Görüşme Dönüşümü</h6>
+              <h6 className="mb-2" style={{ color: '#9b59b6' }}>🎯 Yeni Müşteri Görüşme Dönüşümü</h6>
               <p className="mb-2 small">
-                <strong>Dönüşüm = (Toplam Satış / Toplam Birebir Görüşme) × 100</strong><br />
-                Müşterilerle yapılan yüz yüze görüşmelerin satışa dönüşüm başarısını gösterir
+                <strong>Dönüşüm = (Toplam Satış / Yeni Müşteri Görüşmesi) × 100</strong><br />
+                Potansiyel müşterilerle yapılan yüz yüze görüşmelerin satışa dönüşüm başarısını gösterir
+                <br /><em className="text-warning">* Satış sonrası görüşmeler hesaba katılmaz</em>
               </p>
               <div className="small">
                 <Badge bg="success" className="me-2">%50+</Badge> Mükemmel
@@ -809,8 +810,9 @@ const SalesEfficiencyReport = () => {
         <hr className="my-3" />
         
         <div className="small text-muted">
-          💡 <strong>İpucu:</strong> Birebir görüşme dönüşüm oranı, genellikle genel verimlilikten daha yüksektir 
-          çünkü müşterilerle yüz yüze yapılan görüşmeler daha etkili satış fırsatlarıdır.
+          💡 <strong>İpucu:</strong> Yeni müşteri görüşme dönüşüm oranı gerçek performansı gösterir! 
+          Satış sonrası görüşmeler (zaten satılmış) hesaba katılmaz, çünkü asıl başarı 
+          yeni müşteriyi satışa dönüştürmektir.
         </div>
       </Alert>
     </div>
