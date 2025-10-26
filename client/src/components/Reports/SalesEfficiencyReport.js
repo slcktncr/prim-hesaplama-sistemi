@@ -683,24 +683,48 @@ const SalesEfficiencyReport = () => {
                       <td className="align-middle" style={{ width: '180px' }}>
                         {Object.keys(perf.communicationsByType).length > 0 ? (
                           <div className="small">
-                            {Object.entries(perf.communicationsByType).map(([type, count]) => {
-                              // Label mapping
-                              const typeLabels = {
-                                'whatsappIncoming': 'WhatsApp Gelen',
-                                'callIncoming': 'Arama Gelen',
-                                'callOutgoing': 'Arama Giden',
-                                'meetingNewCustomer': 'Yeni Müşteri',
-                                'meetingAfterSale': 'Satış Sonrası'
+                            {(() => {
+                              // İletişim türlerini gruplandır ve topla
+                              const grouped = {
+                                whatsapp: 0,
+                                callIncoming: 0,
+                                callOutgoing: 0,
+                                meetingNew: 0,
+                                meetingAfter: 0
                               };
-                              const label = typeLabels[type] || type;
-                              
-                              return count > 0 ? (
-                                <div key={type} className="d-flex justify-content-between mb-1">
-                                  <span className="text-muted">{label}:</span>
-                                  <Badge bg="secondary" pill className="ms-2">{count}</Badge>
-                                </div>
-                              ) : null;
-                            })}
+
+                              Object.entries(perf.communicationsByType).forEach(([type, count]) => {
+                                const typeLower = type.toLowerCase();
+                                if (typeLower.includes('whatsapp')) {
+                                  grouped.whatsapp += count || 0;
+                                } else if (typeLower.includes('call_incoming') || typeLower.includes('callincoming')) {
+                                  grouped.callIncoming += count || 0;
+                                } else if (typeLower.includes('call_outgoing') || typeLower.includes('calloutgoing')) {
+                                  grouped.callOutgoing += count || 0;
+                                } else if (typeLower.includes('meeting_new') || typeLower.includes('meetingnewcustomer')) {
+                                  grouped.meetingNew += count || 0;
+                                } else if (typeLower.includes('meeting_after') || typeLower.includes('meetingaftersale')) {
+                                  grouped.meetingAfter += count || 0;
+                                }
+                              });
+
+                              const displayItems = [
+                                { label: 'WhatsApp', count: grouped.whatsapp, color: 'success' },
+                                { label: 'Arama Gelen', count: grouped.callIncoming, color: 'info' },
+                                { label: 'Arama Giden', count: grouped.callOutgoing, color: 'primary' },
+                                { label: 'Yeni Müşteri Görüşme', count: grouped.meetingNew, color: 'warning' },
+                                { label: 'Satış Sonrası Görüşme', count: grouped.meetingAfter, color: 'secondary' }
+                              ];
+
+                              return displayItems.map(item => 
+                                item.count > 0 ? (
+                                  <div key={item.label} className="d-flex justify-content-between mb-1">
+                                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>{item.label}:</span>
+                                    <Badge bg={item.color} pill className="ms-2">{item.count}</Badge>
+                                  </div>
+                                ) : null
+                              );
+                            })()}
                           </div>
                         ) : (
                           <span className="text-muted small">-</span>
