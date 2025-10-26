@@ -19,7 +19,8 @@ import {
   FiDollarSign,
   FiCalendar,
   FiBarChart2,
-  FiActivity
+  FiActivity,
+  FiTarget
 } from 'react-icons/fi';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -165,10 +166,18 @@ const SalesEfficiencyReport = () => {
       labels: reportData.periodAnalysis.map(p => p.period),
       datasets: [
         {
-          label: 'Verimlilik Oranı (%)',
+          label: 'Genel Verimlilik (%)',
           data: reportData.periodAnalysis.map(p => p.efficiency.toFixed(2)),
           borderColor: 'rgb(75, 192, 192)',
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Toplantı-Satış Dönüşümü (%)',
+          data: reportData.periodAnalysis.map(p => p.meetingEfficiency.toFixed(2)),
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
           fill: true,
           tension: 0.4
         },
@@ -181,10 +190,10 @@ const SalesEfficiencyReport = () => {
           tension: 0.4
         },
         {
-          label: 'İletişimler',
-          data: reportData.periodAnalysis.map(p => p.totalCommunications),
-          borderColor: 'rgb(255, 159, 64)',
-          backgroundColor: 'rgba(255, 159, 64, 0.2)',
+          label: 'Birebir Görüşmeler',
+          data: reportData.periodAnalysis.map(p => p.totalMeetings),
+          borderColor: 'rgb(153, 102, 255)',
+          backgroundColor: 'rgba(153, 102, 255, 0.2)',
           yAxisID: 'y1',
           tension: 0.4
         }
@@ -406,81 +415,121 @@ const SalesEfficiencyReport = () => {
 
       {/* Overall Stats */}
       {reportData && reportData.overallStats && (
-        <Row className="g-3 mb-3">
-          <Col md={3}>
-            <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #3498db' }}>
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center">
-                  <div className="flex-shrink-0 me-3">
-                    <div className="rounded-circle bg-primary bg-opacity-10 p-3">
-                      <FiUsers size={24} className="text-primary" />
+        <>
+          <Row className="g-3 mb-3">
+            <Col md={3}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #3498db' }}>
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-shrink-0 me-3">
+                      <div className="rounded-circle bg-primary bg-opacity-10 p-3">
+                        <FiUsers size={24} className="text-primary" />
+                      </div>
+                    </div>
+                    <div className="flex-grow-1">
+                      <div className="small text-muted mb-1">Toplam Temsilci</div>
+                      <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalUsers}</div>
                     </div>
                   </div>
-                  <div className="flex-grow-1">
-                    <div className="small text-muted mb-1">Toplam Temsilci</div>
-                    <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalUsers}</div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          <Col md={3}>
-            <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #e74c3c' }}>
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center">
-                  <div className="flex-shrink-0 me-3">
-                    <div className="rounded-circle bg-danger bg-opacity-10 p-3">
-                      <FiMessageCircle size={24} className="text-danger" />
+            <Col md={3}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #e74c3c' }}>
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-shrink-0 me-3">
+                      <div className="rounded-circle bg-danger bg-opacity-10 p-3">
+                        <FiMessageCircle size={24} className="text-danger" />
+                      </div>
+                    </div>
+                    <div className="flex-grow-1">
+                      <div className="small text-muted mb-1">Toplam İletişim</div>
+                      <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalCommunications.toLocaleString()}</div>
+                      <div className="small text-muted">
+                        <FiCalendar size={12} className="me-1" />
+                        {reportData.overallStats.totalMeetings} birebir görüşme
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-grow-1">
-                    <div className="small text-muted mb-1">Toplam İletişim</div>
-                    <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalCommunications.toLocaleString()}</div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          <Col md={3}>
-            <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #27ae60' }}>
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center">
-                  <div className="flex-shrink-0 me-3">
-                    <div className="rounded-circle bg-success bg-opacity-10 p-3">
-                      <FiDollarSign size={24} className="text-success" />
+            <Col md={3}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #27ae60' }}>
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-shrink-0 me-3">
+                      <div className="rounded-circle bg-success bg-opacity-10 p-3">
+                        <FiDollarSign size={24} className="text-success" />
+                      </div>
+                    </div>
+                    <div className="flex-grow-1">
+                      <div className="small text-muted mb-1">Toplam Satış</div>
+                      <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalSales.toLocaleString()}</div>
                     </div>
                   </div>
-                  <div className="flex-grow-1">
-                    <div className="small text-muted mb-1">Toplam Satış</div>
-                    <div className="h4 mb-0 fw-bold">{reportData.overallStats.totalSales.toLocaleString()}</div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          <Col md={3}>
-            <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #f39c12' }}>
-              <Card.Body className="p-3">
-                <div className="d-flex align-items-center">
-                  <div className="flex-shrink-0 me-3">
-                    <div className="rounded-circle bg-warning bg-opacity-10 p-3">
-                      <FiActivity size={24} className="text-warning" />
+            <Col md={3}>
+              <Card className="shadow-sm h-100 border-0" style={{ borderLeft: '4px solid #f39c12' }}>
+                <Card.Body className="p-3">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-shrink-0 me-3">
+                      <div className="rounded-circle bg-warning bg-opacity-10 p-3">
+                        <FiActivity size={24} className="text-warning" />
+                      </div>
+                    </div>
+                    <div className="flex-grow-1">
+                      <div className="small text-muted mb-1">Genel Verimlilik</div>
+                      <div className="h4 mb-0 fw-bold">
+                        %{reportData.overallStats.averageEfficiency.toFixed(2)}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-grow-1">
-                    <div className="small text-muted mb-1">Ortalama Verimlilik</div>
-                    <div className="h4 mb-0 fw-bold">
-                      %{reportData.overallStats.averageEfficiency.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Meeting Efficiency Card */}
+          <Row className="g-3 mb-3">
+            <Col md={12}>
+              <Card className="shadow-sm border-0" style={{ borderLeft: '4px solid #9b59b6' }}>
+                <Card.Body className="p-3">
+                  <Row className="align-items-center">
+                    <Col md={8}>
+                      <div className="d-flex align-items-center">
+                        <div className="rounded-circle bg-purple bg-opacity-10 p-3 me-3" style={{ backgroundColor: '#9b59b6' }}>
+                          <FiTarget size={32} style={{ color: '#9b59b6' }} />
+                        </div>
+                        <div>
+                          <h5 className="mb-1">Birebir Görüşme Başarı Oranı</h5>
+                          <p className="mb-0 text-muted">
+                            Her {(100 / reportData.overallStats.averageMeetingEfficiency).toFixed(1)} toplantıdan 
+                            {' '}<strong>1 satış</strong> gerçekleşiyor
+                          </p>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col md={4} className="text-end">
+                      <div className="display-4 fw-bold" style={{ color: '#9b59b6' }}>
+                        %{reportData.overallStats.averageMeetingEfficiency.toFixed(1)}
+                      </div>
+                      <div className="text-muted">
+                        {reportData.overallStats.totalMeetings} toplantı → {reportData.overallStats.totalSales} satış
+                      </div>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </>
       )}
 
       {/* Trend Chart */}
@@ -511,20 +560,32 @@ const SalesEfficiencyReport = () => {
                 <Card.Body>
                   <h5 className="mb-2">{reportData.overallStats.topPerformer.userName}</h5>
                   <Row className="g-2">
-                    <Col xs={6}>
+                    <Col xs={4}>
                       <div className="small text-muted">İletişim</div>
                       <div className="fw-bold">{reportData.overallStats.topPerformer.totalCommunications}</div>
                     </Col>
-                    <Col xs={6}>
+                    <Col xs={4}>
+                      <div className="small text-muted">Görüşme</div>
+                      <div className="fw-bold">{reportData.overallStats.topPerformer.totalMeetings || 0}</div>
+                    </Col>
+                    <Col xs={4}>
                       <div className="small text-muted">Satış</div>
                       <div className="fw-bold">{reportData.overallStats.topPerformer.totalSales}</div>
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Verimlilik</div>
+                      <div className="small text-muted mb-1">Genel Verimlilik</div>
                       <ProgressBar
                         now={reportData.overallStats.topPerformer.averageEfficiency}
                         label={`${reportData.overallStats.topPerformer.averageEfficiency.toFixed(1)}%`}
                         variant="success"
+                      />
+                    </Col>
+                    <Col xs={12}>
+                      <div className="small text-muted mb-1">Toplantı Dönüşümü</div>
+                      <ProgressBar
+                        now={Math.min(reportData.overallStats.topPerformer.averageMeetingEfficiency, 100)}
+                        label={`${reportData.overallStats.topPerformer.averageMeetingEfficiency.toFixed(1)}%`}
+                        variant="info"
                       />
                     </Col>
                   </Row>
@@ -543,20 +604,32 @@ const SalesEfficiencyReport = () => {
                 <Card.Body>
                   <h5 className="mb-2">{reportData.overallStats.lowestPerformer.userName}</h5>
                   <Row className="g-2">
-                    <Col xs={6}>
+                    <Col xs={4}>
                       <div className="small text-muted">İletişim</div>
                       <div className="fw-bold">{reportData.overallStats.lowestPerformer.totalCommunications}</div>
                     </Col>
-                    <Col xs={6}>
+                    <Col xs={4}>
+                      <div className="small text-muted">Görüşme</div>
+                      <div className="fw-bold">{reportData.overallStats.lowestPerformer.totalMeetings || 0}</div>
+                    </Col>
+                    <Col xs={4}>
                       <div className="small text-muted">Satış</div>
                       <div className="fw-bold">{reportData.overallStats.lowestPerformer.totalSales}</div>
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Verimlilik</div>
+                      <div className="small text-muted mb-1">Genel Verimlilik</div>
                       <ProgressBar
                         now={reportData.overallStats.lowestPerformer.averageEfficiency}
                         label={`${reportData.overallStats.lowestPerformer.averageEfficiency.toFixed(1)}%`}
                         variant="danger"
+                      />
+                    </Col>
+                    <Col xs={12}>
+                      <div className="small text-muted mb-1">Toplantı Dönüşümü</div>
+                      <ProgressBar
+                        now={Math.min(reportData.overallStats.lowestPerformer.averageMeetingEfficiency, 100)}
+                        label={`${reportData.overallStats.lowestPerformer.averageMeetingEfficiency.toFixed(1)}%`}
+                        variant="warning"
                       />
                     </Col>
                   </Row>
@@ -583,9 +656,10 @@ const SalesEfficiencyReport = () => {
                   <tr>
                     <th className="border-0">#</th>
                     <th className="border-0">Temsilci</th>
-                    <th className="border-0 text-center">İletişim</th>
+                    <th className="border-0 text-center">İletişim / Görüşme</th>
                     <th className="border-0 text-center">Satış</th>
-                    <th className="border-0 text-center">Verimlilik</th>
+                    <th className="border-0 text-center">Genel Verimlilik</th>
+                    <th className="border-0 text-center">Toplantı Dönüşümü</th>
                     <th className="border-0 text-center">İletişim Dağılımı</th>
                     <th className="border-0 text-center">Satış Dağılımı</th>
                   </tr>
@@ -603,7 +677,15 @@ const SalesEfficiencyReport = () => {
                         <small className="text-muted">{perf.userEmail}</small>
                       </td>
                       <td className="align-middle text-center">
-                        <Badge bg="danger" pill>{perf.totalCommunications}</Badge>
+                        <div>
+                          <Badge bg="danger" pill>{perf.totalCommunications}</Badge>
+                        </div>
+                        <div className="mt-1">
+                          <Badge bg="purple" pill style={{ backgroundColor: '#9b59b6' }}>
+                            <FiCalendar size={10} className="me-1" />
+                            {perf.totalMeetings || 0} görüşme
+                          </Badge>
+                        </div>
                       </td>
                       <td className="align-middle text-center">
                         <Badge bg="success" pill>{perf.totalSales}</Badge>
@@ -619,6 +701,23 @@ const SalesEfficiencyReport = () => {
                               variant={getEfficiencyColor(perf.averageEfficiency)}
                               style={{ height: '8px' }}
                             />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="align-middle">
+                        <div className="text-center">
+                          <Badge 
+                            bg={perf.averageMeetingEfficiency >= 50 ? 'success' : perf.averageMeetingEfficiency >= 30 ? 'info' : perf.averageMeetingEfficiency >= 15 ? 'warning' : 'danger'}
+                            className="mb-1"
+                          >
+                            {perf.averageMeetingEfficiency.toFixed(1)}%
+                          </Badge>
+                          <div className="small text-muted">
+                            {perf.totalMeetings > 0 ? (
+                              <>Her {(100 / perf.averageMeetingEfficiency).toFixed(1)} görüşmede 1 satış</>
+                            ) : (
+                              'Veri yok'
+                            )}
                           </div>
                         </div>
                       </td>
@@ -673,17 +772,46 @@ const SalesEfficiencyReport = () => {
           <FiActivity className="me-2" />
           Verimlilik Nasıl Hesaplanır?
         </Alert.Heading>
-        <p className="mb-0 small">
-          <strong>Verimlilik Oranı = (Toplam Satış / Toplam İletişim) × 100</strong><br />
-          Bu oran, bir temsilcinin kurduğu iletişimlerin kaçının satışa dönüştüğünü gösterir.
-          Yüksek oran, daha verimli çalışma anlamına gelir.
-        </p>
-        <hr className="my-2" />
-        <div className="small">
-          <Badge bg="success" className="me-2">%15+</Badge> Mükemmel
-          <Badge bg="info" className="me-2 ms-3">%10-15</Badge> İyi
-          <Badge bg="warning" className="me-2 ms-3">%5-10</Badge> Orta
-          <Badge bg="danger" className="ms-3">%0-5</Badge> Geliştirilmeli
+        
+        <Row className="g-3">
+          <Col md={6}>
+            <div className="border-end pe-3">
+              <h6 className="mb-2">📊 Genel Verimlilik</h6>
+              <p className="mb-2 small">
+                <strong>Verimlilik = (Toplam Satış / Toplam İletişim) × 100</strong><br />
+                Tüm iletişim kanallarının (WhatsApp, arama, toplantı) satışa dönüşüm oranı
+              </p>
+              <div className="small">
+                <Badge bg="success" className="me-2">%15+</Badge> Mükemmel
+                <Badge bg="info" className="me-2">%10-15</Badge> İyi
+                <Badge bg="warning" className="me-2">%5-10</Badge> Orta
+                <Badge bg="danger">%0-5</Badge> Geliştirilmeli
+              </div>
+            </div>
+          </Col>
+          
+          <Col md={6}>
+            <div className="ps-3">
+              <h6 className="mb-2" style={{ color: '#9b59b6' }}>🎯 Birebir Görüşme Dönüşümü</h6>
+              <p className="mb-2 small">
+                <strong>Dönüşüm = (Toplam Satış / Toplam Görüşme) × 100</strong><br />
+                Yüz yüze toplantıların satışa dönüşüm başarısını gösterir
+              </p>
+              <div className="small">
+                <Badge bg="success" className="me-2">%50+</Badge> Mükemmel
+                <Badge bg="info" className="me-2">%30-50</Badge> İyi
+                <Badge bg="warning" className="me-2">%15-30</Badge> Orta
+                <Badge bg="danger">%0-15</Badge> Geliştirilmeli
+              </div>
+            </div>
+          </Col>
+        </Row>
+        
+        <hr className="my-3" />
+        
+        <div className="small text-muted">
+          💡 <strong>İpucu:</strong> Birebir görüşme dönüşüm oranı, genellikle genel verimlilikten daha yüksektir 
+          çünkü yüz yüze toplantılar daha etkili satış fırsatlarıdır.
         </div>
       </Alert>
     </div>

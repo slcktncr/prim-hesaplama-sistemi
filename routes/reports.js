@@ -2271,13 +2271,15 @@ router.get('/sales-efficiency', auth, async (req, res) => {
           dateKey: dateKey,
           communications: {
             total: 0,
-            byType: {}
+            byType: {},
+            meetings: 0 // Toplam birebir görüşme sayısı
           },
           sales: {
             total: 0,
             byType: {}
           },
-          efficiency: 0
+          efficiency: 0,
+          meetingEfficiency: 0 // Toplantı-satış dönüşüm oranı
         });
       }
       
@@ -2290,6 +2292,9 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       userData.communications.byType['callOutgoing'] = (userData.communications.byType['callOutgoing'] || 0) + (comm.callOutgoing || 0);
       userData.communications.byType['meetingNewCustomer'] = (userData.communications.byType['meetingNewCustomer'] || 0) + (comm.meetingNewCustomer || 0);
       userData.communications.byType['meetingAfterSale'] = (userData.communications.byType['meetingAfterSale'] || 0) + (comm.meetingAfterSale || 0);
+      
+      // Toplam birebir görüşme sayısını hesapla
+      userData.communications.meetings += (comm.meetingNewCustomer || 0) + (comm.meetingAfterSale || 0);
       
       // Dinamik iletişim türleri
       comm.records.forEach(record => {
@@ -2316,13 +2321,15 @@ router.get('/sales-efficiency', auth, async (req, res) => {
           dateKey: dateKey,
           communications: {
             total: 0,
-            byType: {}
+            byType: {},
+            meetings: 0
           },
           sales: {
             total: 0,
             byType: {}
           },
-          efficiency: 0
+          efficiency: 0,
+          meetingEfficiency: 0
         });
       }
       
@@ -2339,9 +2346,14 @@ router.get('/sales-efficiency', auth, async (req, res) => {
     const userSummaryMap = new Map();
     
     Array.from(userMap.values()).forEach(data => {
-      // Verimlilik oranı: satış / iletişim * 100
+      // Genel verimlilik oranı: satış / iletişim * 100
       data.efficiency = data.communications.total > 0 
         ? (data.sales.total / data.communications.total * 100) 
+        : 0;
+      
+      // Toplantı-satış dönüşüm oranı: satış / birebir görüşme * 100
+      data.meetingEfficiency = data.communications.meetings > 0 
+        ? (data.sales.total / data.communications.meetings * 100) 
         : 0;
       
       // Kullanıcı bazında toplam
@@ -2351,8 +2363,10 @@ router.get('/sales-efficiency', auth, async (req, res) => {
           userName: data.userName,
           userEmail: data.userEmail,
           totalCommunications: 0,
+          totalMeetings: 0,
           totalSales: 0,
           averageEfficiency: 0,
+          averageMeetingEfficiency: 0,
           communicationsByType: {},
           salesByType: {},
           timeline: []
@@ -2361,6 +2375,7 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       
       const summary = userSummaryMap.get(data.userId);
       summary.totalCommunications += data.communications.total;
+      summary.totalMeetings += data.communications.meetings;
       summary.totalSales += data.sales.total;
       
       // İletişim türlerini topla
@@ -2377,15 +2392,23 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       summary.timeline.push({
         date: data.dateKey,
         communications: data.communications.total,
+        meetings: data.communications.meetings,
         sales: data.sales.total,
-        efficiency: data.efficiency
+        efficiency: data.efficiency,
+        meetingEfficiency: data.meetingEfficiency
       });
     });
     
     // Ortalama verimlilik hesapla
     userSummaryMap.forEach(summary => {
+      // Genel iletişim verimliliği
       summary.averageEfficiency = summary.totalCommunications > 0 
         ? (summary.totalSales / summary.totalCommunications * 100) 
+        : 0;
+      
+      // Toplantı-satış dönüşüm verimliliği
+      summary.averageMeetingEfficiency = summary.totalMeetings > 0 
+        ? (summary.totalSales / summary.totalMeetings * 100) 
         : 0;
       
       // Timeline'ı tarihe göre sırala
@@ -2409,9 +2432,13 @@ router.get('/sales-efficiency', auth, async (req, res) => {
     const overallStats = {
       totalUsers: results.length,
       totalCommunications: results.reduce((sum, r) => sum + r.totalCommunications, 0),
+      totalMeetings: results.reduce((sum, r) => sum + r.totalMeetings, 0),
       totalSales: results.reduce((sum, r) => sum + r.totalSales, 0),
       averageEfficiency: results.length > 0 
         ? results.reduce((sum, r) => sum + r.averageEfficiency, 0) / results.length 
+        : 0,
+      averageMeetingEfficiency: results.length > 0 
+        ? results.reduce((sum, r) => sum + r.averageMeetingEfficiency, 0) / results.length 
         : 0,
       topPerformer: results[0] || null,
       lowestPerformer: results[results.length - 1] || null
@@ -2475,14 +2502,17 @@ function calculatePeriodAnalysis(results, period, startDate, endDate) {
         periodMap.set(periodKey, {
           period: periodKey,
           totalCommunications: 0,
+          totalMeetings: 0,
           totalSales: 0,
           userCount: new Set(),
-          efficiency: 0
+          efficiency: 0,
+          meetingEfficiency: 0
         });
       }
       
       const periodData = periodMap.get(periodKey);
       periodData.totalCommunications += entry.communications;
+      periodData.totalMeetings += entry.meetings || 0;
       periodData.totalSales += entry.sales;
       periodData.userCount.add(user.userId);
     });
@@ -2492,10 +2522,14 @@ function calculatePeriodAnalysis(results, period, startDate, endDate) {
   const periodAnalysis = Array.from(periodMap.values()).map(p => ({
     period: p.period,
     totalCommunications: p.totalCommunications,
+    totalMeetings: p.totalMeetings,
     totalSales: p.totalSales,
     userCount: p.userCount.size,
     efficiency: p.totalCommunications > 0 
       ? (p.totalSales / p.totalCommunications * 100) 
+      : 0,
+    meetingEfficiency: p.totalMeetings > 0 
+      ? (p.totalSales / p.totalMeetings * 100) 
       : 0
   }));
   
