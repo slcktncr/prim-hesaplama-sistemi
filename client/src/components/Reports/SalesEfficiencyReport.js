@@ -22,7 +22,7 @@ import {
   FiActivity,
   FiTarget
 } from 'react-icons/fi';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +30,6 @@ import {
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -47,7 +46,6 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -174,7 +172,7 @@ const SalesEfficiencyReport = () => {
           tension: 0.4
         },
         {
-          label: 'Toplantı-Satış Dönüşümü (%)',
+          label: 'Birebir Görüşme-Satış Dönüşümü (%)',
           data: reportData.periodAnalysis.map(p => p.meetingEfficiency.toFixed(2)),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -239,45 +237,6 @@ const SalesEfficiencyReport = () => {
         }
       }
     }
-  };
-
-  // Communication types chart
-  const getCommunicationTypesChart = (user) => {
-    const types = user.communicationsByType;
-    const labels = Object.keys(types);
-    const values = Object.values(types);
-
-    return {
-      labels: labels.map(label => {
-        // Label mapping
-        const mapping = {
-          'whatsappIncoming': 'WhatsApp Gelen',
-          'callIncoming': 'Arama Gelen',
-          'callOutgoing': 'Arama Giden',
-          'meetingNewCustomer': 'Yeni Müşteri',
-          'meetingAfterSale': 'Satış Sonrası'
-        };
-        return mapping[label] || label;
-      }),
-      datasets: [{
-        data: values,
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.8)',
-          'rgba(54, 162, 235, 0.8)',
-          'rgba(255, 206, 86, 0.8)',
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(153, 102, 255, 0.8)'
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)'
-        ],
-        borderWidth: 1
-      }]
-    };
   };
 
   // Sales types chart
@@ -510,7 +469,7 @@ const SalesEfficiencyReport = () => {
                         <div>
                           <h5 className="mb-1">Birebir Görüşme Başarı Oranı</h5>
                           <p className="mb-0 text-muted">
-                            Her {(100 / reportData.overallStats.averageMeetingEfficiency).toFixed(1)} toplantıdan 
+                            Her {(100 / reportData.overallStats.averageMeetingEfficiency).toFixed(1)} birebir görüşmeden 
                             {' '}<strong>1 satış</strong> gerçekleşiyor
                           </p>
                         </div>
@@ -521,7 +480,7 @@ const SalesEfficiencyReport = () => {
                         %{reportData.overallStats.averageMeetingEfficiency.toFixed(1)}
                       </div>
                       <div className="text-muted">
-                        {reportData.overallStats.totalMeetings} toplantı → {reportData.overallStats.totalSales} satış
+                        {reportData.overallStats.totalMeetings} birebir görüşme → {reportData.overallStats.totalSales} satış
                       </div>
                     </Col>
                   </Row>
@@ -581,7 +540,7 @@ const SalesEfficiencyReport = () => {
                       />
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Toplantı Dönüşümü</div>
+                      <div className="small text-muted mb-1">Birebir Görüşme Dönüşümü</div>
                       <ProgressBar
                         now={Math.min(reportData.overallStats.topPerformer.averageMeetingEfficiency, 100)}
                         label={`${reportData.overallStats.topPerformer.averageMeetingEfficiency.toFixed(1)}%`}
@@ -625,7 +584,7 @@ const SalesEfficiencyReport = () => {
                       />
                     </Col>
                     <Col xs={12}>
-                      <div className="small text-muted mb-1">Toplantı Dönüşümü</div>
+                      <div className="small text-muted mb-1">Birebir Görüşme Dönüşümü</div>
                       <ProgressBar
                         now={Math.min(reportData.overallStats.lowestPerformer.averageMeetingEfficiency, 100)}
                         label={`${reportData.overallStats.lowestPerformer.averageMeetingEfficiency.toFixed(1)}%`}
@@ -659,7 +618,7 @@ const SalesEfficiencyReport = () => {
                     <th className="border-0 text-center">İletişim / Görüşme</th>
                     <th className="border-0 text-center">Satış</th>
                     <th className="border-0 text-center">Genel Verimlilik</th>
-                    <th className="border-0 text-center">Toplantı Dönüşümü</th>
+                    <th className="border-0 text-center">Birebir Görüşme Dönüşümü</th>
                     <th className="border-0 text-center">İletişim Dağılımı</th>
                     <th className="border-0 text-center">Satış Dağılımı</th>
                   </tr>
@@ -721,14 +680,30 @@ const SalesEfficiencyReport = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="align-middle" style={{ width: '200px' }}>
-                        {Object.keys(perf.communicationsByType).length > 0 && (
-                          <div style={{ height: '150px' }}>
-                            <Doughnut
-                              data={getCommunicationTypesChart(perf)}
-                              options={doughnutOptions}
-                            />
+                      <td className="align-middle" style={{ width: '180px' }}>
+                        {Object.keys(perf.communicationsByType).length > 0 ? (
+                          <div className="small">
+                            {Object.entries(perf.communicationsByType).map(([type, count]) => {
+                              // Label mapping
+                              const typeLabels = {
+                                'whatsappIncoming': 'WhatsApp Gelen',
+                                'callIncoming': 'Arama Gelen',
+                                'callOutgoing': 'Arama Giden',
+                                'meetingNewCustomer': 'Yeni Müşteri',
+                                'meetingAfterSale': 'Satış Sonrası'
+                              };
+                              const label = typeLabels[type] || type;
+                              
+                              return count > 0 ? (
+                                <div key={type} className="d-flex justify-content-between mb-1">
+                                  <span className="text-muted">{label}:</span>
+                                  <Badge bg="secondary" pill className="ms-2">{count}</Badge>
+                                </div>
+                              ) : null;
+                            })}
                           </div>
+                        ) : (
+                          <span className="text-muted small">-</span>
                         )}
                       </td>
                       <td className="align-middle" style={{ width: '200px' }}>
@@ -779,7 +754,7 @@ const SalesEfficiencyReport = () => {
               <h6 className="mb-2">📊 Genel Verimlilik</h6>
               <p className="mb-2 small">
                 <strong>Verimlilik = (Toplam Satış / Toplam İletişim) × 100</strong><br />
-                Tüm iletişim kanallarının (WhatsApp, arama, toplantı) satışa dönüşüm oranı
+                Tüm iletişim kanallarının (WhatsApp, arama, birebir görüşme) satışa dönüşüm oranı
               </p>
               <div className="small">
                 <Badge bg="success" className="me-2">%15+</Badge> Mükemmel
@@ -794,8 +769,8 @@ const SalesEfficiencyReport = () => {
             <div className="ps-3">
               <h6 className="mb-2" style={{ color: '#9b59b6' }}>🎯 Birebir Görüşme Dönüşümü</h6>
               <p className="mb-2 small">
-                <strong>Dönüşüm = (Toplam Satış / Toplam Görüşme) × 100</strong><br />
-                Yüz yüze toplantıların satışa dönüşüm başarısını gösterir
+                <strong>Dönüşüm = (Toplam Satış / Toplam Birebir Görüşme) × 100</strong><br />
+                Müşterilerle yapılan yüz yüze görüşmelerin satışa dönüşüm başarısını gösterir
               </p>
               <div className="small">
                 <Badge bg="success" className="me-2">%50+</Badge> Mükemmel
@@ -811,7 +786,7 @@ const SalesEfficiencyReport = () => {
         
         <div className="small text-muted">
           💡 <strong>İpucu:</strong> Birebir görüşme dönüşüm oranı, genellikle genel verimlilikten daha yüksektir 
-          çünkü yüz yüze toplantılar daha etkili satış fırsatlarıdır.
+          çünkü müşterilerle yüz yüze yapılan görüşmeler daha etkili satış fırsatlarıdır.
         </div>
       </Alert>
     </div>
