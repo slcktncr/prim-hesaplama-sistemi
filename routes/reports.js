@@ -2301,6 +2301,12 @@ router.get('/sales-efficiency', auth, async (req, res) => {
         communicationTypes.forEach(type => {
           if (record[type.code] !== undefined) {
             userData.communications.byType[type.code] = (userData.communications.byType[type.code] || 0) + (record[type.code] || 0);
+            
+            // Dinamik yeni müşteri görüşmelerini de toplama ekle
+            const typeLower = type.code.toLowerCase();
+            if (typeLower.includes('meeting_new') || typeLower.includes('meetingnew')) {
+              userData.communications.meetings += (record[type.code] || 0);
+            }
           }
         });
       });
