@@ -2284,7 +2284,7 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       }
       
       const userData = userMap.get(userKey);
-      userData.communications.total += comm.totalCommunication || 0;
+      // Not: communications.total sonradan byType üzerinden hesaplanacak
       
       // İletişim türlerine göre breakdown
       userData.communications.byType['whatsappIncoming'] = (userData.communications.byType['whatsappIncoming'] || 0) + (comm.whatsappIncoming || 0);
@@ -2352,6 +2352,9 @@ router.get('/sales-efficiency', auth, async (req, res) => {
     const userSummaryMap = new Map();
     
     Array.from(userMap.values()).forEach(data => {
+      // Toplam iletişim sayısını byType üzerinden hesapla (tüm iletişim türlerini içerir)
+      data.communications.total = Object.values(data.communications.byType).reduce((sum, count) => sum + count, 0);
+      
       // Genel verimlilik oranı: satış / iletişim * 100
       data.efficiency = data.communications.total > 0 
         ? (data.sales.total / data.communications.total * 100) 
