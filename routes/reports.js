@@ -588,6 +588,7 @@ router.get('/sales-summary', auth, async (req, res) => {
           },
           count: { $sum: 1 },
           totalAmount: { $sum: '$basePrimPrice' },
+          totalActivityPrice: { $sum: '$activitySalePrice' },
           totalPrim: { $sum: '$primAmount' }
         }
       },
@@ -611,6 +612,7 @@ router.get('/sales-summary', auth, async (req, res) => {
             _id: { year: dayData.year, month: dayData.month },
             count: 0,
             totalAmount: 0,
+            totalActivityPrice: 0,
             totalPrim: 0
           });
         }
@@ -618,6 +620,7 @@ router.get('/sales-summary', auth, async (req, res) => {
         const monthData = monthlyHistoricalMap.get(monthKey);
         monthData.count += dayData.sales.activeSales;
         monthData.totalAmount += dayData.sales.totalAmount;
+        monthData.totalActivityPrice += dayData.sales.totalAmount; // Geçmiş yıl için totalAmount kullan
         monthData.totalPrim += dayData.sales.totalPrim;
       });
       
@@ -633,6 +636,7 @@ router.get('/sales-summary', auth, async (req, res) => {
           // Mevcut veriye ekle
           combinedMonthlySales[existingIndex].count += monthlyData.count;
           combinedMonthlySales[existingIndex].totalAmount += monthlyData.totalAmount;
+          combinedMonthlySales[existingIndex].totalActivityPrice += monthlyData.totalActivityPrice;
           combinedMonthlySales[existingIndex].totalPrim += monthlyData.totalPrim;
         } else {
           // Yeni ay verisi olarak ekle

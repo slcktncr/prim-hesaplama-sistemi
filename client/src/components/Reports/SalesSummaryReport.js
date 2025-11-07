@@ -185,9 +185,8 @@ const SalesSummaryReport = () => {
 
   const monthlyChartData = monthlySales?.map(item => ({
     name: `${item._id.month}/${item._id.year}`,
-    satış: item.count,
-    ciro: item.totalAmount,
-    prim: item.totalPrim
+    adet: item.count,
+    aktiviteSatisFiyati: item.totalActivityPrice || 0
   })) || [];
 
   return (
@@ -375,21 +374,31 @@ const SalesSummaryReport = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis 
+                      yAxisId="left"
+                      orientation="left"
+                      tickFormatter={(value) => formatNumber(value)}
+                      width={50}
+                      label={{ value: 'Adet', angle: -90, position: 'insideLeft' }}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
                       tickFormatter={(value) => {
                         if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
                         if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
                         return value;
                       }}
-                      width={50}
+                      width={70}
+                      label={{ value: 'Aktivite Satış Fiyatı', angle: 90, position: 'insideRight' }}
                     />
                     <Tooltip 
                       formatter={(value, name) => [
-                        name === 'satış' ? formatNumber(value) : formatCurrency(value),
-                        name === 'satış' ? 'Satış Adedi' : name === 'ciro' ? 'Ciro' : 'Prim'
+                        name === 'adet' ? formatNumber(value) : formatCurrency(value),
+                        name === 'adet' ? 'Satış Adedi' : 'Aktivite Satış Fiyatı'
                       ]}
                     />
-                    <Line type="monotone" dataKey="satış" stroke="#8884d8" strokeWidth={2} />
-                    <Line type="monotone" dataKey="prim" stroke="#82ca9d" strokeWidth={2} />
+                    <Line yAxisId="left" type="monotone" dataKey="adet" stroke="#8884d8" strokeWidth={2} name="adet" />
+                    <Line yAxisId="right" type="monotone" dataKey="aktiviteSatisFiyati" stroke="#82ca9d" strokeWidth={2} name="aktiviteSatisFiyati" />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
