@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Role = require('../models/Role');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -114,18 +115,24 @@ router.get('/all-users', [auth, adminAuth], async (req, res) => {
 });
 
 // @route   GET /api/users/for-filters
-// @desc    Get all active users for filtering (accessible to all users)
+// @desc    Get all active users for filtering (accessible to all users, excludes admins)
 // @access  Private (All authenticated users)
 router.get('/for-filters', auth, async (req, res) => {
   try {
+    // Admin rolünü bul
+    const adminRole = await Role.findOne({ name: 'admin' });
+    
+    // Admin rolündeki kullanıcıları hariç tut
     const users = await User.find({ 
       isActive: true,
-      isApproved: true
+      isApproved: true,
+      ...(adminRole ? { role: { $ne: adminRole._id } } : {})
     })
       .select('name email role')
+      .populate('role', 'name')
       .sort({ name: 1 });
 
-    console.log(`✅ Returning ${users.length} users for filters`);
+    console.log(`✅ Returning ${users.length} users for filters (admins excluded)`);
     res.json(users);
   } catch (error) {
     console.error('Get users for filters error:', error);

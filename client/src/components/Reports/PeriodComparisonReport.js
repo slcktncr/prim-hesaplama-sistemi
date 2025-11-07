@@ -38,7 +38,9 @@ const PeriodComparisonReport = () => {
     try {
       setLoading(true);
       const response = await reportsAPI.getPeriodComparison();
-      setComparisonData(response.data || []);
+      // Verileri eskiden yeniye doğru sırala (soldan sağa)
+      const sortedData = (response.data || []).reverse();
+      setComparisonData(sortedData);
       setError(null);
     } catch (error) {
       console.error('Period comparison fetch error:', error);
@@ -170,7 +172,8 @@ const PeriodComparisonReport = () => {
                 </thead>
                 <tbody>
                   {comparisonData.map((period, index) => {
-                    const previousPeriod = comparisonData[index + 1];
+                    // Eskiden yeniye doğru sıralandığı için önceki dönem index - 1
+                    const previousPeriod = comparisonData[index - 1];
                     const successRate = period.successRate || 0;
 
                     return (

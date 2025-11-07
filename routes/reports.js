@@ -2139,9 +2139,21 @@ router.get('/sales-efficiency', auth, async (req, res) => {
       userFilter.salesperson = new mongoose.Types.ObjectId(salesperson);
     }
     
-    // Legacy user'ı hariç tut
+    // Legacy user ve admin rolündeki kullanıcıları hariç tut
+    const Role = require('../models/Role');
+    const adminRole = await Role.findOne({ name: 'admin' });
     const legacyUser = await User.findOne({ email: 'eski.satis@legacy.system' });
-    const excludeUserIds = legacyUser ? [legacyUser._id] : [];
+    
+    const excludeUserIds = [];
+    if (legacyUser) excludeUserIds.push(legacyUser._id);
+    
+    // Admin rolündeki tüm kullanıcıları bul ve hariç tut
+    if (adminRole) {
+      const adminUsers = await User.find({ role: adminRole._id }, '_id');
+      adminUsers.forEach(admin => excludeUserIds.push(admin._id));
+    }
+    
+    console.log('🚫 Excluding user IDs from efficiency report:', excludeUserIds.length);
     
     // İletişim verilerini al
     const CommunicationRecord = require('../models/CommunicationRecord');
