@@ -23,7 +23,7 @@ import {
 } from 'react-icons/fi';
 
 import { migrationAPI, usersAPI, salesAPI } from '../../utils/api';
-import { formatDate } from '../../utils/helpers';
+import { formatDate, formatLocalDate } from '../../utils/helpers';
 
 const LegacyUserManagement = () => {
   const [legacyUser, setLegacyUser] = useState(null);
@@ -227,8 +227,8 @@ const LegacyUserManagement = () => {
     yesterday.setDate(today.getDate() - 1);
     
     setAssignData({
-      startDate: yesterday.toISOString().split('T')[0],
-      endDate: today.toISOString().split('T')[0],
+      startDate: formatLocalDate(yesterday),
+      endDate: formatLocalDate(today),
       currentUserId: '',
       useDateTime: false
     });

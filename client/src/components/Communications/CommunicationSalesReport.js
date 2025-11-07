@@ -30,7 +30,7 @@ import {
 } from 'react-icons/fi';
 
 import { communicationsAPI, salesAPI, usersAPI, reportsAPI } from '../../utils/api';
-import { formatDate, formatCurrency, formatNumber } from '../../utils/helpers';
+import { formatDate, formatCurrency, formatNumber, formatLocalDate } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
 
@@ -41,8 +41,8 @@ const CommunicationSalesReport = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
+    startDate: formatLocalDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)),
+    endDate: formatLocalDate(new Date()),
     salesperson: 'all',
     reportType: 'combined' // 'combined', 'communication', 'sales'
   });

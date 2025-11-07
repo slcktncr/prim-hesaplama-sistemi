@@ -3,7 +3,7 @@ import { Row, Col, Card, Alert, Form, Button, Nav, Tab } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FiRefreshCw, FiCalendar, FiBarChart, FiUsers } from 'react-icons/fi';
 import { reportsAPI, primsAPI } from '../../utils/api';
-import { formatCurrency, formatNumber, getTodayDateString, getDateStringDaysAgo } from '../../utils/helpers';
+import { formatCurrency, formatNumber, getTodayDateString, getDateStringDaysAgo, formatLocalDate } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Common/Loading';
 import StatsCard from './StatsCard';
@@ -87,24 +87,24 @@ const Dashboard = () => {
       case 'yesterday':
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
-        startDate = yesterday.toISOString().split('T')[0];
-        endDate = yesterday.toISOString().split('T')[0];
+        startDate = formatLocalDate(yesterday);
+        endDate = formatLocalDate(yesterday);
         break;
       case 'today':
-        startDate = today.toISOString().split('T')[0];
-        endDate = today.toISOString().split('T')[0];
+        startDate = formatLocalDate(today);
+        endDate = formatLocalDate(today);
         break;
       case 'week':
         const weekAgo = new Date(today);
         weekAgo.setDate(today.getDate() - 7);
-        startDate = weekAgo.toISOString().split('T')[0];
-        endDate = today.toISOString().split('T')[0];
+        startDate = formatLocalDate(weekAgo);
+        endDate = formatLocalDate(today);
         break;
       case 'month':
         const monthAgo = new Date(today);
         monthAgo.setMonth(today.getMonth() - 1);
-        startDate = monthAgo.toISOString().split('T')[0];
-        endDate = today.toISOString().split('T')[0];
+        startDate = formatLocalDate(monthAgo);
+        endDate = formatLocalDate(today);
         break;
       case 'all':
       default:

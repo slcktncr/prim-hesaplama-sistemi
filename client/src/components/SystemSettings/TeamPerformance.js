@@ -24,6 +24,7 @@ import {
   FiDollarSign
 } from 'react-icons/fi';
 import api from '../../utils/api';
+import { formatLocalDate } from '../../utils/helpers';
 
 const TeamPerformance = () => {
   const [teams, setTeams] = useState([]);
@@ -31,9 +32,14 @@ const TeamPerformance = () => {
   const [performanceData, setPerformanceData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
+  const [dateRange, setDateRange] = useState(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+    return {
+      startDate: formatLocalDate(start),
+      endDate: formatLocalDate(end)
+    };
   });
 
   useEffect(() => {

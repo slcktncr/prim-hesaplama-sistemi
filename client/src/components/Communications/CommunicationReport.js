@@ -695,14 +695,8 @@ const CommunicationReport = () => {
                     size="sm"
                     onClick={() => {
                       console.log('🔄 Dün clicked - current filters:', filters);
-                      const yesterday = new Date();
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      const newFilters = {
-                        ...filters,
-                        startDate: yesterday.toISOString().split('T')[0],
-                        endDate: yesterday.toISOString().split('T')[0],
-                        selectedUser: 'all'
-                      };
+                      const quickFilters = getQuickDateFilters(filters);
+                      const newFilters = quickFilters.yesterday();
                       console.log('🔄 Dün new filters:', newFilters);
                       setFilters(newFilters);
                     }}
@@ -714,14 +708,8 @@ const CommunicationReport = () => {
                     size="sm"
                     onClick={() => {
                       console.log('🔄 Bu Ay clicked - current filters:', filters);
-                      const today = new Date();
-                      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                      const newFilters = {
-                        ...filters,
-                        startDate: firstDayOfMonth.toISOString().split('T')[0],
-                        endDate: today.toISOString().split('T')[0],
-                        selectedUser: 'all'
-                      };
+                      const quickFilters = getQuickDateFilters(filters);
+                      const newFilters = quickFilters.thisMonth();
                       console.log('🔄 Bu Ay new filters:', newFilters);
                       setFilters(newFilters);
                     }}
@@ -733,15 +721,8 @@ const CommunicationReport = () => {
                     size="sm"
                     onClick={() => {
                       console.log('🔄 Geçen Ay clicked - current filters:', filters);
-                      const today = new Date();
-                      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                      const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                      const newFilters = {
-                        ...filters,
-                        startDate: lastMonth.toISOString().split('T')[0],
-                        endDate: lastDayOfLastMonth.toISOString().split('T')[0],
-                        selectedUser: 'all'
-                      };
+                      const quickFilters = getQuickDateFilters(filters);
+                      const newFilters = quickFilters.lastMonth();
                       console.log('🔄 Geçen Ay new filters:', newFilters);
                       setFilters(newFilters);
                     }}
@@ -753,14 +734,8 @@ const CommunicationReport = () => {
                     size="sm"
                     onClick={() => {
                       console.log('🔄 Bu Yıl clicked - current filters:', filters);
-                      const today = new Date();
-                      const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
-                      const newFilters = {
-                        ...filters,
-                        startDate: firstDayOfYear.toISOString().split('T')[0],
-                        endDate: today.toISOString().split('T')[0],
-                        selectedUser: 'all' // Açıkça tüm temsilcileri seç
-                      };
+                      const quickFilters = getQuickDateFilters(filters);
+                      const newFilters = quickFilters.thisYear();
                       console.log('🔄 Bu Yıl new filters:', newFilters);
                       setFilters(newFilters);
                     }}

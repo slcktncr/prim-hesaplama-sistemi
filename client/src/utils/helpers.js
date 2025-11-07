@@ -236,6 +236,14 @@ export const getDateStringDaysAgo = (daysAgo) => {
   return date.toISOString().split('T')[0];
 };
 
+// Yerel tarihi YYYY-MM-DD formatında döndürür (UTC kayması olmadan)
+export const formatLocalDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 // Quick date filter helpers
 export const getQuickDateFilters = (currentFilters = {}) => {
   const today = new Date();
@@ -246,8 +254,8 @@ export const getQuickDateFilters = (currentFilters = {}) => {
       yesterday.setDate(yesterday.getDate() - 1);
       return {
         ...currentFilters,
-        startDate: yesterday.toISOString().split('T')[0],
-        endDate: yesterday.toISOString().split('T')[0],
+        startDate: formatLocalDate(yesterday),
+        endDate: formatLocalDate(yesterday),
         selectedUser: 'all'
       };
     },
@@ -257,22 +265,22 @@ export const getQuickDateFilters = (currentFilters = {}) => {
       const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       
       console.log('🔍 Bu Ay filter debug:', {
-        today: today.toISOString().split('T')[0],
+        today: formatLocalDate(today),
         todayDate: today,
         year: today.getFullYear(),
         month: today.getMonth(), // 0-based: 0=Ocak, 8=Eylül
         monthName: today.toLocaleString('tr-TR', { month: 'long' }),
-        firstDayOfMonth: firstDayOfMonth.toISOString().split('T')[0],
+        firstDayOfMonth: formatLocalDate(firstDayOfMonth),
         firstDayOfMonthDate: firstDayOfMonth,
-        lastDayOfMonth: lastDayOfMonth.toISOString().split('T')[0],
+        lastDayOfMonth: formatLocalDate(lastDayOfMonth),
         lastDayOfMonthDate: lastDayOfMonth,
         currentFilters: currentFilters
       });
       
       return {
         ...currentFilters,
-        startDate: firstDayOfMonth.toISOString().split('T')[0],
-        endDate: lastDayOfMonth.toISOString().split('T')[0],
+        startDate: formatLocalDate(firstDayOfMonth),
+        endDate: formatLocalDate(lastDayOfMonth),
         selectedUser: 'all'
       };
     },
@@ -282,8 +290,8 @@ export const getQuickDateFilters = (currentFilters = {}) => {
       const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
       return {
         ...currentFilters,
-        startDate: lastMonth.toISOString().split('T')[0],
-        endDate: lastDayOfLastMonth.toISOString().split('T')[0],
+        startDate: formatLocalDate(lastMonth),
+        endDate: formatLocalDate(lastDayOfLastMonth),
         selectedUser: 'all'
       };
     },
@@ -292,8 +300,8 @@ export const getQuickDateFilters = (currentFilters = {}) => {
       const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
       return {
         ...currentFilters,
-        startDate: firstDayOfYear.toISOString().split('T')[0],
-        endDate: today.toISOString().split('T')[0],
+        startDate: formatLocalDate(firstDayOfYear),
+        endDate: formatLocalDate(today),
         selectedUser: 'all'
       };
     }

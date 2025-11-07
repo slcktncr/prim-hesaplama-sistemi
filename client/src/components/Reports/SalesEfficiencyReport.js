@@ -38,6 +38,7 @@ import {
 import { toast } from 'react-toastify';
 import { reportsAPI, usersAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { formatLocalDate } from '../../utils/helpers';
 
 // Chart.js bileşenlerini kaydet
 ChartJS.register(
@@ -67,10 +68,10 @@ const SalesEfficiencyReport = () => {
     // Son 30 gün
     const date = new Date();
     date.setDate(date.getDate() - 30);
-    return date.toISOString().split('T')[0];
+    return formatLocalDate(date);
   });
   const [endDate, setEndDate] = useState(() => {
-    return new Date().toISOString().split('T')[0];
+    return formatLocalDate(new Date());
   });
   const [selectedSalesperson, setSelectedSalesperson] = useState('all');
 
@@ -144,8 +145,8 @@ const SalesEfficiencyReport = () => {
         break;
     }
 
-    setStartDate(start.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
+    setStartDate(formatLocalDate(start));
+    setEndDate(formatLocalDate(end));
   };
 
   // Efficiency badge color

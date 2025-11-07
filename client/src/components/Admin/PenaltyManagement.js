@@ -33,7 +33,7 @@ import {
 } from 'react-icons/fi';
 
 import API, { penaltiesAPI, usersAPI } from '../../utils/api';
-import { formatDate } from '../../utils/helpers';
+import { formatDate, formatLocalDate } from '../../utils/helpers';
 
 const PenaltyManagement = () => {
   const [activeTab, setActiveTab] = useState('penalties');
@@ -65,7 +65,7 @@ const PenaltyManagement = () => {
     userId: '',
     points: 1,
     reason: '',
-    date: new Date().toISOString().split('T')[0]
+    date: formatLocalDate(new Date())
   });
 
   useEffect(() => {
@@ -213,7 +213,7 @@ const PenaltyManagement = () => {
         userId: '',
         points: 1,
         reason: '',
-        date: new Date().toISOString().split('T')[0]
+        date: formatLocalDate(new Date())
       });
       
       fetchPenalties();

@@ -8,7 +8,8 @@ import {
   validateRequired, 
   validatePositiveNumber, 
   formatCurrency,
-  getSaleTypeValue 
+  getSaleTypeValue,
+  formatLocalDate
 } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 import { FiFileText, FiInfo, FiPlus, FiX } from 'react-icons/fi';
@@ -27,8 +28,8 @@ const SaleForm = () => {
     apartmentNo: '',
     periodNo: '',
     saleType: 'satis', // 'kapora' veya 'satis'
-    saleDate: new Date().toISOString().split('T')[0], // Varsayılan: bugün
-    kaporaDate: new Date().toISOString().split('T')[0], // Varsayılan: bugün
+    saleDate: formatLocalDate(new Date()), // Varsayılan: bugün
+    kaporaDate: formatLocalDate(new Date()), // Varsayılan: bugün
     contractNo: '',
     listPrice: '',           // Ana liste fiyatı (girilen)
     originalListPrice: '',   // İndirim öncesi orijinal liste fiyatı (aynı listPrice ile)
@@ -248,8 +249,8 @@ const SaleForm = () => {
           apartmentNo: sale.apartmentNo || '',
           periodNo: sale.periodNo || '',
           saleType: sale.saleType || 'satis',
-          saleDate: sale.saleDate ? new Date(sale.saleDate).toISOString().split('T')[0] : '',
-          kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toISOString().split('T')[0] : '',
+          saleDate: sale.saleDate ? formatLocalDate(new Date(sale.saleDate)) : '',
+          kaporaDate: sale.kaporaDate ? formatLocalDate(new Date(sale.kaporaDate)) : '',
           contractNo: sale.contractNo || '',
           listPrice: sale.listPrice?.toString() || '',
           originalListPrice: sale.originalListPrice?.toString() || sale.listPrice?.toString() || '',

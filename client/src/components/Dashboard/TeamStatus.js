@@ -24,7 +24,7 @@ import {
 
 import { dailyStatusAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
-import { formatDate, formatDateTime } from '../../utils/helpers';
+import { formatDate, formatDateTime, formatLocalDate } from '../../utils/helpers';
 import Loading from '../Common/Loading';
 
 const TeamStatus = () => {
@@ -36,7 +36,7 @@ const TeamStatus = () => {
   const [adminFormData, setAdminFormData] = useState({
     status: 'mesaide',
     statusNote: '',
-    date: new Date().toISOString().split('T')[0]
+    date: formatLocalDate(new Date())
   });
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const TeamStatus = () => {
     setAdminFormData({
       status: teamMember.status,
       statusNote: teamMember.statusNote || '',
-      date: new Date().toISOString().split('T')[0]
+      date: formatLocalDate(new Date())
     });
     setShowAdminModal(true);
   };

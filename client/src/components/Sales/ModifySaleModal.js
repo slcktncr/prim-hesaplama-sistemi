@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { FiEdit, FiSave, FiX } from 'react-icons/fi';
 
 import { salesAPI, primsAPI } from '../../utils/api';
-import { formatCurrency } from '../../utils/helpers';
+import { formatCurrency, formatLocalDate } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 
 const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
@@ -44,8 +44,8 @@ const ModifySaleModal = ({ show, onHide, sale, onModified }) => {
         discountRate: sale.discountRate || '',
         activitySalePrice: sale.activitySalePrice || '',
         contractNo: sale.contractNo || '',
-        saleDate: sale.saleDate ? new Date(sale.saleDate).toISOString().split('T')[0] : '',
-        kaporaDate: sale.kaporaDate ? new Date(sale.kaporaDate).toISOString().split('T')[0] : '',
+        saleDate: sale.saleDate ? formatLocalDate(new Date(sale.saleDate)) : '',
+        kaporaDate: sale.kaporaDate ? formatLocalDate(new Date(sale.kaporaDate)) : '',
         entryDate: sale.entryDate || '',
         exitDate: sale.exitDate || '',
         reason: ''
