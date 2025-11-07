@@ -22,36 +22,23 @@ import {
   FiActivity,
   FiTarget
 } from 'react-icons/fi';
-import { Line, Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+import { 
+  LineChart, 
+  Line,
+  BarChart,
+  Bar,
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import { toast } from 'react-toastify';
 import { reportsAPI, usersAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { formatLocalDate } from '../../utils/helpers';
-
-// Chart.js bileşenlerini kaydet
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
 
 const SalesEfficiencyReport = () => {
   const { user } = useAuth();
@@ -157,141 +144,34 @@ const SalesEfficiencyReport = () => {
     return 'danger';
   };
 
-  // Trend chart data
+  // Trend chart data - Minimal version
   const getTrendChartData = () => {
-    if (!reportData || !reportData.periodAnalysis) return null;
+    if (!reportData || !reportData.periodAnalysis) return [];
 
-    return {
-      labels: reportData.periodAnalysis.map(p => p.period),
-      datasets: [
-        {
-          label: 'Genel Verimlilik (%)',
-          data: reportData.periodAnalysis.map(p => p.efficiency.toFixed(2)),
-          borderColor: 'rgb(75, 192, 192)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Yeni Müşteri Görüşme Dönüşümü (%)',
-          data: reportData.periodAnalysis.map(p => p.meetingEfficiency.toFixed(2)),
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Satışlar',
-          data: reportData.periodAnalysis.map(p => p.totalSales),
-          borderColor: 'rgb(54, 162, 235)',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          yAxisID: 'y1',
-          tension: 0.4
-        },
-        {
-          label: 'Yeni Müşteri Görüşmeleri',
-          data: reportData.periodAnalysis.map(p => p.totalMeetings),
-          borderColor: 'rgb(153, 102, 255)',
-          backgroundColor: 'rgba(153, 102, 255, 0.2)',
-          yAxisID: 'y1',
-          tension: 0.4
-        }
-      ]
-    };
+    return reportData.periodAnalysis.map(p => ({
+      period: p.period,
+      verimlilik: parseFloat(p.efficiency.toFixed(1)),
+      satislar: p.totalSales
+    }));
   };
 
-  const trendChartOptions = {
-    responsive: true,
-    interaction: {
-      mode: 'index',
-      intersect: false
-    },
-    plugins: {
-      legend: {
-        position: 'top'
-      },
-      title: {
-        display: true,
-        text: 'Verimlilik Trend Analizi'
-      }
-    },
-    scales: {
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Verimlilik (%)'
-        }
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Sayı'
-        },
-        grid: {
-          drawOnChartArea: false
-        }
-      }
-    }
-  };
-
-  // Sales types chart
+  // Sales types chart - Recharts format
   const getSalesTypesChart = (user) => {
     const types = user.salesByType;
-    const labels = Object.keys(types);
-    const values = Object.values(types);
-
-    return {
-      labels: labels.map(label => {
-        // Label mapping
-        const mapping = {
-          'satis': 'Normal Satış',
-          'kapora': 'Kapora',
-          'yazlik': 'Yazlık',
-          'kislik': 'Kışlık'
-        };
-        return mapping[label] || label;
-      }),
-      datasets: [{
-        label: 'Satış Sayısı',
-        data: values,
-        backgroundColor: [
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(255, 159, 64, 0.8)',
-          'rgba(153, 102, 255, 0.8)',
-          'rgba(255, 205, 86, 0.8)'
-        ],
-        borderColor: [
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 159, 64, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 205, 86, 1)'
-        ],
-        borderWidth: 1
-      }]
+    const mapping = {
+      'satis': 'Normal Satış',
+      'kapora': 'Kapora',
+      'yazlik': 'Yazlık',
+      'kislik': 'Kışlık'
     };
+
+    return Object.keys(types).map(key => ({
+      name: mapping[key] || key,
+      value: types[key]
+    }));
   };
 
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          boxWidth: 12,
-          font: {
-            size: 10
-          }
-        }
-      }
-    }
-  };
+  const COLORS = ['#10b981', '#f59e0b', '#8b5cf6', '#3b82f6'];
 
   if (loading) {
     return (
@@ -492,7 +372,7 @@ const SalesEfficiencyReport = () => {
         </>
       )}
 
-      {/* Trend Chart */}
+      {/* Trend Chart - Minimal */}
       {reportData && reportData.periodAnalysis && reportData.periodAnalysis.length > 0 && (
         <Card className="shadow-sm mb-3">
           <Card.Header className="bg-white">
@@ -502,7 +382,50 @@ const SalesEfficiencyReport = () => {
             </h6>
           </Card.Header>
           <Card.Body>
-            <Line data={getTrendChartData()} options={trendChartOptions} />
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={getTrendChartData()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="period" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  yAxisId="left"
+                  orientation="left"
+                  tick={{ fontSize: 12 }}
+                  label={{ value: 'Verimlilik (%)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 12 }}
+                  label={{ value: 'Satışlar', angle: 90, position: 'insideRight', style: { fontSize: 12 } }}
+                />
+                <Tooltip />
+                <Legend 
+                  wrapperStyle={{ fontSize: '12px' }}
+                  iconSize={10}
+                />
+                <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="verimlilik" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  name="Verimlilik (%)"
+                />
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="satislar" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  name="Satışlar"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </Card.Body>
         </Card>
       )}
@@ -733,23 +656,27 @@ const SalesEfficiencyReport = () => {
                       </td>
                       <td className="align-middle" style={{ width: '200px' }}>
                         {Object.keys(perf.salesByType).length > 0 && (
-                          <div style={{ height: '150px' }}>
-                            <Bar
+                          <ResponsiveContainer width="100%" height={100}>
+                            <BarChart 
                               data={getSalesTypesChart(perf)}
-                              options={{
-                                ...doughnutOptions,
-                                indexAxis: 'y',
-                                scales: {
-                                  x: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                      stepSize: 1
-                                    }
-                                  }
-                                }
-                              }}
-                            />
-                          </div>
+                              layout="vertical"
+                              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                            >
+                              <XAxis type="number" hide />
+                              <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                tick={{ fontSize: 10 }}
+                                width={70}
+                              />
+                              <Tooltip />
+                              <Bar dataKey="value">
+                                {getSalesTypesChart(perf).map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
                         )}
                       </td>
                     </tr>
